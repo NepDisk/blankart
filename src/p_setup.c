@@ -2319,7 +2319,7 @@ static void P_WriteTextmap(void)
 		{
 			case 9:
 			case 10:
-				CONS_Alert(CONS_WARNING, M_GetText("Sector %s has ring drainer effect, which is not supported in UDMF. Use action 460 instead.\n"), sizeu1(i));
+				CONS_Alert(CONS_WARNING, M_GetText("Sector %s has ring drainer effect, which is not supported in UDMF. Use linedef type 462 instead.\n"), sizeu1(i));
 				break;
 			default:
 				break;
