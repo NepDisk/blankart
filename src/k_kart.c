@@ -1787,7 +1787,7 @@ void K_SpawnDashDustRelease(player_t *player)
 		dust = P_SpawnMobj(newx, newy, player->mo->z, MT_FASTDUST);
 
 		P_SetTarget(&dust->target, player->mo);
-		P_InitAngle(dust, travelangle - ((i&1) ? -1 : 1) * ANGLE_45);
+		dust->angle = travelangle - (((i&1) ? -1 : 1) * ANGLE_45);
 		dust->destscale = player->mo->scale;
 		P_SetScale(dust, player->mo->scale);
 
@@ -1835,7 +1835,7 @@ void K_SpawnNormalSpeedLines(player_t *player)
 		MT_FASTLINE);
 
 	P_SetTarget(&fast->target, player->mo);
-	P_InitAngle(fast, K_MomentumAngle(player->mo));
+	fast->angle = K_MomentumAngle(player->mo);
 	fast->momx = 3*player->mo->momx/4;
 	fast->momy = 3*player->mo->momy/4;
 	fast->momz = 3*P_GetMobjZMovement(player->mo)/4;
@@ -1891,7 +1891,7 @@ void K_SpawnInvincibilitySpeedLines(mobj_t *mo)
 	P_SetMobjState(fast, S_KARTINVLINES1);
 
 	P_SetTarget(&fast->target, mo);
-	P_InitAngle(fast, K_MomentumAngle(mo));
+	fast->angle = K_MomentumAngle(mo);
 
 	fast->momx = 3*mo->momx/4;
 	fast->momy = 3*mo->momy/4;
@@ -3473,7 +3473,7 @@ void K_TakeBumpersFromPlayer(player_t *player, player_t *victim, UINT8 amount)
 		P_SetTarget(&newmo->tracer, victim->mo);
 		P_SetTarget(&newmo->target, player->mo);
 
-		P_InitAngle(newmo, (diff * (newbumper-1)));
+		newmo->angle = (diff * (newbumper-1));
 		newmo->color = victim->skincolor;
 
 		if (newbumper+1 < 2)
@@ -3561,7 +3561,7 @@ void K_SpawnMineExplosion(mobj_t *source, UINT8 color)
 	{
 		dust = P_SpawnMobj(source->x, source->y, source->z, MT_SMOKE);
 		P_SetMobjState(dust, S_OPAQUESMOKE1);
-		P_InitAngle(dust, (ANGLE_180/16) * i);
+		dust->angle = (ANGLE_180/16) * i;
 		P_SetScale(dust, source->scale);
 		dust->destscale = source->scale*10;
 		dust->scalespeed = source->scale/12;
@@ -3676,6 +3676,7 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 	}
 
 	th->angle = an;
+
 	th->momx = FixedMul(finalspeed, FINECOSINE(an>>ANGLETOFINESHIFT));
 	th->momy = FixedMul(finalspeed, FINESINE(an>>ANGLETOFINESHIFT));
 
@@ -3818,7 +3819,7 @@ static void K_SpawnDriftSparks(player_t *player)
 		spark = P_SpawnMobj(newx, newy, player->mo->z, MT_DRIFTSPARK);
 
 		P_SetTarget(&spark->target, player->mo);
-		spark->angle = travelangle-(ANGLE_45/5)*player->drift;
+		spark->angle = travelangle-((ANGLE_45/5)*player->drift);
 		spark->destscale = player->mo->scale;
 		P_SetScale(spark, player->mo->scale);
 
@@ -3945,7 +3946,7 @@ static void K_SpawnAIZDust(player_t *player)
 		newy = player->mo->y + P_ReturnThrustY(player->mo, travelangle - (player->aizdriftstrat*ANGLE_45), FixedMul(24*FRACUNIT, player->mo->scale));
 		spark = P_SpawnMobj(newx, newy, player->mo->z, MT_AIZDRIFTSTRAT);
 
-		P_InitAngle(spark, travelangle+(player->aizdriftstrat*ANGLE_90));
+		spark->angle = travelangle+(player->aizdriftstrat*ANGLE_90);
 		P_SetScale(spark, (spark->destscale = (3*player->mo->scale)>>2));
 
 		spark->momx = (6*player->mo->momx)/5;
@@ -3997,7 +3998,7 @@ void K_SpawnBoostTrail(player_t *player)
 		flame = P_SpawnMobj(newx, newy, ground, MT_SNEAKERTRAIL);
 
 		P_SetTarget(&flame->target, player->mo);
-		P_InitAngle(flame, travelangle);
+		flame->angle = travelangle;
 		flame->fuse = TICRATE*2;
 		flame->destscale = player->mo->scale;
 		P_SetScale(flame, player->mo->scale);
@@ -4069,7 +4070,7 @@ void K_SpawnWipeoutTrail(mobj_t *mo, boolean translucent)
 		mo->z, MT_WIPEOUTTRAIL);
 
 	P_SetTarget(&dust->target, mo);
-	dust->angle = R_PointToAngle2(0,0,mo->momx,mo->momy);
+	dust->angle = K_MomentumAngle(mo);
 	dust->destscale = mo->scale;
 	P_SetScale(dust, mo->scale);
 	K_FlipFromObject(dust, mo);
@@ -4527,7 +4528,7 @@ static void K_DoLightningShield(player_t *player)
 	for (i=0; i<7; i++)
 	{
 		mo = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_THOK);
-		P_InitAngle(mo, P_RandomRange(0, 359)*ANG1);
+		mo->angle = P_RandomRange(0, 359)*ANG1;
 		mo->fuse = P_RandomRange(20, 50);
 		P_SetTarget(&mo->target, player->mo);
 		P_SetMobjState(mo, S_KLIT1);
@@ -4540,7 +4541,7 @@ static void K_DoLightningShield(player_t *player)
 		sx = player->mo->x + FixedMul((player->mo->scale*THUNDERRADIUS), FINECOSINE((an*i)>>ANGLETOFINESHIFT));
 		sy = player->mo->y + FixedMul((player->mo->scale*THUNDERRADIUS), FINESINE((an*i)>>ANGLETOFINESHIFT));
 		mo = P_SpawnMobj(sx, sy, player->mo->z, MT_THOK);
-		P_InitAngle(mo, an*i);
+		mo->angle = an*i;
 		mo->extravalue1 = THUNDERRADIUS;	// Used to know whether we should teleport by radius or something.
 		mo->scale = player->mo->scale*3;
 		P_SetTarget(&mo->target, player->mo);
@@ -4916,7 +4917,7 @@ static void K_ThrowLandMine(player_t *player)
 	P_SetScale(landMine, player->mo->scale);
 	landMine->destscale = player->mo->destscale;
 
-	P_InitAngle(landMine, player->mo->angle);
+	landMine->angle = player->mo->angle;
 
 	landMine->momz = (30 * mapobjectscale * P_MobjFlip(player->mo)) + player->mo->momz;
 	landMine->color = player->skincolor;
@@ -5210,7 +5211,7 @@ mobj_t *K_CreatePaperItem(fixed_t x, fixed_t y, fixed_t z, angle_t angle, SINT8 
 	P_SetScale(drop, drop->scale>>4);
 	drop->destscale = (3*drop->destscale)/2;
 
-	P_InitAngle(drop, angle);
+	drop->angle = angle;
 	P_Thrust(drop,
 		FixedAngle(P_RandomFixed() * 180) + angle,
 		16*mapobjectscale);
@@ -6789,7 +6790,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		{
 			mobj_t *ring = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_RING);
 			ring->extravalue1 = 1; // Ring collect animation timer
-			P_InitAngle(ring, player->mo->angle); // animation angle
+			ring->angle = player->mo->angle; // animation angle
 			P_SetTarget(&ring->target, player->mo); // toucher for thinker
 			player->pickuprings++;
 			if (player->superring <= 3)
@@ -7694,6 +7695,27 @@ INT32 K_GetKartDriftSparkValue(player_t *player)
 	return (26*4 + kartspeed*2 + (9 - player->kartweight))*8;
 }
 
+INT32 K_GetKartDriftSparkValueForStage(player_t *player, UINT8 stage)
+{
+	fixed_t mul = FRACUNIT;
+
+	// This code is function is pretty much useless now that the timing changes are linear but bleh.
+	switch (stage)
+	{
+		case 2:
+			mul = 2*FRACUNIT; // x2
+			break;
+		case 3:
+			mul = 3*FRACUNIT; // x3
+			break;
+		case 4:
+			mul = 4*FRACUNIT; // x4
+			break;
+	}
+
+	return (FixedMul(K_GetKartDriftSparkValue(player) * FRACUNIT, mul) / FRACUNIT);
+}
+
 static void K_KartDrift(player_t *player, boolean onground)
 {
 	fixed_t minspeed = (10 * player->mo->scale);
@@ -8443,7 +8465,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									mo = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_ROCKETSNEAKER);
 									K_MatchGenericExtraFlags(mo, player->mo);
 									mo->flags |= MF_NOCLIPTHING;
-									P_InitAngle(mo, player->mo->angle);
+									mo->angle = player->mo->angle;
 									mo->threshold = 10;
 									mo->movecount = moloop%2;
 									mo->movedir = mo->lastlook = moloop+1;
@@ -8541,7 +8563,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 										break;
 									}
 									mo->flags |= MF_NOCLIPTHING;
-									P_InitAngle(mo, newangle);
+									mo->angle = newangle;
 									mo->threshold = 10;
 									mo->movecount = player->itemamount;
 									mo->movedir = mo->lastlook = moloop+1;
@@ -8582,7 +8604,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 										break;
 									}
 									mo->flags |= MF_NOCLIPTHING;
-									P_InitAngle(mo, newangle);
+									mo->angle = newangle;
 									mo->threshold = 10;
 									mo->movecount = player->itemamount;
 									mo->movedir = mo->lastlook = moloop+1;
