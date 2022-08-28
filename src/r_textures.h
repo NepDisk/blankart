@@ -23,8 +23,13 @@
 #pragma interface
 #endif
 
+<<<<<<< HEAD
 #define MISSING_TEXTURE "MISSTEX" // Replacement for invalid textures
 						 
+=======
+#define MISSING_TEXTURE "AASMELLY" // Replacement for invalid textures
+
+>>>>>>> 559222f991 (Stuff for Ivo's texture crunching)
 // A single patch from a texture definition,
 //  basically a rectangular area within
 //  the texture rectangle.
