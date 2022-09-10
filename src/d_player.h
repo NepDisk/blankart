@@ -254,7 +254,7 @@ typedef enum
 // QUICKLY GET RING TOTAL, INCLUDING RINGS CURRENTLY IN THE PICKUP ANIMATION
 #define RINGTOTAL(p) (p->rings + p->pickuprings)
 
-#define TRIPWIRETIME (TICRATE)
+#define TRIPWIRETIME (7)
 
 //}
 
