@@ -297,7 +297,7 @@ boolean K_BotCanTakeCut(player_t *player)
 /*--------------------------------------------------
 	static fixed_t K_BotSpeedScaled(player_t *player, fixed_t speed)
 
-		Gets the bot's speed value, adjusted for predictions.
+		What the bot "thinks" their speed is, for predictions.
 		Mainly to make bots brake earlier when on friction sectors.
 
 	Input Arguments:-
@@ -310,6 +310,12 @@ boolean K_BotCanTakeCut(player_t *player)
 static fixed_t K_BotSpeedScaled(player_t *player, fixed_t speed)
 {
 	fixed_t result = speed;
+
+	if (P_IsObjectOnGround(player->mo) == false)
+	{
+		// You have no air control, so don't predict too far ahead.
+		return 0;
+	}
 
 	if (player->mo->movefactor != FRACUNIT)
 	{
@@ -646,7 +652,8 @@ static botprediction_t *K_CreateBotPrediction(player_t *player)
 	const fixed_t speed = K_BotSpeedScaled(player, P_AproxDistance(player->mo->momx, player->mo->momy));
 
 	const INT32 startDist = (DEFAULT_WAYPOINT_RADIUS * 2 * mapobjectscale) / FRACUNIT;
-	const INT32 distance = ((speed / FRACUNIT) * futuresight) + startDist;
+	const INT32 maxDist = startDist * 4; // This function gets very laggy when it goes far distances, and going too far isn't very helpful anyway.
+	const INT32 distance = min(((speed / FRACUNIT) * futuresight) + startDist, maxDist);
 
 	// Halves radius when encountering a wall on your way to your destination.
 	fixed_t radreduce = FRACUNIT;
