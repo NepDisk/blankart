@@ -769,7 +769,7 @@ static botprediction_t *K_CreateBotPrediction(player_t *player)
 	distscaled = K_ScaleWPDistWithSlope(disttonext, angletonext, nextslope, P_MobjFlip(wp->mobj)) / FRACUNIT;
 
 	pathfindsuccess = K_PathfindThruCircuit(
-		wp, (unsigned)distanceleft,
+		player->nextwaypoint, (unsigned)distanceleft,
 		&pathtofinish,
 		useshortcuts, huntbackwards
 	);
