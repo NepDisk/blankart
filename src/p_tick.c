@@ -577,7 +577,7 @@ void P_Ticker(boolean run)
 		ps_lua_mobjhooks = 0;
 		ps_checkposition_calls = 0;
 
-		LUAh_PreThinkFrame();
+		LUA_HOOK(PreThinkFrame);
 
 		ps_playerthink_time = I_GetPreciseTime();
 
@@ -650,7 +650,7 @@ void P_Ticker(boolean run)
 		}
 
 		ps_lua_thinkframe_time = I_GetPreciseTime();
-		LUAh_ThinkFrame();
+		LUA_HOOK(ThinkFrame);
 		ps_lua_thinkframe_time = I_GetPreciseTime() - ps_lua_thinkframe_time;
 	}
 
@@ -744,7 +744,7 @@ void P_Ticker(boolean run)
 	// Always move the camera.
 	P_RunChaseCameras();
 
-	LUAh_PostThinkFrame();
+	LUA_HOOK(PostThinkFrame);
 
 	if (run)
 	{

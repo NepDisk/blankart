@@ -2386,14 +2386,14 @@ void CL_RemovePlayer(INT32 playernum, kickreason_t reason)
 
 	K_CalculateBattleWanted();
 
-	LUAh_PlayerQuit(&players[playernum], reason); // Lua hook for player quitting
+	LUA_HookPlayerQuit(&players[playernum], reason); // Lua hook for player quitting
 
 	// don't look through someone's view who isn't there
 	if (playernum == displayplayers[0] && !demo.playback)
 	{
 		// Call ViewpointSwitch hooks here.
 		// The viewpoint was forcibly changed.
-		LUAh_ViewpointSwitch(&players[consoleplayer], &players[consoleplayer], true);
+		LUA_HookViewpointSwitch(&players[consoleplayer], &players[consoleplayer], true);
 		displayplayers[0] = consoleplayer;
 	}
 
@@ -2897,7 +2897,7 @@ static void Got_KickCmd(UINT8 **p, INT32 playernum)
 
 	if (playernode[pnum] == playernode[consoleplayer])
 	{
-		LUAh_GameQuit(false);
+		LUA_HookBool(false, HOOK(GameQuit));
 #ifdef DUMPCONSISTENCY
 		if (msg == KICK_MSG_CON_FAIL) SV_SavedGame();
 #endif
@@ -3415,7 +3415,7 @@ static void Got_AddPlayer(UINT8 **p, INT32 playernum)
 	if (server && multiplayer && motd[0] != '\0')
 		COM_BufAddText(va("sayto %d %s\n", newplayernum, motd));
 
-	LUAh_PlayerJoin(newplayernum);
+	LUA_HookInt(newplayernum, HOOK(PlayerJoin));
 
 #ifdef HAVE_DISCORDRPC
 	DRPC_UpdatePresence();
@@ -3496,7 +3496,7 @@ static void Got_AddBot(UINT8 **p, INT32 playernum)
 		HU_AddChatText(va("\x82*Bot %d has been added to the game", newplayernum+1), false);
 	}
 
-	LUAh_PlayerJoin(newplayernum);
+	LUA_HookInt(newplayernum, HOOK(PlayerJoin));
 }
 
 static boolean SV_AddWaitingPlayers(SINT8 node, const char *name, const char *name2, const char *name3, const char *name4)
@@ -3841,7 +3841,7 @@ static void HandleConnect(SINT8 node)
 static void HandleShutdown(SINT8 node)
 {
 	(void)node;
-	LUAh_GameQuit(false);
+	LUA_HookBool(false, HOOK(GameQuit));
 	D_QuitNetGame();
 	CL_Reset();
 	D_StartTitle();
@@ -3856,7 +3856,7 @@ static void HandleShutdown(SINT8 node)
 static void HandleTimeout(SINT8 node)
 {
 	(void)node;
-	LUAh_GameQuit(false);
+	LUA_HookBool(false, HOOK(GameQuit));
 	D_QuitNetGame();
 	CL_Reset();
 	D_StartTitle();
