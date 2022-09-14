@@ -2160,9 +2160,8 @@ static void R_ProjectSprite(mobj_t *thing)
 			return;
 	}
 
-	if (thing->terrain != NULL && (thing->flags & MF_APPLYTERRAIN))
+	if (thing->terrain != NULL)
 	{
-		// Clip the bottom of the thing's sprite
 		floorClip = thing->terrain->floorClip;
 	}
 
