@@ -104,6 +104,7 @@ extern consvar_t cv_maxping;
 extern consvar_t cv_lagless;
 extern consvar_t cv_pingtimeout;
 extern consvar_t cv_showping;
+extern consvar_t cv_pingmeasurement;
 extern consvar_t cv_showviewpointtext;
 
 extern consvar_t cv_skipmapcheck;
@@ -113,6 +114,8 @@ extern consvar_t cv_sleep;
 extern consvar_t cv_perfstats;
 
 extern consvar_t cv_director;
+
+extern consvar_t cv_schedule;
 
 extern char timedemo_name[256];
 extern boolean timedemo_csv;
@@ -157,6 +160,10 @@ typedef enum
 	XD_GIVEITEM,    // 32
 	XD_ADDBOT,      // 33
 	XD_DISCORD,     // 34
+	XD_PLAYSOUND,   // 35
+	XD_SCHEDULETASK, // 36
+	XD_SCHEDULECLEAR, // 37
+	XD_AUTOMATE,    // 38
 
 	MAXNETXCMD
 } netxcmd_t;
@@ -226,6 +233,34 @@ void ClearAdminPlayers(void);
 void RemoveAdminPlayer(INT32 playernum);
 void ItemFinder_OnChange(void);
 void D_SetPassword(const char *pw);
+
+typedef struct
+{
+	UINT16 basetime;
+	UINT16 timer;
+	char *command;
+} scheduleTask_t;
+
+extern scheduleTask_t **schedule;
+extern size_t schedule_size;
+extern size_t schedule_len;
+
+void Schedule_Run(void);
+void Schedule_Insert(scheduleTask_t *addTask);
+void Schedule_Add(INT16 basetime, INT16 timeleft, const char *command);
+void Schedule_Clear(void);
+
+typedef enum
+{
+	AEV_ROUNDSTART,
+	AEV_INTERMISSIONSTART,
+	AEV_VOTESTART,
+	AEV__MAX
+} automateEvents_t;
+
+void Automate_Run(automateEvents_t type);
+void Automate_Set(automateEvents_t type, const char *command);
+void Automate_Clear(void);
 
 // used for the player setup menu
 UINT8 CanChangeSkin(INT32 playernum);

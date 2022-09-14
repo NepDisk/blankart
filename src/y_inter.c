@@ -1023,6 +1023,7 @@ void Y_StartIntermission(void)
 		usetile = useinterpic = false;
 		usebuffer = true;
 	}
+	Automate_Run(AEV_INTERMISSIONSTART);
 }
 
 // ======
@@ -1680,6 +1681,7 @@ void Y_StartVote(void)
 	}
 
 	voteclient.loaded = true;
+	Automate_Run(AEV_VOTESTART);
 }
 
 //
