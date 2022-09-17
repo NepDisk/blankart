@@ -1209,6 +1209,9 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 				case MT_KARMAFIREWORK:
 					gravityadd /= 3;
 					break;
+				case MT_ITEM_DEBRIS:
+					gravityadd *= 6;
+					break;
 				default:
 					break;
 			}
@@ -2339,6 +2342,15 @@ boolean P_ZMovement(mobj_t *mo)
 			mom.z = P_MobjFlip(mo)*FixedMul(5*FRACUNIT, mo->scale);
 		else if (mo->type == MT_SPINFIRE) // elemental shield fire is another exception here
 			;
+		else if (mo->type == MT_ITEM_DEBRIS)
+		{
+			mom.z = Obj_ItemDebrisBounce(mo, mom.z);
+
+			if (mom.z == 0)
+			{
+				return false;
+			}
+		}
 		else if (mo->type == MT_DRIFTCLIP)
 		{
 			mom.z = -mom.z/2;
@@ -7884,6 +7896,11 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 	case MT_HYUDORO_CENTER:
 	{
 		Obj_HyudoroCenterThink(mobj);
+		break;
+	}
+	case MT_ITEM_DEBRIS:
+	{
+		Obj_ItemDebrisThink(mobj);
 		break;
 	}
 	case MT_ROCKETSNEAKER:
