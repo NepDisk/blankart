@@ -8557,6 +8557,7 @@ static void K_AdjustPlayerFriction(player_t *player)
 
 			player->mo->movefactor = FixedDiv(ORIG_FRICTION, player->mo->friction);
 
+
 			if (player->mo->movefactor < FRACUNIT)
 				player->mo->movefactor = 19*player->mo->movefactor - 18*FRACUNIT;
 			else
