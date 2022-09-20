@@ -12692,10 +12692,6 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 				P_SetThingPosition(mobj);
 			}
 		}
-		else
-		{
-			P_SpawnMobj(mobj->x, mobj->y, mobj->z, MT_EXPLODE);
-		}
 		break;
 	}
 	case MT_ITEMCAPSULE:
