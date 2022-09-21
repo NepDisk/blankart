@@ -4275,7 +4275,6 @@ static void K_drawDistributionDebugger(void)
 		kp_jawz[1],
 		kp_mine[1],
 		kp_landmine[1],
-		kp_droptarget[1],
 		kp_ballhog[1],
 		kp_selfpropelledbomb[1],
 		kp_grow[1],
@@ -4287,6 +4286,7 @@ static void K_drawDistributionDebugger(void)
 		kp_pogospring[1],
 		kp_superring[1],
 		kp_kitchensink[1],
+		kp_droptarget[1],
 
 		kp_sneaker[1],
 		kp_sneaker[1],
