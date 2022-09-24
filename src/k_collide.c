@@ -514,9 +514,6 @@ boolean K_DropTargetCollide(mobj_t *t1, mobj_t *t2)
 {
 	mobj_t *draggeddroptarget = (t1->type == MT_DROPTARGET_SHIELD) ? t1->target : NULL;
 
-	if ((t1->threshold > 0 && (!draggeddroptarget)) || (t2->threshold > 0))
-		return true;
-
 	if (((t1->target == t2) || (t1->target == t2->target)) && (t1->threshold > 0 || (t2->type != MT_PLAYER && t2->threshold > 0)))
 		return true;
 
