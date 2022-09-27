@@ -6526,7 +6526,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 #endif
 					K_SpawnNormalSpeedLines(player);
 			}
-
+			
 			// Could probably be moved somewhere else.
 			K_HandleFootstepParticles(player->mo);
 		}
@@ -6925,6 +6925,10 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 			K_GetKartSpeed(player, false, false) / 2 <= player->speed)
 	{
 		K_SpawnBrakeVisuals(player);
+	}
+	else
+	{
+		player->mo->spriteyoffset = 0;
 	}
 
 	K_HandleDelayedHitByEm(player);
