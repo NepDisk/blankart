@@ -2018,6 +2018,8 @@ void F_TitleScreenDrawer(void)
 #else // Regular build
 					addtext(V_ALLOWLOWERCASE|V_TRANSLUCENT, va("%s", VERSIONSTRING));
 #endif
+					if (compuncommitted)
+						addtext(V_REDMAP|V_STRINGDANCE, "! UNCOMMITTED CHANGES !");
 				}
 #undef addtext
 			}

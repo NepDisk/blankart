@@ -36,6 +36,7 @@
 
 // SRB2Kart
 #include "k_hud.h"
+#include "i_time.h"
 
 // Each screen is [vid.width*vid.height];
 UINT8 *screens[5];
@@ -1628,6 +1629,14 @@ UINT8 *V_GetStringColormap(INT32 colorflags)
 #endif
 }
 
+INT32 V_DanceYOffset(INT32 counter)
+{
+	const INT32 duration = 16;
+	const INT32 step = (I_GetTime() + counter) % duration;
+
+	return abs(step - (duration / 2)) - (duration / 4);
+}
+
 // Writes a single character (draw WHITE if bit 7 set)
 //
 void V_DrawCharacter(INT32 x, INT32 y, INT32 c, boolean lowercaseallowed)
@@ -1994,10 +2003,13 @@ void V_DrawStringScaled(
 	boolean notcolored;
 
 	const UINT8 *colormap;
+	boolean   dance;
+	boolean nodanceoverride;
+	INT32     dancecounter;
 
 	fixed_t cx, cy;
 
-	fixed_t cxoff;
+	fixed_t cxoff, cyoff;
 	fixed_t cw;
 
 	INT32     spacing;
@@ -2006,7 +2018,20 @@ void V_DrawStringScaled(
 	int c;
 
 	uppercase  = !( flags & V_ALLOWLOWERCASE );
-	flags     &= ~(V_FLIP);/* These two (V_ALLOWLOWERCASE) share a bit. */
+	flags	&= ~(V_FLIP);/* These two (V_ALLOWLOWERCASE) share a bit. */
+
+	dance           = (flags & V_STRINGDANCE) != 0;
+	nodanceoverride = !dance;
+	dancecounter    = 0;
+
+	/* Some of these flags get overloaded in this function so
+	   don't pass them on. */
+	flags &= ~(V_PARAMMASK);
+
+	if (colormap == NULL)
+	{
+		colormap   =  V_GetStringColormap(( flags & V_CHARCOLORMASK ));
+	}
 
 	colormap   =  V_GetStringColormap(( flags & V_CHARCOLORMASK ));
 	notcolored = !colormap;
@@ -2153,8 +2178,9 @@ void V_DrawStringScaled(
 
 	cx = x;
 	cy = y;
+	cyoff = 0;
 
-	for (; ( c = *s ); ++s)
+	for (; ( c = *s ); ++s, ++dancecounter)
 	{
 		switch (c)
 		{
@@ -2173,18 +2199,29 @@ void V_DrawStringScaled(
 								( ( c & 0x7f )<< V_CHARCOLORSHIFT )&
 								V_CHARCOLORMASK);
 					}
+					if (nodanceoverride)
+					{
+						dance = false;
+					}
+				}
+				else if (c == V_STRINGDANCE)
+				{
+					dance = true;
 				}
 				else if (cx < right)
 				{
 					if (uppercase)
 						c = toupper(c);
 
+					if (dance)
+						cyoff = V_DanceYOffset(dancecounter) * FRACUNIT;
+
 					c -= font->start;
 					if (c >= 0 && c < font->size && font->font[c])
 					{
 						cw = SHORT (font->font[c]->width) * dupx;
 						cxoff = (*dim_fn)(scale, chw, hchw, dupx, &cw);
-						V_DrawFixedPatch(cx + cxoff, cy, scale,
+						V_DrawFixedPatch(cx + cxoff, cy + cyoff, scale,
 								flags, font->font[c], colormap);
 						cx += cw;
 					}
