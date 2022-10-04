@@ -123,3 +123,5 @@ k_brightmap.c
 k_director.c
 k_follower.c
 k_acs.c
+k_acs-func.c
+
