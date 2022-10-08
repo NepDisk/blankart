@@ -8222,11 +8222,15 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	if (!fromnetsave) // uglier hack
 	{
 		INT32 buf = gametic % BACKUPTICS;
+
 		for (i = 0; i < MAXPLAYERS; i++)
 		{
 			if (playeringame[i])
 				G_CopyTiccmd(&players[i].cmd, &netcmds[buf][i], 1);
 		}
+
+		ACS_RunLevelStartScripts();
+
 		P_MapStart(); // just in case MapLoad modifies tmthing
 		LUA_HookInt(gamemap, HOOK(MapLoad));
 		P_MapEnd(); // just in case MapLoad modifies tm.thing
