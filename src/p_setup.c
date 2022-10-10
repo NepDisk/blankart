@@ -6842,8 +6842,10 @@ static void P_ConvertBinaryMap(void)
 	P_ConvertBinaryThingTypes();
 	P_ConvertBinaryLinedefFlags();
 
+#if 0 // Don't do this yet...
 	if (M_CheckParm("-writetextmap"))
 		P_WriteTextmap();
+#endif
 }
 
 /** Compute MD5 message digest for bytes read from memory source
@@ -7762,6 +7764,10 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	{
 		// Backwards compatibility for non-UDMF maps
 		K_AdjustWaypointsParameters();
+
+		// Moved over here...
+		if (M_CheckParm("-writetextmap"))
+			P_WriteTextmap();
 	}
 
 	if (!fromnetsave) //  ugly hack for P_NetUnArchiveMisc (and P_LoadNetGame)
