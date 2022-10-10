@@ -46,6 +46,7 @@
 #include "k_kart.h"
 #include "console.h" // CON_LogMessage
 #include "k_terrain.h"
+#include "k_acs.h"
 
 #ifdef HW3SOUND
 #include "hardware/hw3sound.h"
@@ -4224,6 +4225,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 					|| (!(args[0] & TMCFF_FLIP) && (side == 1))) // crossed from behind to infront
 				{
 					K_HandleLapIncrement(mo->player,false);
+					ACS_RunLapScript(mo, line);
 				}
 				else
 				{
@@ -5186,6 +5188,7 @@ static void P_EvaluateOldSectorSpecial(player_t *player, sector_t *sector, secto
 			if ((gametyperules & GTR_CIRCUIT) && (player->exiting == 0) && !(player->pflags & PF_HITFINISHLINE))
 			{
 					K_HandleLapIncrement(player, true);
+					ACS_RunLapScript(player->mo, line);
 					player->pflags |= PF_HITFINISHLINE;
 			}
 			break;
