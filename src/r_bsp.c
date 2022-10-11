@@ -46,8 +46,16 @@ boolean R_NoEncore(sector_t *sector, levelflat_t *flat, boolean ceiling)
 	const boolean invertEncore = (sector->flags & MSF_INVERTENCORE);
 	const terrain_t *terrain = (flat != NULL ? flat->terrain : NULL);
 
-	if ((terrain != NULL)
-		&& !(terrain->flags & TRF_SNEAKERPANEL))
+	if ((terrain == NULL)
+		|| (terrain->pogoSpring <= 0
+		&& terrain->speedPad <= 0
+		&& !(terrain->flags & TRF_SNEAKERPANEL)))
+	{
+		return invertEncore;
+	}
+	
+	if ((!(sector->special & (1<<8)) || (sector->special & ((4|8)<<8))) // spring panel
+	&& GETSECSPECIAL(sector->special, 4) != 6) // sneaker panel
 	{
 		return invertEncore;
 	}
