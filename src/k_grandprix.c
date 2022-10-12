@@ -133,7 +133,7 @@ void K_InitGrandPrixBots(void)
 	UINT8 competitors[MAXSPLITSCREENPLAYERS];
 
 	UINT8 usableskins;
-	UINT8 grabskins[MAXSKINS];
+	UINT8 grabskins[MAXSKINS+1];
 
 	UINT8 botskinlist[MAXPLAYERS];
 	UINT8 botskinlistpos = 0;
@@ -149,6 +149,7 @@ void K_InitGrandPrixBots(void)
 	{
 		grabskins[usableskins] = usableskins;
 	}
+	grabskins[usableskins] = MAXSKINS;
 
 #if MAXPLAYERS != 16
 	I_Error("GP bot difficulty levels need rebalanced for the new player count!\n");
@@ -230,7 +231,6 @@ void K_InitGrandPrixBots(void)
 				{
 					botskinlist[botskinlistpos++] = (UINT8)rivalnum;
 					grabskins[(UINT8)rivalnum] = MAXSKINS;
-					botskinlistpos++;
 				}
 			}
 		}
@@ -239,9 +239,14 @@ void K_InitGrandPrixBots(void)
 	// Rearrange usable bot skins list to prevent gaps for randomised selection
 	for (i = 0; i < usableskins; i++)
 	{
-		if (grabskins[i] != MAXSKINS /*&& !K_SkinLocked(usableskins)*/)
+		if (!(grabskins[i] == MAXSKINS /*|| K_SkinLocked(grabskins[i])*/))
 			continue;
-		grabskins[i] = grabskins[--usableskins];
+		while (usableskins > i && (grabskins[usableskins] == MAXSKINS /*|| K_SkinLocked(grabskins[i])*/))
+		{
+			usableskins--;
+		}
+		grabskins[i] = grabskins[usableskins];
+		grabskins[usableskins] = MAXSKINS;
 	}
 
 	// Pad the remaining list with random skins if we need to
@@ -517,7 +522,7 @@ void K_RetireBots(void)
 	SINT8 newDifficulty;
 
 	UINT8 usableskins;
-	UINT8 grabskins[MAXSKINS];
+	UINT8 grabskins[MAXSKINS+1];
 
 	UINT8 i;
 
@@ -532,6 +537,7 @@ void K_RetireBots(void)
 	{
 		grabskins[usableskins] = usableskins;
 	}
+	grabskins[usableskins] = MAXSKINS;
 
 	// Exclude player skins
 	for (i = 0; i < MAXPLAYERS; i++)
@@ -547,9 +553,12 @@ void K_RetireBots(void)
 	// Rearrange usable bot skins list to prevent gaps for randomised selection
 	for (i = 0; i < usableskins; i++)
 	{
-		if (grabskins[i] != MAXSKINS /*&& !K_SkinLocked(usableskins)*/)
+		if (!(grabskins[i] == MAXSKINS /*|| K_SkinLocked(grabskins[i])*/))
 			continue;
-		grabskins[i] = grabskins[--usableskins];
+		while (usableskins > i && (grabskins[usableskins] == MAXSKINS /*|| K_SkinLocked(grabskins[i])*/))
+			usableskins--;
+		grabskins[i] = grabskins[usableskins];
+		grabskins[usableskins] = MAXSKINS;
 	}
 
 	if (!grandprixinfo.gp) // Sure, let's let this happen all the time :)
