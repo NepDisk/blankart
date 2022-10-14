@@ -2502,14 +2502,14 @@ void D_MapChange(INT32 mapnum, INT32 newgametype, boolean pencoremode, boolean r
 	if ((netgame || multiplayer) && !((gametype == newgametype) && (gametypedefaultrules[newgametype] & GTR_CAMPAIGN)))
 		FLS = false;
 
-	if (grandprixinfo.gp == true)
-	{
-		// Too lazy to change the input value for every instance of this function.......
-		pencoremode = grandprixinfo.encore;
-	}
-	else if (bossinfo.boss == true)
+	// Too lazy to change the input value for every instance of this function.......
+	if (bossinfo.boss == true)
 	{
 		pencoremode = bossinfo.encore;
+	}
+	else if (grandprixinfo.gp == true)
+	{
+		pencoremode = grandprixinfo.encore;
 	}
 
 	if (delay != 2)
@@ -4876,6 +4876,8 @@ Lagless_OnChange (void)
 }
 
 UINT32 timelimitintics = 0;
+UINT32 extratimeintics = 0;
+UINT32 secretextratime = 0;
 
 /** Deals with a timelimit change by printing the change to the console.
   * If the gametype is single player, cooperative, or race, the timelimit is
@@ -5498,6 +5500,10 @@ void Command_Retry_f(void)
 	else if (grandprixinfo.gp == false && bossinfo.boss == false)
 	{
 		CONS_Printf(M_GetText("This only works in Grand Prix or Mission Mode.\n"));
+	}
+	else if (grandprixinfo.gp == true && grandprixinfo.eventmode != GPEVENT_NONE)
+	{
+		CONS_Printf(M_GetText("You can't retry right now!\n"));
 	}
 	else
 	{

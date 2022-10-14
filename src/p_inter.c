@@ -657,9 +657,6 @@ void P_CheckTimeLimit(void)
 {
 	INT32 i;
 
-	if (!cv_timelimit.value)
-		return;
-
 #ifndef TESTOVERTIMEINFREEPLAY
 	if (battlecapsules) // capsules override any time limit settings
 		return;
@@ -670,6 +667,38 @@ void P_CheckTimeLimit(void)
 
 	if (bossinfo.boss == true)
 		return;
+	
+	if (exitcountdown)
+		return;
+
+	if (!timelimitintics)
+		return;
+
+	if (secretextratime)
+	{
+		secretextratime--;
+		timelimitintics++;
+	}
+	else if (extratimeintics)
+	{
+		timelimitintics++;
+		if (leveltime & 1)
+			;
+		else
+		{
+			if (extratimeintics > 20)
+			{
+				extratimeintics -= 20;
+				timelimitintics += 20;
+			}
+			else
+			{
+				timelimitintics += extratimeintics;
+				extratimeintics = 0;
+			}
+			S_StartSound(NULL, sfx_ptally);
+		}
+	}
 
 	if (leveltime < (timelimitintics + starttime))
 		return;
@@ -761,16 +790,19 @@ void P_CheckPointLimit(void)
 {
 	INT32 i;
 
-	if (!cv_pointlimit.value)
+	if (exitcountdown)
 		return;
 
-	if (!(multiplayer || netgame))
+	if (!K_CanChangeRules())
+		return;
+
+	if (!cv_pointlimit.value)
 		return;
 
 	if (!(gametyperules & GTR_POINTLIMIT))
 		return;
 
-	if (bossinfo.boss == true)
+	if (battlecapsules)
 		return;
 
 	// pointlimit is nonzero, check if it's been reached by this player
@@ -1447,11 +1479,23 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 
 		case MT_BATTLECAPSULE:
 			{
+				UINT8 i;
 				mobj_t *cur;
+				angle_t dir = 0;
 
-				numtargets++;
 				target->fuse = 16;
 				target->flags |= MF_NOCLIP|MF_NOCLIPTHING;
+
+				if (inflictor)
+				{
+					dir = R_PointToAngle2(inflictor->x, inflictor->y, target->x, target->y);
+					P_Thrust(target, dir, P_AproxDistance(inflictor->momx, inflictor->momy)/12);
+				}
+				else if (source)
+					dir = R_PointToAngle2(source->x, source->y, target->x, target->y);
+
+				target->momz += 8 * target->scale * P_MobjFlip(target);
+				target->flags &= ~MF_NOGRAVITY;
 
 				cur = target->hnext;
 
@@ -1475,12 +1519,49 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 					cur = cur->hnext;
 				}
 
-				// All targets busted!
-				if (numtargets >= maptargets)
+				S_StartSound(target, sfx_mbs60);
+
+				if ((gametyperules & GTR_POINTLIMIT) && (source && source->player))
 				{
-					UINT8 i;
+					/*mobj_t * ring;
+					for (i = 0; i < 2; i++)
+					{
+						dir += (ANGLE_MAX/3);
+						ring = P_SpawnMobj(target->x, target->y, target->z, MT_RING);
+						ring->angle = dir;
+						P_InstaThrust(ring, dir, 16*ring->scale);
+						ring->momz = 8 * target->scale * P_MobjFlip(target);
+						P_SetTarget(&ring->tracer, source);
+						source->player->pickuprings++;
+					}*/
+
+					P_AddPlayerScore(source->player, 1);
+					K_SpawnBattlePoints(source->player, NULL, 1);
+				}
+
+				// All targets busted!
+				if (++numtargets >= maptargets)
+				{
+					boolean givelife = false;
 					for (i = 0; i < MAXPLAYERS; i++)
+					{
+						if (!playeringame[i] || players[i].spectator)
+							continue;
 						P_DoPlayerExit(&players[i]);
+						if (!grandprixinfo.gp)
+							continue;
+						P_GivePlayerLives(&players[i], 1);
+						givelife = true;
+					}
+
+					if (givelife)
+						S_StartSound(NULL, sfx_cdfm73);
+				}
+				else if (timelimitintics)
+				{
+					S_StartSound(NULL, sfx_s221);
+					extratimeintics += 10*TICRATE;
+					secretextratime = TICRATE/2;
 				}
 			}
 			break;

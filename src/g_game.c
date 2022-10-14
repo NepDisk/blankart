@@ -2243,6 +2243,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	botdiffincrease = players[player].botvars.diffincrease;
 	botrival = players[player].botvars.rival;
 
+	totalring = players[player].totalring;
+	xtralife = players[player].xtralife;
+
 	pflags = (players[player].pflags & (PF_WANTSTOJOIN|PF_KICKSTARTACCEL|PF_SHRINKME|PF_SHRINKACTIVE));
 
 	// SRB2kart
@@ -2261,7 +2264,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		nocontrol = 0;
 		laps = 0;
 		latestlap = 0;
-		totalring = 0;
 		roundscore = 0;
 		exiting = 0;
 		khudcardanimation = 0;
@@ -2305,7 +2307,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		laps = players[player].laps;
 		latestlap = players[player].latestlap;
 
-		totalring = players[player].totalring;
 		roundscore = players[player].roundscore;
 
 		exiting = players[player].exiting;
@@ -2315,8 +2316,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		starposttime = players[player].starposttime;
 		prevcheck = players[player].prevcheck;
 		prevcheck = players[player].nextcheck;
-
-		xtralife = players[player].xtralife;
 
 		follower = players[player].follower;
 
@@ -2863,7 +2862,7 @@ void G_ExitLevel(void)
 				}
 			}
 		}
-		else if (grandprixinfo.gp == true)
+		else if (grandprixinfo.gp == true && grandprixinfo.eventmode == GPEVENT_NONE)
 		{
 			youlost = (grandprixinfo.wonround != true);
 		}
@@ -3179,14 +3178,14 @@ boolean G_GametypeUsesLives(void)
 	if (modeattacking || metalrecording) // NOT in Record Attack
 		return false;
 
-	if (bossinfo.boss == true) // Fighting a boss?
+	if ((grandprixinfo.gp == true) // In Grand Prix
+		&& (gametype == GT_RACE) // NOT in bonus round
+		&& grandprixinfo.eventmode == GPEVENT_NONE) // NOT in bonus
 	{
 		return true;
 	}
 
-	if ((grandprixinfo.gp == true) // In Grand Prix
-		&& (gametype == GT_RACE) // NOT in bonus round
-		&& !G_IsSpecialStage(gamemap)) // NOT in special stage
+	if (bossinfo.boss == true) // Fighting a boss?
 	{
 		return true;
 	}

@@ -3770,7 +3770,7 @@ static void P_InitLevelSettings(boolean reloadinggamestate)
 	// SRB2Kart: map load variables
 	if (grandprixinfo.gp == true)
 	{
-		if (gametype == GT_BATTLE)
+		if ((gametyperules & GTR_BUMPERS))
 		{
 			gamespeed = KARTSPEED_EASY;
 		}
@@ -3791,7 +3791,10 @@ static void P_InitLevelSettings(boolean reloadinggamestate)
 	else if (modeattacking)
 	{
 		// Just play it safe and set everything
-		gamespeed = KARTSPEED_HARD;
+		if ((gametyperules & GTR_BUMPERS))
+			gamespeed = KARTSPEED_EASY;
+		else
+			gamespeed = KARTSPEED_HARD;
 		franticitems = false;
 		comeback = true;
 	}
@@ -4085,6 +4088,8 @@ static void P_InitPlayers(void)
 
 static void P_InitGametype(void)
 {
+	size_t i;
+
 	spectateGriefed = 0;
 	K_CashInPowerLevels(); // Pushes power level changes even if intermission was skipped
 
@@ -4097,7 +4102,7 @@ static void P_InitGametype(void)
 	numlaps = 0;
 	if (gametyperules & GTR_CIRCUIT)
 	{
-		if ((netgame || multiplayer) && cv_numlaps.value
+		if (K_CanChangeRules() && cv_numlaps.value
 		&& (!(mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE)
 		|| (mapheaderinfo[gamemap - 1]->numlaps > cv_numlaps.value)))
 		{
@@ -4107,6 +4112,10 @@ static void P_InitGametype(void)
 		{
 			numlaps = mapheaderinfo[gamemap - 1]->numlaps;
 		}
+	}
+	else
+	{
+		numlaps = 0;
 	}
 
 	wantedcalcdelay = wantedfrequency*2;

@@ -12,6 +12,7 @@
 #include "k_hud.h"
 #include "k_kart.h"
 #include "k_battle.h"
+#include "k_grandprix.h"
 #include "k_boss.h"
 #include "k_color.h"
 #include "k_director.h"
@@ -3823,7 +3824,7 @@ static void K_drawBattleFullscreen(void)
 
 			if (K_IsPlayerLosing(stplyr))
 				p = kp_battlelose;
-			else if (stplyr->position == 1)
+			else if (stplyr->position == 1 && (!battlecapsules || numtargets >= maptargets))
 				p = kp_battlewin;
 
 			V_DrawFixedPatch(x<<FRACBITS, y<<FRACBITS, scale, splitflags, p, NULL);
@@ -3871,7 +3872,7 @@ static void K_drawBattleFullscreen(void)
 		}
 	}
 
-	if (netgame && !stplyr->spectator) // FREE PLAY?
+	// FREE PLAY?
 	{
 		UINT8 i;
 
@@ -3880,11 +3881,11 @@ static void K_drawBattleFullscreen(void)
 		{
 			if (i == displayplayers[0])
 				continue;
-			if (playeringame[i] && !stplyr->spectator)
-				return;
+			if (playeringame[i] && !players[i].spectator)
+				break;
 		}
 
-		if (LUA_HudEnabled(hud_freeplay))
+		if (i != MAXPLAYERS)
 			K_drawKartFreePlay();
 	}
 }
@@ -4261,8 +4262,13 @@ static void K_drawTrickCool(void)
 
 void K_drawKartFreePlay(void)
 {
-	// no splitscreen support because it's not FREE PLAY if you have more than one player in-game
-	// (you fool, you can take splitscreen online. :V)
+	// Doesn't support splitscreens higher than 2 for real estate reasons.
+
+	if (!LUA_HudEnabled(hud_freeplay))
+		return;
+
+	if (modeattacking || grandprixinfo.gp || bossinfo.boss || stplyr->spectator)
+		return;
 
 	if (lt_exitticker < TICRATE/2)
 		return;
@@ -4270,8 +4276,8 @@ void K_drawKartFreePlay(void)
 	if (((leveltime-lt_endtime) % TICRATE) < TICRATE/2)
 		return;
 
-	V_DrawKartString((BASEVIDWIDTH - (LAPS_X+1)) - (12*9), // mirror the laps thingy
-		LAPS_Y+3, V_HUDTRANS|V_SLIDEIN|V_SNAPTOBOTTOM|V_SNAPTORIGHT, "FREE PLAY");
+	V_DrawKartString((BASEVIDWIDTH - (LAPS_X+1)) - 72, // mirror the laps thingy
+		LAPS_Y+3, V_HUDTRANS|V_SLIDEIN|V_SNAPTOBOTTOM|V_SNAPTORIGHT|V_SPLITSCREEN, "FREE PLAY");
 }
 
 static void
@@ -4667,11 +4673,8 @@ void K_drawKartHUD(void)
 		V_DrawScaledPatch(BASEVIDWIDTH/2 - (SHORT(kp_yougotem->width)/2), 32, V_HUDTRANS, kp_yougotem);
 
 	// Draw FREE PLAY.
-	if (islonesome && !modeattacking && !bossinfo.boss && !stplyr->spectator)
-	{
-		if (LUA_HudEnabled(hud_freeplay))
-			K_drawKartFreePlay();
-	}
+	if (islonesome)
+		K_drawKartFreePlay();
 
 	if (r_splitscreen == 0 && (stplyr->pflags & PF_WRONGWAY) && ((leveltime / 8) & 1))
 	{

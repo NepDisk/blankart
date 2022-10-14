@@ -438,6 +438,7 @@ static patch_t *tcol2;
 
 static patch_t *tcroundbar;
 static patch_t *tcround;
+static patch_t *tcbonus;
 
 static patch_t *tccircletop;
 static patch_t *tccirclebottom;
@@ -447,6 +448,8 @@ static patch_t *tcbanner;
 static patch_t *tcbanner2;
 
 static patch_t *tcroundnum[10];
+static patch_t *tcroundbonus;
+
 static patch_t *tcactnum[10];
 static patch_t *tcact;
 
@@ -496,6 +499,7 @@ static void ST_cacheLevelTitle(void)
 
 	tcroundbar = 	(patch_t *)W_CachePatchName("TCBB0", PU_HUDGFX);
 	tcround = 		(patch_t *)W_CachePatchName("TCROUND", PU_HUDGFX);
+	tcbonus = 		(patch_t *)W_CachePatchName("TCBONUS", PU_HUDGFX);
 
 	tccircletop = 	(patch_t *)W_CachePatchName("TCSN1", PU_HUDGFX);
 	tccirclebottom =(patch_t *)W_CachePatchName("TCSN2", PU_HUDGFX);
@@ -515,6 +519,7 @@ static void ST_cacheLevelTitle(void)
 		sprintf(buf, "TT_RND%d", i);
 		tcroundnum[i-1] = (patch_t *)W_CachePatchName(buf, PU_HUDGFX);
 	}
+	tcroundbonus =	(patch_t *)W_CachePatchName("TT_RNDB", PU_HUDGFX);
 
 	// Cache act #
 	for (i=0; i < 10; i++)
@@ -580,7 +585,7 @@ void ST_runTitleCard(void)
 {
 	boolean run = !(paused || P_AutoPause());
 	INT32 auxticker;
-	boolean gp = (grandprixinfo.gp && grandprixinfo.roundnum);	// check whether we're in grandprix
+	boolean gp = (marathonmode || (grandprixinfo.gp && grandprixinfo.roundnum));
 
 	if (!G_IsTitleCardAvailable())
 		return;
