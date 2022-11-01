@@ -3805,7 +3805,34 @@ static void HWR_RotateSpritePolyToAim(gl_vissprite_t *spr, FOutVector *wallVerts
 		&& spr && spr->mobj && !R_ThingIsPaperSprite(spr->mobj)
 		&& wallVerts)
 	{
-		float basey = FIXED_TO_FLOAT(spr->mobj->z);
+		// uncapped/interpolation
+		interpmobjstate_t interp = {0};
+
+		// do interpolation
+		if (R_UsingFrameInterpolation() && !paused)
+		{
+			if (spr->precip)
+			{
+				R_InterpolatePrecipMobjState((precipmobj_t *)spr->mobj, rendertimefrac, &interp);
+			}
+			else
+			{
+				R_InterpolateMobjState(spr->mobj, rendertimefrac, &interp);
+			}
+		}
+		else
+		{
+			if (spr->precip)
+			{
+				R_InterpolatePrecipMobjState((precipmobj_t *)spr->mobj, FRACUNIT, &interp);
+			}
+			else
+			{
+				R_InterpolateMobjState(spr->mobj, FRACUNIT, &interp);
+			}
+		}
+
+		float basey = FIXED_TO_FLOAT(interp.z);
 		float lowy = wallVerts[0].y;
 		if (!precip && P_MobjFlip(spr->mobj) == -1) // precip doesn't have eflags so they can't flip
 		{
