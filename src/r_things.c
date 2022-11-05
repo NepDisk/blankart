@@ -1157,7 +1157,7 @@ static void R_SplitSprite(vissprite_t *sprite)
 		if (testheight <= sprite->gz)
 			return;
 
-		cutfrac = (INT16)((centeryfrac - FixedMul(testheight - viewz, sprite->sortscale))>>FRACBITS);
+		cutfrac = (INT16)((centeryfrac - FixedMul(testheight - viewz, sprite->linkscale))>>FRACBITS);
 		if (cutfrac < 0)
 			continue;
 		if (cutfrac > viewheight)
@@ -1568,6 +1568,7 @@ static void R_ProjectSprite(mobj_t *thing)
 	fixed_t tx, tz;
 	fixed_t xscale, yscale; //added : 02-02-98 : aaargll..if I were a math-guy!!!
 	fixed_t sortscale, sortsplat = 0;
+	fixed_t linkscale = 0;
 	fixed_t sort_x = 0, sort_y = 0, sort_z;
 
 	INT32 x1, x2;
@@ -1968,7 +1969,6 @@ static void R_ProjectSprite(mobj_t *thing)
 	if ((thing->flags2 & MF2_LINKDRAW) && thing->tracer) // toast 16/09/16 (SYMMETRY)
 	{
 		interpmobjstate_t tracer_interp = {0};
-		fixed_t linkscale;
 
 		thing = thing->tracer;
 
@@ -2011,6 +2011,10 @@ static void R_ProjectSprite(mobj_t *thing)
 		tr_y = (interp.y + sort_y) - viewy;
 		sort_z = FixedMul(tr_x, viewcos) + FixedMul(tr_y, viewsin);
 		sortscale = FixedDiv(projectiony[viewssnum], sort_z);
+	}
+	else
+	{
+		linkscale = sortscale;
 	}
 
 	// Calculate the splat's sortscale
@@ -2170,6 +2174,7 @@ static void R_ProjectSprite(mobj_t *thing)
 	vis->mobjflags = thing->flags;
 	vis->sortscale = sortscale;
 	vis->sortsplat = sortsplat;
+	vis->linkscale = linkscale;
 	vis->dispoffset = dispoffset; // Monster Iestyn: 23/11/15
 	vis->gx = interp.x;
 	vis->gy = interp.y;
@@ -2197,8 +2202,10 @@ static void R_ProjectSprite(mobj_t *thing)
 	vis->x2 = x2 >= portalclipend ? portalclipend-1 : x2;
 
 	vis->sector = thing->subsector->sector;
-	vis->szt = (INT16)((centeryfrac - FixedMul(vis->gzt - viewz, sortscale))>>FRACBITS);
-	vis->sz = (INT16)((centeryfrac - FixedMul(vis->gz - viewz, sortscale))>>FRACBITS);
+
+	// Using linkscale here improves cut detection for LINKDRAW.
+	vis->szt = (INT16)((centeryfrac - FixedMul(vis->gzt - viewz, linkscale))>>FRACBITS);
+	vis->sz = (INT16)((centeryfrac - FixedMul(vis->gz - viewz, linkscale))>>FRACBITS);
 	vis->cut = cut;
 
 	if (thing->subsector->sector->numlights)
