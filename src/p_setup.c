@@ -4643,7 +4643,7 @@ static void P_ConvertBinaryLinedefTypes(void)
 			//Flags
 			if (lines[i].flags & ML_BLOCKPLAYERS)
 				lines[i].args[6] |= TMFR_REVERSE;
-			if (lines[i].flags & ML_BLOCKPLAYERS)
+			if (lines[i].flags & ML_NOCLIMB)
 				lines[i].args[6] |= TMFR_SPINDASH;
 
 			lines[i].special = 190;
