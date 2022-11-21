@@ -1517,6 +1517,7 @@ void P_XYMovement(mobj_t *mo)
 	pslope_t *oldslope = NULL;
 	vector3_t slopemom = {0,0,0};
 	fixed_t predictedz = 0;
+	TryMoveResult_t result = {0};
 
 	I_Assert(mo != NULL);
 	I_Assert(!P_MobjWasRemoved(mo));
@@ -1590,7 +1591,7 @@ void P_XYMovement(mobj_t *mo)
 	}
 	//}
 
-	if (!P_TryMove(mo, mo->x + xmove, mo->y + ymove, true)
+	if (!P_TryMove(mo, mo->x + xmove, mo->y + ymove, true, &result)
 		&& !(P_MobjWasRemoved(mo) || mo->eflags & MFE_SPRUNG))
 	{
 		// blocked move
@@ -1702,7 +1703,7 @@ void P_XYMovement(mobj_t *mo)
 				{
 					angle_t relation; // Scale transfer momentum based on how head-on it is to the slope.
 
-					P_SlideMove(mo);
+					P_SlideMove(mo, &result);
 					xmove = ymove = 0;
 					walltransfered = true;
 					if (mo->momx || mo->momy) // "Guess" the angle of the wall you hit using new momentum
@@ -1730,21 +1731,21 @@ void P_XYMovement(mobj_t *mo)
 			{
 				if (player)
 				{
-					P_BounceMove(mo);
+					P_BounceMove(mo,&result);
 					if (P_MobjWasRemoved(mo))
 						return;
 					xmove = ymove = 0;
 				}
 				else if (mo->flags & MF_SLIDEME)
 				{
-					P_SlideMove(mo);
+					P_SlideMove(mo, &result);
 					if (P_MobjWasRemoved(mo))
 						return;
 					xmove = ymove = 0;
 				}
 				else if (mo->flags & MF_BOUNCE)
 				{
-					P_BounceMove(mo);
+					P_BounceMove(mo, &result);
 					if (P_MobjWasRemoved(mo))
 						return;
 					xmove = ymove = 0;
@@ -1915,16 +1916,19 @@ void P_XYMovement(mobj_t *mo)
 
 void P_RingXYMovement(mobj_t *mo)
 {
+	TryMoveResult_t result = {0};
+
 	I_Assert(mo != NULL);
 	I_Assert(!P_MobjWasRemoved(mo));
 
-	if (!P_SceneryTryMove(mo, mo->x + mo->momx, mo->y + mo->momy))
-		P_BounceMove(mo);
+	if (!P_SceneryTryMove(mo, mo->x + mo->momx, mo->y + mo->momy, &result))
+		P_BounceMove(mo, &result);
 }
 
 void P_SceneryXYMovement(mobj_t *mo)
 {
 	fixed_t oldx, oldy; // reducing bobbing/momentum on ice when up against walls
+	TryMoveResult_t result = {0};
 
 	I_Assert(mo != NULL);
 	I_Assert(!P_MobjWasRemoved(mo));
@@ -1932,8 +1936,8 @@ void P_SceneryXYMovement(mobj_t *mo)
 	oldx = mo->x;
 	oldy = mo->y;
 
-	if (!P_SceneryTryMove(mo, mo->x + mo->momx, mo->y + mo->momy))
-		P_BounceMove(mo);
+	if (!P_SceneryTryMove(mo, mo->x + mo->momx, mo->y + mo->momy, &result))
+		P_BounceMove(mo, &result);
 
 	if (P_MobjWasRemoved(mo))
 		return;
@@ -2381,7 +2385,7 @@ boolean P_ZMovement(mobj_t *mo)
 			return true;
 		}
 
-		P_CheckPosition(mo, mo->x, mo->y); // Sets mo->standingslope correctly
+		P_CheckPosition(mo, mo->x, mo->y, NULL); // Sets mo->standingslope correctly
 		if (P_MobjWasRemoved(mo)) // mobjs can be removed by P_CheckPosition -- Monster Iestyn 31/07/21
 			return false;
 
@@ -2863,7 +2867,7 @@ boolean P_SceneryZMovement(mobj_t *mo)
 			if (!(mo->flags & MF_BOUNCE) && (mo->z <= mo->floorz || mo->z+mo->height >= mo->ceilingz))
 			{
 				// set standingslope
-				P_TryMove(mo, mo->x, mo->y, true);
+				P_TryMove(mo, mo->x, mo->y, true, NULL);
 				mo->momz = -mo->momz;
 				if (mo->standingslope)
 				{
@@ -3780,7 +3784,7 @@ static void P_PlayerMobjThinker(mobj_t *mobj)
 		mobj->y += mobj->momy;
 		mobj->z += mobj->momz;
 		P_SetThingPosition(mobj);
-		P_CheckPosition(mobj, mobj->x, mobj->y);
+		P_CheckPosition(mobj, mobj->x, mobj->y, NULL);
 		mobj->floorz = tm.floorz;
 		mobj->ceilingz = tm.ceilingz;
 		mobj->terrain = NULL;
@@ -3798,7 +3802,7 @@ static void P_PlayerMobjThinker(mobj_t *mobj)
 			return;
 	}
 	else
-		P_TryMove(mobj, mobj->x, mobj->y, true);
+		P_TryMove(mobj, mobj->x, mobj->y, true, NULL);
 
 	P_CheckCrumblingPlatforms(mobj);
 
@@ -3813,7 +3817,7 @@ static void P_PlayerMobjThinker(mobj_t *mobj)
 		|| P_IsObjectInGoop(mobj))
 	{
 		P_PlayerZMovement(mobj);
-		P_CheckPosition(mobj, mobj->x, mobj->y); // Need this to pick up objects!
+		P_CheckPosition(mobj, mobj->x, mobj->y, NULL); // Need this to pick up objects!
 
 		if (P_MobjWasRemoved(mobj))
 			return;
@@ -4015,7 +4019,7 @@ static void P_RingThinker(mobj_t *mobj)
 	if (mobj->momz)
 	{
 		P_RingZMovement(mobj);
-		P_CheckPosition(mobj, mobj->x, mobj->y); // Need this to pick up objects!
+		P_CheckPosition(mobj, mobj->x, mobj->y, NULL); // Need this to pick up objects!
 
 		if (P_MobjWasRemoved(mobj))
 			return;
@@ -5184,7 +5188,7 @@ void P_RunOverlays(void)
 			P_SetUnderlayPosition(mo);
 		else
 			P_SetThingPosition(mo);
-		P_CheckPosition(mo, mo->x, mo->y);
+		P_CheckPosition(mo, mo->x, mo->y, NULL);
 	}
 	P_SetTarget(&overlaycap, NULL);
 }
@@ -8013,7 +8017,7 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 
 				mobj->movecount += mobj->lastlook;
 
-				if (!(P_TryMove(mobj->tracer, mobj->x + ((mobj->extravalue1<<FRACBITS) * mobj->movecount), mobj->y + ((mobj->extravalue2<<FRACBITS) * mobj->movecount), true))
+				if (!(P_TryMove(mobj->tracer, mobj->x + ((mobj->extravalue1<<FRACBITS) * mobj->movecount), mobj->y + ((mobj->extravalue2<<FRACBITS) * mobj->movecount), true, NULL))
 					|| (mobj->movecount >= 16) // maximum travel time
 					|| (mobj->tracer->z <= mobj->tracer->floorz) // Through the floor
 					|| ((mobj->tracer->z + mobj->tracer->height) >= mobj->tracer->ceilingz)) // Through the ceiling
@@ -9188,7 +9192,7 @@ void P_MobjThinker(mobj_t *mobj)
 	{
 		if (!P_ZMovement(mobj))
 			return; // mobj was removed
-		P_CheckPosition(mobj, mobj->x, mobj->y); // Need this to pick up objects!
+		P_CheckPosition(mobj, mobj->x, mobj->y, NULL); // Need this to pick up objects!
 		if (P_MobjWasRemoved(mobj))
 			return;
 	}
@@ -9212,7 +9216,7 @@ void P_MobjThinker(mobj_t *mobj)
 		|| mobj->type == MT_JAWZ || mobj->type == MT_JAWZ_DUD
 		|| (mobj->type == MT_DROPTARGET && mobj->reactiontime))
 	{
-		P_TryMove(mobj, mobj->x, mobj->y, true); // Sets mo->standingslope correctly
+		P_TryMove(mobj, mobj->x, mobj->y, true, NULL); // Sets mo->standingslope correctly
 
 		if (P_MobjWasRemoved(mobj)) // anything that calls checkposition can be lethal
 			return;
@@ -9309,7 +9313,7 @@ boolean P_RailThinker(mobj_t *mobj)
 	{
 		if (!P_ZMovement(mobj))
 			return true; // mobj was removed
-		//P_CheckPosition(mobj, mobj->x, mobj->y);
+		//P_CheckPosition(mobj, mobj->x, mobj->y, NULL);
 	}
 
 	return P_MobjWasRemoved(mobj) || (x == mobj->x && y == mobj->y && z == mobj->z);
@@ -9325,7 +9329,7 @@ void P_PushableThinker(mobj_t *mobj)
 
 	// it has to be pushable RIGHT NOW for this part to happen
 	if (mobj->flags & MF_PUSHABLE && !(mobj->momx || mobj->momy))
-		P_TryMove(mobj, mobj->x, mobj->y, true);
+		P_TryMove(mobj, mobj->x, mobj->y, true, NULL);
 
 	if (mobj->fuse == 1) // it would explode in the MobjThinker code
 	{
@@ -9404,7 +9408,7 @@ void P_SceneryThinker(mobj_t *mobj)
 	{
 		if (!P_SceneryZMovement(mobj))
 			return; // mobj was removed
-		P_CheckPosition(mobj, mobj->x, mobj->y); // Need this to pick up objects!
+		P_CheckPosition(mobj, mobj->x, mobj->y, NULL); // Need this to pick up objects!
 		if (P_MobjWasRemoved(mobj))
 			return;
 		mobj->floorz = tm.floorz;
@@ -13064,7 +13068,7 @@ boolean P_CheckMissileSpawn(mobj_t *th)
 		th->z += th->momz>>1;
 	}
 
-	if (!P_TryMove(th, th->x, th->y, true))
+	if (!P_TryMove(th, th->x, th->y, true, NULL))
 	{
 		P_ExplodeMissile(th);
 		return false;

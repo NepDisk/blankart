@@ -129,7 +129,7 @@ static boolean P_TeleportMove(mobj_t *thing, fixed_t x, fixed_t y, fixed_t z)
 
 	P_SetThingPosition(thing);
 
-	P_CheckPosition(thing, thing->x, thing->y);
+	P_CheckPosition(thing, thing->x, thing->y, NULL);
 
 	if (P_MobjWasRemoved(thing))
 		return true;
@@ -325,7 +325,7 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 	if (horizspeed && vertispeed) // Mimic SA
 	{
 		object->momx = object->momy = 0;
-		P_TryMove(object, spring->x, spring->y, true);
+		P_TryMove(object, spring->x, spring->y, true, NULL);
 	}
 
 	if (spring->eflags & MFE_VERTICALFLIP)
@@ -355,8 +355,7 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 		else if (offy < -(spring->radius + object->radius + 1))
 			offy = -(spring->radius + object->radius + 1);
 
-		// Set position!
-		P_TryMove(object, spring->x + offx, spring->y + offy, true);
+		P_TryMove(object, spring->x + offx, spring->y + offy, true, NULL);
 	}
 
 	P_DoSpringEx(object, mapobjectscale, vertispeed, horizspeed, spring->angle);
@@ -1664,7 +1663,7 @@ static BlockItReturn_t PIT_CheckLine(line_t *ld)
 // tm.ceilingz
 //     the nearest ceiling or thing's bottom over tm.thing
 //
-boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
+boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y, TryMoveResult_t *result)
 {
 	INT32 thingtop = thing->z + thing->height;
 	INT32 xl, xh, yl, yh, bx, by;
@@ -1934,6 +1933,7 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 	if (!(thing->flags & MF_NOCLIPTHING))
 	{
 		for (bx = xl; bx <= xh; bx++)
+		{
 			for (by = yl; by <= yh; by++)
 			{
 				if (!P_BlockThingsIterator(bx, by, PIT_CheckThing))
@@ -1946,8 +1946,11 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 				}
 
 				if (P_MobjWasRemoved(tm.thing))
+				{
 					return false;
+				}
 			}
+		}
 	}
 
 	validcount++;
@@ -1962,6 +1965,12 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y)
 				blockval = false;
 			}
 		}
+	}
+
+	if (result != NULL)
+	{
+		result->line = tm.blockingline;
+		P_SetTarget(&result->mo, tm.hitthing);
 	}
 
 	return blockval;
@@ -2329,7 +2338,7 @@ BlockItReturn_t PIT_PushableMoved(mobj_t *thing)
 		tm_t oldtm = tm;
 
 		// Move the player
-		P_TryMove(thing, thing->x + stand->momx, thing->y + stand->momy, true);
+		P_TryMove(thing, thing->x + stand->momx, thing->y + stand->momy, true, NULL);
 
 		// Now restore EVERYTHING so the gargoyle doesn't keep the player's tmstuff and break
 		P_RestoreTMStruct(oldtm);
@@ -2412,7 +2421,8 @@ increment_move
 (		mobj_t * thing,
 		fixed_t x,
 		fixed_t y,
-		boolean allowdropoff)
+		boolean allowdropoff,
+		TryMoveResult_t * result)
 {
 	fixed_t tryx = thing->x;
 	fixed_t tryy = thing->y;
@@ -2458,9 +2468,11 @@ increment_move
 				tryy = y;
 		}
 
-		if (!P_CheckPosition(thing, tryx, tryy))
+		if (!P_CheckPosition(thing, tryx, tryy, result))
+		{
 			return false; // solid wall or thing
-			
+		}
+
 		// copy into the spechitint buffer from spechit
 		spechitint_copyinto();
 
@@ -2570,7 +2582,7 @@ increment_move
 // P_CheckMove
 // Check if a P_TryMove would be successful.
 //
-boolean P_CheckMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
+boolean P_CheckMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff, TryMoveResult_t *result)
 {
 	boolean moveok = false;
 	mobj_t *hack = P_SpawnMobjFromMobj(thing, 0, 0, 0, MT_RAY);
@@ -2578,7 +2590,7 @@ boolean P_CheckMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 	hack->radius = thing->radius;
 	hack->height = thing->height;
 
-	moveok = increment_move(hack, x, y, allowdropoff);
+	moveok = increment_move(hack, x, y, allowdropoff, result);
 	P_RemoveMobj(hack);
 
 	return moveok;
@@ -2588,15 +2600,21 @@ boolean P_CheckMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 // P_TryMove
 // Attempt to move to a new position.
 //
-boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
+boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff, TryMoveResult_t *result)
 {
 	fixed_t oldx = thing->x;
 	fixed_t oldy = thing->y;
 	fixed_t startingonground = P_IsObjectOnGround(thing);
 
-	// The move is ok!
-	if (!increment_move(thing, x, y, allowdropoff))
+	// Is the move OK?
+	if (increment_move(thing, x, y, allowdropoff, result) == false)
+	{
+		if (result != NULL)
+		{
+			result->success = false;
+		}
 		return false;
+	}
 
 	// If it's a pushable object, check if anything is
 	// standing on top and move it, too.
@@ -2709,10 +2727,15 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 		}
 	}
 
+	if (result != NULL)
+	{
+		result->success = true;
+	}
+
 	return true;
 }
 
-boolean P_SceneryTryMove(mobj_t *thing, fixed_t x, fixed_t y)
+boolean P_SceneryTryMove(mobj_t *thing, fixed_t x, fixed_t y, TryMoveResult_t *result)
 {
 	fixed_t tryx, tryy;
 
@@ -2732,7 +2755,7 @@ boolean P_SceneryTryMove(mobj_t *thing, fixed_t x, fixed_t y)
 		else
 			tryy = y;
 
-		if (!P_CheckPosition(thing, tryx, tryy))
+		if (!P_CheckPosition(thing, tryx, tryy, result))
 			return false; // solid wall or thing
 
 		if (!(thing->flags & MF_NOCLIP))
@@ -2884,7 +2907,7 @@ static boolean P_ThingHeightClip(mobj_t *thing)
 	if (thing->flags & MF_NOCLIPHEIGHT)
 		return true;
 
-	P_CheckPosition(thing, thing->x, thing->y);
+	P_CheckPosition(thing, thing->x, thing->y, NULL);
 
 	if (P_MobjWasRemoved(thing))
 		return true;
@@ -3012,42 +3035,25 @@ static void P_HitCameraSlideLine(line_t *ld, camera_t *thiscam)
 static void P_HitSlideLine(line_t *ld)
 {
 	INT32 side;
-	angle_t lineangle, moveangle, deltaangle;
-	fixed_t movelen, newlen;
-
-	if (ld->slopetype == ST_HORIZONTAL)
-	{
-		tmymove = 0;
-		return;
-	}
-
-	if (ld->slopetype == ST_VERTICAL)
-	{
-		tmxmove = 0;
-		return;
-	}
+	angle_t lineangle;
+	fixed_t nx, ny;
+	fixed_t d;
 
 	side = P_PointOnLineSide(slidemo->x, slidemo->y, ld);
-
-	lineangle = ld->angle;
+	lineangle = ld->angle - ANGLE_90;
 
 	if (side == 1)
 		lineangle += ANGLE_180;
 
-	moveangle = R_PointToAngle2(0, 0, tmxmove, tmymove);
-	deltaangle = moveangle-lineangle;
-
-	if (deltaangle > ANGLE_180)
-		deltaangle += ANGLE_180;
-
 	lineangle >>= ANGLETOFINESHIFT;
-	deltaangle >>= ANGLETOFINESHIFT;
 
-	movelen = R_PointToDist2(0, 0, tmxmove, tmymove);
-	newlen = FixedMul(movelen, FINECOSINE(deltaangle));
+	nx = FINECOSINE(lineangle);
+	ny = FINESINE(lineangle);
 
-	tmxmove = FixedMul(newlen, FINECOSINE(lineangle));
-	tmymove = FixedMul(newlen, FINESINE(lineangle));
+	d = FixedMul(tmxmove, nx) + FixedMul(tmymove, ny);
+
+	tmxmove -= FixedMul(nx, d);
+	tmymove -= FixedMul(ny, d);
 }
 
 //
@@ -3182,6 +3188,7 @@ isblocking:
 	return false; // stop
 }
 
+/*
 static boolean PTR_LineIsBlocking(line_t *li)
 {
 	opening_t open = {0};
@@ -3207,7 +3214,9 @@ static boolean PTR_LineIsBlocking(line_t *li)
 
 	return false;
 }
+*/
 
+/*
 static boolean PTR_SlideTraverse(intercept_t *in)
 {
 	line_t *li;
@@ -3237,6 +3246,7 @@ static boolean PTR_SlideTraverse(intercept_t *in)
 
 	return false; // stop
 }
+*/
 
 //
 // P_SlideCameraMove
@@ -3393,186 +3403,85 @@ static void P_CheckLavaWall(mobj_t *mo, sector_t *sec)
 //
 // This is a kludgy mess.
 //
-void P_SlideMove(mobj_t *mo)
+void P_SlideMove(mobj_t *mo, TryMoveResult_t *result)
 {
-	fixed_t leadx, leady, trailx, traily, newx, newy;
-	INT16 hitcount = 0;
+	fixed_t newx, newy;
 	boolean success = false;
 
-	boolean papercol = false;
 	vertex_t v1, v2; // fake vertexes
 	line_t junk; // fake linedef
 
 	if (P_MobjWasRemoved(mo))
 		return;
 
-	if (tm.hitthing && mo->z + mo->height > tm.hitthing->z && mo->z < tm.hitthing->z + tm.hitthing->height)
+	if (result == NULL)
+		return;
+
+	if (result->mo && mo->z + mo->height > result->mo->z && mo->z < result->mo->z + result->mo->height)
 	{
 		// Don't mess with your momentum if it's a pushable object. Pushables do their own crazy things already.
-		if (tm.hitthing->flags & MF_PUSHABLE)
+		if (result->mo->flags & MF_PUSHABLE)
 			return;
 
-		if (tm.hitthing->flags & MF_PAPERCOLLISION)
+		if (result->mo->flags & MF_PAPERCOLLISION)
 		{
-			fixed_t cosradius, sinradius, num, den;
+			fixed_t cosradius, sinradius;
 
-			// trace along the three leading corners
-			if (mo->momx > 0)
-			{
-				leadx = mo->x + mo->radius;
-				trailx = mo->x - mo->radius;
-			}
-			else
-			{
-				leadx = mo->x - mo->radius;
-				trailx = mo->x + mo->radius;
-			}
-
-			if (mo->momy > 0)
-			{
-				leady = mo->y + mo->radius;
-				traily = mo->y - mo->radius;
-			}
-			else
-			{
-				leady = mo->y - mo->radius;
-				traily = mo->y + mo->radius;
-			}
-
-			papercol = true;
 			slidemo = mo;
 			bestslideline = &junk;
 
-			cosradius = FixedMul(tm.hitthing->radius, FINECOSINE(tm.hitthing->angle>>ANGLETOFINESHIFT));
-			sinradius = FixedMul(tm.hitthing->radius, FINESINE(tm.hitthing->angle>>ANGLETOFINESHIFT));
+			cosradius = FixedMul(result->mo->radius, FINECOSINE(result->mo->angle>>ANGLETOFINESHIFT));
+			sinradius = FixedMul(result->mo->radius, FINESINE(result->mo->angle>>ANGLETOFINESHIFT));
 
-			v1.x = tm.hitthing->x - cosradius;
-			v1.y = tm.hitthing->y - sinradius;
-			v2.x = tm.hitthing->x + cosradius;
-			v2.y = tm.hitthing->y + sinradius;
+			v1.x = result->mo->x - cosradius;
+			v1.y = result->mo->y - sinradius;
+			v2.x = result->mo->x + cosradius;
+			v2.y = result->mo->y + sinradius;
 
-			// Can we box collision our way into smooth movement..?
-			if (sinradius && mo->y + mo->radius <= min(v1.y, v2.y))
-			{
-				mo->momy = 0;
-				P_TryMove(mo, mo->x + mo->momx, min(v1.y, v2.y) - mo->radius, true);
-				return;
-			}
-			else if (sinradius && mo->y - mo->radius >= max(v1.y, v2.y))
-			{
-				mo->momy = 0;
-				P_TryMove(mo, mo->x + mo->momx, max(v1.y, v2.y) + mo->radius, true);
-				return;
-			}
-			else if (cosradius && mo->x + mo->radius <= min(v1.x, v2.x))
-			{
-				mo->momx = 0;
-				P_TryMove(mo, min(v1.x, v2.x) - mo->radius, mo->y + mo->momy, true);
-				return;
-			}
-			else if (cosradius && mo->x - mo->radius >= max(v1.x, v2.x))
-			{
-				mo->momx = 0;
-				P_TryMove(mo, max(v1.x, v2.x) + mo->radius, mo->y + mo->momy, true);
-				return;
-			}
-
-			// nope, gotta fuck around with a fake linedef!
+			// gotta fuck around with a fake linedef!
 			junk.v1 = &v1;
 			junk.v2 = &v2;
 			junk.dx = 2*cosradius; // v2.x - v1.x;
 			junk.dy = 2*sinradius; // v2.y - v1.y;
 
 			junk.slopetype = !cosradius ? ST_VERTICAL : !sinradius ? ST_HORIZONTAL :
-			((sinradius > 0) == (cosradius > 0)) ? ST_POSITIVE : ST_NEGATIVE;
-
-			bestslidefrac = FRACUNIT+1;
-
-			den = FixedMul(junk.dy>>8, mo->momx) - FixedMul(junk.dx>>8, mo->momy);
-
-			if (!den)
-				bestslidefrac = 0;
-			else
-			{
-				fixed_t frac;
-#define P_PaperTraverse(startx, starty) \
-				num = FixedMul((v1.x - leadx)>>8, junk.dy) + FixedMul((leady - v1.y)>>8, junk.dx); \
-				frac = FixedDiv(num, den); \
-				if (frac < bestslidefrac) \
-					bestslidefrac = frac
-				P_PaperTraverse(leadx, leady);
-				P_PaperTraverse(trailx, leady);
-				P_PaperTraverse(leadx, traily);
-#undef dowork
-			}
+				((sinradius > 0) == (cosradius > 0)) ? ST_POSITIVE : ST_NEGATIVE;
 
 			goto papercollision;
 		}
 
 		// Thankfully box collisions are a lot simpler than arbitrary lines. There's only four possible cases.
-		if (mo->y + mo->radius <= tm.hitthing->y - tm.hitthing->radius)
+		if (mo->y + mo->radius <= result->mo->y - result->mo->radius)
 		{
 			mo->momy = 0;
-			P_TryMove(mo, mo->x + mo->momx, tm.hitthing->y - tm.hitthing->radius - mo->radius, true);
+			P_TryMove(mo, mo->x + mo->momx, result->mo->y - result->mo->radius - mo->radius, true, NULL);
 		}
-		else if (mo->y - mo->radius >= tm.hitthing->y + tm.hitthing->radius)
+		else if (mo->y - mo->radius >= result->mo->y + result->mo->radius)
 		{
 			mo->momy = 0;
-			P_TryMove(mo, mo->x + mo->momx, tm.hitthing->y + tm.hitthing->radius + mo->radius, true);
+			P_TryMove(mo, mo->x + mo->momx, result->mo->y + result->mo->radius + mo->radius, true, NULL);
 		}
-		else if (mo->x + mo->radius <= tm.hitthing->x - tm.hitthing->radius)
+		else if (mo->x + mo->radius <= result->mo->x - result->mo->radius)
 		{
 			mo->momx = 0;
-			P_TryMove(mo, tm.hitthing->x - tm.hitthing->radius - mo->radius, mo->y + mo->momy, true);
+			P_TryMove(mo, result->mo->x - result->mo->radius - mo->radius, mo->y + mo->momy, true, NULL);
 		}
-		else if (mo->x - mo->radius >= tm.hitthing->x + tm.hitthing->radius)
+		else if (mo->x - mo->radius >= result->mo->x + result->mo->radius)
 		{
 			mo->momx = 0;
-			P_TryMove(mo, tm.hitthing->x + tm.hitthing->radius + mo->radius, mo->y + mo->momy, true);
+			P_TryMove(mo, result->mo->x + result->mo->radius + mo->radius, mo->y + mo->momy, true, NULL);
 		}
 		else
 			mo->momx = mo->momy = 0;
+
 		return;
 	}
 
 	slidemo = mo;
-	bestslideline = NULL;
+	bestslideline = result->line;
 
-retry:
-	if ((++hitcount == 3) || papercol)
-		goto stairstep; // don't loop forever
-
-	// trace along the three leading corners
-	if (mo->momx > 0)
-	{
-		leadx = mo->x + mo->radius;
-		trailx = mo->x - mo->radius;
-	}
-	else
-	{
-		leadx = mo->x - mo->radius;
-		trailx = mo->x + mo->radius;
-	}
-
-	if (mo->momy > 0)
-	{
-		leady = mo->y + mo->radius;
-		traily = mo->y - mo->radius;
-	}
-	else
-	{
-		leady = mo->y - mo->radius;
-		traily = mo->y + mo->radius;
-	}
-
-	bestslidefrac = FRACUNIT+1;
-
-	P_PathTraverse(leadx, leady, leadx + mo->momx, leady + mo->momy,
-		PT_ADDLINES, PTR_SlideTraverse);
-	P_PathTraverse(trailx, leady, trailx + mo->momx, leady + mo->momy,
-		PT_ADDLINES, PTR_SlideTraverse);
-	P_PathTraverse(leadx, traily, leadx + mo->momx, traily + mo->momy,
-		PT_ADDLINES, PTR_SlideTraverse);
+	if (bestslideline == NULL)
+		return;
 
 	if (bestslideline && mo->player && bestslideline->sidenum[1] != 0xffff)
 	{
@@ -3581,39 +3490,8 @@ retry:
 	}
 
 papercollision:
-	// move up to the wall
-	if (bestslidefrac == FRACUNIT+1)
-	{
-		// the move must have hit the middle, so stairstep
-stairstep:
-		if (!P_TryMove(mo, mo->x, mo->y + mo->momy, true)) //Allow things to drop off.
-			P_TryMove(mo, mo->x + mo->momx, mo->y, true);
-		return;
-	}
-
-	// fudge a bit to make sure it doesn't hit
-	bestslidefrac -= 0x800;
-	if (bestslidefrac > 0)
-	{
-		newx = FixedMul(mo->momx, bestslidefrac);
-		newy = FixedMul(mo->momy, bestslidefrac);
-
-		if (!P_TryMove(mo, mo->x + newx, mo->y + newy, true))
-			goto stairstep;
-	}
-
-	// Now continue along the wall.
-	// First calculate remainder.
-	bestslidefrac = FRACUNIT - (bestslidefrac+0x800);
-
-	if (bestslidefrac > FRACUNIT)
-		bestslidefrac = FRACUNIT;
-
-	if (bestslidefrac <= 0)
-		return;
-
-	tmxmove = FixedMul(mo->momx, bestslidefrac);
-	tmymove = FixedMul(mo->momy, bestslidefrac);
+	tmxmove = mo->momx;
+	tmymove = mo->momy;
 
 	P_HitSlideLine(bestslideline); // clip the moves
 
@@ -3621,31 +3499,47 @@ stairstep:
 	mo->momy = tmymove;
 
 	do {
-		if (tmxmove > mo->radius) {
+		if (tmxmove > mo->radius)
+		{
 			newx = mo->x + mo->radius;
 			tmxmove -= mo->radius;
-		} else if (tmxmove < -mo->radius) {
+		}
+		else if (tmxmove < -mo->radius)
+		{
 			newx = mo->x - mo->radius;
 			tmxmove += mo->radius;
-		} else {
+		}
+		else
+		{
 			newx = mo->x + tmxmove;
 			tmxmove = 0;
 		}
-		if (tmymove > mo->radius) {
+
+		if (tmymove > mo->radius)
+		{
 			newy = mo->y + mo->radius;
 			tmymove -= mo->radius;
-		} else if (tmymove < -mo->radius) {
+		}
+		else if (tmymove < -mo->radius)
+		{
 			newy = mo->y - mo->radius;
 			tmymove += mo->radius;
-		} else {
+		}
+		else
+		{
 			newy = mo->y + tmymove;
 			tmymove = 0;
 		}
-		if (!P_TryMove(mo, newx, newy, true)) {
-			if (success || 	P_MobjWasRemoved(mo))
+
+		if (!P_TryMove(mo, newx, newy, true, NULL))
+		{
+			if (success || P_MobjWasRemoved(mo))
 				return; // Good enough!!
-			else
-				goto retry;
+
+			// the move must have hit the middle, so stairstep
+			if (!P_TryMove(mo, mo->x, mo->y + mo->momy, true, NULL)) // Allow things to drop off.
+				P_TryMove(mo, mo->x + mo->momx, mo->y, true, NULL);
+			return;
 		}
 		success = true;
 	} while(tmxmove || tmymove);
@@ -3657,23 +3551,25 @@ stairstep:
 // Bounce move, for players.
 //
 
-void P_BouncePlayerMove(mobj_t *mo)
+static void P_BouncePlayerMove(mobj_t *mo, TryMoveResult_t *result)
 {
-	fixed_t leadx, leady;
-	fixed_t trailx, traily;
 	fixed_t mmomx = 0, mmomy = 0;
 	fixed_t oldmomx = mo->momx, oldmomy = mo->momy;
 
-	if (!mo->player)
+	if (P_MobjWasRemoved(mo) == true)
+		return;
+
+	if (mo->player == NULL)
+		return;
+
+	if (result == NULL)
 		return;
 
 	if (mo->player->spectator)
 	{
-		P_SlideMove(mo);
+		P_SlideMove(mo, result);
 		return;
 	}
-
-	slidemo = mo;
 
 	mmomx = mo->player->rmomx;
 	mmomy = mo->player->rmomy;
@@ -3682,43 +3578,10 @@ void P_BouncePlayerMove(mobj_t *mo)
 	mo->player->driftcharge = 0;
 	mo->player->pogospring = 0;
 
-	// trace along the three leading corners
-	if (mo->momx > 0)
-	{
-		leadx = mo->x + mo->radius;
-		trailx = mo->x - mo->radius;
-	}
-	else
-	{
-		leadx = mo->x - mo->radius;
-		trailx = mo->x + mo->radius;
-	}
+	slidemo = mo;
+	bestslideline = result->line;
 
-	if (mo->momy > 0)
-	{
-		leady = mo->y + mo->radius;
-		traily = mo->y - mo->radius;
-	}
-	else
-	{
-		leady = mo->y - mo->radius;
-		traily = mo->y + mo->radius;
-	}
-
-	bestslidefrac = FRACUNIT + 1;
-
-	P_PathTraverse(leadx, leady, leadx + mmomx, leady + mmomy, PT_ADDLINES, PTR_SlideTraverse);
-	P_PathTraverse(trailx, leady, trailx + mmomx, leady + mmomy, PT_ADDLINES, PTR_SlideTraverse);
-	P_PathTraverse(leadx, traily, leadx + mmomx, traily + mmomy, PT_ADDLINES, PTR_SlideTraverse);
-
-	// Now continue along the wall.
-	// First calculate remainder.
-	bestslidefrac = FRACUNIT - bestslidefrac;
-
-	if (bestslidefrac > FRACUNIT)
-		bestslidefrac = FRACUNIT;
-
-	if (bestslidefrac <= 0)
+	if (bestslideline == NULL)
 		return;
 
 	if (mo->eflags & MFE_JUSTBOUNCEDWALL) // Stronger push-out
@@ -3743,7 +3606,7 @@ void P_BouncePlayerMove(mobj_t *mo)
 		if (bestslideline && (bestslideline->flags & ML_NOTBOUNCY))
 		{
 			// SRB2Kart: Non-bouncy line!
-			P_SlideMove(mo);
+			P_SlideMove(mo, result);
 			return;
 		}
 
@@ -3760,8 +3623,9 @@ void P_BouncePlayerMove(mobj_t *mo)
 
 	if (!P_IsLineTripWire(bestslideline))
 	{
-		if (!P_TryMove(mo, mo->x + tmxmove, mo->y + tmymove, true)) {
-			P_TryMove(mo, mo->x - oldmomx, mo->y - oldmomy, true);
+		if (!P_TryMove(mo, mo->x + tmxmove, mo->y + tmymove, true, NULL))
+		{
+			P_TryMove(mo, mo->x - oldmomx, mo->y - oldmomy, true, NULL);
 		}
 	}
 }
@@ -3771,12 +3635,8 @@ void P_BouncePlayerMove(mobj_t *mo)
 //
 // The momx / momy move is bad, so try to bounce off a wall.
 //
-void P_BounceMove(mobj_t *mo)
+void P_BounceMove(mobj_t *mo, TryMoveResult_t *result)
 {
-	fixed_t leadx, leady;
-	fixed_t trailx, traily;
-	fixed_t newx, newy;
-	INT32 hitcount;
 	fixed_t mmomx = 0, mmomy = 0;
 
 	if (P_MobjWasRemoved(mo))
@@ -3784,89 +3644,23 @@ void P_BounceMove(mobj_t *mo)
 
 	if (mo->player)
 	{
-		P_BouncePlayerMove(mo);
+		P_BouncePlayerMove(mo, result);
 		return;
 	}
 
 	if (mo->eflags & MFE_JUSTBOUNCEDWALL)
 	{
-		P_SlideMove(mo);
+		P_SlideMove(mo, result);
 		return;
 	}
-
-	slidemo = mo;
-	hitcount = 0;
-
-retry:
-	if (++hitcount == 3)
-		goto bounceback; // don't loop forever
 
 	mmomx = mo->momx;
 	mmomy = mo->momy;
 
-	// trace along the three leading corners
-	if (mo->momx > 0)
-	{
-		leadx = mo->x + mo->radius;
-		trailx = mo->x - mo->radius;
-	}
-	else
-	{
-		leadx = mo->x - mo->radius;
-		trailx = mo->x + mo->radius;
-	}
+	slidemo = mo;
+	bestslideline = result->line;
 
-	if (mo->momy > 0)
-	{
-		leady = mo->y + mo->radius;
-		traily = mo->y - mo->radius;
-	}
-	else
-	{
-		leady = mo->y - mo->radius;
-		traily = mo->y + mo->radius;
-	}
-
-	bestslidefrac = FRACUNIT + 1;
-
-	P_PathTraverse(leadx, leady, leadx + mmomx, leady + mmomy, PT_ADDLINES, PTR_SlideTraverse);
-	P_PathTraverse(trailx, leady, trailx + mmomx, leady + mmomy, PT_ADDLINES, PTR_SlideTraverse);
-	P_PathTraverse(leadx, traily, leadx + mmomx, traily + mmomy, PT_ADDLINES, PTR_SlideTraverse);
-
-	// move up to the wall
-	if (bestslidefrac == FRACUNIT + 1)
-	{
-		// the move must have hit the middle, so bounce straight back
-bounceback:
-		if (P_TryMove(mo, mo->x - mmomx, mo->y - mmomy, true))
-		{
-			mo->momx *= -1;
-			mo->momy *= -1;
-			mo->momx = FixedMul(mo->momx, (FRACUNIT - (FRACUNIT>>2) - (FRACUNIT>>3)));
-			mo->momy = FixedMul(mo->momy, (FRACUNIT - (FRACUNIT>>2) - (FRACUNIT>>3)));
-		}
-		return;
-	}
-
-	// fudge a bit to make sure it doesn't hit
-	bestslidefrac -= 0x800;
-	if (bestslidefrac > 0)
-	{
-		newx = FixedMul(mmomx, bestslidefrac);
-		newy = FixedMul(mmomy, bestslidefrac);
-
-		if (!P_TryMove(mo, mo->x + newx, mo->y + newy, true))
-			goto bounceback;
-	}
-
-	// Now continue along the wall.
-	// First calculate remainder.
-	bestslidefrac = FRACUNIT - bestslidefrac;
-
-	if (bestslidefrac > FRACUNIT)
-		bestslidefrac = FRACUNIT;
-
-	if (bestslidefrac <= 0)
+	if (bestslideline == NULL)
 		return;
 
 	if (mo->type == MT_SHELL)
@@ -3891,24 +3685,21 @@ bounceback:
 		tmymove = FixedMul(mmomy, (FRACUNIT - (FRACUNIT>>2) - (FRACUNIT>>3)));
 	}
 
-	// Some walls aren't bouncy even if you are
-	if (bestslideline && (bestslideline->flags & ML_NOTBOUNCY))
-	{
-		// SRB2Kart: Non-bouncy line!
-		P_SlideMove(mo);
-		return;
-	}
-
 	P_HitBounceLine(bestslideline); // clip the moves
 
 	mo->momx = tmxmove;
 	mo->momy = tmymove;
 
-	if (!P_TryMove(mo, mo->x + tmxmove, mo->y + tmymove, true))
+	if (!P_TryMove(mo, mo->x + tmxmove, mo->y + tmymove, true, NULL))
 	{
 		if (P_MobjWasRemoved(mo))
 			return;
-		goto retry;
+
+		// the move must have hit the middle, so bounce straight back
+		mo->momx *= -1;
+		mo->momy *= -1;
+		mo->momx = FixedMul(mo->momx, (FRACUNIT - (FRACUNIT>>2) - (FRACUNIT>>3)));
+		mo->momy = FixedMul(mo->momy, (FRACUNIT - (FRACUNIT>>2) - (FRACUNIT>>3)));
 	}
 }
 

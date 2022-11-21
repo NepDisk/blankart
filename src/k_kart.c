@@ -5603,6 +5603,7 @@ void K_CalculateBananaSlope(mobj_t *mobj, fixed_t x, fixed_t y, fixed_t z, fixed
 // Move the hnext chain!
 static void K_MoveHeldObjects(player_t *player)
 {
+	TryMoveResult_t result = {0};
 	if (!player->mo)
 		return;
 
@@ -5687,8 +5688,8 @@ static void K_MoveHeldObjects(player_t *player)
 					cur->momy = FixedMul(FINESINE(cur->angle>>ANGLETOFINESHIFT), cur->extravalue1);
 					cur->flags &= ~MF_NOCLIPTHING;
 
-					if (!P_TryMove(cur, player->mo->x + cur->momx, player->mo->y + cur->momy, true))
-						P_SlideMove(cur);
+					if (!P_TryMove(cur, player->mo->x + cur->momx, player->mo->y + cur->momy, true, &result))
+						P_SlideMove(cur,&result);
 
 					if (P_IsObjectOnGround(player->mo))
 					{
