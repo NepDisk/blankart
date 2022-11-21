@@ -1955,7 +1955,7 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y, TryMoveResult_t *re
 	if (result != NULL)
 	{
 		result->line = tm.blockingline;
-		P_SetTarget(&result->mo, tm.hitthing);
+		result->mo = tm.hitthing;
 	}
 
 	return blockval;
