@@ -782,7 +782,7 @@ static int sector_set(lua_State *L)
 		return luaL_error(L, "sector_t has no field named " LUA_QS ".", lua_tostring(L, 2));
 	case sector_floorheight: { // floorheight
 		boolean flag;
-		mobj_t *ptmthing = tmthing;
+		tm_t ptm = tm;
 		fixed_t lastpos = sector->floorheight;
 		sector->floorheight = luaL_checkfixed(L, 3);
 		flag = P_CheckSector(sector, true);
@@ -791,12 +791,12 @@ static int sector_set(lua_State *L)
 			sector->floorheight = lastpos;
 			P_CheckSector(sector, true);
 		}
-		P_SetTarget(&tmthing, ptmthing);
+		tm = ptm;
 		break;
 	}
 	case sector_ceilingheight: { // ceilingheight
 		boolean flag;
-		mobj_t *ptmthing = tmthing;
+		tm_t ptm = tm;
 		fixed_t lastpos = sector->ceilingheight;
 		sector->ceilingheight = luaL_checkfixed(L, 3);
 		flag = P_CheckSector(sector, true);
@@ -805,7 +805,7 @@ static int sector_set(lua_State *L)
 			sector->ceilingheight = lastpos;
 			P_CheckSector(sector, true);
 		}
-		P_SetTarget(&tmthing, ptmthing);
+		tm = ptm;
 		break;
 	}
 	case sector_floorpic:
@@ -2198,7 +2198,7 @@ static int ffloor_set(lua_State *L)
 	case ffloor_topheight: { // topheight
 		boolean flag;
 		fixed_t lastpos = *ffloor->topheight;
-		mobj_t *ptmthing = tmthing;
+		tm_t ptm = tm;
 		sector_t *sector = &sectors[ffloor->secnum];
 		sector->ceilingheight = luaL_checkfixed(L, 3);
 		flag = P_CheckSector(sector, true);
@@ -2207,7 +2207,7 @@ static int ffloor_set(lua_State *L)
 			*ffloor->topheight = lastpos;
 			P_CheckSector(sector, true);
 		}
-		P_SetTarget(&tmthing, ptmthing);
+		tm = ptm;
 		break;
 	}
 	case ffloor_toppic:
@@ -2219,7 +2219,7 @@ static int ffloor_set(lua_State *L)
 	case ffloor_bottomheight: { // bottomheight
 		boolean flag;
 		fixed_t lastpos = *ffloor->bottomheight;
-		mobj_t *ptmthing = tmthing;
+		tm_t ptm = tm;
 		sector_t *sector = &sectors[ffloor->secnum];
 		sector->floorheight = luaL_checkfixed(L, 3);
 		flag = P_CheckSector(sector, true);
@@ -2228,7 +2228,7 @@ static int ffloor_set(lua_State *L)
 			*ffloor->bottomheight = lastpos;
 			P_CheckSector(sector, true);
 		}
-		P_SetTarget(&tmthing, ptmthing);
+		tm = ptm;
 		break;
 	}
 	case ffloor_bottompic:
