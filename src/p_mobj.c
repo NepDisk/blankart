@@ -9027,7 +9027,9 @@ void P_MobjThinker(mobj_t *mobj)
 
 	mobj->eflags &= ~(MFE_PUSHED|MFE_SPRUNG|MFE_JUSTBOUNCEDWALL|MFE_SLOPELAUNCHED);
 
-	tm.floorthing = tm.hitthing = NULL;
+	// sal: what the hell? is there any reason this isn't done, like, literally ANYWHERE else?
+	P_SetTarget(&tm.floorthing, NULL);
+	P_SetTarget(&tm.hitthing, NULL);
 
 	// Check for sector special actions
 	P_CheckMobjTouchingSectorActions(mobj);
