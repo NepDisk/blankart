@@ -7269,6 +7269,11 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 
 						if (angledelta < nextbestdelta && momdelta < nextbestmomdelta)
 						{
+							if (waypoint->prevwaypoints[i] == finishline) // NEVER allow finish line.
+							{
+								continue;
+							}
+
 							if (P_TraceWaypointTraversal(player->mo, waypoint->prevwaypoints[i]->mobj) == false)
 							{
 								// Save sight checks when all of the other checks pass, so we only do it if we have to
