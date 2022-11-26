@@ -4466,11 +4466,15 @@ static void K_drawCheckpointDebugger(void)
 
 static void K_DrawWaypointDebugger(void)
 {
-	if ((cv_kartdebugwaypoints.value != 0) && (stplyr == &players[displayplayers[0]]))
-	{
-		V_DrawString(8, 166, 0, va("'Best' Waypoint ID: %d", K_GetWaypointID(stplyr->nextwaypoint)));
-		V_DrawString(8, 176, 0, va("Finishline Distance: %d", stplyr->distancetofinish));
-	}
+	if (cv_kartdebugwaypoints.value == 0)
+		return;
+
+	if (stplyr != &players[displayplayers[0]]) // only for p1
+		return;
+
+	V_DrawString(8, 156, 0, va("Current Waypoint ID: %d", K_GetWaypointID(stplyr->currentwaypoint)));
+	V_DrawString(8, 166, 0, va("Next Waypoint ID: %d", K_GetWaypointID(stplyr->nextwaypoint)));
+	V_DrawString(8, 176, 0, va("Finishline Distance: %d", stplyr->distancetofinish));
 }
 
 void K_drawKartHUD(void)

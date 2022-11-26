@@ -7133,7 +7133,7 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 		boolean    updaterespawn = false;
 
 		// Our current waypoint.
-		bestwaypoint = waypoint;
+		player->currentwaypoint = bestwaypoint = waypoint;
 
 		// check the waypoint's location in relation to the player
 		// If it's generally in front, it's fine, otherwise, use the best next/previous waypoint.
