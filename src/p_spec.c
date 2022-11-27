@@ -4150,7 +4150,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 					{
 						if (thing->type == MT_WAYPOINT)
 						{
-							if (line->flags & ML_NOCLIMB)
+							if (line->args[1])
 							{
 								thing->extravalue1 = 1;
 							}
