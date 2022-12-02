@@ -530,7 +530,7 @@ P_GetMidtextureTopBottom
 			texbottom = back->floorheight + side->rowoffset;
 			textop = back->ceilingheight + side->rowoffset;
 		}
-		else if (!!(linedef->flags & ML_DONTPEGBOTTOM) ^ !!(linedef->flags & ML_MIDPEG))
+		else if (linedef->flags & ML_MIDPEG)
 		{
 			texbottom = back->floorheight + side->rowoffset;
 			textop = texbottom + texheight*(side->repeatcnt+1);
@@ -549,7 +549,7 @@ P_GetMidtextureTopBottom
 			texbottom += side->rowoffset;
 			textop += side->rowoffset;
 		}
-		else if (!!(linedef->flags & ML_DONTPEGBOTTOM) ^ !!(linedef->flags & ML_MIDPEG))
+		else if (linedef->flags & ML_MIDPEG)
 		{
 			texbottom += side->rowoffset;
 			textop = texbottom + texheight*(side->repeatcnt+1);
