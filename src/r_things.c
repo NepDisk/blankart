@@ -849,12 +849,13 @@ UINT8 *R_GetSpriteTranslation(vissprite_t *vis)
 //
 static void R_DrawVisSprite(vissprite_t *vis)
 {
-	column_t *column;
+	column_t *column, *bmcol = NULL;
 	void (*localcolfunc)(column_t *, column_t *, INT32);
 	INT32 texturecolumn;
 	INT32 pwidth;
 	fixed_t frac;
 	patch_t *patch = vis->patch;
+	patch_t *bmpatch = vis->bright;
 	fixed_t this_scale = vis->thingscale;
 	INT32 x1, x2;
 	INT64 overflow_test;
@@ -1009,7 +1010,10 @@ static void R_DrawVisSprite(vissprite_t *vis)
 
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[texturecolumn]));
 
-			localcolfunc (column, NULL, baseclip);
+			if (bmpatch)
+				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
+
+			localcolfunc (column, bmcol, baseclip);
 		}
 	}
 	else if (vis->cut & SC_SHEAR)
@@ -1026,12 +1030,16 @@ static void R_DrawVisSprite(vissprite_t *vis)
 			if (texturecolumn < 0 || texturecolumn >= pwidth)
 				I_Error("R_DrawSpriteRange: bad texturecolumn at %d from end", vis->x2 - dc_x);
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[texturecolumn]));
+			if (bmpatch)
+				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
 #else
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[frac>>FRACBITS]));
+			if (bmpatch)
+				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
 #endif
 
 			sprtopscreen = (centeryfrac - FixedMul(dc_texturemid, spryscale));
-			localcolfunc (column, NULL, baseclip);
+			localcolfunc (column, bmcol, baseclip);
 		}
 	}
 	else
@@ -1048,10 +1056,15 @@ static void R_DrawVisSprite(vissprite_t *vis)
 			if (texturecolumn < 0 || texturecolumn >= pwidth)
 				I_Error("R_DrawSpriteRange: bad texturecolumn at %d from end", vis->x2 - dc_x);
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[texturecolumn]));
+			if (bmpatch)
+				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
 #else
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[frac>>FRACBITS]));
+			if (bmpatch)
+				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
 #endif
-			localcolfunc (column, NULL, baseclip);
+
+			localcolfunc (column, bmcol, baseclip);
 		}
 	}
 
@@ -1209,6 +1222,18 @@ static void R_SplitSprite(vissprite_t *sprite)
 		}
 		sprite = newsprite;
 	}
+}
+
+static patch_t *R_CacheSpriteBrightMap(const spriteinfo_t *sprinfo, UINT8 frame)
+{
+	const char *name = sprinfo->bright[frame];
+
+	if (name == NULL)
+	{
+		name = sprinfo->bright[SPRINFO_DEFAULT_PIVOT];
+	}
+
+	return W_CachePatchNum(W_CheckNumForLongName(name), PU_SPRITE);
 }
 
 //
@@ -1387,6 +1412,7 @@ static void R_ProjectDropShadow(
 
 	shadow = R_NewVisSprite();
 	shadow->patch = patch;
+	shadow->bright = NULL;
 	shadow->heightsec = vis->heightsec;
 
 	shadow->mobjflags = 0;
@@ -2291,6 +2317,7 @@ static void R_ProjectSprite(mobj_t *thing)
 		vis->cut |= SC_SPLAT; // I like ya cut g
 
 	vis->patch = patch;
+	vis->bright = R_CacheSpriteBrightMap(sprinfo, frame);
 
 	if (thing->subsector->sector->numlights && !(shadowdraw || splat))
 		R_SplitSprite(vis);
@@ -2480,6 +2507,8 @@ static void R_ProjectPrecipitationSprite(precipmobj_t *thing)
 	//Fab: lumppat is the lump number of the patch to use, this is different
 	//     than lumpid for sprites-in-pwad : the graphics are patched
 	vis->patch = W_CachePatchNum(sprframe->lumppat[0], PU_SPRITE);
+	vis->bright = R_CacheSpriteBrightMap(&spriteinfo[thing->sprite],
+			thing->frame & FF_FRAMEMASK);
 
 	vis->transmap = R_GetBlendTable(blendmode, trans);
 
