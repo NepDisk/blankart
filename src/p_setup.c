@@ -8028,7 +8028,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	R_InitializeLevelInterpolators();
 
 	P_InitThinkers();
-	P_InitTIDHash();
 	R_InitMobjInterpolators();
 	P_InitCachedActions();
 

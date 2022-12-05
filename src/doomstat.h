@@ -90,12 +90,12 @@ typedef enum
 	PRECIPFX_WATERPARTICLES = 1<<2
 } precipeffect_t;
 
-typedef struct
+struct precipprops_t
 {
 	const char *name;
 	mobjtype_t type;
 	precipeffect_t effects;
-} precipprops_t;
+};
 
 extern precipprops_t precipprops[MAXPRECIP];
 extern preciptype_t precip_freeslot;
@@ -207,7 +207,7 @@ extern tic_t countdowntimer;
 extern boolean countdowntimeup;
 extern boolean exitfadestarted;
 
-typedef struct
+struct scene_t
 {
 	UINT8 numpics;
 	char picname[8][8];
@@ -227,13 +227,13 @@ typedef struct
 	UINT8 fadecolor; // Color number for fade, 0 means don't do the first fade
 	UINT8 fadeinid;  // ID of the first fade, to a color -- ignored if fadecolor is 0
 	UINT8 fadeoutid; // ID of the second fade, to the new screen
-} scene_t; // TODO: It would probably behoove us to implement subsong/track selection here, too, but I'm lazy -SH
+}; // TODO: It would probably behoove us to implement subsong/track selection here, too, but I'm lazy -SH
 
-typedef struct
+struct cutscene_t
 {
 	scene_t scene[128]; // 128 scenes per cutscene.
 	INT32 numscenes; // Number of scenes in this cutscene
-} cutscene_t;
+};
 
 extern cutscene_t *cutscenes[128];
 
@@ -248,7 +248,7 @@ extern cutscene_t *cutscenes[128];
 #define PROMPT_PIC_LOOP 1
 #define PROMPT_PIC_DESTROY 2
 #define MAX_PROMPT_PICS 8
-typedef struct
+struct textpage_t
 {
 	UINT8 numpics;
 	UINT8 picmode; // sequence mode after displaying last pic, 0 = persist, 1 = loop, 2 = destroy
@@ -281,13 +281,13 @@ typedef struct
 	char nexttag[33]; // next tag to jump to. If set, this overrides nextprompt and nextpage.
 	INT32 timetonext; // time in tics to jump to next page automatically. 0 = don't jump automatically
 	char *text;
-} textpage_t;
+};
 
-typedef struct
+struct textprompt_t
 {
 	textpage_t page[MAX_PAGES];
 	INT32 numpages; // Number of pages in this prompt
-} textprompt_t;
+};
 
 extern textprompt_t *textprompts[MAX_PROMPTS];
 
@@ -305,10 +305,10 @@ extern mapthing_t *rflagpoint, *bflagpoint; // Pointers to the flag spawn locati
 #define GF_BLUEFLAG 2
 
 // A single point in space.
-typedef struct
+struct mappoint_t
 {
 	fixed_t x, y, z;
-} mappoint_t;
+};
 
 extern struct quake
 {
@@ -328,26 +328,25 @@ typedef struct
 } nightsgrades_t;
 
 // Custom Lua values
-// (This is not ifdeffed so the map header structure can stay identical, just in case.)
-typedef struct
+struct customoption_t
 {
 	char option[32]; // 31 usable characters
 	char value[256]; // 255 usable characters. If this seriously isn't enough then wtf.
-} customoption_t;
+};
 
-typedef struct 
+struct mapheader_lighting_t
 {
 	UINT8 light_contrast;				///< Range of wall lighting. 0 is no lighting.
 	SINT8 sprite_backlight;				///< Subtract from wall lighting for sprites only.
 	boolean use_light_angle;			///< When false, wall lighting is evenly distributed. When true, wall lighting is directional.
 	angle_t light_angle;				///< Angle of directional wall lighting.
-} mapheader_lighting_t;
+};
 
 #define MAXMUSNAMES 3 // maximum definable music tracks per level
 
 /** Map header information.
   */
-typedef struct
+struct mapheader_t
 {
 	// The original eight, plus one.
 	char lvlttl[22];       ///< Level name without "Zone". (21 character limit instead of 32, 21 characters can display on screen max anyway)
@@ -435,7 +434,8 @@ typedef struct
 	// (This is not ifdeffed so the map header structure can stay identical, just in case.)
 	UINT8 numCustomOptions;     ///< Internal. For Lua custom value support.
 	customoption_t *customopts; ///< Custom options. Allocated dynamically for space reasons. Be careful.
-} mapheader_t;
+};
+
 
 // level flags
 #define LF_SCRIPTISFILE       (1<<0) ///< True if the script is a file, not a lump.
@@ -454,7 +454,7 @@ extern mapheader_t* mapheaderinfo[NUMMAPS];
 // Keep in mind that it may encourage people making overly long cups just because they "can", and would be a waste of memory.
 #define MAXLEVELLIST 5
 
-typedef struct cupheader_s
+struct cupheader_t
 {
 	UINT16 id;                     ///< Cup ID
 	char name[15];                 ///< Cup title (14 chars)
@@ -465,8 +465,8 @@ typedef struct cupheader_s
 	INT16 specialstage;            ///< Map number to use for special stage
 	UINT8 emeraldnum;              ///< ID of Emerald to use for special stage (1-7 for Chaos Emeralds, 8-14 for Super Emeralds, 0 for no emerald)
 	SINT8 unlockrequired;          ///< An unlockable is required to select this cup. -1 for no unlocking required.
-	struct cupheader_s *next;      ///< Next cup in linked list
-} cupheader_t;
+	cupheader_t *next;      ///< Next cup in linked list
+};
 
 extern cupheader_t *kartcupheaders; // Start of cup linked list
 extern UINT16 numkartcupheaders;
@@ -546,11 +546,11 @@ enum TypeOfLevel
 #define NUMBASETOLNAMES    (4)
 #define NUMTOLNAMES        (NUMBASETOLNAMES + NUMGAMETYPEFREESLOTS)
 
-typedef struct
+struct tolinfo_t
 {
 	const char *name;
 	UINT32 flag;
-} tolinfo_t;
+};
 extern tolinfo_t TYPEOFLEVEL[NUMTOLNAMES];
 extern UINT32 lastcustomtol;
 
@@ -596,13 +596,13 @@ extern INT32 nummaprings; //keep track of spawned rings/coins
 
 /** Time attack information, currently a very small structure.
   */
-typedef struct
+struct recorddata_t
 {
 	tic_t time; ///< Time in which the level was finished.
 	tic_t lap;  ///< Best lap time for this level.
 	//UINT32 score; ///< Score when the level was finished.
 	//UINT16 rings; ///< Rings when the level was finished.
-} recorddata_t;
+};
 
 /** Setup for one NiGHTS map.
   * These are dynamically allocated because I am insane
