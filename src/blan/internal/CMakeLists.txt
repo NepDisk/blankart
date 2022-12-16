@@ -1,3 +1,3 @@
 target_sources(SRB2SDL2 PRIVATE
-	loops.c
+	b_soc.c
 )

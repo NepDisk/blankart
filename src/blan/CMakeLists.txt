@@ -1,1 +1,1 @@
-target_sourcefile(c)
+add_subdirectory(internal)
