@@ -168,8 +168,10 @@ boolean S_SpeedMusic(float speed);
 typedef struct musicdef_s
 {
 	char name[7];
-	//char usage[256];
-	char source[256];
+	char *title;
+	char *author;
+	char *source;
+	char *composers;
 	int volume;
 	struct musicdef_s *next;
 } musicdef_t;
@@ -177,6 +179,7 @@ typedef struct musicdef_s
 extern struct cursongcredit
 {
 	musicdef_t *def;
+	char *text;
 	UINT16 anim;
 	UINT8 trans;
 	fixed_t x;
