@@ -126,6 +126,8 @@ add_executable(SRB2SDL2 MACOSX_BUNDLE WIN32
 	k_brightmap.c
 	k_director.c
 	k_follower.c
+	k_acs.c
+	k_acs-func.c
 )
 
 if("${CMAKE_COMPILER_IS_GNUCC}" AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows" AND NOT "${SRB2_CONFIG_SYSTEM_LIBRARIES}" AND NOT "${SRB2_CONFIG_SHARED_INTERNAL_LIBRARIES}")
@@ -190,6 +192,8 @@ target_sources(SRB2SDL2 PRIVATE apng.c)
 target_link_libraries(SRB2SDL2 PRIVATE DiscordRPC::DiscordRPC)
 target_compile_definitions(SRB2SDL2 PRIVATE -DHAVE_DISCORDRPC -DUSE_STUN)
 target_sources(SRB2SDL2 PRIVATE discord.c stun.c)
+
+target_link_libraries(SRB2SDL2 PRIVATE acsvm::acsvm)
 
 set(SRB2_HAVE_THREADS ON)
 target_compile_definitions(SRB2SDL2 PRIVATE -DHAVE_THREADS)

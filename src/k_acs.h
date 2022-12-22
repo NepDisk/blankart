@@ -21,13 +21,18 @@
 #include "p_polyobj.h"
 #include "d_player.h"
 
-#include "ACS/CAPI/BinaryIO.h"
-#include "ACS/CAPI/Environment.h"
-#include "ACS/CAPI/Module.h"
-#include "ACS/CAPI/PrintBuf.h"
-#include "ACS/CAPI/Scope.h"
-#include "ACS/CAPI/String.h"
-#include "ACS/CAPI/Thread.h"
+#include <CAPI/BinaryIO.h>
+#include <CAPI/Environment.h>
+#include <CAPI/Module.h>
+#include <CAPI/PrintBuf.h>
+#include <CAPI/Scope.h>
+#include <CAPI/String.h>
+#include <CAPI/Thread.h>
+
+// Temp
+ACSVM_String *ACSVM_MapScope_GetString(ACSVM_MapScope *map, ACSVM_Word index);
+ACSVM_ThreadInfo *ACSVM_AllocThreadInfo(void *activator);
+>>>>>>> 88ffab9f3c (Add ACSVM building to CMake)
 
 //
 // Special global script types.
