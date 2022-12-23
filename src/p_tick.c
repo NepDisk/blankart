@@ -37,7 +37,7 @@
 #include "k_boss.h"
 #include "k_waypoint.h"
 #include "k_director.h"
-#include "k_acs.h"
+#include "acs/interface.h"
 
 tic_t leveltime;
 

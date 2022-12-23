@@ -126,8 +126,6 @@ add_executable(SRB2SDL2 MACOSX_BUNDLE WIN32
 	k_brightmap.c
 	k_director.c
 	k_follower.c
-	k_acs.c
-	k_acs-func.c
 )
 
 if("${CMAKE_COMPILER_IS_GNUCC}" AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows" AND NOT "${SRB2_CONFIG_SYSTEM_LIBRARIES}" AND NOT "${SRB2_CONFIG_SHARED_INTERNAL_LIBRARIES}")
@@ -155,7 +153,9 @@ set(SRB2_CONFIG_HOSTTESTERS OFF CACHE BOOL
 
 add_subdirectory(blua)
 add_subdirectory(blan)
+add_subdirectory(sdl)
 add_subdirectory(objects)
+add_subdirectory(acs)
 
 # OS macros
 if (UNIX)
@@ -195,7 +195,8 @@ target_link_libraries(SRB2SDL2 PRIVATE DiscordRPC::DiscordRPC)
 target_compile_definitions(SRB2SDL2 PRIVATE -DHAVE_DISCORDRPC -DUSE_STUN)
 target_sources(SRB2SDL2 PRIVATE discord.c stun.c)
 
-target_link_libraries(SRB2SDL2 PRIVATE acsvm::acsvm)
+#target_link_libraries(SRB2SDL2 PRIVATE acsvm::acsvm)
+target_link_libraries(SRB2SDL2 PRIVATE acsvm)
 
 set(SRB2_HAVE_THREADS ON)
 target_compile_definitions(SRB2SDL2 PRIVATE -DHAVE_THREADS)
@@ -507,8 +508,6 @@ if(SRB2_CONFIG_PROFILEMODE AND "${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
 	target_compile_options(SRB2SDL2 PRIVATE -pg)
 	target_link_options(SRB2SDL2 PRIVATE -pg)
 endif()
-
-add_subdirectory(sdl)
 
 # strip debug symbols into separate file when using gcc.
 # to be consistent with Makefile, don't generate for OS X.

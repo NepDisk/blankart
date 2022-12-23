@@ -121,8 +121,10 @@ typedef long ssize_t;
 	#define strnicmp(x,y,n) strncasecmp(x,y,n)
 #endif
 
+#ifndef __cplusplus
 char *strcasestr(const char *in, const char *what);
 #define stristr strcasestr
+#endif
 
 #if defined (PC_DOS) || defined (_WIN32) || defined (__HAIKU__)
 #define HAVE_DOSSTR_FUNCS
@@ -136,8 +138,10 @@ int strlwr(char *n); // from dosstr.c
 #include <stddef.h> // for size_t
 
 #ifndef __APPLE__
+#ifndef __cplusplus
 size_t strlcat(char *dst, const char *src, size_t siz);
 size_t strlcpy(char *dst, const char *src, size_t siz);
+#endif
 #endif
 
 // Macro for use with char foo[FOOSIZE+1] type buffers.

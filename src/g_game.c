@@ -60,7 +60,7 @@
 #include "k_boss.h"
 #include "k_bot.h"
 #include "doomstat.h"
-#include "k_acs.h"
+#include "acs/interface.h"
 
 #ifdef HAVE_DISCORDRPC
 #include "discord.h"

@@ -96,8 +96,7 @@
 #include "k_terrain.h" // TRF_TRIPWIRE
 #include "k_brightmap.h"
 #include "k_director.h" // K_InitDirector
-#include "doomstat.h" // MAXMUSNAMES
-#include "k_acs.h"
+#include "acs/interface.h"
 
 // Replay names have time
 #if !defined (UNDER_CE)

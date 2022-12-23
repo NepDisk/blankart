@@ -574,7 +574,7 @@ void P_PushSpecialLine(line_t *line, mobj_t *thing);
 //
 // Special activation info
 //
-typedef struct 
+struct activator_t
 {
 	mobj_t *mo;
 	line_t *line;
@@ -582,10 +582,10 @@ typedef struct
 	sector_t *sector;
 	polyobj_t *po;
 	boolean fromLineSpecial; // Backwards compat for ACS
-} activator_t;
+};
 
-boolean P_CanActivateSpecial(INT16 special);
 boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, char **stringargs);
+boolean P_CanActivateSpecial(INT16 special);
 
 void P_SetupSignExit(player_t *player);
 
