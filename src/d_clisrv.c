@@ -1134,9 +1134,6 @@ static boolean SV_SendServerConfig(INT32 node)
 	return waspacketsent;
 }
 
-#ifndef NONET
-#define SAVEGAMESIZE (768*1024)
-
 static boolean SV_ResendingSavegameToAnyone(void)
 {
 	INT32 i;
@@ -1155,7 +1152,8 @@ static void SV_SendSaveGame(INT32 node, boolean resending)
 	UINT8 *buffertosend;
 
 	// first save it in a malloced buffer
-	save.buffer = (UINT8 *)malloc(SAVEGAMESIZE);
+	save.size = NETSAVEGAMESIZE;
+	save.buffer = (UINT8 *)malloc(save.size);
 	if (!save.buffer)
 	{
 		CONS_Alert(CONS_ERROR, M_GetText("No more free memory for savegame\n"));
@@ -1164,14 +1162,14 @@ static void SV_SendSaveGame(INT32 node, boolean resending)
 
 	// Leave room for the uncompressed length.
 	save.p = save.buffer + sizeof(UINT32);
+	save.end = save.buffer + save.size;
 
 	P_SaveNetGame(&save, resending);
 
 	length = save.p - save.buffer;
-	if (length > SAVEGAMESIZE)
+	if (length > NETSAVEGAMESIZE)
 	{
 		free(save.buffer);
-		save.p = NULL;
 		I_Error("Savegame buffer overrun");
 	}
 
@@ -1185,10 +1183,9 @@ static void SV_SendSaveGame(INT32 node, boolean resending)
 	}
 
 	// Attempt to compress it.
-	if((compressedlen = lzf_compress(save.buffer + sizeof(UINT32), length - sizeof(UINT32), compressedsave + sizeof(UINT32), length - sizeof(UINT32) - 1)))
+	if ((compressedlen = lzf_compress(save.buffer + sizeof(UINT32), length - sizeof(UINT32), compressedsave + sizeof(UINT32), length - sizeof(UINT32) - 1)))
 	{
 		// Compressing succeeded; send compressed data
-
 		free(save.buffer);
 
 		// State that we're compressed.
@@ -1199,7 +1196,6 @@ static void SV_SendSaveGame(INT32 node, boolean resending)
 	else
 	{
 		// Compression failed to make it smaller; send original
-
 		free(compressedsave);
 
 		// State that we're not compressed
@@ -1208,7 +1204,6 @@ static void SV_SendSaveGame(INT32 node, boolean resending)
 	}
 
 	AddRamToSendQueue(node, buffertosend, length, SF_RAM, 0);
-	save.p = NULL;
 
 	// Remember when we started sending the savegame so we can handle timeouts
 	sendingsavegame[node] = true;
@@ -1231,20 +1226,22 @@ static void SV_SavedGame(void)
 	sprintf(tmpsave, "%s" PATHSEP TMPSAVENAME, srb2home);
 
 	// first save it in a malloced buffer
-	save.p = save.buffer = (UINT8 *)malloc(SAVEGAMESIZE);
+	save.size = NETSAVEGAMESIZE;
+	save.p = save.buffer = (UINT8 *)malloc(save.size);
 	if (!save.p)
 	{
 		CONS_Alert(CONS_ERROR, M_GetText("No more free memory for savegame\n"));
 		return;
 	}
 
+	save.end = save.buffer + save.size;
+
 	P_SaveNetGame(&save, false);
 
 	length = save.p - save.buffer;
-	if (length > SAVEGAMESIZE)
+	if (length > NETSAVEGAMESIZE)
 	{
 		free(save.buffer);
-		save.p = NULL;
 		I_Error("Savegame buffer overrun");
 	}
 
@@ -1253,7 +1250,6 @@ static void SV_SavedGame(void)
 		CONS_Printf(M_GetText("Didn't save %s for netgame"), tmpsave);
 
 	free(save.buffer);
-	save.p = NULL;
 }
 
 #undef  TMPSAVENAME
@@ -1279,15 +1275,21 @@ static void CL_LoadReceivedSavegame(boolean reloading)
 	}
 
 	save.p = save.buffer;
+	save.size = length;
+	save.end = save.buffer + save.size;
 
 	// Decompress saved game if necessary.
 	decompressedlen = READUINT32(save.p);
 	if(decompressedlen > 0)
 	{
 		UINT8 *decompressedbuffer = Z_Malloc(decompressedlen, PU_STATIC, NULL);
+
 		lzf_decompress(save.p, length - sizeof(UINT32), decompressedbuffer, decompressedlen);
 		Z_Free(save.buffer);
+
 		save.p = save.buffer = decompressedbuffer;
+		save.size = decompressedlen;
+		save.end = save.buffer + decompressedlen;
 	}
 
 	paused = false;
@@ -1362,7 +1364,6 @@ static void CL_ReloadReceivedSavegame(void)
 
 	CONS_Printf(M_GetText("Game state reloaded\n"));
 }
-#endif
 
 #ifndef NONET
 static void SendAskInfo(INT32 node)
@@ -6009,6 +6010,8 @@ rewind_t *CL_SaveRewindPoint(size_t demopos)
 		return NULL;
 
 	save.buffer = save.p = rewind->savebuffer;
+	save.size = NETSAVEGAMESIZE;
+	save.end = save.buffer + save.size;
 
 	P_SaveNetGame(&save, false);
 
@@ -6036,6 +6039,8 @@ rewind_t *CL_RewindToTime(tic_t time)
 		return NULL;
 
 	save.buffer = save.p = rewindhead->savebuffer;
+	save.size = NETSAVEGAMESIZE;
+	save.end = save.buffer + save.size;
 
 	P_LoadNetGame(&save, false);
 

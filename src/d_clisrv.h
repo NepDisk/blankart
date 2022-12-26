@@ -22,6 +22,7 @@
 #include "mserv.h"
 
 #include "k_pwrlv.h" // PWRLV_NUMTYPES
+#include "p_saveg.h" // NETSAVEGAMESIZE
 
 /*
 The 'packet version' is used to distinguish packet formats.
@@ -529,7 +530,7 @@ extern boolean hu_stopped;
 //
 
 struct rewind_t {
-	UINT8 savebuffer[(768*1024)];
+	UINT8 savebuffer[NETSAVEGAMESIZE];
 	tic_t leveltime;
 	size_t demopos;
 

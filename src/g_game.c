@@ -72,9 +72,6 @@ UINT8 ultimatemode = false;
 
 JoyType_t Joystick[MAXSPLITSCREENPLAYERS];
 
-// 1024 bytes is plenty for a savegame
-#define SAVEGAMESIZE (1024)
-
 // SRB2kart
 char gamedatafilename[64] = "kartdata.dat";
 char timeattackfolder[64] = "kart";
@@ -4243,6 +4240,7 @@ void G_SaveGameData(void)
 		CONS_Alert(CONS_ERROR, M_GetText("No more free memory for saving game data\n"));
 		return;
 	}
+	save.end = save.buffer + save.size;
 
 #if 0
 	// SRB2Kart: Let players unlock stuff with addons.
@@ -4362,6 +4360,8 @@ void G_LoadGame(UINT32 slot, INT16 mapoverride)
 	}
 
 	save.p = save.buffer;
+	save.size = length;
+	save.end = save.buffer + save.size;
 
 	memset(vcheck, 0, sizeof (vcheck));
 	sprintf(vcheck, (marathonmode ? "back-up %d" : "version %d"), VERSION);
@@ -4376,7 +4376,6 @@ void G_LoadGame(UINT32 slot, INT16 mapoverride)
 		M_StartMessage(M_GetText("Save game from different version\n\nPress ESC\n"), NULL, MM_NOTHING);
 		Command_ExitGame_f();
 		Z_Free(save.buffer);
-		save.p = save.buffer = NULL;
 
 		// no cheating!
 		memset(&savedata, 0, sizeof(savedata));
@@ -4412,7 +4411,6 @@ void G_LoadGame(UINT32 slot, INT16 mapoverride)
 
 	// done
 	Z_Free(save.buffer);
-	save.p = save.buffer = NULL;
 
 //	gameaction = ga_nothing;
 //	G_SetGamestate(GS_LEVEL);
@@ -4451,12 +4449,14 @@ void G_SaveGame(UINT32 slot, INT16 mapnum)
 		char name[VERSIONSIZE];
 		size_t length;
 
-		save.p = save.buffer = (UINT8 *)malloc(SAVEGAMESIZE);
+		save.size = SAVEGAMESIZE;
+		save.p = save.buffer = (UINT8 *)malloc(save.size);
 		if (!save.p)
 		{
 			CONS_Alert(CONS_ERROR, M_GetText("No more free memory for saving game data\n"));
 			return;
 		}
+		save.end = save.buffer + save.size;
 
 		memset(name, 0, sizeof (name));
 		sprintf(name, (marathonmode ? "back-up %d" : "version %d"), VERSION);
@@ -4475,7 +4475,6 @@ void G_SaveGame(UINT32 slot, INT16 mapnum)
 		length = save.p - save.buffer;
 		saved = FIL_WriteFile(backup, save.buffer, length);
 		free(save.buffer);
-		save.p = save.buffer = NULL;
 	}
 
 	gameaction = ga_nothing;
@@ -4487,7 +4486,7 @@ void G_SaveGame(UINT32 slot, INT16 mapnum)
 }
 
 #define BADSAVE goto cleanup;
-#define CHECKPOS if (save.p >= end_p) BADSAVE
+#define CHECKPOS if (save.p >= save.end) BADSAVE
 void G_SaveGameOver(UINT32 slot, boolean modifylives)
 {
 	boolean saved = false;
@@ -4512,11 +4511,13 @@ void G_SaveGameOver(UINT32 slot, boolean modifylives)
 
 	{
 		char temp[sizeof(timeattackfolder)];
-		UINT8 *end_p = save.buffer + length;
 		UINT8 *lives_p;
 		SINT8 pllives;
 
 		save.p = save.buffer;
+		save.size = length;
+		save.end = save.buffer + save.size;
+
 		// Version check
 		memset(vcheck, 0, sizeof (vcheck));
 		sprintf(vcheck, (marathonmode ? "back-up %d" : "version %d"), VERSION);
