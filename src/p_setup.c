@@ -5918,6 +5918,16 @@ static void P_ConvertBinaryLinedefTypes(void)
 			lines[i].args[2] = TML_SECTOR;
 			lines[i].args[3] = !!(lines[i].flags & ML_MIDPEG);
 			break;
+		case 475: // ACS funcs
+		case 476:
+		case 477:
+		case 478:
+			if (sides[lines[i].sidenum[0]].text)
+			{
+				lines[i].stringargs[0] = Z_Malloc(strlen(sides[lines[i].sidenum[0]].text) + 1, PU_LEVEL, NULL);
+				M_Memcpy(lines[i].stringargs[0], sides[lines[i].sidenum[0]].text, strlen(sides[lines[i].sidenum[0]].text) + 1);
+			}
+			break;
 		case 480: //Polyobject - door slide
 		case 481: //Polyobject - door move
 			lines[i].args[0] = tag;
