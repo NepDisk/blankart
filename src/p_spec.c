@@ -38,7 +38,7 @@
 #include "v_video.h" // V_ALLOWLOWERCASE
 #include "m_misc.h"
 #include "m_cond.h" //unlock triggers
-#include "lua_hook.h" // LUA_HookLinedefExecute
+#include "lua_hook.h" // LUA_HookSpecialExecute
 #include "f_finale.h" // control text prompt
 #include "r_skins.h" // skins
 
@@ -3276,7 +3276,10 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 
 		case 443: // Calls a named Lua function
 			if (stringargs[0])
-				LUA_HookLinedefExecute(line, mo, callsec);
+
+			{
+				LUA_HookSpecialExecute(activator, args, stringargs);
+			}
 			else
 				CONS_Alert(CONS_WARNING, "Linedef %s is missing the hook name of the Lua function to call! (This should be given in stringarg0)\n", sizeu1(line-lines));
 			break;
