@@ -41,6 +41,7 @@
 #include "k_battle.h"
 #include "k_pwrlv.h"
 #include "k_terrain.h"
+#include "acs/interface.h"
 
 savedata_t savedata;
 
@@ -5095,6 +5096,8 @@ void P_SaveNetGame(savebuffer_t *save, boolean resending)
 		P_NetArchiveTubeWaypoints(save);
 		P_NetArchiveWaypoints(save);
 	}
+
+	ACS_Archive(save);
 	LUA_Archive(save, true);
 
 	P_ArchiveLuabanksAndConsistency(save);
@@ -5140,6 +5143,7 @@ boolean P_LoadNetGame(savebuffer_t *save, boolean reloading)
 		P_FinishMobjs();
 	}
 
+	ACS_UnArchive(save);
 	LUA_UnArchive(save, true);
 
 	// This is stupid and hacky, but maybe it'll work!
