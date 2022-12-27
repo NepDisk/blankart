@@ -2929,7 +2929,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 					mo->player->awayviewtics = args[1];
 				}
 
-				aim = udmf ? altview->spawnpoint->pitch : args[2];
+				aim = (backwardsCompat) ? args[2] : altview->spawnpoint->pitch;
 				aim = (aim + 360) % 360;
 				aim *= (ANGLE_90>>8);
 				aim /= 90;
@@ -4054,7 +4054,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 
 		case 466: // Set level failure state
 			{
-				if (args[1])
+				if (args[0])
 				{
 					stagefailed = false;
 					CONS_Debug(DBG_GAMELOGIC, "Stage can be completed successfully!\n");
@@ -4151,7 +4151,44 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			}
 		}
 		break;
-		
+
+		case 475:
+			if (!stringargs[0])
+			{
+				CONS_Debug(DBG_GAMELOGIC, "Linedef type 475: No script name given\n");
+				return false;
+			}
+
+			ACS_Execute(stringargs[0], args, NUMLINEARGS, activator);
+			break;
+		case 476:
+			if (!stringargs[0])
+			{
+				CONS_Debug(DBG_GAMELOGIC, "Linedef type 476: No script name given\n");
+				return false;
+			}
+
+			ACS_ExecuteAlways(stringargs[0], args, NUMLINEARGS, activator);
+			break;
+		case 477:
+			if (!stringargs[0])
+			{
+				CONS_Debug(DBG_GAMELOGIC, "Linedef type 477: No script name given\n");
+				return false;
+			}
+
+			ACS_Suspend(stringargs[0]);
+			break;
+		case 478:
+			if (!stringargs[0])
+			{
+				CONS_Debug(DBG_GAMELOGIC, "Linedef type 478: No script name given\n");
+				return false;
+			}
+
+			ACS_Terminate(stringargs[0]);
+			break;
+
 		case 480: // Polyobj_DoorSlide
 		case 481: // Polyobj_DoorSwing
 			PolyDoor(line);
