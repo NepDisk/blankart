@@ -1618,7 +1618,6 @@ void EV_DoFloor(mtag_t tag, line_t *line, floor_e floortype)
 		case crushFloorOnce:
 			EV_DoCrushFloorOnce(
 				tag,
-				line->frontsector->ceilingheight,
 				line->args[2] << (FRACBITS - 2)
 			);
 			break;
@@ -1846,7 +1845,7 @@ void EV_DoBounceFloor(mtag_t tag, boolean crush, fixed_t crushHeight, fixed_t cr
 	}
 }
 
-void EV_DoCrushFloorOnce(mtag_t tag, fixed_t height, fixed_t speed)
+void EV_DoCrushFloorOnce(mtag_t tag, fixed_t speed)
 {
 	INT32 secnum = -1;
 	sector_t *sec;
@@ -1866,7 +1865,7 @@ void EV_DoCrushFloorOnce(mtag_t tag, fixed_t height, fixed_t speed)
 		dofloor->type = crushFloorOnce;
 
 		dofloor->speed = dofloor->origspeed = speed;
-		dofloor->floordestheight = height;
+		dofloor->floordestheight = sec->ceilingheight - FRACUNIT;
 
 		if (dofloor->floordestheight >= sec->floorheight)
 			dofloor->direction = 1; // up

@@ -2187,11 +2187,48 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 	// note: only commands with linedef types >= 400 && < 500 can be used
 	switch (line->special)
 	{
-		case 400: // Set tagged sector's heights/flats
-			if (line->args[1] != TMP_CEILING)
-				EV_DoFloor(line->args[0], line, instantMoveFloorByFrontSector);
-			if (line->args[1] != TMP_FLOOR)
-				EV_DoCeiling(line->args[0], line, instantMoveCeilingByFrontSector);
+		case 400: // Copy tagged sector's heights/flats
+			{
+				sector_t *copySector = NULL;
+
+				if (line->args[0] == 0)
+				{
+					if (line == NULL)
+					{
+						CONS_Debug(DBG_GAMELOGIC, "Special type 400 Executor: No frontsector to copy planes from!\n");
+						return;
+					}
+					copySector = line->frontsector;
+				}
+				else
+				{
+					INT32 destsec = Tag_Iterate_Sectors(line->args[0], 0);
+					if (destsec == -1)
+					{
+						CONS_Debug(DBG_GAMELOGIC, "Special type 400 Executor: No sector to copy planes from (tag %d)!\n", line->args[0]);
+						return;
+					}
+					copySector = &sectors[destsec];
+				}
+
+				if (line->args[2] != TMP_CEILING)
+				{
+					EV_DoInstantMoveFloorByHeight(
+						line->args[1],
+						copySector->floorheight,
+						line->args[3] ? copySector->floorpic : -1
+					);
+				}
+
+				if (line->args[2] != TMP_FLOOR)
+				{
+					EV_DoInstantMoveCeilingByHeight(
+						line->args[1],
+						copySector->ceilingheight,
+						line->args[3] ? copySector->ceilingpic : -1
+					);
+				}
+			}
 			break;
 
 		case 402: // Copy light level to tagged sectors
@@ -2236,21 +2273,77 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 			}
 			break;
 
-		case 403: // Move planes by front sector
-			if (line->args[1] != TMP_CEILING)
-				EV_DoFloor(line->args[0], line, moveFloorByFrontSector);
-			if (line->args[1] != TMP_FLOOR)
-				EV_DoCeiling(line->args[0], line, moveCeilingByFrontSector);
+		case 403: // Copy-move tagged sector's heights/flats
+			{
+				sector_t *copySector = NULL;
+
+				if (line->args[0] == 0)
+				{
+					if (line == NULL)
+					{
+						CONS_Debug(DBG_GAMELOGIC, "Special type 403 Executor: No frontsector to copy planes from!\n");
+						return;
+					}
+					copySector = line->frontsector;
+				}
+				else
+				{
+					INT32 destsec = Tag_Iterate_Sectors(line->args[0], 0);
+					if (destsec == -1)
+					{
+						CONS_Debug(DBG_GAMELOGIC, "Special type 403 Executor: No sector to copy planes from (tag %d)!\n", line->args[0]);
+						return;
+					}
+					copySector = &sectors[destsec];
+				}
+
+				if (line->args[2] != TMP_CEILING)
+				{
+					EV_DoMoveFloorByHeight(
+						line->args[1],
+						copySector->floorheight,
+						line->args[3] << (FRACBITS - 3),
+						line->args[4],
+						line->args[5] ? copySector->floorpic : -1
+					);
+				}
+
+				if (line->args[2] != TMP_FLOOR)
+				{
+					EV_DoMoveCeilingByHeight(
+						line->args[1],
+						copySector->floorheight,
+						line->args[3] << (FRACBITS - 3),
+						line->args[4],
+						line->args[5] ? copySector->floorpic : -1
+					);
+				}
+			}
 			break;
 
-		case 405: // Move planes by distance
+		case 405: // Move planes by offsets
 			if (line->args[1] != TMP_CEILING)
-				EV_DoFloor(line->args[0], line, moveFloorByDistance);
+			{
+				EV_DoMoveFloorByDistance(
+					line->args[0],
+					line->args[2] << FRACBITS,
+					line->args[3] << (FRACBITS - 3),
+					line->args[4]
+				);
+			}
+
 			if (line->args[1] != TMP_FLOOR)
-				EV_DoCeiling(line->args[0], line, moveCeilingByDistance);
+			{
+				EV_DoMoveCeilingByDistance(
+					line->args[0],
+					line->args[2] << FRACBITS,
+					line->args[3] << (FRACBITS - 3),
+					line->args[4]
+				);
+			}
 			break;
 
-		case 408: // Set flats
+		case 408: // Copy flats
 		{
 			TAG_ITER_SECTORS(line->args[0], secnum)
 			{
@@ -2617,11 +2710,26 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 
 		case 429: // Crush planes once
 			if (line->args[1] == TMP_FLOOR)
-				EV_DoFloor(line->args[0], line, crushFloorOnce);
+			{
+				EV_DoCrushFloorOnce(
+					line->args[0],
+					line->args[2] << (FRACBITS - 2)
+				);
+			}
 			else if (line->args[1] == TMP_CEILING)
-				EV_DoCrush(line->args[0], line, crushCeilOnce);
+			{
+				EV_DoCrushCeilingOnce(
+					line->args[0],
+					line->args[2] << (FRACBITS - 2)
+				);
+			}
 			else
-				EV_DoCrush(line->args[0], line, crushBothOnce);
+			{
+				EV_DoCrushBothOnce(
+					line->args[0],
+					line->args[2] << (FRACBITS - 2)
+				);
+			}
 			break;
 
 		case 433: // Flip/flop gravity. Works on pushables, too!
