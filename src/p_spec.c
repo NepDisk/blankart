@@ -1058,20 +1058,20 @@ static void PolySetVisibilityTangibility(line_t *line)
 	if (po->isBad)
 		return;
 
-	if (line->args[1] == TMPV_VISIBLE)
+	if (line->args[1] == TMF_ADD)
 	{
 		po->flags &= ~POF_NOSPECIALS;
 		po->flags |= (po->spawnflags & POF_RENDERALL);
 	}
-	else if (line->args[1] == TMPV_INVISIBLE)
+	else if (line->args[1] == TMF_REMOVE)
 	{
 		po->flags |= POF_NOSPECIALS;
 		po->flags &= ~POF_RENDERALL;
 	}
 
-	if (line->args[2] == TMPT_TANGIBLE)
+	if (line->args[2] == TMF_ADD)
 		po->flags |= POF_SOLID;
-	else if (line->args[2] == TMPT_INTANGIBLE)
+	else if (line->args[2] == TMF_REMOVE)
 		po->flags &= ~POF_SOLID;
 }
 
@@ -2427,8 +2427,31 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 
 		case 410: // Change front sector's tag
 		{
-			mtag_t newtag = line->args[1];
-			secnum = (UINT32)(line->frontsector - sectors);
+			mtag_t newtag;
+			line_t *editLine = NULL;
+
+			if (line->args[0] == 0)
+			{
+				if (line == NULL)
+				{
+					CONS_Debug(DBG_GAMELOGIC, "Special type 410 Executor: No linedef to change frontsector tag of!\n");
+					return;
+				}
+				editLine = line;
+			}
+			else
+			{
+				INT32 destline = Tag_Iterate_Sectors(line->args[0], 0);
+				if (destline == -1)
+				{
+					CONS_Debug(DBG_GAMELOGIC, "Special type 408 Executor: No linedef to change frontsector tag of (tag %d)!\n", line->args[0]);
+					return;
+				}
+				editLine = &lines[destline];
+			}
+
+			newtag = line->args[1];
+			secnum = (UINT32)(editLine->frontsector - sectors);
 
 			switch (line->args[2])
 			{
@@ -2864,9 +2887,9 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 		case 438: // Set player scale
 			if (mo)
 			{
-				mo->destscale = FixedDiv(line->args[0]<<FRACBITS, 100<<FRACBITS);
-				if (mo->destscale < FRACUNIT/100)
-					mo->destscale = FRACUNIT/100;
+				mo->destscale = FixedMul(FixedDiv(line->args[0]<<FRACBITS, 100<<FRACBITS), mapobjectscale);
+				if (mo->destscale < mapobjectscale/100)
+					mo->destscale = mapobjectscale/100;
 			}
 			break;
 
