@@ -191,6 +191,7 @@ special
 	// 84 to 85: Implemented by ACSVM
 	void  { 85     }:BeginPrint(void),
 	void  { 85     }:BeginPrintBold(void),
+	void  { 85     }:BeginLog(void),
 	void  { 86     }:EndPrint(void),
 	void  { 87     }:PrintString(str), // 87 to 89: Implemented by ACSVM
 	void  { 88     }:PrintInt(int),
@@ -230,6 +231,8 @@ special
 
 	// 263: Implemented by ACSVM
 
+	void  {270     }:EndLog(void),
+
 	void  {273     }:PrintModuleCharArray(int, int), // 273 to 275: Implemented by ACSVM
 	void  {274     }:PrintWorldCharArray(int, int),
 	void  {275     }:PrintGlobalCharArray(int, int),
@@ -262,6 +265,14 @@ print __PrintBold
 
 print PrintRaw
 (
+	ACS_PrintPropertyBase()
+);
+
+print __Log
+(
+	(begin): BeginLog,
+	(end):   EndLog,
+
 	ACS_PrintPropertyBase()
 );
 
