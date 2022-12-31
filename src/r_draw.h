@@ -16,6 +16,10 @@
 
 #include "r_defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // -------------------------------
 // COMMON STUFF FOR 8bpp AND 16bpp
 // -------------------------------
@@ -251,6 +255,10 @@ void R_DrawWallColumn_16(void);
 void R_DrawTranslucentColumn_16(void);
 void R_DrawTranslatedColumn_16(void);
 void R_DrawSpan_16(void);
+#endif
+
+#ifdef __cplusplus
+} // extern "C"
 #endif
 
 // =========================================================================

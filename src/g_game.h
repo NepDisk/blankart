@@ -20,6 +20,10 @@
 #include "g_demo.h"
 #include "m_cheat.h" // objectplacing
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char gamedatafilename[64];
 extern char timeattackfolder[64];
 extern char customversionstring[32];
@@ -265,5 +269,9 @@ UINT32 G_TOLFlag(INT32 pgametype);
 
 INT16 G_RandMap(UINT32 tolflags, INT16 pprevmap, UINT8 ignorebuffer, UINT8 maphell, boolean callagainsoon, INT16 *extbuffer);
 void G_AddMapToBuffer(INT16 map);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

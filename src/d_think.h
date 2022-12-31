@@ -17,6 +17,10 @@
 #ifndef __D_THINK__
 #define __D_THINK__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef __GNUG__
 #pragma interface
 #endif
@@ -51,5 +55,9 @@ struct thinker_t
 	INT32 references;
 	boolean cachable;
 };
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

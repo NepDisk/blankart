@@ -17,6 +17,10 @@
 #include "doomstat.h"
 #include "r_skins.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define FOLLOWERCOLOR_MATCH UINT16_MAX
 #define FOLLOWERCOLOR_OPPOSITE (UINT16_MAX-1)
 #define FOLLOWERCOLOR_DEFAULT 0
@@ -171,5 +175,8 @@ UINT16 K_GetEffectiveFollowerColor(UINT16 followercolor, follower_t *follower, U
 
 void K_HandleFollower(player_t *player);
 
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // __K_FOLLOWER__

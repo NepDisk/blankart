@@ -32,6 +32,10 @@
 // the player struct stores a waypoint for racing
 #include "k_waypoint.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Extra abilities/settings for skins (combinable stuff)
 typedef enum
 {
@@ -575,5 +579,9 @@ struct player_t
 
 // Value for infinite lives
 #define INFLIVES 0x7F
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

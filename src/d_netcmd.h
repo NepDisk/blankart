@@ -17,6 +17,10 @@
 
 #include "command.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // console vars
 extern consvar_t cv_playername[MAXSPLITSCREENPLAYERS];
 extern consvar_t cv_playercolor[MAXSPLITSCREENPLAYERS];
@@ -267,5 +271,9 @@ void Automate_Clear(void);
 
 // used for the player setup menu
 UINT8 CanChangeSkin(INT32 playernum);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

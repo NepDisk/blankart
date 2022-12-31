@@ -19,6 +19,10 @@
 #include "p_mobj.h"
 #include "command.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 boolean cht_Responder(event_t *ev);
 void cht_Init(void);
 
@@ -61,6 +65,10 @@ void Command_CauseCfail_f(void);
 #endif
 #ifdef LUA_ALLOW_BYTECODE
 void Command_Dumplua_f(void);
+#endif
+
+#ifdef __cplusplus
+} // extern "C"
 #endif
 
 #endif

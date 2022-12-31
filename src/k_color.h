@@ -15,6 +15,10 @@
 #include "doomdef.h"
 #include "doomtype.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SKIN_RAMP_LENGTH 16
 #define DEFAULT_STARTTRANSCOLOR 96
 #define NUM_PALETTE_ENTRIES 256
@@ -81,5 +85,9 @@ void K_RainbowColormap(UINT8 *dest_colormap, UINT8 skincolor);
 		None
 --------------------------------------------------*/
 void K_GenerateKartColormap(UINT8 *dest_colormap, INT32 skinnum, UINT8 color);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

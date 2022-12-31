@@ -10,6 +10,10 @@
 #include "d_player.h" // Need for player_t
 #include "command.h" // Need for player_t
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define KART_FULLTURN 800
 
 /*
@@ -138,6 +142,10 @@ void K_PlayPowerGloatSound(mobj_t *source);
 
 void K_SetItemOut(player_t *player);
 void K_UnsetItemOut(player_t *player);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 // =========================================================================
 #endif  // __K_KART__

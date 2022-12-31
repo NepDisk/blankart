@@ -20,6 +20,10 @@
 
 #include "m_fixed.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define FINEANGLES 8192
 #define FINEMASK (FINEANGLES - 1)
 #define ANGLETOFINESHIFT 19 // 0x100000000 to 0x2000
@@ -135,5 +139,9 @@ void FM_Rotate(matrix_t *dest, angle_t angle, fixed_t x, fixed_t y, fixed_t z);
 // FSIN(ANGLE_90) = FRACUNIT
 #define FSIN(n) FINESINE(ANGLETOFINE(n))
 #define FCOS(n) FINECOSINE(ANGLETOFINE(n))
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

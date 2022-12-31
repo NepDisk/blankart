@@ -10,7 +10,14 @@
 /// \file  m_cond.h
 /// \brief Unlockable condition system for SRB2 version 2.1
 
+#ifndef __M_COND_H__
+#define __M_COND_H__
+
 #include "doomdef.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // --------
 // Typedefs
@@ -178,3 +185,9 @@ UINT8 M_GotEnoughEmblems(INT32 number);
 UINT8 M_GotLowEnoughTime(INT32 tictime);
 
 #define M_Achieved(a) ((a) >= MAXCONDITIONSETS || conditionSets[a].achieved)
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#endif // __M_COND_H__

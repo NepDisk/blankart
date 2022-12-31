@@ -19,6 +19,10 @@
 #ifndef __DOOMSTAT__
 #define __DOOMSTAT__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // We need globally shared data structures, for defining the global state variables.
 #include "doomdata.h"
 
@@ -818,5 +822,9 @@ extern INT32 serverplayer;
 extern INT32 adminplayers[MAXPLAYERS];
 
 /// \note put these in d_clisrv outright?
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif //__DOOMSTAT__
