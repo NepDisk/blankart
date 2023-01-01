@@ -330,6 +330,10 @@ typedef struct mobj_s
 	UINT32 flags2; // MF2_ flags
 	UINT16 eflags; // extra flags
 
+	mtag_t tid;
+	struct mobj_s *tid_next;
+	struct mobj_s **tid_prev; // killough 8/11/98: change to ptr-to-ptr
+
 	void *skin; // overrides 'sprite' when non-NULL (for player bodies to 'remember' the skin)
 	// Player and mobj sprites in multiplayer modes are modified
 	//  using an internal color lookup table for re-indexing.
