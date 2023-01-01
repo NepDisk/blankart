@@ -539,7 +539,6 @@ bool CallFunc_ThingCount(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::
 
 	mobjtype_t type = MT_NULL;
 	mtag_t tid = 0;
-	mtag_t sectorTag = 0;
 
 	size_t count = 0;
 
@@ -568,21 +567,8 @@ bool CallFunc_ThingCount(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::
 
 	tid = argV[1];
 
-	if (argC > 2)
+	if (tid != 0)
 	{
-		sectorTag = argV[2];
-	}
-
-	if (sectorTag != 0)
-	{
-		// Search through sectors.
-		filter_for_mobjtype = type;
-		count = ACS_SectorTagThingCounter(sectorTag, nullptr, tid, ACS_ThingTypeFilter);
-		filter_for_mobjtype = MT_NULL;
-	}
-	else if (tid != 0)
-	{
-		// Search through tag lists.
 		mobj_t *mobj = nullptr;
 
 		while ((mobj = P_FindMobjFromTID(tid, mobj, nullptr)) != nullptr)
