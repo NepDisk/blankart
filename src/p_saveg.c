@@ -873,41 +873,6 @@ static void P_NetUnArchiveColormaps(void)
 	net_colormaps = NULL;
 }
 
-static void P_NetArchiveTubeWaypoints(void)
-{
-	INT32 i, j;
-
-	for (i = 0; i < NUMTUBEWAYPOINTSEQUENCES; i++)
-	{
-		WRITEUINT16(save_p, numtubewaypoints[i]);
-		for (j = 0; j < numtubewaypoints[i]; j++)
-		{
-			if (tubewaypoints[i][j])
-				WRITEUINT32(save_p, tubewaypoints[i][j]->mobjnum);
-			else
-				WRITEUINT32(save_p, UINT32_MAX);
-		}
-	}
-}
-
-static void P_NetUnArchiveTubeWaypoints(void)
-{
-	INT32 i, j;
-	UINT32 mobjnum;
-
-	for (i = 0; i < NUMTUBEWAYPOINTSEQUENCES; i++)
-	{
-		numtubewaypoints[i] = READUINT16(save_p);
-		for (j = 0; j < numtubewaypoints[i]; j++)
-		{
-			mobjnum = READUINT32(save_p);
-			tubewaypoints[i][j] = NULL;
-			if (mobjnum != UINT32_MAX)
-				P_SetTarget(&tubewaypoints[i][j], P_FindNewPosition(mobjnum));
-		}
-	}
-}
-
 ///
 /// World Archiving
 ///
@@ -2893,6 +2858,39 @@ static void P_NetUnArchiveWaypoints(void)
 	}
 }
 
+static void P_NetArchiveTubeWaypoints()
+{
+	INT32 i, j;
+
+	for (i = 0; i < NUMTUBEWAYPOINTSEQUENCES; i++)
+	{
+		WRITEUINT16(save_p, numtubewaypoints[i]);
+		for (j = 0; j < numtubewaypoints[i]; j++)
+		{
+			WRITEUINT32(save_p, SaveMobjnum(tubewaypoints[i][j]));
+		}
+	}
+}
+
+static void P_NetUnArchiveTubeWaypoints()
+{
+	INT32 i, j;
+	UINT32 mobjnum;
+
+	for (i = 0; i < NUMTUBEWAYPOINTSEQUENCES; i++)
+	{
+		numtubewaypoints[i] = READUINT16(save_p);
+		for (j = 0; j < numtubewaypoints[i]; j++)
+		{
+			mobjnum = READUINT32(save_p);
+			tubewaypoints[i][j] = NULL;
+			if (mobjnum != 0)
+				P_SetTarget(&tubewaypoints[i][j], P_FindNewPosition(mobjnum));
+		}
+	}
+}
+
+
 // Now save the pointers, tracer and target, but at load time we must
 // relink to this; the savegame contains the old position in the pointer
 // field copyed in the info field temporarily, but finally we just search
@@ -2913,7 +2911,7 @@ mobj_t *P_FindNewPosition(UINT32 oldposition)
 
 		return mobj;
 	}
-	CONS_Debug(DBG_GAMELOGIC, "mobj not found\n");
+	CONS_Debug(DBG_GAMELOGIC, "mobj %d not found\n", oldposition);
 	return NULL;
 }
 
@@ -4888,7 +4886,7 @@ void P_SaveNetGame(boolean resending)
 {
 	thinker_t *th;
 	mobj_t *mobj;
-	INT32 i = 1; // don't start from 0, it'd be confused with a blank pointer otherwise
+	UINT32 i = 1; // don't start from 0, it'd be confused with a blank pointer otherwise
 
 	CV_SaveNetVars(&save_p);
 	P_NetArchiveMisc(resending);
