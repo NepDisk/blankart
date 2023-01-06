@@ -265,6 +265,7 @@ struct mapthing_t
 	taglist_t tags;
 	fixed_t scale;
 	fixed_t spritexscale, spriteyscale;
+	INT16 special;
 	INT32 args[NUMMAPTHINGARGS];
 	char *stringargs[NUMMAPTHINGSTRINGARGS];
 	UINT8 layer; // FOF layer to spawn on, see P_GetMobjSpawnHeight
