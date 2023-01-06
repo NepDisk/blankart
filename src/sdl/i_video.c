@@ -622,9 +622,12 @@ static INT32 SDLJoyAxis(const Sint16 axis, evtype_t which)
 
 static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 {
+#define FOCUSUNION (mousefocus | (kbfocus << 1))
 	static SDL_bool firsttimeonmouse = SDL_TRUE;
 	static SDL_bool mousefocus = SDL_TRUE;
 	static SDL_bool kbfocus = SDL_TRUE;
+
+	const unsigned int oldfocus = FOCUSUNION;
 
 	switch (evt.event)
 	{
@@ -647,6 +650,11 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 		case SDL_WINDOWEVENT_MOVED:
 			window_x = evt.data1;
 			window_y = evt.data2;
+	}
+
+	if (FOCUSUNION == oldfocus) // No state change
+	{
+		return;
 	}
 
 	if (mousefocus && kbfocus)
@@ -688,7 +696,7 @@ static void Impl_HandleWindowEvent(SDL_WindowEvent evt)
 			SDLdoUngrabMouse();
 		}
 	}
-
+#undef FOCUSUNION
 }
 
 static void Impl_HandleKeyboardEvent(SDL_KeyboardEvent evt, Uint32 type)
