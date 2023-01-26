@@ -5281,8 +5281,15 @@ static void HWR_ProjectSprite(mobj_t *thing)
 	if (spriterotangle != 0
 	&& !(splat && !(thing->renderflags & RF_NOSPLATROLLANGLE)))
 	{
-		rollangle = R_GetRollAngle(papersprite == vflip
-				? spriterotangle : InvAngle(spriterotangle));
+		if (papersprite)
+		{
+			// a positive rollangle should should pitch papersprites upwards relative to their facing angle
+			rollangle = R_GetRollAngle(InvAngle(thing->rollangle));
+		}
+		else
+		{
+			rollangle = R_GetRollAngle(thing->rollangle);
+		}
 		rotsprite = Patch_GetRotatedSprite(sprframe, (thing->frame & FF_FRAMEMASK), rot, flip, false, sprinfo, rollangle);
 
 		if (rotsprite != NULL)
@@ -5344,8 +5351,21 @@ static void HWR_ProjectSprite(mobj_t *thing)
 
 		if (caster && !P_MobjWasRemoved(caster))
 		{
-			fixed_t groundz = R_GetShadowZ(thing, NULL);
-			fixed_t floordiff = abs(((thing->eflags & MFE_VERTICALFLIP) ? caster->height : 0) + casterinterp.z - groundz);
+			interpmobjstate_t casterinterp = { 0 };
+			fixed_t groundz;
+			fixed_t floordiff;
+
+			if (R_UsingFrameInterpolation() && !paused)
+			{
+				R_InterpolateMobjState(caster, rendertimefrac, &casterinterp);
+			}
+			else
+			{
+				R_InterpolateMobjState(caster, FRACUNIT, &casterinterp);
+			}
+
+			groundz = R_GetShadowZ(thing, NULL);
+			floordiff = abs(((thing->eflags & MFE_VERTICALFLIP) ? caster->height : 0) + casterinterp.z - groundz);
 
 			shadowheight = FIXED_TO_FLOAT(floordiff);
 			shadowscale = FIXED_TO_FLOAT(FixedMul(FRACUNIT - floordiff/640, casterinterp.scale));
