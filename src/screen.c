@@ -681,7 +681,13 @@ void SCR_ClosedCaptions(void)
 		y = basey-(i*10);
 
 		if (closedcaptions[i].b)
-			y -= (closedcaptions[i].b--)*vid.dupy;
+		{
+			y -= closedcaptions[i].b * 4;
+			if (renderisnewtic)
+			{
+				closedcaptions[i].b--;
+			}
+		}
 
 		if (closedcaptions[i].t < CAPTIONFADETICS)
 			flags |= (((CAPTIONFADETICS-closedcaptions[i].t)/2)*V_10TRANS);
