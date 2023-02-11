@@ -35,6 +35,7 @@ extern char mapmusname[7];
 extern UINT16 mapmusflags;
 extern UINT32 mapmusposition;
 extern UINT32 mapmusresume;
+extern UINT8 mapmusrng;
 #define MUSIC_TRACKMASK   0x0FFF // ----************
 #define MUSIC_RELOADRESET 0x8000 // *---------------
 #define MUSIC_FORCERESET  0x4000 // -*--------------
@@ -342,6 +343,8 @@ typedef struct
 	angle_t light_angle;				///< Angle of directional wall lighting.
 } mapheader_lighting_t;
 
+#define MAXMUSNAMES 3 // maximum definable music tracks per level
+
 /** Map header information.
   */
 typedef struct
@@ -355,9 +358,6 @@ typedef struct
 	INT16 nextlevel;       ///< Map number of next level, or 1100-1102 to end.
 	INT16 marathonnext;    ///< See nextlevel, but for Marathon mode. Necessary to support hub worlds ala SUGOI.
 	char keywords[33];     ///< Keywords separated by space to search for. 32 characters.
-	char musname[7];       ///< Music track to play. "" for no music.
-	UINT16 mustrack;       ///< Subsong to play. Only really relevant for music modules and specific formats supported by GME. 0 to ignore.
-	UINT32 muspos;    ///< Music position to jump to.
 	char forcecharacter[17];  ///< (SKINNAMESIZE+1) Skin to switch to or "" to disable.
 	UINT8 weather;         ///< 0 = sunny day, 1 = storm, 2 = snow, 3 = rain, 4 = blank, 5 = thunder w/o rain, 6 = rain w/o lightning, 7 = heat wave.
 	char skytexture[9];    ///< Sky texture to use.
@@ -413,6 +413,11 @@ typedef struct
 	// Music stuff.
 	UINT32 musinterfadeout;  ///< Fade out level music on intermission screen in milliseconds
 	char musintername[7];    ///< Intermission screen music.
+	// Music information
+	char musname[MAXMUSNAMES][7];		///< Music tracks to play. First dimension is the track number, second is the music string. "" for no music.
+	UINT16 mustrack;					///< Subsong to play. Only really relevant for music modules and specific formats supported by GME. 0 to ignore.
+	UINT32 muspos;						///< Music position to jump to.
+	UINT8 musname_size;					///< Number of music tracks defined
 
 	char muspostbossname[7];    ///< Post-bossdeath music.
 	UINT16 muspostbosstrack;    ///< Post-bossdeath track.

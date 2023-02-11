@@ -16,6 +16,7 @@
 #include "command.h"
 #include "g_game.h"
 #include "m_argv.h"
+#include "m_random.h"
 #include "r_main.h" // R_PointToAngle2() used to calc stereo sep.
 #include "r_skins.h" // for skins
 #include "i_system.h"
@@ -2492,13 +2493,19 @@ boolean S_FadeOutStopMusic(UINT32 ms)
 // Kills playing sounds at start of level,
 //  determines music if any, changes music.
 //
-void S_StartEx(boolean reset)
+void S_InitLevelMusic(boolean fromnetsave)
 {
-	(void)reset;
 
 	if (mapmusflags & MUSIC_RELOADRESET)
 	{
-		strncpy(mapmusname, mapheaderinfo[gamemap-1]->musname, 7);
+		if (!fromnetsave)
+		{
+			if (mapheaderinfo[gamemap-1]->musname_size > 1)
+				mapmusrng = P_RandomKey(mapheaderinfo[gamemap-1]->musname_size);
+			else
+				mapmusrng = 0;
+		}
+		strncpy(mapmusname, mapheaderinfo[gamemap-1]->musname[mapmusrng], 7);
 		mapmusname[6] = 0;
 		mapmusflags = (mapheaderinfo[gamemap-1]->mustrack & MUSIC_TRACKMASK);
 		mapmusposition = mapheaderinfo[gamemap-1]->muspos;
@@ -2601,7 +2608,7 @@ static void Command_Tunes_f(void)
 	}
 	else if (!strcasecmp(tunearg, "-default"))
 	{
-		tunearg = mapheaderinfo[gamemap-1]->musname;
+		tunearg = mapheaderinfo[gamemap-1]->musname[0];
 		track = mapheaderinfo[gamemap-1]->mustrack;
 	}
 

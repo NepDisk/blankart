@@ -4702,6 +4702,7 @@ static void P_NetArchiveMisc(boolean resending)
 	WRITEUINT32(save_p, tokenlist);
 
 	WRITEUINT8(save_p, encoremode);
+	WRITEUINT8(save_p, mapmusrng);
 
 	WRITEUINT32(save_p, leveltime);
 	WRITEUINT32(save_p, ssspheres);
@@ -4863,6 +4864,8 @@ static inline boolean P_NetUnArchiveMisc(boolean reloading)
 	tokenlist = READUINT32(save_p);
 
 	encoremode = (boolean)READUINT8(save_p);
+	
+	mapmusrng = READUINT8(save_p);
 
 	if (!P_LoadLevel(true, reloading))
 	{
