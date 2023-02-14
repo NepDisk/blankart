@@ -983,7 +983,7 @@ void S_UpdateClosedCaptions(void)
 
 void S_SetSfxVolume(INT32 volume)
 {
-	CV_SetValue(&cv_soundvolume, volume);
+	//CV_SetValue(&cv_soundvolume, volume);
 	actualsfxvolume = cv_soundvolume.value * USER_VOLUME_SCALE;
 
 #ifdef HW3SOUND
@@ -2424,7 +2424,7 @@ void S_SetMusicVolume(INT32 digvolume)
 	if (digvolume < 0)
 		digvolume = cv_digmusicvolume.value;
 
-	CV_SetValue(&cv_digmusicvolume, digvolume);
+	//CV_SetValue(&cv_digmusicvolume, digvolume);
 	actualdigmusicvolume = cv_digmusicvolume.value * USER_VOLUME_SCALE;
 	I_SetMusicVolume(digvolume);
 }
