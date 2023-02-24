@@ -296,6 +296,7 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT8(save_p, players[i].tripwireState);
 		WRITEUINT8(save_p, players[i].tripwirePass);
 		WRITEUINT16(save_p, players[i].tripwireLeniency);
+		WRITEUINT8(save_p, players[i].tripwireReboundDelay);
 
 		WRITEUINT16(save_p, players[i].itemroulette);
 		WRITEUINT8(save_p, players[i].roulettetype);
@@ -564,6 +565,7 @@ static void P_NetUnArchivePlayers(void)
 		players[i].tripwireState = READUINT8(save_p);
 		players[i].tripwirePass = READUINT8(save_p);
 		players[i].tripwireLeniency = READUINT16(save_p);
+		players[i].tripwireReboundDelay = READUINT8(save_p);
 
 		players[i].itemroulette = READUINT16(save_p);
 		players[i].roulettetype = READUINT8(save_p);
