@@ -37,6 +37,7 @@
 #include "k_grandprix.h"
 #include "k_boss.h"
 #include "p_spec.h"
+#include "k_objects.h"
 
 // CTF player names
 #define CTFTEAMCODE(pl) pl->ctfteam ? (pl->ctfteam == 1 ? "\x85" : "\x84") : ""
@@ -582,6 +583,10 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				P_SetMobjState (special, special->info->deathstate);
 				S_StartSound (special, special->info->deathsound+(P_RandomKey(special->info->mass)));
 			}
+			return;
+
+		case MT_LOOPENDPOINT:
+			Obj_LoopEndpointCollide(special, toucher);
 			return;
 
 		default: // SOC or script pickup

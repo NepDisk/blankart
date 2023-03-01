@@ -83,6 +83,7 @@ endif()
 
 add_subdirectory(blua)
 add_subdirectory(blan)
+add_subdirectory(objects)
 
 if(${SRB2_CONFIG_HAVE_GME})
 	if(${SRB2_CONFIG_USE_INTERNAL_LIBRARIES})

@@ -53,6 +53,7 @@ p_sight.c
 p_spec.c
 p_telept.c
 p_tick.c
+p_loop.c
 p_user.c
 p_slopes.c
 tables.c

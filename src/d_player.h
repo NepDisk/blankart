@@ -278,6 +278,16 @@ typedef struct botvars_s
 
 } botvars_t;
 
+// player_t struct for loop state
+typedef struct {
+	fixed_t radius;
+	fixed_t revolution, min_revolution, max_revolution;
+	angle_t yaw;
+	vector3_t origin;
+	vector2_t shift;
+	boolean flip;
+} sonicloopvars_t;
+
 // ========================================================================
 //                          PLAYER STRUCTURE
 // ========================================================================
@@ -543,6 +553,8 @@ typedef struct player_s
 	
 	fixed_t outrun; // Milky Way road effect
 	UINT8 outruntime; // Used to bypass the speed cap for fall off
+	
+	sonicloopvars_t loop;
 
 #ifdef HWRENDER
 	fixed_t fovadd; // adjust FOV for hw rendering

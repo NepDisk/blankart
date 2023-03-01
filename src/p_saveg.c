@@ -356,6 +356,20 @@ static void P_NetArchivePlayers(void)
 		
 		WRITEFIXED(save_p, players[i].outrun);
 		WRITEUINT8(save_p, players[i].outruntime);
+		
+		// sonicloopsvars_t
+		WRITEFIXED(save_p, players[i].loop.radius);
+		WRITEFIXED(save_p, players[i].loop.revolution);
+		WRITEFIXED(save_p, players[i].loop.min_revolution);
+		WRITEFIXED(save_p, players[i].loop.max_revolution);
+		WRITEANGLE(save_p, players[i].loop.yaw);
+		WRITEFIXED(save_p, players[i].loop.origin.x);
+		WRITEFIXED(save_p, players[i].loop.origin.y);
+		WRITEFIXED(save_p, players[i].loop.origin.z);
+		WRITEFIXED(save_p, players[i].loop.shift.x);
+		WRITEFIXED(save_p, players[i].loop.shift.y);
+		WRITEUINT8(save_p, players[i].loop.flip);
+
 	}
 }
 
@@ -620,6 +634,19 @@ static void P_NetUnArchivePlayers(void)
 		
 		players[i].outrun = READFIXED(save_p);
 		players[i].outruntime = READUINT8(save_p);
+
+		// sonicloopsvars_t
+		players[i].loop.radius = READFIXED(save_p);
+		players[i].loop.revolution = READFIXED(save_p);
+		players[i].loop.min_revolution = READFIXED(save_p);
+		players[i].loop.max_revolution = READFIXED(save_p);
+		players[i].loop.yaw = READANGLE(save_p);
+		players[i].loop.origin.x = READFIXED(save_p);
+		players[i].loop.origin.y = READFIXED(save_p);
+		players[i].loop.origin.z = READFIXED(save_p);
+		players[i].loop.shift.x = READFIXED(save_p);
+		players[i].loop.shift.y = READFIXED(save_p);
+		players[i].loop.flip = READUINT8(save_p);
 
 		//players[i].viewheight = P_GetPlayerViewHeight(players[i]); // scale cannot be factored in at this point
 	}

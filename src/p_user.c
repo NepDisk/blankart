@@ -4373,6 +4373,11 @@ void P_PlayerThink(player_t *player)
 		P_DoZoomTube(player);
 		player->rmomx = player->rmomy = 0;
 	}
+	else if (player->loop.radius != 0)
+	{
+		P_PlayerOrbit(player);
+		player->rmomx = player->rmomy = 0;
+	}
 	else
 	{
 		// Move around.
@@ -4506,7 +4511,7 @@ void P_PlayerThink(player_t *player)
 		player->typing_timer = 0;
 		player->typing_duration = 0;
 	}
-
+	
 	K_KartPlayerThink(player, cmd); // SRB2kart
 
 	DoABarrelRoll(player);

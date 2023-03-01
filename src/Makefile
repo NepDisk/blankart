@@ -220,6 +220,7 @@ sources+=\
 	$(call List,Sourcefile)\
 	$(call List,blua/Sourcefile)\
 	$(call List,blan/Sourcefile)\
+	$(call List,objects/Sourcefile)\
 
 depends:=$(basename $(filter %.c %.s,$(sources)))
 objects:=$(basename $(filter %.c %.s %.nas,$(sources)))
