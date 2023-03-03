@@ -2301,7 +2301,7 @@ static mobj_t *P_GetObjectTypeInSectorNum(mobjtype_t type, size_t s)
 	return NULL;
 }
 
-static mobj_t* P_FindObjectTypeFromTag(mobjtype_t type, mtag_t tag)
+mobj_t* P_FindObjectTypeFromTag(mobjtype_t type, mtag_t tag)
 {
 	if (udmf)
 	{

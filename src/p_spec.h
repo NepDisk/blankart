@@ -576,6 +576,8 @@ INT32 P_FindMinSurroundingLight(sector_t *sector, INT32 max);
 void P_CrossSpecialLine(line_t *line, INT32 side, mobj_t *thing);
 void P_PushSpecialLine(line_t *line, mobj_t *thing);
 
+mobj_t* P_FindObjectTypeFromTag(mobjtype_t type, mtag_t tag);
+
 //
 // Special activation info
 //
