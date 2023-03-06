@@ -641,7 +641,7 @@ fixed_t K_DistanceOfLineFromPoint(fixed_t v1x, fixed_t v1y, fixed_t v2x, fixed_t
 static fixed_t K_GetBotWaypointRadius(waypoint_t *const waypoint)
 {
 	static const fixed_t maxReduce = FRACUNIT/32;
-	static const angle_t maxDelta = ANGLE_22h;
+	static const angle_t maxDelta = ANGLE_45;
 
 	fixed_t radius = waypoint->mobj->radius;
 	fixed_t reduce = FRACUNIT;
@@ -1187,7 +1187,7 @@ void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
 
 	player->botvars.rubberband = K_UpdateRubberband(player);
 
-	if (botController != NULL && (botController->args[1] & TMBOT_NOCONTROL)) // FIXME: UDMF-ify
+	if (botController != NULL && (botController->args[1] & TMBOT_NOCONTROL))
 	{
 		// Disable bot controls entirely.
 		return;
@@ -1195,7 +1195,7 @@ void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
 
 	destangle = player->mo->angle;
 
-	if (botController != NULL && (botController->args[1] & TMBOT_FORCEDIR)) // FIXME: UDMF-ify
+	if (botController != NULL && (botController->args[1] & TMBOT_FORCEDIR))
 	{
 		const fixed_t dist = DEFAULT_WAYPOINT_RADIUS * player->mo->scale;
 
