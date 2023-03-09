@@ -915,7 +915,7 @@ static void K_BotItemOrbinaut(player_t *player, ticcmd_t *cmd)
 	Return:-
 		None
 --------------------------------------------------*/
-static void K_BotItemDropTarget(player_t *player, ticcmd_t *cmd)
+static void K_BotItemDropTarget(player_t *player, INT16 turnamt, ticcmd_t *cmd)
 {
 	const fixed_t topspeed = K_GetKartSpeed(player, false, true);
 	fixed_t radius = FixedMul(1280 * mapobjectscale, K_GetKartGameSpeedScalar(gamespeed));
@@ -1385,7 +1385,7 @@ void K_BotItemUsage(player_t *player, ticcmd_t *cmd, INT16 turnamt)
 						}
 						else
 						{
-							K_BotItemDropTarget(player, cmd);
+							K_BotItemDropTarget(player, turnamt, cmd);
 						}
 						break;
 					case KITEM_LIGHTNINGSHIELD:

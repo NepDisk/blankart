@@ -8003,7 +8003,7 @@ static void K_AirFailsafe(player_t *player)
 }
 
 //
-// K_AdjustPlayerFriction
+
 //
 static void K_AdjustPlayerFriction(player_t *player)
 {
