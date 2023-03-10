@@ -61,6 +61,7 @@
 #include "k_bot.h"
 #include "doomstat.h"
 #include "acs/interface.h"
+#include "k_director.h"
 
 #ifdef HAVE_DISCORDRPC
 #include "discord.h"
@@ -2248,6 +2249,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	UINT8 griefstrikes;
 	UINT16 nocontrol;
 	INT32 kickstartaccel;
+	boolean enteredGame;
 
 	score = players[player].score;
 	lives = players[player].lives;
@@ -2393,6 +2395,8 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	grieftime = players[player].grieftime;
 	griefstrikes = players[player].griefstrikes;
 
+	enteredGame = players[player].enteredGame;
+
 	p = &players[player];
 	memset(p, 0, sizeof (*p));
 
@@ -2501,6 +2505,18 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 					break;
 				}
 			}
+		}
+	}
+
+	if (p->spectator == false)
+	{
+		if (betweenmaps || enteredGame == true)
+		{
+			ACS_RunPlayerEnterScript(p);
+		}
+		else
+		{
+			ACS_RunPlayerRespawnScript(p);
 		}
 	}
 
