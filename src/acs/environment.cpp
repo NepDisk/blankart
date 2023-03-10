@@ -161,6 +161,7 @@ Environment::Environment()
 
 	addFuncDataACS0( 500, addCallFunc(CallFunc_CameraWait));
 	addFuncDataACS0( 501, addCallFunc(CallFunc_PodiumPosition));
+	addFuncDataACS0( 503, addCallFunc(CallFunc_SetLineRenderStyle));
 }
 
 ACSVM::Thread *Environment::allocThread()
