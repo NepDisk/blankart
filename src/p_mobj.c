@@ -3734,6 +3734,7 @@ static void P_PlayerMobjThinker(mobj_t *mobj)
 		P_CheckPosition(mobj, mobj->x, mobj->y);
 		mobj->floorz = tmfloorz;
 		mobj->ceilingz = tmceilingz;
+		mobj->terrain = NULL;
 		goto animonly;
 	}
 
