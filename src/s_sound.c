@@ -1362,16 +1362,18 @@ int musicdef_volume;
 //
 static musicdef_t *S_FindMusicDef(const char *name)
 {
-	musicdef_t *def = musicdefstart;
+	UINT32 hash = quickncasehash (name, 6);
+	musicdef_t *def;
 
-	while (def)
+	for (def = musicdefstart; def; def = def->next)
 	{
-		if (!stricmp(def->name, name))
-		{
-			return def;
-		}
+		if (hash != def->hash)
+			continue;
 
-		def = def->next;
+		if (stricmp(def->name, name))
+			continue;
+
+		return def;
 	}
 
 	return NULL;
@@ -1433,6 +1435,7 @@ ReadMusicDefFields
 
 				STRBUFCPY(def->name, value);
 				strlwr(def->name);
+				def->hash = quickncasehash (def->name, 6);
 				def->volume = DEFAULT_MUSICDEF_VOLUME;
 
 				def->next = musicdefstart;
