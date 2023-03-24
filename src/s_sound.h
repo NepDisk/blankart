@@ -164,11 +164,14 @@ boolean S_MusicInfo(char *mname, UINT16 *mflags, boolean *looping);
 // Set Speed of Music
 boolean S_SpeedMusic(float speed);
 
+#define MAXDEFTRACKS 3
+
 // Music credits
 typedef struct musicdef_s
 {
-	char name[7];
-	UINT32 hash;
+	char name[MAXDEFTRACKS][7];
+	UINT32 hash[MAXDEFTRACKS];
+	UINT8 numtracks;
 	char *title;
 	char *author;
 	char *source;
@@ -192,6 +195,7 @@ extern int musicdef_volume;
 
 void S_LoadMusicDefs(UINT16 wadnum);
 void S_InitMusicDefs(void);
+musicdef_t *S_FindMusicDef(const char *name, UINT8 *i);
 void S_ShowMusicCredit(void);
 
 //
