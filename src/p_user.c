@@ -3140,7 +3140,12 @@ boolean P_MoveChaseCamera(player_t *player, camera_t *thiscam, boolean resetcall
 
 	if (demo.playback)
 	{
-		focusangle = mo->angle;
+		if (K_PlayerUsesBotMovement(player))
+			focusangle = mo->angle; // Bots don't even send cmd angle; they always turn where they want to!
+		else if (leveltime <= introtime)
+			focusangle = mo->angle; // Can't turn yet. P_UpdatePlayerAngle will ignore angle in stale ticcmds, chasecam should too.
+		else
+			focusangle = player->cmd.angle << TICCMD_REDUCE;
 		focusaiming = 0;
 	}
 	else
