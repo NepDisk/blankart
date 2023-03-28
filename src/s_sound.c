@@ -1362,8 +1362,13 @@ int musicdef_volume;
 //
 musicdef_t *S_FindMusicDef(const char *name, UINT8 *i)
 {
-	UINT32 hash = quickncasehash (name, 6);
+	UINT32 hash;
 	musicdef_t *def;
+
+	if (!name || !name[0])
+		return NULL;
+
+	hash = quickncasehash (name, 6);
 
 	for (def = musicdefstart; def; def = def->next)
 	{
