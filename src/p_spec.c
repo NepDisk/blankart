@@ -3456,8 +3456,8 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 						set = skyboxviewpnts[viewid];
 					else
 						set = NULL;
-					
-					P_SetTarget(&skybox.viewpoint, set);
+
+					skybox.viewpoint = set;
 				}
 
 				// set centerpoint mobj
@@ -3467,8 +3467,8 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 						set = skyboxcenterpnts[centerid];
 					else
 						set = NULL;
-					
-					P_SetTarget(&skybox.centerpoint, set);
+
+					skybox.centerpoint = set;
 				}
 
 				if (args[3]) // Applies to all players
