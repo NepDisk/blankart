@@ -222,6 +222,7 @@ typedef struct
 	fixed_t scale;
 	INT32 args[NUMMAPTHINGARGS];
 	char *stringargs[NUMMAPTHINGSTRINGARGS];
+	UINT8 layer; // FOF layer to spawn on, see P_GetMobjSpawnHeight
 	struct mobj_s *mobj;
 } mapthing_t;
 
