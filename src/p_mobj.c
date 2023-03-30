@@ -8827,8 +8827,16 @@ void P_MobjThinker(mobj_t *mobj)
 	P_SetTarget(&tm.floorthing, NULL);
 	P_SetTarget(&tm.hitthing, NULL);
 
-	// Check for sector special actions
-	P_CheckMobjTouchingSectorActions(mobj);
+	if (udmf)
+	{
+		// Check for continuous sector special actions
+		P_CheckMobjTouchingSectorActions(mobj, true);
+	}
+	else
+	{
+		// Sector flag MSF_TRIGGERLINE_MOBJ allows ANY mobj to trigger a linedef exec
+		P_CheckMobjTrigger(mobj, false);
+	}
 
 	// Sector flag MSF_TRIGGERLINE_MOBJ allows ANY mobj to trigger a linedef exec
 	P_CheckMobjTrigger(mobj, false);
