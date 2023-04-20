@@ -12563,6 +12563,9 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 		break;
 	}
 
+	if (P_MobjWasRemoved(mobj))
+		return false;
+
 	if (mobj->flags & MF_BOSS)
 	{
 		if (mthing->args[1]) // No egg trap for this boss
@@ -12587,7 +12590,12 @@ static mobj_t *P_SpawnMobjFromMapThing(mapthing_t *mthing, fixed_t x, fixed_t y,
 	mobj->spriteyscale = mthing->spriteyscale;
 
 	if (!P_SetupSpawnedMapThing(mthing, mobj, &doangle))
+	{
+		if (P_MobjWasRemoved(mobj))
+			return NULL;
+
 		return mobj;
+	}
 
 	if (doangle)
 	{
