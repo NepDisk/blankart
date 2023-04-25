@@ -8097,28 +8097,29 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		P_MapEnd(); // just in case MapLoad modifies tmthing
 	}
 
-	// No render mode or reloading gamestate, stop here.
-	if (rendermode == render_none || reloadinggamestate)
-		return true;
 
-	R_ResetViewInterpolation(0);
-	R_ResetViewInterpolation(0);
-	R_UpdateMobjInterpolators();
+	if (rendermode != render_none && reloadinggamestate == false)
+	{
 
-	// Title card!
-	G_StartTitleCard();
+		R_ResetViewInterpolation(0);
+		R_ResetViewInterpolation(0);
+		R_UpdateMobjInterpolators();
 
-	// Can the title card actually run, though?
-	if (!WipeStageTitle)
-		return true;
-	if (ranspecialwipe == 2)
-		return true;
+		// Title card!
+		G_StartTitleCard();
 
-	// If so...
-	// but not if joining because the fade may time us out
-	if (!fromnetsave)
-		G_PreLevelTitleCard();
+		// Can the title card actually run, though?
+		if (!WipeStageTitle)
+			return true;
+		if (ranspecialwipe == 2)
+			return true;
 
+		// If so...
+		// but not if joining because the fade may time us out
+		if (!fromnetsave)
+			G_PreLevelTitleCard();
+	}
+	
 	return true;
 }
 

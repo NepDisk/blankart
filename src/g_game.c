@@ -1849,6 +1849,8 @@ void G_ResetView(UINT8 viewnum, INT32 playernum, boolean onlyactive)
 	{
 		camerap = &camera[viewnum-1];
 		P_ResetCamera(&players[(*displayplayerp)], camerap);
+
+		R_ResetViewInterpolation(viewnum);
 	}
 
 	if (viewnum > splits)
