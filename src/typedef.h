@@ -194,6 +194,10 @@ TYPEDEF (t_floor_t);
 // k_waypoint.h
 TYPEDEF (waypoint_t);
 
+// k_mapuser.h
+TYPEDEF (mapUserProperty_t);
+TYPEDEF (mapUserProperties_t);
+
 // lua_hudlib_drawlist.h
 typedef struct huddrawlist_s *huddrawlist_h;
 
