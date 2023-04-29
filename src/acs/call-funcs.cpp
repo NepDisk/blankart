@@ -166,7 +166,7 @@ static bool ACS_GetSpriteFromString(const char *word, spritenum_t *type)
 
 	for (int i = 0; i < NUMSPRITES; i++)
 	{
-		if (fastcmp(word, sprnames[i]))
+		if (fastncmp(word, sprnames[i], 4))
 		{
 			*type = static_cast<spritenum_t>(i);
 			return true;
@@ -2526,7 +2526,9 @@ bool CallFunc_GetThingProperty(ACSVM::Thread *thread, const ACSVM::Word *argV, A
 #define PROP_SPR(x, y) \
 	case x: \
 	{ \
-		value = static_cast<INT32>( ~env->getString( sprnames[ mobj->y ] )->idx ); \
+		char crunched[5] = {0}; \
+		strncpy(crunched, sprnames[ mobj->y ], 4); \
+		value = static_cast<INT32>( ~env->getString( crunched )->idx ); \
 		break; \
 	}
 
