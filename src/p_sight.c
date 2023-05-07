@@ -336,15 +336,21 @@ static boolean P_CanTraceBlockingLine(seg_t *seg, divline_t *divl, register los_
 
 	(void)divl;
 
-	if (P_IsLineBlocking(line, los->compareThing) == true)
+	if (!(line->flags & ML_TWOSIDED))
+	{
+		// stop because it is not two sided anyway
+		return false;
+	}
+
+	if (P_IsLineBlocking(line, los->t1) == true)
 	{
 		// This line will always block us
 		return false;
 	}
 
-	if (los->compareThing->player != NULL)
+	if (los->t1->player != NULL)
 	{
-		if (P_IsLineTripWire(line) == true && K_TripwirePass(los->compareThing->player) == false)
+		if (P_IsLineTripWire(line) == true && K_TripwirePass(los->t1->player) == false)
 		{
 			// Can't go through trip wire.
 			return false;
@@ -356,7 +362,10 @@ static boolean P_CanTraceBlockingLine(seg_t *seg, divline_t *divl, register los_
 
 static boolean P_CanBotTraverse(seg_t *seg, divline_t *divl, register los_t *los)
 {
+	const boolean flip = ((los->t1->eflags & MFE_VERTICALFLIP) == MFE_VERTICALFLIP);
 	line_t *line = seg->linedef;
+	fixed_t frac = 0;
+	boolean canStepUp, canDropOff;
 	fixed_t maxstep = 0;
 	opening_t open = {0};
 
@@ -366,35 +375,50 @@ static boolean P_CanBotTraverse(seg_t *seg, divline_t *divl, register los_t *los
 		return false;
 	}
 
-	// set openrange, opentop, openbottom
-	tmx = los->compareThing->x;
-	tmy = los->compareThing->y;
-	P_LineOpening(line, los->compareThing, &open);
-	maxstep = P_GetThingStepUp(los->compareThing, tmx, tmy);
+	// calculate fractional intercept (how far along we are divided by how far we are from t2)
+	frac = P_InterceptVector(&los->strace, divl);
 
-	if ((open.range < los->compareThing->height) // doesn't fit
-		|| (open.ceiling - los->compareThing->z < los->compareThing->height) // mobj is too high
-		|| (open.floor - los->compareThing->z > maxstep)) // too big a step up
+	// calculate position at intercept
+	tmx = los->strace.x + FixedMul(los->strace.dx, frac);
+	tmy = los->strace.y + FixedMul(los->strace.dy, frac);
+
+	// set openrange, opentop, openbottom
+	open.fofType = (flip ? LO_FOF_CEILINGS : LO_FOF_FLOORS);
+	P_LineOpening(line, los->t1, &open);
+	maxstep = P_GetThingStepUp(los->t1, tmx, tmy);
+
+	if (open.range < los->t1->height)
 	{
-		// This line situationally blocks us
+		// Can't fit
 		return false;
 	}
 
-	if (los->compareThing->player != NULL && los->alreadyHates == false)
-	{
-		// Treat damage sectors like walls, if you're not already in a bad sector.
-		vertex_t pos;
-		P_ClosestPointOnLine(los->compareThing->x, los->compareThing->y, line, &pos);
+	// If we can step up...
+	canStepUp = ((flip ? (open.highceiling - open.ceiling) : (open.floor - open.lowfloor)) <= maxstep);
 
-		if (K_BotHatesThisSector(los->compareThing->player, line->frontsector, pos.x, pos.y)
-			|| K_BotHatesThisSector(los->compareThing->player, line->backsector, pos.x, pos.y))
+	// Or if we're on the higher side...
+	canDropOff = (flip ? (los->t1->z + los->t1->height <= open.ceiling) : (los->t1->z >= open.floor));
+
+	if (canStepUp || canDropOff)
+	{
+		if (los->t1->player != NULL && los->alreadyHates == false)
 		{
-			// This line does not block us, but we don't want to be in it.
-			return false;
+			// Treat damage / offroad sectors like walls.
+			UINT8 side = P_DivlineSide(los->t2x, los->t2y, divl) & 1;
+			sector_t *sector = (side == 1) ? seg->backsector : seg->frontsector;
+
+			if (K_BotHatesThisSector(los->t1->player, sector, tmx, tmy))
+			{
+				// This line does not block us, but we don't want to cross it regardless.
+				return false;
+			}
 		}
+
+		return true;
 	}
 
-	return true;
+	los->traversed++;
+	return (los->traversed < TRAVERSE_MAX);
 }
 
 static boolean P_CanWaypointTraverse(seg_t *seg, divline_t *divl, register los_t *los)
@@ -711,6 +735,15 @@ boolean P_TraceBlockingLines(mobj_t *t1, mobj_t *t2)
 		return true;
 
 	validcount++;
+
+	los.t1 = t1;
+	los.t2 = t2;
+	los.alreadyHates = false;
+
+	los.topslope =
+		(los.bottomslope = t2->z - (los.sightzstart =
+			t1->z + t1->height -
+			(t1->height>>2))) + t2->height;
 
 	los.strace.dx = (los.t2x = t2->x) - (los.strace.x = t1->x);
 	los.strace.dy = (los.t2y = t2->y) - (los.strace.y = t1->y);
