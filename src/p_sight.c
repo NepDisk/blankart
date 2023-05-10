@@ -423,7 +423,12 @@ static boolean P_CanBotTraverse(seg_t *seg, divline_t *divl, register los_t *los
 
 static boolean P_CanWaypointTraverse(seg_t *seg, divline_t *divl, register los_t *los)
 {
+	const boolean flip = ((los->t1->eflags & MFE_VERTICALFLIP) == MFE_VERTICALFLIP);
 	line_t *line = seg->linedef;
+	fixed_t frac = 0;
+	boolean canStepUp, canDropOff;
+	fixed_t maxstep = 0;
+	opening_t open = {0};
 
 	if (P_CanTraceBlockingLine(seg, divl, los) == false)
 	{
@@ -438,7 +443,29 @@ static boolean P_CanWaypointTraverse(seg_t *seg, divline_t *divl, register los_t
 		return false;
 	}
 
-	return true;
+	// calculate fractional intercept (how far along we are divided by how far we are from t2)
+	frac = P_InterceptVector2(&los->strace, divl);
+
+	// calculate position at intercept
+	tmx = los->strace.x + FixedMul(los->strace.dx, frac);
+	tmy = los->strace.y + FixedMul(los->strace.dy, frac);
+
+	P_LineOpening(line, los->t1, &open);
+	maxstep = P_GetThingStepUp(los->t1, tmx, tmy);
+
+	if (open.range < los->t1->height)
+	{
+		// Can't fit
+		return false;
+	}
+
+	// If we can step up...
+	canStepUp = ((flip ? (open.highceiling - open.ceiling) : (open.floor - open.lowfloor)) <= maxstep);
+
+	// Or if we're on the higher side...
+	canDropOff = (flip ? (los->t1->z + los->t1->height <= open.ceiling) : (los->t1->z >= open.floor));
+
+	return (canStepUp || canDropOff);
 }
 
 //
