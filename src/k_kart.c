@@ -7042,6 +7042,7 @@ static waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 		waypoint_t *waypoint     = K_GetBestWaypointForMobj(player->mo);
 		boolean    updaterespawn = false;
 
+		// Our current waypoint.
 		bestwaypoint = waypoint;
 
 		// check the waypoint's location in relation to the player
