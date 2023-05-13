@@ -723,24 +723,30 @@ void P_LineOpening(line_t *linedef, mobj_t *mobj, opening_t *open)
 
 				if (delta1 > delta2)
 				{
-					if (polybottom < open->ceiling)
+					if (open->fofType != LO_FOF_FLOORS)
 					{
-						open->ceiling = polybottom;
-					}
-					else if (polybottom < open->highceiling)
-					{
-						open->highceiling = polybottom;
+						if (polybottom < open->ceiling)
+						{
+							open->ceiling = polybottom;
+						}
+						else if (polybottom < open->highceiling)
+						{
+							open->highceiling = polybottom;
+						}
 					}
 				}
 				else
 				{
-					if (polytop > open->floor)
+					if (open->fofType != LO_FOF_CEILINGS)
 					{
-						open->floor = polytop;
-					}
-					else if (polytop > open->lowfloor)
-					{
-						open->lowfloor = polytop;
+						if (polytop > open->floor)
+						{
+							open->floor = polytop;
+						}
+						else if (polytop > open->lowfloor)
+						{
+							open->lowfloor = polytop;
+						}
 					}
 				}
 			}
@@ -779,14 +785,27 @@ void P_LineOpening(line_t *linedef, mobj_t *mobj, opening_t *open)
 						|| (rover->flags & FF_BLOCKOTHERS && !mobj->player)))
 						continue;
 
-					topheight = P_GetFOFTopZ(mobj, front, rover, tmx, tmy, linedef);
-					bottomheight = P_GetFOFBottomZ(mobj, front, rover, tmx, tmy, linedef);
+					if (open->fofType != LO_FOF_ANY)
+					{
+						topheight = P_VeryTopOfFOF(rover);
+						bottomheight = P_VeryBottomOfFOF(rover);
+					}
+					else
+					{
+						topheight = P_GetFOFTopZ(mobj, front, rover, tmx, tmy, linedef);
+						bottomheight = P_GetFOFBottomZ(mobj, front, rover, tmx, tmy, linedef);
+					}
 
 					delta1 = abs(mobj->z - (bottomheight + ((topheight - bottomheight)/2)));
 					delta2 = abs(thingtop - (bottomheight + ((topheight - bottomheight)/2)));
 
-					if (delta1 >= delta2 && (rover->flags & FF_INTANGIBLEFLATS) != FF_PLATFORM) // thing is below FOF
+					if (delta1 > delta2)
 					{
+						if (open->fofType == LO_FOF_FLOORS)
+						{
+							continue;
+						}
+
 						// thing is below FOF
 						if ((rover->flags & FF_INTANGIBLEFLATS) != FF_PLATFORM)
 						{
@@ -799,6 +818,11 @@ void P_LineOpening(line_t *linedef, mobj_t *mobj, opening_t *open)
 					}
 					else
 					{
+						if (open->fofType == LO_FOF_CEILINGS)
+						{
+							continue;
+						}
+
 						// thing is above FOF
 						if ((rover->flags & FF_INTANGIBLEFLATS) != FF_REVERSEPLATFORM)
 						{
@@ -824,14 +848,27 @@ void P_LineOpening(line_t *linedef, mobj_t *mobj, opening_t *open)
 						|| (rover->flags & FF_BLOCKOTHERS && !mobj->player)))
 						continue;
 
-					topheight = P_GetFOFTopZ(mobj, back, rover, tmx, tmy, linedef);
-					bottomheight = P_GetFOFBottomZ(mobj, back, rover, tmx, tmy, linedef);
+					if (open->fofType != LO_FOF_ANY)
+					{
+						topheight = P_VeryTopOfFOF(rover);
+						bottomheight = P_VeryBottomOfFOF(rover);
+					}
+					else
+					{
+						topheight = P_GetFOFTopZ(mobj, back, rover, tmx, tmy, linedef);
+						bottomheight = P_GetFOFBottomZ(mobj, back, rover, tmx, tmy, linedef);
+					}
 
 					delta1 = abs(mobj->z - (bottomheight + ((topheight - bottomheight)/2)));
 					delta2 = abs(thingtop - (bottomheight + ((topheight - bottomheight)/2)));
 
-					if (delta1 >= delta2 && (rover->flags & FF_INTANGIBLEFLATS) != FF_PLATFORM) // thing is below FOF
+					if (delta1 > delta2)
 					{
+						if (open->fofType == LO_FOF_FLOORS)
+						{
+							continue;
+						}
+
 						// thing is below FOF
 						if ((rover->flags & FF_INTANGIBLEFLATS) != FF_PLATFORM)
 						{
@@ -844,6 +881,11 @@ void P_LineOpening(line_t *linedef, mobj_t *mobj, opening_t *open)
 					}
 					else
 					{
+						if (open->fofType == LO_FOF_CEILINGS)
+						{
+							continue;
+						}
+
 						// thing is above FOF
 						if ((rover->flags & FF_INTANGIBLEFLATS) != FF_REVERSEPLATFORM)
 						{
