@@ -32,9 +32,15 @@ typedef struct {
 	divline_t strace;                // from t1 to t2
 	fixed_t topslope, bottomslope;   // slopes to top and bottom of target
 	fixed_t bbox[4];
+
+	mobj_t *t1, *t2;
+	boolean alreadyHates;				// For bot traversal, for if the bot is already in a sector it doesn't want to be
+	UINT8 traversed;
 } los_t;
 
 static INT32 sightcounts[2];
+
+#define TRAVERSE_MAX (2)
 
 //
 // P_DivlineSide
@@ -423,6 +429,11 @@ boolean P_CheckSight(mobj_t *t1, mobj_t *t2)
 
 	validcount++;
 
+	los.t1 = t1;
+	los.t2 = t2;
+	los.alreadyHates = false;
+	los.traversed = 0;
+
 	los.topslope =
 		(los.bottomslope = t2->z - (los.sightzstart =
 			t1->z + t1->height -
@@ -681,6 +692,7 @@ static boolean P_CrossBotTraversalSubsector(size_t num, register traceblocking_t
 {
 	seg_t *seg;
 	INT32 count;
+	opening_t open = {0};
 
 #ifdef RANGECHECK
 	if (num >= numsubsectors)
@@ -751,12 +763,12 @@ static boolean P_CrossBotTraversalSubsector(size_t num, register traceblocking_t
 		// set openrange, opentop, openbottom
 		tmx = tb->compareThing->x;
 		tmy = tb->compareThing->y;
-		P_LineOpening(line, tb->compareThing);
+		P_LineOpening(line, tb->compareThing, &open);
 		maxstep = P_GetThingStepUp(tb->compareThing);
 
-		if ((openrange < tb->compareThing->height) // doesn't fit
-			|| (opentop - tb->compareThing->z < tb->compareThing->height) // mobj is too high
-			|| (openbottom - tb->compareThing->z > maxstep)) // too big a step up
+		if ((open.range < tb->compareThing->height) // doesn't fit
+			|| (open.ceiling - tb->compareThing->z < tb->compareThing->height) // mobj is too high
+			|| (open.floor - tb->compareThing->z > maxstep)) // too big a step up
 		{
 			// This line situationally blocks us
 			return false;
