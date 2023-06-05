@@ -1763,6 +1763,7 @@ typedef enum
 	MD2_ITNEXT       = 1<<27,
 	MD2_LASTMOMZ     = 1<<28,
 	MD2_TERRAIN      = 1<<29,
+	MD2_LIGHTLEVEL   = (INT32)(1U<<30),
 } mobj_diff2_t;
 
 typedef enum
@@ -2001,6 +2002,8 @@ static void SaveMobjThinker(const thinker_t *th, const UINT8 type)
 		|| (slope->normal.z != FRACUNIT))
 			diff2 |= MD2_FLOORSPRITESLOPE;
 	}
+	if (mobj->lightlevel)
+		diff2 |= MD2_LIGHTLEVEL;
 	if (mobj->dispoffset)
 		diff2 |= MD2_DISPOFFSET;
 	if (mobj == boss3cap)
@@ -2210,6 +2213,11 @@ static void SaveMobjThinker(const thinker_t *th, const UINT8 type)
 		WRITEFIXED(save_p, slope->normal.x);
 		WRITEFIXED(save_p, slope->normal.y);
 		WRITEFIXED(save_p, slope->normal.z);
+		
+	}
+	if (diff2 & MD2_LIGHTLEVEL)
+	{
+		WRITEINT16(save_p, mobj->lightlevel);
 	}
 	if (diff2 & MD2_DISPOFFSET)
 	{
@@ -3366,6 +3374,10 @@ static thinker_t* LoadMobjThinker(actionf_p1 thinker)
 		slope->normal.z = READFIXED(save_p);
 
 		P_UpdateSlopeLightOffset(slope);
+	}
+	if (diff2 & MD2_LIGHTLEVEL)
+	{
+		mobj->lightlevel = READINT16(save_p);
 	}
 	if (diff2 & MD2_DISPOFFSET)
 	{
