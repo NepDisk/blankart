@@ -401,6 +401,7 @@ typedef struct
 	UINT8 light_contrast; ///< Range of wall lighting. 0 is no lighting.
 	boolean use_light_angle; ///< When false, wall lighting is evenly distributed. When true, wall lighting is directional.
 	angle_t light_angle; ///< Angle of directional wall lighting.
+	SINT8 sprite_backlight;				///< Subtract from wall lighting for sprites only.
 
 	// Music stuff.
 	UINT32 musinterfadeout;  ///< Fade out level music on intermission screen in milliseconds
@@ -685,6 +686,7 @@ extern fixed_t mapobjectscale;
 extern struct maplighting
 {
 	UINT8 contrast;
+	SINT8 backlight;
 	boolean directional;
 	angle_t angle;
 } maplighting;
