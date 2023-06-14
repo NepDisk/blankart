@@ -1908,6 +1908,7 @@ bool CallFunc_AddBot(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word
 	botStyle_e style = BOT_STYLE_NORMAL;
 
 	UINT8 newplayernum = 0;
+	bool success = false;
 
 	(void)argC;
 
@@ -1932,8 +1933,8 @@ bool CallFunc_AddBot(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word
 		style = BOT_STYLE_NORMAL;
 	}
 
-	K_AddBot(skin, difficulty, style, &newplayernum);
-	thread->dataStk.push(newplayernum);
+	success = K_AddBot(skin, difficulty, style, &newplayernum);
+	thread->dataStk.push(success ? newplayernum : -1);
 	return false;
 }
 
