@@ -35,7 +35,6 @@ extern "C" {
 #include "ACSVM/ACSVM/Thread.hpp"
 #include "ACSVM/Util/Floats.hpp"
 
-
 namespace srb2::acs {
 
 //

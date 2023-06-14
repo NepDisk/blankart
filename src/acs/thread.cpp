@@ -13,7 +13,6 @@
 
 #include "thread.hpp"
 
-extern "C" {
 #include "../doomtype.h"
 #include "../doomdef.h"
 #include "../doomstat.h"
@@ -24,7 +23,6 @@ extern "C" {
 #include "../r_defs.h"
 #include "../r_state.h"
 #include "../p_polyobj.h"
-}
 
 #include "ACSVM/ACSVM/Code.hpp"
 #include "ACSVM/ACSVM/CodeData.hpp"

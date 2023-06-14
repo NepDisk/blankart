@@ -3688,6 +3688,7 @@ static void Got_AddBot(UINT8 **p, INT32 playernum)
 	INT16 newplayernum;
 	UINT8 skinnum = 0;
 	UINT8 difficulty = DIFFICULTBOT;
+	botStyle_e style = BOT_STYLE_NORMAL;
 
 	if (playernum != serverplayer && !IsPlayerAdmin(playernum))
 	{
@@ -3700,9 +3701,10 @@ static void Got_AddBot(UINT8 **p, INT32 playernum)
 		return;
 	}
 
-	newplayernum = (UINT8)READUINT8(*p);
-	skinnum = (UINT8)READUINT8(*p);
-	difficulty = (UINT8)READUINT8(*p);
+	newplayernum = READUINT8(*p);
+	skinnum = READUINT8(*p);
+	difficulty = READUINT8(*p);
+	style = READUINT8(*p);
 
 	CONS_Debug(DBG_NETPLAY, "addbot: %d\n", newplayernum);
 
@@ -3719,6 +3721,8 @@ static void Got_AddBot(UINT8 **p, INT32 playernum)
 	players[newplayernum].splitscreenindex = 0;
 	players[newplayernum].bot = true;
 	players[newplayernum].botvars.difficulty = difficulty;
+	players[newplayernum].botvars.style = style;
+	players[newplayernum].lives = 9;
 
 	players[newplayernum].skincolor = skins[skinnum].prefcolor;
 	sprintf(player_names[newplayernum], "%s", skins[skinnum].realname);

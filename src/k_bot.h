@@ -129,13 +129,14 @@ fixed_t K_DistanceOfLineFromPoint(fixed_t v1x, fixed_t v1y, fixed_t v2x, fixed_t
 
 
 /*--------------------------------------------------
-	boolean K_AddBot(UINT8 skin, UINT8 difficulty, UINT8 *newplayernum);
+	boolean K_AddBot(UINT8 skin, UINT8 difficulty, botStyle_e style, UINT8 *newplayernum);
 
 		Returns the waypoint actually being used as the finish line.
 
 	Input Arguments:-
 		skin - Skin number that the bot will use.
 		difficulty - Difficulty level this bot will use.
+		style - Bot style to spawn this bot with, see botStyle_e.
 		newplayernum - Pointer to the last valid player slot number.
 			Is a pointer so that this function can be called multiple times to add more than one bot.
 
@@ -143,7 +144,7 @@ fixed_t K_DistanceOfLineFromPoint(fixed_t v1x, fixed_t v1y, fixed_t v2x, fixed_t
 		true if a bot packet can be sent, otherwise false.
 --------------------------------------------------*/
 
-boolean K_AddBot(UINT8 skin, UINT8 difficulty, UINT8 *newplayernum);
+boolean K_AddBot(UINT8 skin, UINT8 difficulty, botStyle_e style, UINT8 *p);
 
 
 /*--------------------------------------------------
