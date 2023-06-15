@@ -1945,6 +1945,8 @@ static void SaveMobjThinker(savebuffer_t *save, const thinker_t *th, const UINT8
 	if (mobj->type == MT_SPARK)
 		return;
 
+	diff2 = 0;
+
 	if (mobj->spawnpoint)
 	{
 		// spawnpoint is not modified but we must save it since it is an identifier
@@ -2015,9 +2017,6 @@ static void SaveMobjThinker(savebuffer_t *save, const thinker_t *th, const UINT8
 			}
 		}
 	}
-
-
-	diff2 = 0;
 
 	// not the default but the most probable
 	if (mobj->momx != 0 || mobj->momy != 0 || mobj->momz != 0 || mobj->pmomz != 0)
