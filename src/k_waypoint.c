@@ -2183,7 +2183,6 @@ static boolean K_RaiseWaypoint(
 
 	fixed_t sort;
 	fixed_t z;
-	fixed_t delta;
 
 	if (
 			!( riser->spawnpoint->options & MTF_OBJECTSPECIAL ) ||
@@ -2227,13 +2226,6 @@ static boolean K_RaiseWaypoint(
 						sort = z;
 				}
 			}
-
-			// Keep changes for -writetextmap
-			if (descending)
-				delta = sort - waypointmobj->z;
-			else
-				delta = waypointmobj->z - sort;
-			waypointmobj->spawnpoint->z += delta;
 
 			waypointmobj->z = sort;
 		}
