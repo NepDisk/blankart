@@ -2026,11 +2026,58 @@ typedef struct
 	mapthing_t *angleanchor;
 } sectorspecialthings_t;
 
-static void P_WriteTextmap(void)
+static FILE *P_OpenTextmap(const char *mode, const char *error)
 {
-	size_t i, j;
 	FILE *f;
 	char *filepath = va(pandf, srb2home, "TEXTMAP");
+
+	f = fopen(filepath, mode);
+	if (!f)
+	{
+		CONS_Alert(CONS_ERROR, M_GetText("%s %s\n"), error, filepath);
+	}
+
+	return f;
+}
+
+static void P_WriteTextmapThing(FILE *f, mapthing_t *wmapthings, size_t i, size_t k)
+{
+	size_t j;
+	fprintf(f, "thing // %s\n", sizeu1(k));
+	fprintf(f, "{\n");
+	//if (wmapthings[i].tid != 0)
+		//fprintf(f, "id = %d;\n", wmapthings[i].tid);
+	fprintf(f, "x = %d;\n", wmapthings[i].x);
+	fprintf(f, "y = %d;\n", wmapthings[i].y);
+	if (wmapthings[i].z != 0)
+		fprintf(f, "height = %d;\n", wmapthings[i].z);
+	fprintf(f, "angle = %d;\n", wmapthings[i].angle);
+	if (wmapthings[i].pitch != 0)
+		fprintf(f, "pitch = %d;\n", wmapthings[i].pitch);
+	if (wmapthings[i].roll != 0)
+		fprintf(f, "roll = %d;\n", wmapthings[i].roll);
+	if (wmapthings[i].type != 0)
+		fprintf(f, "type = %d;\n", wmapthings[i].type);
+	if (wmapthings[i].scale != FRACUNIT)
+		fprintf(f, "scale = %f;\n", FIXED_TO_FLOAT(wmapthings[i].scale));
+	if (wmapthings[i].options & MTF_OBJECTFLIP)
+		fprintf(f, "flip = true;\n");
+	//if (wmapthings[i].special != 0)
+		//fprintf(f, "special = %d;\n", wmapthings[i].special);
+	for (j = 0; j < NUMMAPTHINGARGS; j++)
+		if (wmapthings[i].args[j] != 0)
+			fprintf(f, "arg%s = %d;\n", sizeu1(j), wmapthings[i].args[j]);
+	for (j = 0; j < NUMMAPTHINGSTRINGARGS; j++)
+		if (mapthings[i].stringargs[j])
+			fprintf(f, "stringarg%s = \"%s\";\n", sizeu1(j), mapthings[i].stringargs[j]);
+	fprintf(f, "}\n");
+	fprintf(f, "\n");
+}
+
+static void P_WriteTextmap(void)
+{
+	size_t i, j, k;
+	FILE *f;
 	mtag_t firsttag;
 	mapthing_t *wmapthings;
 	vertex_t *wvertexes;
@@ -2041,10 +2088,9 @@ static void P_WriteTextmap(void)
 	sectorspecialthings_t *specialthings;
 	boolean *wusedvertexes;
 
-	f = fopen(filepath, "w");
+	f = P_OpenTextmap("w", "Couldn't save map file");
 	if (!f)
 	{
-		CONS_Alert(CONS_ERROR, M_GetText("Couldn't save map file %s\n"), filepath);
 		return;
 	}
 
@@ -2302,48 +2348,13 @@ static void P_WriteTextmap(void)
 		}
 	}
 
-	fprintf(f, "namespace = \"ringracers\";\n");
-	for (i = 0; i < nummapthings; i++)
+	fprintf(f, "namespace = \"srb2\";\n");
+	for (i = k = 0; i < nummapthings; i++)
 	{
-		fprintf(f, "thing // %s\n", sizeu1(i));
-		fprintf(f, "{\n");
-		firsttag = Tag_FGet(&wmapthings[i].tags);
-		if (firsttag != 0)
-			fprintf(f, "id = %d;\n", firsttag);
-		if (wmapthings[i].tags.count > 1)
-		{
-			fprintf(f, "moreids = \"");
-			for (j = 1; j < wmapthings[i].tags.count; j++)
-			{
-				if (j > 1)
-					fprintf(f, " ");
-				fprintf(f, "%d", wmapthings[i].tags.tags[j]);
-			}
-			fprintf(f, "\";\n");
-		}
-		fprintf(f, "x = %d;\n", wmapthings[i].x);
-		fprintf(f, "y = %d;\n", wmapthings[i].y);
-		if (wmapthings[i].z != 0)
-			fprintf(f, "height = %d;\n", wmapthings[i].z);
-		fprintf(f, "angle = %d;\n", wmapthings[i].angle);
-		if (wmapthings[i].pitch != 0)
-			fprintf(f, "pitch = %d;\n", wmapthings[i].pitch);
-		if (wmapthings[i].roll != 0)
-			fprintf(f, "roll = %d;\n", wmapthings[i].roll);
-		if (wmapthings[i].type != 0)
-			fprintf(f, "type = %d;\n", wmapthings[i].type);
-		if (wmapthings[i].scale != FRACUNIT)
-			fprintf(f, "scale = %f;\n", FIXED_TO_FLOAT(wmapthings[i].scale));
-		if (wmapthings[i].options & MTF_OBJECTFLIP)
-			fprintf(f, "flip = true;\n");
-		for (j = 0; j < NUMMAPTHINGARGS; j++)
-			if (wmapthings[i].args[j] != 0)
-				fprintf(f, "arg%s = %d;\n", sizeu1(j), wmapthings[i].args[j]);
-		for (j = 0; j < NUMMAPTHINGSTRINGARGS; j++)
-			if (mapthings[i].stringargs[j])
-				fprintf(f, "stringarg%s = \"%s\";\n", sizeu1(j), mapthings[i].stringargs[j]);
-		fprintf(f, "}\n");
-		fprintf(f, "\n");
+
+		P_WriteTextmapThing(f, wmapthings, i, k);
+
+		k++;
 	}
 
 	j = 0;
