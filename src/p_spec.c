@@ -3448,16 +3448,29 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 			{
 				INT16 rings = line->args[0];
 				INT32 delay = line->args[1];
-				if (mo && mo->player)
+				if (
+					mo && mo->player // Player
+					&& rings != 0 // Any effect
+					&& (delay <= 0 || !(leveltime % delay)) // Timing
+				)
 				{
-					// Don't award rings while SPB is targetting you
-					if (mo->player->pflags & PF_RINGLOCK)
-						return;
-
-					if (delay <= 0 || !(leveltime % delay))
+					if (rings > 0)
 					{
+						// Don't award rings while SPB is targetting you
+						if (mo->player->pflags & PF_RINGLOCK)
+							return;
+
 						// args[2]: don't cap rings to 20
 						K_AwardPlayerRings(mo->player, rings, line->args[2]);
+					}
+					else
+					{
+						// Don't push you below baseline
+						if (mo->player->rings < 0)
+							return;
+
+						mo->player->rings--;
+						S_StartSound(mo, sfx_antiri);
 					}
 				}
 			}
