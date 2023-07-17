@@ -12869,6 +12869,14 @@ static void P_SpawnItemRow(mapthing_t *mthing, mobjtype_t *itemtypes, UINT8 numi
 				y + FixedMul(length, FINESINE(fineangle)),
 				z, MT_LOOPCENTERPOINT);
 
+		if (P_MobjWasRemoved(loopanchor))
+		{
+			// No recovery.
+			return;
+		}
+
+		loopanchor->spawnpoint = NULL;
+		
 		Obj_LinkLoopAnchor(loopanchor, loopcenter, mthing->args[0]);
 	}
 
@@ -12889,15 +12897,15 @@ static void P_SpawnItemRow(mapthing_t *mthing, mobjtype_t *itemtypes, UINT8 numi
 		if (!inclusive)
 			mobj = P_SpawnMobjFromMapThing(&dummything, x, y, z, itemtype);
 
-		if (!mobj)
+		if (P_MobjWasRemoved(mobj))
 			continue;
 
-		if (isloopend)
-		{
-			Obj_InitLoopEndpoint(mobj, loopanchor);
-		}
-
 		mobj->spawnpoint = NULL;
+
+		if (!isloopend)
+			continue;
+
+		Obj_InitLoopEndpoint(mobj, loopanchor);
 	}
 }
 
@@ -12955,11 +12963,12 @@ static void P_SpawnItemCircle(mapthing_t *mthing, mobjtype_t *itemtypes, UINT8 n
 
 		mobj = P_SpawnMobjFromMapThing(&dummything, x + v[0], y + v[1], z + v[2], itemtype);
 
-		if (!mobj)
+		if (P_MobjWasRemoved(mobj))
 			continue;
 
-		mobj->z -= mobj->height/2;
 		mobj->spawnpoint = NULL;
+
+		mobj->z -= mobj->height/2;
 	}
 }
 
