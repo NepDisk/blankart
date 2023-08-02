@@ -280,7 +280,7 @@ void R_RenderMaskedSegRange(drawseg_t *ds, INT32 x1, INT32 x2)
 
 			if (rlight->extra_colormap && (rlight->extra_colormap->flags & CMF_FOG))
 				;
-			else if (P_ApplyLightOffset(lightnum))
+			else if (P_ApplyLightOffset(lightnum, frontsector->flags))
 				lightnum += curline->lightOffset;
 
 			rlight->lightnum = lightnum;
@@ -303,10 +303,11 @@ void R_RenderMaskedSegRange(drawseg_t *ds, INT32 x1, INT32 x2)
 			{
 				lightnum = LIGHTLEVELS - 1;
 
-				if (P_ApplyLightOffset(lightnum))
-				{
-					lightnum += curline->lightOffset;
-				}
+			if ((R_CheckColumnFunc(COLDRAWFUNC_FOG) == true)
+			|| (frontsector->extra_colormap && (frontsector->extra_colormap->flags & CMF_FOG)))
+				;
+			else if (P_ApplyLightOffset(lightnum, frontsector->flags))
+				lightnum += curline->lightOffset;
 			}
 		}
 
@@ -775,7 +776,7 @@ void R_RenderThickSideRange(drawseg_t *ds, INT32 x1, INT32 x2, ffloor_t *pfloor)
 
 			if (pfloor->fofflags & FOF_FOG || rlight->flags & FOF_FOG || (rlight->extra_colormap && (rlight->extra_colormap->flags & CMF_FOG)))
 				;
-			else if (P_ApplyLightOffset(rlight->lightnum))
+			else if (P_ApplyLightOffset(rlight->lightnum, pfloor->master->frontsector->flags))
 				rlight->lightnum += curline->lightOffset;
 
 			p++;
@@ -798,7 +799,7 @@ void R_RenderThickSideRange(drawseg_t *ds, INT32 x1, INT32 x2, ffloor_t *pfloor)
 
 		if (pfloor->fofflags & FOF_FOG || (frontsector->extra_colormap && (frontsector->extra_colormap->flags & CMF_FOG)))
 			;
-		else if (P_ApplyLightOffset(lightnum))
+		else if (P_ApplyLightOffset(lightnum, pfloor->master->frontsector->flags))
 			lightnum += curline->lightOffset;
 
 		if (lightnum < 0)
@@ -1400,7 +1401,7 @@ static void R_RenderSegLoop (void)
 
 				if (dc_lightlist[i].extra_colormap)
 					;
-				else if (P_ApplyLightOffset(lightnum))
+				else if (P_ApplyLightOffset(lightnum, curline->frontsector->flags))
 					lightnum += curline->lightOffset;
 
 				if (lightnum < 0)
@@ -2410,7 +2411,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 		// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 		lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT);
 
-		if (P_ApplyLightOffset(lightnum))
+		if (P_ApplyLightOffset(lightnum, frontsector->flags))
 			lightnum += curline->lightOffset;
 
 		if (lightnum < 0)

@@ -2154,7 +2154,7 @@ static void R_ProjectSprite(mobj_t *thing)
 		//light = R_GetPlaneLight(thing->subsector->sector, gzt, false);
 		lightnum = (*thing->subsector->sector->lightlist[light].lightlevel >> LIGHTSEGSHIFT);
 
-		if (maplighting.directional == true)
+		if (maplighting.directional == true && !(thing->subsector->sector->flags & MSF_FLATLIGHTING))
 		{
 			fixed_t extralight = R_GetSpriteDirectionalLighting(papersprite
 					? interp.angle + (ang >= ANGLE_180 ? -ANGLE_90 : ANGLE_90)

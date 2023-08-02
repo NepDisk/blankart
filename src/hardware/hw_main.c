@@ -296,7 +296,7 @@ static FUINT HWR_CalcWallLight(FUINT lightnum, seg_t *seg)
 {
 	INT16 finallight = lightnum;
 
-	if (seg != NULL && P_ApplyLightOffsetFine(lightnum))
+	if (seg != NULL && P_ApplyLightOffsetFine(lightnum, seg->frontsector->flags))
 	{
 		finallight += seg->hwLightOffset;
 
@@ -307,11 +307,11 @@ static FUINT HWR_CalcWallLight(FUINT lightnum, seg_t *seg)
 	return (FUINT)finallight;
 }
 
-static FUINT HWR_CalcSlopeLight(FUINT lightnum, pslope_t *slope)
+static FUINT HWR_CalcSlopeLight(FUINT lightnum, pslope_t *slope, sectorflags_t sectorflags)
 {
 	INT16 finallight = lightnum;
 
-	if (slope != NULL && P_ApplyLightOffsetFine(lightnum))
+	if (slope != NULL && P_ApplyLightOffsetFine(lightnum, sectorflags))
 	{
 		finallight += slope->hwLightOffset;
 
@@ -505,7 +505,7 @@ static void HWR_RenderPlane(subsector_t *subsector, extrasubsector_t *xsub, bool
 	for (i = 0, v3d = planeVerts; i < nrPlaneVerts; i++,v3d++,pv++)
 		SETUP3DVERT(v3d, pv->x, pv->y);
 
-	lightlevel = HWR_CalcSlopeLight(lightlevel, slope);
+	lightlevel = HWR_CalcSlopeLight(lightlevel, slope, (FOFsector ? FOFsector : gl_frontsector)->flags);
 	HWR_Lighting(&Surf, lightlevel, planecolormap);
 
 	if (PolyFlags & PF_EnvironmentTrans)
