@@ -7550,6 +7550,42 @@ static boolean P_LoadMapFromFile(void)
 	if (!udmf)
 		P_ConvertBinaryMap();
 
+	if (udmf_version < 1)
+	{
+		// version 0 is both binary & older versionless UDMF maps
+		for (i = 0; i < nummapthings; i++)
+		{
+			size_t j;
+
+			mapthings[i].scale = max(mapthings[i].spritexscale, mapthings[i].spriteyscale);
+
+			for (j = 0; j < min(NUM_MAPTHING_ARGS, NUM_SCRIPT_ARGS); j++)
+			{
+				mapthings[i].args[j] = mapthings[i].script_args[j];
+			}
+
+			for (j = 0; j < min(NUM_MAPTHING_STRINGARGS, NUM_SCRIPT_STRINGARGS); j++)
+			{
+				size_t len = 0;
+
+				if (mapthings[i].script_stringargs[j])
+				{
+					len = strlen(mapthings[i].script_stringargs[j]);
+				}
+
+				if (len == 0)
+				{
+					Z_Free(mapthings[i].stringargs[j]);
+					mapthings[i].stringargs[j] = NULL;
+					continue;
+				}
+
+				mapthings[i].stringargs[j] = Z_Realloc(mapthings[i].stringargs[j], len + 1, PU_LEVEL, NULL);
+				M_Memcpy(mapthings[i].stringargs[j], mapthings[i].script_stringargs[j], len + 1);
+			}
+		}
+	}
+
 	// Copy relevant map data for NetArchive purposes.
 	spawnsectors = Z_Calloc(numsectors * sizeof(*sectors), PU_LEVEL, NULL);
 	spawnlines = Z_Calloc(numlines * sizeof(*lines), PU_LEVEL, NULL);
