@@ -6429,6 +6429,13 @@ static void P_RunLevelLoadExecutors(void)
   */
 void P_InitSpecials(void)
 {
+	mapheader_lighting_t *lighting = &mapheaderinfo[gamemap-1]->lighting;
+
+	if (encoremode && mapheaderinfo[gamemap-1]->use_encore_lighting)
+	{
+		lighting = &mapheaderinfo[gamemap-1]->lighting_encore;
+	}
+
 	// Set the map object scale
 	mapobjectscale = mapheaderinfo[gamemap-1]->mobj_scale;
 
@@ -6436,10 +6443,10 @@ void P_InitSpecials(void)
 	gravity = mapheaderinfo[gamemap-1]->gravity;
 
 	// Set map lighting settings.
-	maplighting.contrast = mapheaderinfo[gamemap-1]->light_contrast;
-	maplighting.backlight = mapheaderinfo[gamemap-1]->sprite_backlight;
-	maplighting.directional = mapheaderinfo[gamemap-1]->use_light_angle;
-	maplighting.angle = mapheaderinfo[gamemap-1]->light_angle;
+	maplighting.contrast = lighting->light_contrast;
+	maplighting.backlight = lighting->sprite_backlight;
+	maplighting.directional = lighting->use_light_angle;
+	maplighting.angle = lighting->light_angle;
 
 	// Defaults in case levels don't have them set.
 	sstimer = mapheaderinfo[gamemap-1]->sstimer*TICRATE + 6;

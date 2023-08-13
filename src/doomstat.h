@@ -334,6 +334,14 @@ typedef struct
 	char value[256]; // 255 usable characters. If this seriously isn't enough then wtf.
 } customoption_t;
 
+typedef struct 
+{
+	UINT8 light_contrast;				///< Range of wall lighting. 0 is no lighting.
+	SINT8 sprite_backlight;				///< Subtract from wall lighting for sprites only.
+	boolean use_light_angle;			///< When false, wall lighting is evenly distributed. When true, wall lighting is directional.
+	angle_t light_angle;				///< Angle of directional wall lighting.
+} mapheader_lighting_t;
+
 /** Map header information.
   */
 typedef struct
@@ -398,10 +406,9 @@ typedef struct
 	fixed_t mobj_scale; ///< Replacement for TOL_ERZ3
 	fixed_t default_waypoint_radius; ///< 0 is a special value for DEFAULT_WAYPOINT_RADIUS, but scaled with mobjscale
 
-	UINT8 light_contrast; ///< Range of wall lighting. 0 is no lighting.
-	boolean use_light_angle; ///< When false, wall lighting is evenly distributed. When true, wall lighting is directional.
-	angle_t light_angle; ///< Angle of directional wall lighting.
-	SINT8 sprite_backlight;				///< Subtract from wall lighting for sprites only.
+	mapheader_lighting_t lighting;			///< Wall and sprite lighting
+	mapheader_lighting_t lighting_encore;	///< Alternative lighting for Encore mode
+	boolean use_encore_lighting;			///< Whether to use separate Encore lighting
 
 	// Music stuff.
 	UINT32 musinterfadeout;  ///< Fade out level music on intermission screen in milliseconds
