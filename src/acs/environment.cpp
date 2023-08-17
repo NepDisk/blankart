@@ -324,16 +324,13 @@ ACSVM::Word Environment::callSpecImpl
 	auto info = &static_cast<Thread *>(thread)->info;
 	ACSVM::MapScope *const map = thread->scopeMap;
 
-	int arg = 0;
-	int numStringArgs = 0;
+	INT32 args[NUM_SCRIPT_ARGS] = {0};
 
-	INT32 args[NUMLINEARGS] = {0};
-
-	char *stringargs[NUMLINESTRINGARGS] = {0};
+	char *stringargs[NUM_SCRIPT_STRINGARGS] = {0};
 	auto _ = srb2::finally(
 		[stringargs]()
 		{
-			for (int i = 0; i < NUMLINESTRINGARGS; i++)
+			for (int i = 0; i < NUM_SCRIPT_STRINGARGS; i++)
 			{
 				Z_Free(stringargs[i]);
 			}
@@ -352,42 +349,19 @@ ACSVM::Word Environment::callSpecImpl
 		}
 	);
 
-	// This needs manually set, as ACS just uses indicies in the
-	// compiled string table and not actual strings, and SRB2 has
-	// separate args and stringargs, so there's no way to
-	// properly distinguish them.
-	switch (spec)
+	int i = 0;
+
+	for (i = 0; i < std::min((signed)(argC), NUM_SCRIPT_STRINGARGS); i++)
 	{
-		case 442:
-			numStringArgs = 2;
-			break;
-		case 413:
-		case 414:
-		case 415:
-		case 423:
-		case 425:
-		case 443:
-		case 459:
-		case 461:
-		case 463:
-		case 469:
-			numStringArgs = 1;
-			break;
-		default:
-			break;
+		ACSVM::String *strPtr = map->getString(argV[i]);
+
+		stringargs[i] = static_cast<char *>(Z_Malloc(strPtr->len + 1, PU_STATIC, nullptr));
+		M_Memcpy(stringargs[i], strPtr->str, strPtr->len + 1);
 	}
 
-	for (; arg < numStringArgs; arg++)
+	for (i = 0; i < std::min((signed)(argC), NUM_SCRIPT_ARGS); i++)
 	{
-		ACSVM::String *strPtr = map->getString(argV[arg]);
-
-		stringargs[arg] = static_cast<char *>(Z_Malloc(strPtr->len + 1, PU_STATIC, nullptr));
-		M_Memcpy(stringargs[arg], strPtr->str, strPtr->len + 1);
-	}
-
-	for (; arg < std::min((signed)argC, NUMLINEARGS); arg++)
-	{
-		args[arg - numStringArgs] = argV[arg];
+		args[i] = argV[i];
 	}
 
 	P_SetTarget(&activator->mo, info->mo);

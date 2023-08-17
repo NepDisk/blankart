@@ -1116,8 +1116,8 @@ static void P_LoadSectors(UINT8 *data)
 		ss->friction = ORIG_FRICTION;
 
 		ss->action = 0;
-		memset(ss->args, 0, NUMLINEARGS*sizeof(*ss->args));
-		memset(ss->stringargs, 0x00, NUMLINESTRINGARGS*sizeof(*ss->stringargs));
+		memset(ss->args, 0, NUM_SCRIPT_ARGS*sizeof(*ss->args));
+		memset(ss->stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*ss->stringargs));
 		ss->activation = 0;
 
 		P_InitializeSector(ss);
@@ -1226,8 +1226,8 @@ static void P_LoadLinedefs(UINT8 *data)
 		ld->flags = (UINT32)(SHORT(mld->flags));
 		ld->special = SHORT(mld->special);
 		Tag_FSet(&ld->tags, SHORT(mld->tag));
-		memset(ld->args, 0, NUMLINEARGS*sizeof(*ld->args));
-		memset(ld->stringargs, 0x00, NUMLINESTRINGARGS*sizeof(*ld->stringargs));
+		memset(ld->args, 0, NUM_SCRIPT_ARGS*sizeof(*ld->args));
+		memset(ld->stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*ld->stringargs));
 		ld->alpha = FRACUNIT;
 		ld->executordelay = 0;
 		ld->activation = 0;
@@ -1504,9 +1504,11 @@ static void P_LoadThings(UINT8 *data)
 		mt->tid = 0;
 		mt->scale = FRACUNIT;
 		mt->spritexscale = mt->spriteyscale = FRACUNIT;
-		memset(mt->args, 0, NUMMAPTHINGARGS*sizeof(*mt->args));
-		memset(mt->stringargs, 0x00, NUMMAPTHINGSTRINGARGS*sizeof(*mt->stringargs));
-		//mt->special = 0;
+		memset(mt->args, 0, NUM_MAPTHING_ARGS*sizeof(*mt->args));
+		memset(mt->stringargs, 0x00, NUM_MAPTHING_STRINGARGS*sizeof(*mt->stringargs));
+		mt->special = 0;
+		memset(mt->script_args, 0, NUM_SCRIPT_ARGS*sizeof(*mt->script_args));
+		memset(mt->script_stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*mt->script_stringargs));
 		mt->pitch = mt->roll = 0;
 		mt->layer = 0;
 
@@ -1917,7 +1919,7 @@ static void ParseTextmapSectorParameter(UINT32 i, const char *param, const char 
 	else if (fastncmp(param, "stringarg", 9) && strlen(param) > 9)
 	{
 		size_t argnum = atol(param + 9);
-		if (argnum >= NUMSECTORSTRINGARGS)
+		if (argnum >= NUM_SCRIPT_STRINGARGS)
 			return;
 		sectors[i].stringargs[argnum] = Z_Malloc(strlen(val) + 1, PU_LEVEL, NULL);
 		M_Memcpy(sectors[i].stringargs[argnum], val, strlen(val) + 1);
@@ -1925,7 +1927,7 @@ static void ParseTextmapSectorParameter(UINT32 i, const char *param, const char 
 	else if (fastncmp(param, "arg", 3) && strlen(param) > 3)
 	{
 		size_t argnum = atol(param + 3);
-		if (argnum >= NUMSECTORARGS)
+		if (argnum >= NUM_SCRIPT_ARGS)
 			return;
 		sectors[i].args[argnum] = atol(val);
 	}
@@ -1998,7 +2000,7 @@ static void ParseTextmapLinedefParameter(UINT32 i, const char *param, const char
 	else if (fastncmp(param, "stringarg", 9) && strlen(param) > 9)
 	{
 		size_t argnum = atol(param + 9);
-		if (argnum >= NUMLINESTRINGARGS)
+		if (argnum >= NUM_SCRIPT_STRINGARGS)
 			return;
 		lines[i].stringargs[argnum] = Z_Malloc(strlen(val) + 1, PU_LEVEL, NULL);
 		M_Memcpy(lines[i].stringargs[argnum], val, strlen(val) + 1);
@@ -2006,7 +2008,7 @@ static void ParseTextmapLinedefParameter(UINT32 i, const char *param, const char
 	else if (fastncmp(param, "arg", 3) && strlen(param) > 3)
 	{
 		size_t argnum = atol(param + 3);
-		if (argnum >= NUMLINEARGS)
+		if (argnum >= NUM_SCRIPT_ARGS)
 			return;
 		lines[i].args[argnum] = atol(val);
 	}
@@ -2122,7 +2124,7 @@ static void ParseTextmapThingParameter(UINT32 i, const char *param, const char *
 	else if (fastncmp(param, "stringarg", 9) && strlen(param) > 9)
 	{
 		size_t argnum = atol(param + 9);
-		if (argnum >= NUMMAPTHINGSTRINGARGS)
+		if (argnum >= NUM_MAPTHING_STRINGARGS)
 			return;
 		size_t len = strlen(val);
 		mapthings[i].stringargs[argnum] = Z_Malloc(len + 1, PU_LEVEL, NULL);
@@ -2132,26 +2134,26 @@ static void ParseTextmapThingParameter(UINT32 i, const char *param, const char *
 	else if (fastncmp(param, "arg", 3) && strlen(param) > 3)
 	{
 		size_t argnum = atol(param + 3);
-		if (argnum >= NUMMAPTHINGARGS)
+		if (argnum >= NUM_MAPTHING_ARGS)
 			return;
 		mapthings[i].args[argnum] = atol(val);
 	}
-	else if (fastncmp(param, "thingarg", 8) && strlen(param) > 8)
+	else if (fastncmp(param, "scriptstringarg", 15) && strlen(param) > 15)
 	{
-		size_t argnum = atol(param + 8);
-		if (argnum >= NUMMAPTHINGARGS)
-			return;
-		mapthings[i].args[argnum] = atol(val);
-	}
-	else if (fastncmp(param, "thingstringarg", 14) && strlen(param) > 14)
-	{
-		size_t argnum = atol(param + 14);
-		if (argnum >= NUMMAPTHINGSTRINGARGS)
+		size_t argnum = atol(param + 15);
+		if (argnum >= NUM_SCRIPT_STRINGARGS)
 			return;
 		size_t len = strlen(val);
-		mapthings[i].stringargs[argnum] = Z_Malloc(len + 1, PU_LEVEL, NULL);
-		M_Memcpy(mapthings[i].stringargs[argnum], val, len);
-		mapthings[i].stringargs[argnum][len] = '\0';
+		mapthings[i].script_stringargs[argnum] = Z_Malloc(len + 1, PU_LEVEL, NULL);
+		M_Memcpy(mapthings[i].script_stringargs[argnum], val, len);
+		mapthings[i].script_stringargs[argnum][len] = '\0';
+	}
+	else if (fastncmp(param, "scriptarg", 9) && strlen(param) > 9)
+	{
+		size_t argnum = atol(param + 9);
+		if (argnum >= NUM_SCRIPT_ARGS)
+			return;
+		mapthings[i].script_args[argnum] = atol(val);
 	}
 	else
 		ParseUserProperty(&mapthings[i].user, param, val);
@@ -2321,10 +2323,16 @@ static void P_WriteTextmapThing(FILE *f, mapthing_t *wmapthings, size_t i, size_
 		fprintf(f, "flip = true;\n");
 	if (wmapthings[i].special != 0)
 		fprintf(f, "special = %d;\n", wmapthings[i].special);
-	for (j = 0; j < NUMMAPTHINGARGS; j++)
+	for (j = 0; j < NUM_SCRIPT_ARGS; j++)
+		if (wmapthings[i].script_args[j] != 0)
+			fprintf(f, "scriptarg%s = %d;\n", sizeu1(j), wmapthings[i].script_args[j]);
+	for (j = 0; j < NUM_SCRIPT_STRINGARGS; j++)
+		if (mapthings[i].script_stringargs[j])
+			fprintf(f, "scriptstringarg%s = \"%s\";\n", sizeu1(j), mapthings[i].script_stringargs[j]);
+	for (j = 0; j < NUM_MAPTHING_ARGS; j++)
 		if (wmapthings[i].args[j] != 0)
 			fprintf(f, "arg%s = %d;\n", sizeu1(j), wmapthings[i].args[j]);
-	for (j = 0; j < NUMMAPTHINGSTRINGARGS; j++)
+	for (j = 0; j < NUM_MAPTHING_STRINGARGS; j++)
 		if (mapthings[i].stringargs[j])
 			fprintf(f, "stringarg%s = \"%s\";\n", sizeu1(j), mapthings[i].stringargs[j]);
 	if (wmapthings[i].user.length > 0)
@@ -2725,10 +2733,10 @@ static void P_WriteTextmap(void)
 		}
 		if (wlines[i].special != 0)
 			fprintf(f, "special = %d;\n", wlines[i].special);
-		for (j = 0; j < NUMLINEARGS; j++)
+		for (j = 0; j < NUM_SCRIPT_ARGS; j++)
 			if (wlines[i].args[j] != 0)
 				fprintf(f, "arg%s = %d;\n", sizeu1(j), wlines[i].args[j]);
-		for (j = 0; j < NUMLINESTRINGARGS; j++)
+		for (j = 0; j < NUM_SCRIPT_STRINGARGS; j++)
 			if (lines[i].stringargs[j])
 				fprintf(f, "stringarg%s = \"%s\";\n", sizeu1(j), lines[i].stringargs[j]);
 		if (wlines[i].alpha != FRACUNIT)
@@ -3024,10 +3032,10 @@ static void P_WriteTextmap(void)
 			fprintf(f, "triggerer = %d;\n", wsectors[i].triggerer);
 		if (wsectors[i].action != 0)
 			fprintf(f, "action = %d;\n", wsectors[i].action);
-		for (j = 0; j < NUMSECTORARGS; j++)
+		for (j = 0; j < NUM_SCRIPT_ARGS; j++)
 			if (wsectors[i].args[j] != 0)
 				fprintf(f, "arg%s = %d;\n", sizeu1(j), wsectors[i].args[j]);
-		for (j = 0; j < NUMSECTORSTRINGARGS; j++)
+		for (j = 0; j < NUM_SCRIPT_STRINGARGS; j++)
 			if (wsectors[i].stringargs[j])
 				fprintf(f, "stringarg%s = \"%s\";\n", sizeu1(j), wsectors[i].stringargs[j]);
 		switch (wsectors[i].activation & SECSPAC_TRIGGERMASK)
@@ -3221,8 +3229,8 @@ static void P_LoadTextmap(void)
 		sc->friction = ORIG_FRICTION;
 
 		sc->action = 0;
-		memset(sc->args, 0, NUMSECTORARGS*sizeof(*sc->args));
-		memset(sc->stringargs, 0x00, NUMSECTORSTRINGARGS*sizeof(*sc->stringargs));
+		memset(sc->args, 0, NUM_SCRIPT_ARGS*sizeof(*sc->args));
+		memset(sc->stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*sc->stringargs));
 		sc->activation = 0;
 
 		K_UserPropertiesClear(&sc->user);
@@ -3272,8 +3280,8 @@ static void P_LoadTextmap(void)
 		ld->special = 0;
 		Tag_FSet(&ld->tags, 0);
 
-		memset(ld->args, 0, NUMLINEARGS*sizeof(*ld->args));
-		memset(ld->stringargs, 0x00, NUMLINESTRINGARGS*sizeof(*ld->stringargs));
+		memset(ld->args, 0, NUM_SCRIPT_ARGS*sizeof(*ld->args));
+		memset(ld->stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*ld->stringargs));
 		ld->alpha = FRACUNIT;
 		ld->executordelay = 0;
 		ld->sidenum[0] = 0xffff;
@@ -3327,9 +3335,11 @@ static void P_LoadTextmap(void)
 		mt->tid = 0;
 		mt->scale = FRACUNIT;
 		mt->spritexscale = mt->spriteyscale = FRACUNIT;
-		memset(mt->args, 0, NUMMAPTHINGARGS*sizeof(*mt->args));
-		memset(mt->stringargs, 0x00, NUMMAPTHINGSTRINGARGS*sizeof(*mt->stringargs));
-		//mt->special = 0;
+		memset(mt->args, 0, NUM_MAPTHING_ARGS*sizeof(*mt->args));
+		memset(mt->stringargs, 0x00, NUM_MAPTHING_STRINGARGS*sizeof(*mt->stringargs));
+		mt->special = 0;
+		memset(mt->script_args, 0, NUM_SCRIPT_ARGS*sizeof(*mt->script_args));
+		memset(mt->script_stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*mt->script_stringargs));
 		mt->layer = 0;
 		mt->mobj = NULL;
 

@@ -2336,7 +2336,9 @@ void P_ActivateThingSpecial(mobj_t *mo, mobj_t *source)
 		activator->sector = source->subsector->sector;
 	}
 
-	P_ProcessSpecial(activator, mt->special, mt->args, mt->stringargs);
+	P_ProcessSpecial(activator, mo->special, mo->script_args, mo->script_stringargs);
+
+	P_SetTarget(&activator->mo, NULL);
 	Z_Free(activator);
 }
 
@@ -4171,7 +4173,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			if (!udmf)
 				break;
 
-			if (args[1] < 0 || args[1] >= NUMLINEARGS)
+			if (args[1] < 0 || args[1] >= NUM_SCRIPT_ARGS)
 			{
 				CONS_Debug(DBG_GAMELOGIC, "Linedef type 468: Invalid linedef arg %d\n", args[1]);
 				break;
@@ -4216,7 +4218,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 
 		case 475: // ACS_Execute
 			{
-				INT32 newArgs[NUMLINEARGS-1] = {0};
+				INT32 newArgs[NUM_SCRIPT_ARGS-1] = {0};
 				INT32 i;
 
 				if (!stringargs[0])
@@ -4225,17 +4227,17 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 					return false;
 				}
 
-				for (i = 1; i < NUMLINEARGS; i++)
+				for (i = 1; i < NUM_SCRIPT_ARGS; i++)
 				{
 					newArgs[i - 1] = args[i];
 				}
 
-				ACS_Execute(stringargs[0], newArgs, NUMLINEARGS-1, activator);
+				ACS_Execute(stringargs[0], newArgs, NUM_SCRIPT_ARGS-1, activator);
 			}
 			break;
 		case 476: // ACS_ExecuteAlways
 			{
-				INT32 newArgs[NUMLINEARGS-1] = {0};
+				INT32 newArgs[NUM_SCRIPT_ARGS-1] = {0};
 				INT32 i;
 
 				if (!stringargs[0])
@@ -4244,12 +4246,12 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 					return false;
 				}
 
-				for (i = 1; i < NUMLINEARGS; i++)
+				for (i = 1; i < NUM_SCRIPT_ARGS; i++)
 				{
 					newArgs[i - 1] = args[i];
 				}
 
-				ACS_ExecuteAlways(stringargs[0], newArgs, NUMLINEARGS-1, activator);
+				ACS_ExecuteAlways(stringargs[0], newArgs, NUM_SCRIPT_ARGS-1, activator);
 			}
 			break;
 		case 477: // ACS_Suspend
