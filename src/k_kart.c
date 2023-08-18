@@ -6536,6 +6536,15 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 {
 	const boolean onground = P_IsObjectOnGround(player->mo);
 
+	/* reset sprite offsets :) */
+	player->mo->sprxoff = 0;
+	player->mo->spryoff = 0;
+	player->mo->sprzoff = 0;
+	player->mo->spritexoffset = 0;
+	player->mo->spriteyoffset = 0;
+
+	player->cameraOffset = 0;
+	
 	K_UpdateOffroad(player);
 	K_UpdateEngineSounds(player); // Thanks, VAda!
 

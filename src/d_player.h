@@ -319,6 +319,7 @@ typedef struct player_s
 	fixed_t deltaviewheight;
 	// bounded/scaled total momentum.
 	fixed_t bob;
+	fixed_t cameraOffset;
 
 	angle_t viewrollangle;
 	// camera tilt
