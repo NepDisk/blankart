@@ -1856,6 +1856,47 @@ bool CallFunc_ExitLevel(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::W
 }
 
 /*--------------------------------------------------
+	bool CallFunc_MusicPlay(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Play a tune. If it's already playing, restart from the
+		beginning.
+--------------------------------------------------*/
+bool CallFunc_MusicPlay(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	ACSVM::MapScope *map = thread->scopeMap;
+	
+	S_ChangeMusicEx(map->getString(argV[0])->str, 0, false, mapmusposition, 0, 0);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_MusicStopAll(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Stop every tune that is currently playing.
+--------------------------------------------------*/
+bool CallFunc_MusicStopAll(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	S_StopMusic();
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_MusicRemap(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Change the actual song lump that a tune will play.
+--------------------------------------------------*/
+bool CallFunc_MusicRemap(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	ACSVM::MapScope *map = thread->scopeMap;
+
+	S_ChangeMusicEx(map->getString(argV[1])->str, 0, false, mapmusposition, 0, 0);
+
+	return false;
+}
+
+/*--------------------------------------------------
 	bool CallFunc_Get/SetLineProperty(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
 
 		Generic line property management.
