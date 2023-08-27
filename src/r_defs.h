@@ -318,6 +318,9 @@ typedef struct pslope_s
 	fixed_t lowz;
 	fixed_t highz;
 
+	// The ABCD constants used to define this slope
+	fixed_t constants[4];
+
 	// Light offsets (see seg_t)
 	SINT8 lightOffset;
 #ifdef HWRENDER
