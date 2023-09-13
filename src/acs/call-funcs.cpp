@@ -36,6 +36,7 @@ extern "C" {
 #include "../m_cond.h"
 #include "../r_skins.h"
 #include "../k_battle.h"
+#include "../k_grandprix.h"
 #include "../k_bot.h"
 #include "../z_zone.h"
 #include "../m_misc.h"
@@ -1613,6 +1614,21 @@ bool CallFunc_TimeAttack(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::
 	thread->dataStk.push((modeattacking != ATTACKING_NONE));
 	return false;
 }
+
+/*--------------------------------------------------
+	bool CallFunc_GrandPrix(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns if a Grand Prix is active.
+--------------------------------------------------*/
+bool CallFunc_GrandPrix(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argV;
+	(void)argC;
+
+	thread->dataStk.push(grandprixinfo.gp);
+	return false;
+}
+
 
 /*--------------------------------------------------
 	bool CallFunc_PodiumPosition(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
