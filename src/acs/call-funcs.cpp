@@ -1906,6 +1906,14 @@ bool CallFunc_MusicPlay(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::W
 {
 	ACSVM::MapScope *map = thread->scopeMap;
 	
+	// 0: str tune - id for the tune to play
+	// 1: [bool foractivator] - only do this if the activator is a player and is being viewed
+
+	if (argC > 1 && argV[1] && !ACS_ActivatorIsLocal(thread))
+	{
+		return false;
+	}
+	
 	S_ChangeMusicEx(map->getString(argV[0])->str, 0, false, mapmusposition, 0, 0);
 
 	return false;
@@ -1918,6 +1926,14 @@ bool CallFunc_MusicPlay(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::W
 --------------------------------------------------*/
 bool CallFunc_MusicStopAll(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
 {
+
+	// 0: [bool foractivator] - only do this if the activator is a player and is being viewed
+
+	if (argC > 0 && argV[0] && !ACS_ActivatorIsLocal(thread))
+	{
+		return false;
+	}
+
 	S_StopMusic();
 
 	return false;
@@ -1932,6 +1948,15 @@ bool CallFunc_MusicRemap(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::
 {
 	ACSVM::MapScope *map = thread->scopeMap;
 
+	// 0: str tune - id for the tune to play
+	// 1: str song - lump name for the song to map to
+	// 2: [bool foractivator] - only do this if the activator is a player and is being viewed
+
+	if (argC > 2 && argV[2] && !ACS_ActivatorIsLocal(thread))
+	{
+		return false;
+	}
+	
 	S_ChangeMusicEx(map->getString(argV[1])->str, 0, false, mapmusposition, 0, 0);
 
 	return false;
