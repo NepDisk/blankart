@@ -14,20 +14,18 @@
 
 // TODO? Maybe untie this file from ACS?
 
-extern "C" {
+#include <istream>
+#include <ostream>
+#include <streambuf>
+
 #include "../doomtype.h"
 #include "../doomdef.h"
 #include "../doomstat.h"
 
 #include "../p_saveg.h"
-}
 
 #include "stream.hpp"
 #include "../cxxutil.hpp"
-
-#include <istream>
-#include <ostream>
-#include <streambuf>
 
 using namespace srb2::acs;
 

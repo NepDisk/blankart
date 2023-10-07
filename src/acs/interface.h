@@ -18,6 +18,10 @@
 #include "../doomdef.h"
 #include "../doomstat.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*--------------------------------------------------
 	void ACS_Init(void);
 
@@ -204,7 +208,7 @@ void ACS_Tick(void);
 
 
 /*--------------------------------------------------
-	boolean ACS_Execute(const char *name, const INT32 *args, size_t numArgs, activator_t *activator);
+	boolean ACS_Execute(const INT32 *args, size_t numArgs, const char *const *stringArgs, size_t numStringArgs, activator_t *activator);
 
 		Runs an ACS script by its string name.
 		Only one instance of the script will run at
@@ -216,6 +220,8 @@ void ACS_Tick(void);
 			Strings should be transformed into
 			ACSVM string IDs.
 		numArgs: Number of input arguments.
+		stringArgs: Array of input string arguments.
+		numStringArgs: Number of input string arguments.
 		activator: Container for information on what
 			activated this script.
 
@@ -223,11 +229,11 @@ void ACS_Tick(void);
 		true if we were able to run the script, otherwise false.
 --------------------------------------------------*/
 
-boolean ACS_Execute(const char *name, const INT32 *args, size_t numArgs, activator_t *activator);
+boolean ACS_Execute(const char *name, const INT32 *args, size_t numArgs, const char *const *stringArgs, size_t numStringArgs, activator_t *activator);
 
 
 /*--------------------------------------------------
-	boolean ACS_ExecuteAlways(const char *name, const INT32 *args, size_t numArgs, activator_t *activator);
+	boolean ACS_ExecuteAlways(const INT32 *args, size_t numArgs, const char *const *stringArgs, size_t numStringArgs, activator_t *activator)
 
 		Runs an ACS script by its string name.
 		If the script is already running, this method
@@ -240,6 +246,8 @@ boolean ACS_Execute(const char *name, const INT32 *args, size_t numArgs, activat
 			Strings should be transformed into
 			ACSVM string IDs.
 		numArgs: Number of input arguments.
+		stringArgs: Array of input string arguments.
+		numStringArgs: Number of input string arguments.
 		activator: Container for information on what
 			activated this script.
 
@@ -247,11 +255,11 @@ boolean ACS_Execute(const char *name, const INT32 *args, size_t numArgs, activat
 		true if we were able to run the script, otherwise false.
 --------------------------------------------------*/
 
-boolean ACS_ExecuteAlways(const char *name, const INT32 *args, size_t numArgs, activator_t *activator);
+boolean ACS_ExecuteAlways(const char *name, const INT32 *args, size_t numArgs, const char *const *stringArgs, size_t numStringArgs, activator_t *activator);
 
 
 /*--------------------------------------------------
-	INT32 ACS_ExecuteResult(const char *name, const INT32 *args, size_t numArgs, activator_t *activator);
+	INT32 ACS_ExecuteResult(const char *name, const INT32 *args, size_t numArgs, activator_t *activator)
 
 		Runs an ACS script by its string name.
 		Will return the scripts special result
@@ -332,5 +340,8 @@ void ACS_Archive(savebuffer_t *save);
 
 void ACS_UnArchive(savebuffer_t *save);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __SRB2_ACS_INTERFACE_H__

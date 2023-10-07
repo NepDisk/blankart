@@ -11,6 +11,8 @@
 /// \file  thread.cpp
 /// \brief Action Code Script: Thread definition
 
+#include "acsvm.hpp"
+
 #include "thread.hpp"
 
 #include "../doomtype.h"
@@ -23,18 +25,6 @@
 #include "../r_defs.h"
 #include "../r_state.h"
 #include "../p_polyobj.h"
-
-#include "ACSVM/ACSVM/Code.hpp"
-#include "ACSVM/ACSVM/CodeData.hpp"
-#include "ACSVM/ACSVM/Environment.hpp"
-#include "ACSVM/ACSVM/Error.hpp"
-#include "ACSVM/ACSVM/Module.hpp"
-#include "ACSVM/ACSVM/Scope.hpp"
-#include "ACSVM/ACSVM/Script.hpp"
-#include "ACSVM/ACSVM/Serial.hpp"
-#include "ACSVM/ACSVM/Thread.hpp"
-#include "ACSVM/ACSVM/BinaryIO.hpp"
-#include "ACSVM/Util/Floats.hpp"
 
 using namespace srb2::acs;
 
