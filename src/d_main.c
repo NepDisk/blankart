@@ -473,7 +473,7 @@ static void D_Display(void)
 						viewssnum = i;
 
 #ifdef HWRENDER
-						if (rendermode != render_soft)
+						if (rendermode == render_opengl)
 							HWR_RenderPlayerView();
 						else
 #endif
