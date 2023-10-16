@@ -220,6 +220,7 @@ Obj_LoopEndpointCollide
 {
 	player_t *player = toucher->player;
 	sonicloopvars_t *s = &player->loop;
+	sonicloopcamvars_t *cam = &s->camera;
 
 	mobj_t *anchor = end_anchor(end);
 	mobj_t *center = anchor ? anchor_center(anchor) : NULL;
@@ -271,6 +272,17 @@ Obj_LoopEndpointCollide
 		center_max_revolution(center) * flip;
 
 	s->flip = center_has_flip(center);
+
+	cam->enter_tic = leveltime;
+	cam->exit_tic = INFTICS;
+
+	cam->zoom_out_speed = center->spawnpoint->args[2];
+	cam->zoom_in_speed = center->spawnpoint->args[3];
+	cam->dist = center->spawnpoint->args[4] * FRACUNIT;
+	cam->pan = FixedAngle(center->spawnpoint->args[5] * FRACUNIT);
+	cam->pan_speed = center->spawnpoint->args[6] * FRACUNIT;
+	cam->pan_accel = center->spawnpoint->args[7];
+	cam->pan_back = center->spawnpoint->args[8];
 
 	player->speed =
 		3 * (player->speed + toucher->momz) / 2;
