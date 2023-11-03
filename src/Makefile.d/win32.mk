@@ -38,6 +38,7 @@ endif
 
 ifndef MINGW64
 libs+=-Wl,--large-address-aware
+NOLIBBACKTRACE=1
 endif
 
 ifndef NONET
