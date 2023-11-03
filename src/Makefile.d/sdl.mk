@@ -46,6 +46,11 @@ opts+=-DHAVE_THREADS
 sources+=sdl/i_threads.c
 endif
 
+ifndef NOLIBBACKTRACE
+opts+=-DHAVE_LIBBACKTRACE
+libs+=-lbacktrace
+endif
+
 ifdef SDL_PKGCONFIG
 $(eval $(call Use_pkg_config,SDL))
 else
