@@ -41,6 +41,8 @@
 
 tic_t leveltime;
 
+UINT32 thinker_era = 0;
+
 INT32 P_AltFlip(INT32 n, tic_t tics)
 {
 	return leveltime % (2 * tics) < tics ? n : -(n);
@@ -201,8 +203,20 @@ void P_InitThinkers(void)
 	boss3cap = NULL;
 	waypointcap = NULL;
 	kitemcap = NULL;
+	P_InvalidateThinkersWithoutInit();
 	for (i = 0; i < NUM_THINKERLISTS; i++)
 		thlist[i].prev = thlist[i].next = &thlist[i];
+	
+	iquehead = iquetail = 0;
+}
+
+//
+// P_InvalidateThinkersWithoutInit
+//
+
+void P_InvalidateThinkersWithoutInit(void)
+{
+	thinker_era++;
 }
 
 // Adds a new thinker at the end of the list.
