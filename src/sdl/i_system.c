@@ -137,11 +137,6 @@ typedef LPVOID (WINAPI *p_MapViewOfFile) (HANDLE, DWORD, DWORD, DWORD, SIZE_T);
 #include <errno.h>
 #endif
 
-#if defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)
-#include <execinfo.h>
-#define UNIXBACKTRACE
-#endif
-
 // Locations for searching the srb2.srb
 #if defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)
 #define DEFAULTWADLOCATION1 "/usr/local/share/games/SRB2Kart-V2"
@@ -292,9 +287,9 @@ static void bt_error_cb(void *data, const char *msg, int errnum)
 		buf->error = true;
 }
 
-static void write_backtrace_libbacktrace(INT32 num)
+static void write_backtrace(INT32 num)
 {
-	FILE *out = fopen(va("%s" PATHSEP "%s", srb2home, "crash-log-libbacktrace.txt"), "a");
+	FILE *out = fopen(va("%s" PATHSEP "%s", srb2home, "crash-log.txt"), "a");
 
 	time_t rawtime;
 	struct tm *timeinfo;
@@ -340,7 +335,7 @@ static void write_backtrace_libbacktrace(INT32 num)
 	if (out != stderr)
 	{
 		fclose(out);
-		fprintf(stderr, "Crash report created, find crash-log-libbacktrace.txt in your SRB2Kart directory\n");
+		fprintf(stderr, "Crash report created, find crash-log.txt in your SRB2Kart directory\n");
 	}
 }
 
@@ -377,152 +372,6 @@ SDL_bool framebuffer = SDL_FALSE;
 
 UINT8 keyboard_started = false;
 boolean g_in_exiting_signal_handler = false;
-
-#ifdef UNIXBACKTRACE
-#define STDERR_WRITE(string) if (fd != -1) I_OutputMsg("%s", string)
-#define CRASHLOG_WRITE(string) if (fd != -1) write(fd, string, strlen(string))
-#define CRASHLOG_STDERR_WRITE(string) \
-	if (fd != -1)\
-		write(fd, string, strlen(string));\
-	I_OutputMsg("%s", string)
-
-static void write_backtrace(INT32 signal)
-{
-	int fd = -1;
-	size_t size;
-	time_t rawtime;
-	struct tm timeinfo;
-
-	enum { BT_SIZE = 1024, STR_SIZE = 32 };
-	void *array[BT_SIZE];
-	char timestr[STR_SIZE];
-
-	const char *error = "An error occurred within SRB2Kart! Send this stack trace to someone who can help!\n";
-	const char *error2 = "(Or find crash-log.txt in your SRB2Kart directory.)\n"; // Shown only to stderr.
-
-	fd = open(va("%s" PATHSEP "%s", srb2home, "crash-log.txt"), O_CREAT|O_APPEND|O_RDWR, S_IRUSR|S_IWUSR);
-
-	if (fd == -1)
-		I_OutputMsg("\nWARNING: Couldn't open crash log for writing! Make sure your permissions are correct. Please save the below report!\n");
-
-	// Get the current time as a string.
-	time(&rawtime);
-	localtime_r(&rawtime, &timeinfo);
-	strftime(timestr, STR_SIZE, "%a, %d %b %Y %T %z", &timeinfo);
-
-	CRASHLOG_WRITE("------------------------\n"); // Nice looking seperator
-
-	CRASHLOG_STDERR_WRITE("\n"); // Newline to look nice for both outputs.
-	CRASHLOG_STDERR_WRITE(error); // "Oops, SRB2 crashed" message
-	STDERR_WRITE(error2); // Tell the user where the crash log is.
-
-	// Tell the log when we crashed.
-	CRASHLOG_WRITE("Time of crash: ");
-	CRASHLOG_WRITE(timestr);
-	CRASHLOG_WRITE("\n");
-
-	// Give the crash log the cause and a nice 'Backtrace:' thing
-	// The signal is given to the user when the parent process sees we crashed.
-	CRASHLOG_WRITE("Cause: ");
-	CRASHLOG_WRITE(strsignal(signal));
-	CRASHLOG_WRITE("\n"); // Newline for the signal name
-
-	CRASHLOG_STDERR_WRITE("\nBacktrace:\n");
-
-	// Flood the output and log with the backtrace
-	size = backtrace(array, BT_SIZE);
-	backtrace_symbols_fd(array, size, fd);
-	backtrace_symbols_fd(array, size, STDERR_FILENO);
-
-	CRASHLOG_WRITE("\n"); // Write another newline to the log so it looks nice :)
-
-	close(fd);
-}
-#undef STDERR_WRITE
-#undef CRASHLOG_WRITE
-#undef CRASHLOG_STDERR_WRITE
-#endif // UNIXBACKTRACE
-
-static void I_ShowErrorMessageBox(const char *messagefordevelopers, boolean dumpmade)
-{
-	static char finalmessage[1024];
-	size_t firstimpressionsline = 3; // "Dr Robotnik's Ring Racers" has encountered...
-
-	if (M_CheckParm("-dedicated"))
-		return;
-
-	snprintf(
-		finalmessage,
-		sizeof(finalmessage),
-			"\"SRB2Kart V2\" has encountered an unrecoverable error and needs to close.\n"
-			"The %s log file is located at (%s).\n"
-			"\n"
-			"\n"
-			"%s",
-		dumpmade ?
-#if defined (UNIXBACKTRACE)
-			"crash-log.txt"
-#elif defined (_WIN32)
-			".rpt crash dump"
-#endif
-			: "",
-		logfilename,
-		messagefordevelopers);
-
-	// Rudementary word wrapping.
-	// Simple and effective. Does not handle nonuniform letter sizes, etc. but who cares.
-	{
-		size_t max = 0, maxatstart = 0, start = 0, width = 0, i;
-
-		for (i = 0; finalmessage[i]; i++)
-		{
-			if (finalmessage[i] == ' ')
-			{
-				start = i;
-				max += 4;
-				maxatstart = max;
-			}
-			else if (finalmessage[i] == '\n')
-			{
-				if (firstimpressionsline > 0)
-				{
-					firstimpressionsline--;
-					if (firstimpressionsline == 0)
-					{
-						width = max;
-					}
-				}
-				start = 0;
-				max = 0;
-				maxatstart = 0;
-				continue;
-			}
-			else
-				max += 8;
-
-			// Start trying to wrap if presumed length exceeds the space we want.
-			if (width > 0 && max >= width && start > 0)
-			{
-				finalmessage[start] = '\n';
-				max -= maxatstart;
-				start = 0;
-			}
-		}
-	}
-
-	// Implement message box with SDL_ShowSimpleMessageBox,
-	// which should fail gracefully if it can't put a message box up
-	// on the target system
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-		"Dr. Robotnik's Ring Racers "VERSIONSTRING" Error",
-		finalmessage, NULL);
-
-	// Note that SDL_ShowSimpleMessageBox does *not* require SDL to be
-	// initialized at the time, so calling it after SDL_Quit() is
-	// perfectly okay! In addition, we do this on purpose so the
-	// fullscreen window is closed before displaying the error message
-	// in case the fullscreen window blocks it for some absurd reason.
-}
 
 static void I_ReportSignal(int num, int coredumped)
 {
@@ -591,12 +440,9 @@ FUNCNORETURN static ATTRNORETURN void signal_handler(INT32 num)
 	CL_AbortDownloadResume();
 
 #ifdef HAVE_LIBBACKTRACE
-	write_backtrace_libbacktrace(num);
-#endif
-
-#ifdef UNIXBACKTRACE
 	write_backtrace(num);
 #endif
+
 	I_ReportSignal(num, 0);
 	signal(num, SIG_DFL);               //default signal action
 	raise(num);
@@ -990,10 +836,6 @@ static void signal_handler_child(INT32 num)
 {
 
 #ifdef HAVE_LIBBACKTRACE
-	write_backtrace_libbacktrace(num);
-#endif
-
-#ifdef UNIXBACKTRACE
 	write_backtrace(num);
 #endif
 
