@@ -48,6 +48,10 @@ endif
 
 ifndef NOLIBBACKTRACE
 opts+=-DHAVE_LIBBACKTRACE
+	ifdef MINGW64
+	CPPFLAGS+=-I../libs/libbacktrace/include
+	LDFLAGS+=-L../libs/libbacktrace/lib/x86_64
+	endif
 libs+=-lbacktrace
 endif
 
