@@ -214,6 +214,7 @@ void P_AddThinker(const thinklistnum_t n, thinker_t *thinker)
 	thlist[n].prev = thinker;
 
 	thinker->references = 0;    // killough 11/98: init reference counter to 0
+	thinker->cachable = n == THINK_MOBJ;
 }
 
 //
@@ -260,8 +261,41 @@ void P_RemoveThinkerDelayed(thinker_t *thinker)
 	* thinker->prev->next = thinker->next */
 	(next->prev = currentthinker = thinker->prev)->next = next;
 
-	R_DestroyLevelInterpolators(thinker);
-	Z_Free(thinker);
+	if (thinker->cachable)
+	{
+		// put cachable thinkers in the mobj cache, so we can avoid allocations
+		((mobj_t *)thinker)->hnext = mobjcache;
+		mobjcache = (mobj_t *)thinker;
+	}
+	else
+	{
+		R_DestroyLevelInterpolators(thinker);
+		Z_Free(thinker);
+	}
+}
+
+//
+// P_UnlinkThinker()
+//
+// Actually removes thinker from the list and frees its memory.
+//
+void P_UnlinkThinker(thinker_t *thinker)
+{
+	thinker_t *next = thinker->next;
+
+	I_Assert(thinker->references == 0);
+
+	(next->prev = thinker->prev)->next = next;
+	if (thinker->cachable)
+	{
+		// put cachable thinkers in the mobj cache, so we can avoid allocations
+		((mobj_t *)thinker)->hnext = mobjcache;
+		mobjcache = (mobj_t *)thinker;
+	}
+	else
+	{
+		Z_Free(thinker);
+	}
 }
 
 //

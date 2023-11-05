@@ -57,6 +57,8 @@ static mobj_t *overlaycap = NULL;
 mobj_t *kitemcap = NULL;	// Used for Kart offensive items (the ones that can get removed by sizedown)
 mobj_t *waypointcap = NULL;
 
+mobj_t *mobjcache = NULL;
+
 void P_InitCachedActions(void)
 {
 	actioncachehead.prev = actioncachehead.next = &actioncachehead;
@@ -9653,7 +9655,16 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 		type = MT_RAY;
 	}
 
-	mobj = Z_Calloc(sizeof (*mobj), PU_LEVEL, NULL);
+	if (mobjcache != NULL)
+	{
+		mobj = mobjcache;
+		mobjcache = mobjcache->hnext;
+		memset(mobj, 0, sizeof(*mobj));
+	}
+	else
+	{
+		mobj = Z_Calloc(sizeof (*mobj), PU_LEVEL, NULL);
+	}
 
 	// this is officially a mobj, declared as soon as possible.
 	mobj->thinker.function.acp1 = (actionf_p1)P_MobjThinker;
@@ -10454,7 +10465,9 @@ void P_RemoveMobj(mobj_t *mobj)
 		INT32 prevreferences;
 		if (!mobj->thinker.references)
 		{
-			Z_Free(mobj); // No refrrences? Can be removed immediately! :D
+			// no references, dump it directly in the mobj cache
+			mobj->hnext = mobjcache;
+			mobjcache = mobj;
 			return;
 		}
 
