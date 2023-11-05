@@ -8281,6 +8281,8 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	// Close text prompt before freeing the old level
 	F_EndTextPrompt(false, true);
 
+	ACS_InvalidateMapScope();
+
 	LUA_InvalidateLevel();
 
 	for (ss = sectors; sectors+numsectors != ss; ss++)
