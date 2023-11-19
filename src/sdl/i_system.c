@@ -28,7 +28,7 @@
 #else
 #include "../config.h.in"
 #endif
-
+#include <thread>
 #include <signal.h>
 
 #ifdef _WIN32
@@ -347,6 +347,16 @@ static void I_ReportSignal(int num, int coredumped)
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
 			"Process killed by signal",
 			sigmsg, NULL);
+		
+	I_ShowErrorMessageBox(sigmsg,
+#if defined (UNIXBACKTRACE)
+		true
+#elif defined (_WIN32)
+		!M_CheckParm("-noexchndl")
+#else
+		false
+#endif
+	);
 }
 
 #ifndef NEWSIGNALHANDLER
