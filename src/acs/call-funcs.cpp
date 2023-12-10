@@ -1220,7 +1220,9 @@ bool CallFunc_PlayerRings(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM:
 		&& (info->mo != NULL && P_MobjWasRemoved(info->mo) == false)
 		&& (info->mo->player != NULL))
 	{
-		rings = info->mo->player->rings;
+		rings = (gametyperules & GTR_SPHERES)
+			? info->mo->player->spheres
+			: info->mo->player->rings;
 	}
 
 	thread->dataStk.push(rings);
@@ -1641,6 +1643,32 @@ bool CallFunc_TimeAttack(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::
 }
 
 /*--------------------------------------------------
+	bool CallFunc_FreePlay(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns if the map is in Free Play.
+--------------------------------------------------*/
+bool CallFunc_FreePlay(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argV;
+	(void)argC;
+	
+	UINT8 numplayersingame = 0;
+	UINT8 i;
+	
+	for (i = 0; i < MAXPLAYERS; i++)
+	{
+
+		if (!playeringame[i] || players[i].spectator || !players[i].mo)
+			continue;
+
+		numplayersingame++;
+	}
+
+	thread->dataStk.push(numplayersingame <= 1);
+	return false;
+}
+
+/*--------------------------------------------------
 	bool CallFunc_GrandPrix(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
 
 		Returns if a Grand Prix is active.
@@ -1654,6 +1682,19 @@ bool CallFunc_GrandPrix(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::W
 	return false;
 }
 
+/*--------------------------------------------------
+	bool CallFunc_PositionStart(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns if the map is in POSITION!!
+--------------------------------------------------*/
+bool CallFunc_PositionStart(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argV;
+	(void)argC;
+
+	thread->dataStk.push((starttime != 0 && leveltime < starttime));
+	return false;
+}
 
 /*--------------------------------------------------
 	bool CallFunc_PodiumPosition(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)

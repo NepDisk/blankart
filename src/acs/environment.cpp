@@ -175,6 +175,8 @@ Environment::Environment()
 	addFuncDataACS0( 312, addCallFunc(CallFunc_ThingCount));
 	addFuncDataACS0( 313, addCallFunc(CallFunc_GrandPrix));
 	addFuncDataACS0( 315, addCallFunc(CallFunc_PlayerBot));
+	addFuncDataACS0( 316, addCallFunc(CallFunc_PositionStart));
+	addFuncDataACS0( 317, addCallFunc(CallFunc_FreePlay));
 
 	addFuncDataACS0( 500, addCallFunc(CallFunc_CameraWait));
 	addFuncDataACS0( 501, addCallFunc(CallFunc_PodiumPosition));
