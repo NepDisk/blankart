@@ -5616,10 +5616,8 @@ static void HWR_ProjectSprite(mobj_t *thing)
 	{
 		vis->colormap = colormaps;
 
-#ifdef GLENCORE
 		if (encoremap && (thing->flags & (MF_SCENERY|MF_NOTHINK)) && !(thing->flags & MF_DONTENCOREMAP))
 			vis->colormap += COLORMAP_REMAPOFFSET;
-#endif
 	}
 
 	// set top/bottom coords
@@ -5746,10 +5744,8 @@ static void HWR_ProjectPrecipitationSprite(precipmobj_t *thing)
 
 	vis->colormap = NULL;
 
-#ifdef GLENCORE
 	if (encoremap && !(thing->flags & MF_DONTENCOREMAP))
 		vis->colormap += COLORMAP_REMAPOFFSET;
-#endif
 
 	// set top/bottom coords
 	vis->gzt = FIXED_TO_FLOAT(interp.z) + (FIXED_TO_FLOAT(spritecachedinfo[lumpoff].topoffset) * this_scale);
