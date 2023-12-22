@@ -2066,4 +2066,6 @@ void K_InitTerrain(UINT16 wadNum)
 			free(name);
 		}
 	}
+
+	R_ClearTextureNumCache(false);
 }
