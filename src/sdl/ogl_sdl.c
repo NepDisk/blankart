@@ -94,7 +94,6 @@ boolean LoadGL(void)
 			CONS_Printf("If you know what is the OpenGL library's name, use -OGLlib\n");
 		return 0;
 	}
-
 #endif
 	return SetupGLfunc();
 }
