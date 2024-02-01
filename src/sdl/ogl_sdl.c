@@ -152,7 +152,8 @@ boolean OglSdlSurface(INT32 w, INT32 h)
 	else
 		supportMipMap = false;
 
-	if (atof((const char*)gl_version) >= 1.4)
+	if (sscanf((const char*)gl_version, "%d.%d", &majorGL, &minorGL)
+		&& (!(majorGL == 1 && minorGL <= 3)))
 		supportMipMap = true;
 	else
 		supportMipMap = false;
