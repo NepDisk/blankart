@@ -50,7 +50,8 @@ void P_ClosestPointOnLine(fixed_t x, fixed_t y, const line_t *line, vertex_t *re
 void P_ClosestPointOnLine3D(const vector3_t *p, const vector3_t *line, vector3_t *result);
 INT32 P_PointOnLineSide(fixed_t x, fixed_t y, const line_t *line);
 void P_MakeDivline(const line_t *li, divline_t *dl);
-typedef struct
+
+struct opening_t
 {
 	fixed_t ceiling, floor, range;
 	fixed_t lowfloor, highceiling;
@@ -60,7 +61,7 @@ typedef struct
 	fixed_t floorstep, floordrop;
 	INT32 ceilingpic, floorpic;
 	UINT8 fofType; // LO_FOF_ types for forcing FOF collide
-} opening_t;
+};
 
 #define LO_FOF_ANY		(0)
 #define LO_FOF_FLOORS	(1)
