@@ -1884,7 +1884,9 @@ static void K_HandleLapIncrement(player_t *player)
 				nump++;
 			}
 
+			player->starpostnum = 0;
 			player->laps++;
+			K_UpdateAllPlayerPositions();
 
 			// Set up lap animation vars
 			if (player->laps > 1)
@@ -1909,8 +1911,6 @@ static void K_HandleLapIncrement(player_t *player)
 
 			if (netgame && player->laps >= numlaps)
 				CON_LogMessage(va(M_GetText("%s has finished the race.\n"), player_names[player-players]));
-
-			player->starpostnum = 0;
 
 			if (P_IsDisplayPlayer(player))
 			{
