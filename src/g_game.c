@@ -1936,6 +1936,7 @@ void G_Ticker(boolean run)
 	// do player reborns if needed
 	if (gamestate == GS_LEVEL)
 	{
+		boolean changed = false;
 		// Or, alternatively, retry.
 		if (G_GetRetryFlag())
 		{
@@ -1953,8 +1954,18 @@ void G_Ticker(boolean run)
 		}
 
 		for (i = 0; i < MAXPLAYERS; i++)
+		{
 			if (playeringame[i] && players[i].playerstate == PST_REBORN)
+			{
 				G_DoReborn(i);
+				changed = true;
+			}
+		}
+		
+		if (changed == true)
+		{
+			K_UpdateAllPlayerPositions();
+		}
 	}
 	P_MapEnd();
 

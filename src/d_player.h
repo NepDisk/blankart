@@ -91,7 +91,7 @@ typedef enum
 	PF_BRAKEDRIFT		= 1<<21, // Helper for brake-drift spark spawning
 
 	PF_AIRFAILSAFE		= 1<<22, // Whenever or not try the air boost
-	//free		= 1<<23, 
+	PF_UPDATEMYRESPAWN	= 1<<23, 
 
 	PF_FLIPCAM	= 1<<24,
 	//free		= 1<<25,

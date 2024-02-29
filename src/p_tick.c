@@ -620,28 +620,7 @@ void P_Ticker(boolean run)
 
 		ps_playerthink_time = I_GetPreciseTime();
 
-		
-		if (numbosswaypoints == 0)
-		{
-			// First loop: Ensure all players' distance to the finish line are all accurate
-			for (i = 0; i < MAXPLAYERS; i++)
-				if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
-					K_UpdateDistanceFromFinishLine(&players[i]);
-
-			// Second loop: Ensure all player positions reflect everyone's distances
-			for (i = 0; i < MAXPLAYERS; i++)
-				if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
-					K_KartUpdatePosition(&players[i]);
-		}
-		else
-		{
-			// Use postion update code from v1
-			for (i = 0; i < MAXPLAYERS; i++)
-			{
-				K_KartLegacyUpdatePosition(&players[i]);
-			}
-			
-		}
+		K_UpdateAllPlayerPositions();
 
 		// OK! Now that we got all of that sorted, players can think!
 		for (i = 0; i < MAXPLAYERS; i++)

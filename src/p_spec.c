@@ -2029,6 +2029,7 @@ static void K_HandleLapDecrement(player_t *player)
 		{
 			player->starpostnum = numstarposts;
 			player->laps--;
+			K_UpdateAllPlayerPositions();
 			curlap = UINT32_MAX;
 		}
 	}

@@ -7386,6 +7386,7 @@ static void P_InitPlayers(void)
 				G_SpawnPlayer(i, false);
 		}
 	}
+	K_UpdateAllPlayerPositions();
 }
 
 static void P_InitGametype(void)

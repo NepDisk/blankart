@@ -1262,20 +1262,13 @@ void P_DoPlayerExit(player_t *player)
 	if (player->griefstrikes > 0)
 		player->griefstrikes--; // Remove a strike for finishing a race normally
 
-	if (G_GametypeUsesLives() && losing)
-	{
-		// Remove a life from the losing player
-		K_PlayerLoseLife(player);
-	}
-
 	player->exiting = 1;
 
 	if (!player->spectator)
 	{
 		if ((gametyperules & GTR_CIRCUIT)) // If in Race Mode, allow
 		{
-			K_KartUpdatePosition(player);
-
+			K_UpdateAllPlayerPositions();
 			if (cv_kartvoices.value)
 			{
 				if (P_IsDisplayPlayer(player))
@@ -1345,6 +1338,12 @@ void P_DoPlayerExit(player_t *player)
 				}
 			}
 		}
+	}
+	
+	if (G_GametypeUsesLives() && losing)
+	{
+		// Remove a life from the losing player
+		K_PlayerLoseLife(player);
 	}
 
 	player->karthud[khud_cardanimation] = 0; // srb2kart: reset battle animation

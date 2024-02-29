@@ -5602,7 +5602,7 @@ const char *const PLAYERFLAG_LIST[] = {
 
 	"AIRFAILSAFE", // Whenever or not try the air boost
 	
-	//free
+	"UPDATEMYRESPAWN",
 	"FLIPCAM",
 	//free
 

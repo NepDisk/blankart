@@ -7112,26 +7112,27 @@ size_t K_NextRespawnWaypointIndex(waypoint_t *waypoint)
 }
 
 /*--------------------------------------------------
-	static waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
+	static boolean K_SetPlayerNextWaypoint(player_t *player)
 
-		Gets the next waypoint of a player, by finding their closest waypoint, then checking which of itself and next or
+		Sets the next waypoint of a player, by finding their closest waypoint, then checking which of itself and next or
 		previous waypoints are infront of the player.
+		Also sets the current waypoint.
 
 	Input Arguments:-
 		player - The player the next waypoint is being found for
 
 	Return:-
-		The waypoint that is the player's next waypoint
+		Whether it is safe to update the respawn waypoint
 --------------------------------------------------*/
-waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
+static boolean K_SetPlayerNextWaypoint(player_t *player)
 {
 	waypoint_t *finishline = K_GetFinishLineWaypoint();
 	waypoint_t *bestwaypoint = NULL;
+	boolean    updaterespawn = false;
 
 	if ((player != NULL) && (player->mo != NULL) && (P_MobjWasRemoved(player->mo) == false))
 	{
 		waypoint_t *waypoint     = K_GetBestWaypointForMobj(player->mo, player->currentwaypoint);
-		boolean    updaterespawn = false;
 
 		// Our current waypoint.
 		player->currentwaypoint = bestwaypoint = waypoint;
@@ -7299,36 +7300,25 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 			updaterespawn = false;
 		}
 
-		// Respawn point should only be updated when we're going to a nextwaypoint
-		if ((updaterespawn) &&
-		(bestwaypoint != NULL) &&
-		(bestwaypoint != player->nextwaypoint) &&
-		(K_GetWaypointIsSpawnpoint(bestwaypoint)) &&
-		(K_GetWaypointIsEnabled(bestwaypoint) == true))
+		if (player->pflags & PF_UPDATEMYRESPAWN)
 		{
-			size_t nwp = K_NextRespawnWaypointIndex(bestwaypoint);
-			
-			if (!(player->pflags & PF_WRONGWAY))
-				player->grieftime = 0;
-			
-			// Set time, z, flip and angle first.
-			player->starposttime = player->realtime;
-			player->starpostz = player->mo->z >> FRACBITS;
-			player->starpostflip = (player->mo->eflags & MFE_VERTICALFLIP) ? true : false;
-			player->starpostangle = player->mo->angle;
-			
-			// Then do x and y
-			player->starpostx = player->mo->x >> FRACBITS;
-			player->starposty = player->mo->y >> FRACBITS;
+			updaterespawn = true;
+			player->pflags &= ~PF_UPDATEMYRESPAWN;
+		}
 
+		// If nextwaypoint is NULL, it means we don't want to update the waypoint until we touch another one.
+		// player->nextwaypoint will keep its previous value in this case.
+		if (bestwaypoint != NULL)
+		{
+			player->nextwaypoint = bestwaypoint;
 		}
 	}
 
-	return bestwaypoint;
+	return updaterespawn;
 }
 
 /*--------------------------------------------------
-	void K_UpdateDistanceFromFinishLine(player_t *const player)
+	static void K_UpdateDistanceFromFinishLine(player_t *const player)
 
 		Updates the distance a player has to the finish line.
 
@@ -7338,29 +7328,11 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 	Return:-
 		None
 --------------------------------------------------*/
-void K_UpdateDistanceFromFinishLine(player_t *const player)
+static void K_UpdateDistanceFromFinishLine(player_t *const player)
 {
 	if ((player != NULL) && (player->mo != NULL))
 	{
 		waypoint_t *finishline   = K_GetFinishLineWaypoint();
-		waypoint_t *nextwaypoint = NULL;
-
-		if (player->spectator)
-		{
-			// Don't update waypoints while spectating
-			nextwaypoint = finishline;
-		}
-		else
-		{
-			nextwaypoint = K_GetPlayerNextWaypoint(player);
-		}
-
-		if (nextwaypoint != NULL)
-		{
-			// If nextwaypoint is NULL, it means we don't want to update the waypoint until we touch another one.
-			// player->nextwaypoint will keep its previous value in this case.
-			player->nextwaypoint = nextwaypoint;
-		}
 
 		// nextwaypoint is now the waypoint that is in front of us
 		if (player->exiting || player->spectator)
@@ -7526,6 +7498,48 @@ void K_UpdateDistanceFromFinishLine(player_t *const player)
 				}
 			}
 		}
+	}
+}
+
+/*--------------------------------------------------
+	static void K_UpdatePlayerWaypoints(player_t *const player)
+
+		Updates the player's waypoints and finish line distance.
+
+	Input Arguments:-
+		player - The player to update
+
+	Return:-
+		None
+--------------------------------------------------*/
+static void K_UpdatePlayerWaypoints(player_t *const player)
+{
+	waypoint_t *const old_nextwaypoint = player->nextwaypoint;
+
+	boolean updaterespawn = K_SetPlayerNextWaypoint(player);
+
+	// Update prev value (used for grief prevention code)
+	K_UpdateDistanceFromFinishLine(player);
+
+	// Respawn point should only be updated when we're going to a nextwaypoint
+	if ((updaterespawn) &&
+	(!player->respawn) &&
+	(player->nextwaypoint != old_nextwaypoint) &&
+	(K_GetWaypointIsSpawnpoint(player->nextwaypoint)) &&
+	(K_GetWaypointIsEnabled(player->nextwaypoint) == true))
+	{
+		if (!(player->pflags & PF_WRONGWAY))
+			player->grieftime = 0;
+		
+		// Set time, z, flip and angle first.
+		player->starposttime = player->realtime;
+		player->starpostz = player->mo->z >> FRACBITS;
+		player->starpostflip = (player->mo->eflags & MFE_VERTICALFLIP) ? true : false;
+		player->starpostangle = player->mo->angle;
+		
+		// Then do x and y
+		player->starpostx = player->mo->x >> FRACBITS;
+		player->starposty = player->mo->y >> FRACBITS;
 	}
 }
 
@@ -8008,6 +8022,42 @@ void K_KartLegacyUpdatePosition(player_t *player)
 		player->positiondelay = 10; // Position number growth
 
 	player->position = position;
+}
+
+void K_UpdateAllPlayerPositions(void)
+{
+	INT32 i;
+	if (numbosswaypoints == 0)
+	{
+		// First loop: Ensure all players' distance to the finish line are all accurate
+		for (i = 0; i < MAXPLAYERS; i++)
+		{
+			player_t *player = &players[i];
+			if (!playeringame[i] || player->spectator || !player->mo || P_MobjWasRemoved(player->mo))
+			{
+				continue;
+			}
+
+			K_UpdatePlayerWaypoints(player);
+		}
+
+		// Second loop: Ensure all player positions reflect everyone's distances
+		for (i = 0; i < MAXPLAYERS; i++)
+		{
+			if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
+			{
+				K_KartUpdatePosition(&players[i]);
+			}
+		}
+	}
+	else
+	{
+		// Use legacy postion update code from v1
+		for (i = 0; i < MAXPLAYERS; i++)
+		{
+			K_KartLegacyUpdatePosition(&players[i]);
+		}
+	}
 }
 
 //
