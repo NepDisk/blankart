@@ -3325,7 +3325,10 @@ void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 		P_DamageMobj(player->mo, NULL, NULL, 1, DMG_STING);
 
 	if (state == TRIPSTATE_PASSED)
+	{
 		S_StartSound(player->mo, sfx_ssa015);
+		player->tripwireLeniency += TICRATE/2;
+	}
 	else if (state == TRIPSTATE_BLOCKED)
 	{
 		S_StartSound(player->mo, sfx_kc40);
