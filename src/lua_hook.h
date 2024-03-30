@@ -72,6 +72,7 @@ automatically.
 	X (PlayerCmd),/* building the player's ticcmd struct */\
 	X (MusicChange),\
 	X (VoteThinker),/* Y_VoteTicker */\
+	X (AddonLoaded),\
 
 #define STRING_HOOK_LIST(X) \
 	X (LinedefExecute),\
