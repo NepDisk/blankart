@@ -4849,8 +4849,6 @@ boolean P_AddWadFile(const char *wadfilename)
 	if (!mapsadded)
 		CONS_Printf(M_GetText("No maps added\n"));
 
-	LUA_HookVoid(HOOK(AddonLoaded));
-
 	R_LoadSpriteInfoLumps(wadnum, numlumps);
 
 #ifdef HWRENDER
@@ -4875,6 +4873,7 @@ boolean P_AddWadFile(const char *wadfilename)
 	refreshdirmenu &= ~REFRESHDIR_GAMEDATA; // Under usual circumstances we'd wait for REFRESHDIR_GAMEDATA to disappear the next frame, but it's a bit too dangerous for that...
 
 	p_adding_file = INT16_MAX;
+	LUA_HookVoid(HOOK(AddonLoaded));
 
 	return true;
 }
