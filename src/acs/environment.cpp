@@ -178,6 +178,7 @@ Environment::Environment()
 	addFuncDataACS0( 316, addCallFunc(CallFunc_PositionStart));
 	addFuncDataACS0( 317, addCallFunc(CallFunc_FreePlay));
 	addFuncDataACS0( 319, addCallFunc(CallFunc_PlayerLosing));
+	addFuncDataACS0( 320, addCallFunc(CallFunc_PlayerExiting));
 
 	addFuncDataACS0( 500, addCallFunc(CallFunc_CameraWait));
 	addFuncDataACS0( 501, addCallFunc(CallFunc_PodiumPosition));
