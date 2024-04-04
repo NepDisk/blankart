@@ -41,6 +41,7 @@ extern "C" {
 #include "../k_bot.h"
 #include "../z_zone.h"
 #include "../m_misc.h"
+#include "../r_fps.h"
 }
 
 #include "ACSVM/ACSVM/Code.hpp"
@@ -2521,10 +2522,28 @@ bool CallFunc_SetSideProperty(ACSVM::Thread *thread, const ACSVM::Word *argV, AC
 		break; \
 	}
 
+			auto install_interpolator = [side]
+			{
+				if (side->acs_interpolated)
+					return;
+				side->acs_interpolated = true;
+				R_CreateInterpolator_SideScroll(nullptr, side);
+			};
+
 			switch (property)
 			{
-				PROP_INT(SIDE_PROP_XOFFSET, textureoffset)
-				PROP_INT(SIDE_PROP_YOFFSET, rowoffset)
+				case SIDE_PROP_XOFFSET:
+				{
+					side->textureoffset = static_cast< decltype(side->textureoffset) >(value);
+					install_interpolator();
+					break;
+				}
+				case SIDE_PROP_YOFFSET:
+				{
+					side->rowoffset = static_cast< decltype(side->rowoffset) >(value);
+					install_interpolator();
+					break;
+				}
 				PROP_TEXTURE(SIDE_PROP_TOPTEXTURE, toptexture)
 				PROP_TEXTURE(SIDE_PROP_BOTTOMTEXTURE, bottomtexture)
 				PROP_TEXTURE(SIDE_PROP_MIDTEXTURE, midtexture)
