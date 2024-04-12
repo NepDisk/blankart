@@ -127,7 +127,7 @@ fixed_t K_GetNewSpeed(player_t *player);
 fixed_t K_3dKartMovement(player_t *player);
 SINT8 K_Sliptiding(player_t *player);
 void K_MoveKartPlayer(player_t *player, boolean onground);
-void K_CheckSpectateStatus(void);
+void K_CheckSpectateStatus(boolean considermapreset);
 UINT8 K_GetInvincibilityItemFrame(void);
 UINT8 K_GetOrbinautItemFrame(UINT8 count);
 boolean K_IsSPBInGame(void);

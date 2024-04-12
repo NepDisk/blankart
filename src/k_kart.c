@@ -9012,31 +9012,63 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	}
 }
 
-void K_CheckSpectateStatus(void)
+void K_CheckSpectateStatus(boolean considermapreset)
 {
 	UINT8 respawnlist[MAXPLAYERS];
 	UINT8 i, j, numingame = 0, numjoiners = 0;
-	UINT8 previngame = 0;
+	UINT8 numhumans = 0, numbots = 0;
 
 	// Maintain spectate wait timer
 	for (i = 0; i < MAXPLAYERS; i++)
 	{
 		if (!playeringame[i])
+		{
 			continue;
-			
-		if (players[i].spectator && (players[i].pflags & PF_WANTSTOJOIN))
-			players[i].spectatewait++;
-		else
+		}
+
+		if (!players[i].spectator)
+		{
+			numingame++;
+
+			if (players[i].bot)
+			{
+				numbots++;
+			}
+			else
+			{
+				numhumans++;
+			}
+
 			players[i].spectatewait = 0;
-		
-		if (gamestate != GS_LEVEL)
 			players[i].spectatorreentry = 0;
+			continue;
+		}
+
+		if ((players[i].pflags & PF_WANTSTOJOIN))
+		{
+			players[i].spectatewait++;
+		}
+		else
+		{
+			players[i].spectatewait = 0;
+		}
+
+		if (gamestate != GS_LEVEL || considermapreset == false)
+		{
+			players[i].spectatorreentry = 0;
+		}
 		else if (players[i].spectatorreentry > 0)
-			players[i].spectatorreentry--;		
+		{
+			players[i].spectatorreentry--;
+		}
 	}
 
 	// No one's allowed to join
 	if (!cv_allowteamchange.value)
+		return;
+
+	// DON'T allow if you've hit the in-game player cap
+	if (cv_maxplayers.value && numhumans >= cv_maxplayers.value)
 		return;
 
 	// Get the number of players in game, and the players to be de-spectated.
@@ -9047,52 +9079,56 @@ void K_CheckSpectateStatus(void)
 
 		if (!players[i].spectator)
 		{
-			numingame++;
-			// DON'T allow if you've hit the in-game player cap
-			if (cv_ingamecap.value && numingame >= cv_ingamecap.value)
-				return;
 			// Allow if you're not in a level
-			if (gamestate != GS_LEVEL) 
+			if (gamestate != GS_LEVEL)
 				continue;
+
 			// DON'T allow if anyone's exiting
-			if (players[i].exiting) 
+			if (players[i].exiting)
 				return;
+
 			// Allow if the match hasn't started yet
-			if (numingame < 2 || leveltime < starttime || mapreset) 
+			if (numingame < 2 || leveltime < starttime || mapreset)
 				continue;
+
 			// DON'T allow if the match is 20 seconds in
-			if (leveltime > (starttime + 20*TICRATE)) 
+			if (leveltime > (starttime + 20*TICRATE))
 				return;
+
 			// DON'T allow if the race is at 2 laps
-			if (gametype == GT_RACE && players[i].laps >= 2) // DON'T allow if the race is at 2 laps
+			if ((gametyperules & GTR_CIRCUIT) && players[i].laps >= 2)
 				return;
+
 			continue;
 		}
-		else if (players[i].bot || !(players[i].pflags & PF_WANTSTOJOIN))
+
+		if (players[i].bot)
+		{
+			// Spectating bots are controlled by other mechanisms.
+			continue;
+		}
+
+		if (!(players[i].pflags & PF_WANTSTOJOIN))
 		{
 			// This spectator does not want to join.
 			continue;
 		}
 
+		if (netgame && numingame > 0 && players[i].spectatorreentry > 0)
+		{
+			// This person has their reentry cooldown active.
+			continue;
+		}
+
 		respawnlist[numjoiners++] = i;
 	}
-	
-	// The map started as a legitimate race, but there's still the one player.
-	// Don't allow new joiners, as they're probably a ragespeccer.
-	if ((gametyperules & GTR_CIRCUIT) && startedInFreePlay == false && numingame == 1)
-	{
-		return;
-	}
 
-
-	// literally zero point in going any further if nobody is joining
+	// Literally zero point in going any further if nobody is joining.
 	if (!numjoiners)
 		return;
 
-	// Organize by spectate wait timer
-#if 0
-	if (cv_ingamecap.value)
-#endif
+	// Organize by spectate wait timer (if there's more than one to sort)
+	if (cv_maxplayers.value && numjoiners > 1)
 	{
 		UINT8 oldrespawnlist[MAXPLAYERS];
 		memcpy(oldrespawnlist, respawnlist, numjoiners);
@@ -9116,25 +9152,54 @@ void K_CheckSpectateStatus(void)
 		}
 	}
 
-	// Finally, we can de-spectate everyone in the list!
-	previngame = numingame;
+	const UINT8 previngame = numingame;
+	INT16 removeBotID = MAXPLAYERS - 1;
 
+	// Finally, we can de-spectate everyone!
 	for (i = 0; i < numjoiners; i++)
 	{
 		// Hit the in-game player cap while adding people?
-		if (cv_ingamecap.value && numingame+i >= cv_ingamecap.value) 
-			break;
-		
-		// This person has their reentry cooldown active.
-		if (players[i].spectatorreentry > 0 && numingame > 0)
-			continue;
-		
+		if (cv_maxplayers.value && numingame >= cv_maxplayers.value)
+		{
+			if (numbots > 0)
+			{
+				// Find a bot to kill to make room
+				while (removeBotID >= 0)
+				{
+					if (playeringame[removeBotID] && players[removeBotID].bot)
+					{
+						//CONS_Printf("bot %s kicked to make room on tic %d\n", player_names[removeBotID], leveltime);
+						CL_RemovePlayer(removeBotID, KR_LEAVE);
+						numbots--;
+						numingame--;
+						break;
+					}
+
+					removeBotID--;
+				}
+
+				if (removeBotID < 0)
+				{
+					break;
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+
 		//CONS_Printf("player %s is joining on tic %d\n", player_names[respawnlist[i]], leveltime);
 		P_SpectatorJoinGame(&players[respawnlist[i]]);
+		numhumans++;
 		numingame++;
 	}
 
-	// Reset the match if you're in an empty server
+	if (considermapreset == false)
+		return;
+
+	// Reset the match when 2P joins 1P, DUEL mode
+	// Reset the match when 3P joins 1P and 2P, DUEL mode must be disabled
 	if (!mapreset && gamestate == GS_LEVEL && (previngame < 2 && numingame >= 2))
 	{
 		S_ChangeMusicInternal("chalng", false); // COME ON

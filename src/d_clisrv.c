@@ -3991,9 +3991,27 @@ static void HandleConnect(SINT8 node)
 	UINT8 maxplayers = min((dedicated ? MAXPLAYERS-1 : MAXPLAYERS), cv_maxplayers.value);
 	UINT8 connectedplayers = 0;
 
-	for (UINT8 i = dedicated ? 1 : 0; i < MAXPLAYERS; i++)
-		if (playernode[i] != UINT8_MAX) // We use this to count players because it is affected by SV_AddWaitingPlayers when more than one client joins on the same tic, unlike playeringame and D_NumPlayers. UINT8_MAX denotes no node for that player
+	for (i = dedicated ? 1 : 0; i < MAXPLAYERS; i++)
+	{
+		// We use this to count players because it is affected by SV_AddWaitingPlayers when
+		// more than one client joins on the same tic, unlike playeringame and D_NumPlayers.
+		// UINT8_MAX denotes no node for that player.
+
+		if (playernode[i] != UINT8_MAX)
+		{
+			// Sal: This hack sucks, but it should be safe.
+			// playeringame is set for bots immediately; they are deterministic instead of a netxcmd.
+			// If a bot is added with netxcmd in the future, then the node check is still here too.
+			// So at worst, a theoretical netxcmd added bot will block real joiners for the time
+			// it takes for the command to process, but not cause any horrifying player overwriting.
+			if (playeringame[i] && players[i].bot)
+			{
+				continue;
+			}
+
 			connectedplayers++;
+		}
+	}
 
 	if (bannednode && bannednode[node].banid != SIZE_MAX)
 	{

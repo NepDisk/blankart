@@ -8526,6 +8526,11 @@ void P_PostLoadLevel(void)
 {
 	P_MapStart(); // tm.thing can be used starting from this point
 	
+	if (G_GametypeHasSpectators())
+	{
+		K_CheckSpectateStatus(false);
+	}
+	
 	if (demo.playback)
 		;
 	else if (grandprixinfo.gp == true)
