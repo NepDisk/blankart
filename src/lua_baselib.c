@@ -3476,7 +3476,7 @@ static int lib_kAddHitLag(lua_State *L)
 	NOHUD
 	if (!mo)
 		return LUA_ErrInvalid(L, "mobj_t");
-	K_AddHitLag(mo, tics, fromdamage);
+	//K_AddHitLag(mo, tics, fromdamage);
 	return 0;
 }
 
@@ -3857,7 +3857,7 @@ static luaL_Reg lib[] = {
 	{"K_GetItemPatch",lib_kGetItemPatch},
 
 	{"K_GetCollideAngle",lib_kGetCollideAngle},
-	{"K_AddHitLag",lib_kAddHitLag},
+	{"//K_AddHitLag",lib_kAddHitLag},
 
 	// k_powerup
 	{"K_PowerUpRemaining",lib_kPowerUpRemaining},

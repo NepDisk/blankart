@@ -23,7 +23,7 @@
 #include "m_easing.h"
 
 /*--------------------------------------------------
-	void K_AddHitLag(mobj_t *mo, INT32 tics, boolean fromDamage)
+	void //K_AddHitLag(mobj_t *mo, INT32 tics, boolean fromDamage)
 
 		See header file for description.
 --------------------------------------------------*/
@@ -302,8 +302,8 @@ void K_SetHitLagForObjects(mobj_t *victim, mobj_t *inflictor, mobj_t *source, IN
 		}
 	}
 
-	K_AddHitLag(victim, finalTics, fromDamage);
-	K_AddHitLag(inflictor, finalTics, false); // Don't use the damage property.
+	//K_AddHitLag(victim, finalTics, fromDamage);
+	//K_AddHitLag(inflictor, finalTics, false); // Don't use the damage property.
 
 	if (P_MobjWasRemoved(victim) == false && fromDamage == true)
 	{

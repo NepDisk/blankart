@@ -275,12 +275,12 @@ struct Mobj : mobj_t
 	void hitlag(INT32 tics, bool damage = false) { K_AddHitLag(this, tics, damage); }
 	void hitlag(Mobj* inflictor, Mobj* source, INT32 tics, bool damage)
 	{
-		K_SetHitLagForObjects(this, inflictor, source, tics, damage);
+		//K_SetHitLagForObjects(this, inflictor, source, tics, damage);
 	}
 	void exact_hitlag(INT32 tics, bool damage)
 	{
-		mobj_t::hitlag = tics;
-		mobj_t::eflags = (mobj_t::eflags & ~MFE_DAMAGEHITLAG) | (MFE_DAMAGEHITLAG * damage);
+		//mobj_t::hitlag = tics;
+		//mobj_t::eflags = (mobj_t::eflags & ~MFE_DAMAGEHITLAG) | (MFE_DAMAGEHITLAG * damage);
 	}
 };
 

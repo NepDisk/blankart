@@ -1047,7 +1047,7 @@ void VS_BlendEye_Death(mobj_t *mobj)
 
 	mobj->flags |= MF_NOCLIP|MF_NOCLIPTHING;
 
-	K_AddHitLag(mobj, 6, true);
+	//K_AddHitLag(mobj, 6, true);
 }
 
 /// - AUXILLIARY OBJECTS - ///
@@ -1063,7 +1063,7 @@ boolean VS_BlendEye_Eye_Thinker(mobj_t *mobj)
 	if (mobj->target->hitlag)
 	{
 		P_InstaThrust(mobj, mobj->angle, 25*mobj->scale);
-		K_AddHitLag(mobj, mobj->target->hitlag, (mobj->target->eflags & MFE_DAMAGEHITLAG) == MFE_DAMAGEHITLAG);
+		//K_AddHitLag(mobj, mobj->target->hitlag, (mobj->target->eflags & MFE_DAMAGEHITLAG) == MFE_DAMAGEHITLAG);
 		return false;
 	}
 

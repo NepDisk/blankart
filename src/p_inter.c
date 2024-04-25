@@ -617,7 +617,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				firework->color = toucher->color;
 			}*/
 
-			K_SetHitLagForObjects(special, toucher, toucher, 2, true);
+			//K_SetHitLagForObjects(special, toucher, toucher, 2, true);
 
 			break;
 
@@ -1716,7 +1716,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 
 	P_ActivateThingSpecial(target, source);
 
-	//K_SetHitLagForObjects(target, inflictor, source, MAXHITLAGTICS, true);
+	////K_SetHitLagForObjects(target, inflictor, source, MAXHITLAGTICS, true);
 
 	// SRB2kart
 	// I wish I knew a better way to do this
@@ -2622,7 +2622,7 @@ static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source,
 	}
 
 	K_DropEmeraldsFromPlayer(player, player->emeralds);
-	//K_SetHitLagForObjects(player->mo, inflictor, source, MAXHITLAGTICS, true);
+	////K_SetHitLagForObjects(player->mo, inflictor, source, MAXHITLAGTICS, true);
 
 	player->carry = CR_NONE;
 
@@ -3051,7 +3051,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 					}
 
 					laglength = max(laglength / 2, 1);
-					K_SetHitLagForObjects(target, inflictor, source, laglength, false);
+					//K_SetHitLagForObjects(target, inflictor, source, laglength, false);
 
 					AddNullHitlag(player, oldHitlag);
 					AddNullHitlag(playerInflictor, oldHitlagInflictor);
@@ -3125,7 +3125,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 					}
 					else if (target->flags2 & MF2_ALREADYHIT) // do not deal extra damage in the same tic
 					{
-						K_SetHitLagForObjects(target, inflictor, source, laglength, true);
+						//K_SetHitLagForObjects(target, inflictor, source, laglength, true);
 						return false;
 					}
 				}
@@ -3414,7 +3414,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 		laglength /= 2;
 
 	if (!(target->player && (damagetype & DMG_DEATHMASK)))
-		K_SetHitLagForObjects(target, inflictor, source, laglength, true);
+		//K_SetHitLagForObjects(target, inflictor, source, laglength, true);
 
 	target->flags2 |= MF2_ALREADYHIT;
 
@@ -3424,7 +3424,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 		return true;
 	}
 
-	//K_SetHitLagForObjects(target, inflictor, source, laglength, true);
+	////K_SetHitLagForObjects(target, inflictor, source, laglength, true);
 
 	if (!player)
 	{

@@ -215,7 +215,7 @@ struct BallSwitch_Ball : mobj_t
 	void Hit(mobj_t *inflictor, mobj_t *source)
 	{
 		Push(inflictor, 64 << FRACBITS, 1 << FRACBITS);
-		K_SetHitLagForObjects(this, inflictor, source, 4, true);
+		//K_SetHitLagForObjects(this, inflictor, source, 4, true);
 
 		if (Active() == false)
 		{

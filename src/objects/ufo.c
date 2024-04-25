@@ -935,7 +935,7 @@ boolean Obj_SpecialUFODamage(mobj_t *ufo, mobj_t *inflictor, mobj_t *source, UIN
 
 	ufo->health = max(1, ufo->health - damage);
 
-	K_SetHitLagForObjects(ufo, inflictor, source, (damage / 3) + 2, true);
+	//K_SetHitLagForObjects(ufo, inflictor, source, (damage / 3) + 2, true);
 	UFOCopyHitlagToPieces(ufo);
 
 	if (ufo->health == 1)
