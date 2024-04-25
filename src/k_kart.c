@@ -4806,7 +4806,7 @@ void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 {
 	// We are either softlocked or wildly misbehaving. Stop that!
 	if (state == TRIPSTATE_BLOCKED && player->tripwireReboundDelay && (player->speed > 5 * K_GetKartSpeed(player, false, false)))
-		K_TumblePlayer(player, NULL, NULL);
+		//K_TumblePlayer(player, NULL, NULL);
 
 	if (state == TRIPSTATE_PASSED)
 	{
@@ -4847,7 +4847,7 @@ void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 	if (state == TRIPSTATE_PASSED && player->spinouttimer &&
 			player->speed > 2 * K_GetKartSpeed(player, false, true))
 	{
-		K_TumblePlayer(player, NULL, NULL);
+		//K_TumblePlayer(player, NULL, NULL);
 	}
 
 	player->tripwireUnstuck += 10;
