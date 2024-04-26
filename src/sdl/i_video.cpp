@@ -1728,32 +1728,33 @@ void VID_StartupOpenGL(void)
 		*(void**)&HWD.pfnSetTexture       = hwSym("SetTexture",NULL);
 		*(void**)&HWD.pfnUpdateTexture    = hwSym("UpdateTexture",NULL);
 		*(void**)&HWD.pfnDeleteTexture    = hwSym("DeleteTexture",NULL);
-		*(void**)&HWD.pfnReadRect         = hwSym("ReadRect",NULL);
+		*(void**)&HWD.pfnReadScreenTexture= hwSym("ReadScreenTexture",NULL);
 		*(void**)&HWD.pfnGClipRect        = hwSym("GClipRect",NULL);
 		*(void**)&HWD.pfnClearMipMapCache = hwSym("ClearMipMapCache",NULL);
 		*(void**)&HWD.pfnSetSpecialState  = hwSym("SetSpecialState",NULL);
-		*(void**)&HWD.pfnSetPalette       = hwSym("SetPalette",NULL);
+		*(void**)&HWD.pfnSetTexturePalette= hwSym("SetTexturePalette",NULL);
 		*(void**)&HWD.pfnGetTextureUsed   = hwSym("GetTextureUsed",NULL);
 		*(void**)&HWD.pfnDrawModel        = hwSym("DrawModel",NULL);
 		*(void**)&HWD.pfnCreateModelVBOs  = hwSym("CreateModelVBOs",NULL);
 		*(void**)&HWD.pfnSetTransform     = hwSym("SetTransform",NULL);
 		*(void**)&HWD.pfnPostImgRedraw    = hwSym("PostImgRedraw",NULL);
 		*(void**)&HWD.pfnFlushScreenTextures=hwSym("FlushScreenTextures",NULL);
-		*(void**)&HWD.pfnStartScreenWipe  = hwSym("StartScreenWipe",NULL);
-		*(void**)&HWD.pfnEndScreenWipe    = hwSym("EndScreenWipe",NULL);
 		*(void**)&HWD.pfnDoScreenWipe     = hwSym("DoScreenWipe",NULL);
-		*(void**)&HWD.pfnDrawIntermissionBG=hwSym("DrawIntermissionBG",NULL);
+		*(void**)&HWD.pfnDrawScreenTexture= hwSym("DrawScreenTexture",NULL);
 		*(void**)&HWD.pfnMakeScreenTexture= hwSym("MakeScreenTexture",NULL);
-		*(void**)&HWD.pfnMakeScreenFinalTexture=hwSym("MakeScreenFinalTexture",NULL);
 		*(void**)&HWD.pfnDrawScreenFinalTexture=hwSym("DrawScreenFinalTexture",NULL);
 
-		*(void**)&HWD.pfnCompileShaders   = hwSym("CompileShaders",NULL);
-		*(void**)&HWD.pfnCleanShaders     = hwSym("CleanShaders",NULL);
+		*(void**)&HWD.pfnInitShaders      = hwSym("InitShaders",NULL);
+		*(void**)&HWD.pfnLoadShader       = hwSym("LoadShader",NULL);
+		*(void**)&HWD.pfnCompileShader    = hwSym("CompileShader",NULL);
 		*(void**)&HWD.pfnSetShader        = hwSym("SetShader",NULL);
 		*(void**)&HWD.pfnUnSetShader      = hwSym("UnSetShader",NULL);
 
 		*(void**)&HWD.pfnSetShaderInfo    = hwSym("SetShaderInfo",NULL);
-		*(void**)&HWD.pfnLoadCustomShader = hwSym("LoadCustomShader",NULL);
+		*(void**)&HWD.pfnSetPaletteLookup = hwSym("SetPaletteLookup",NULL);
+		*(void**)&HWD.pfnCreateLightTable = hwSym("CreateLightTable",NULL);
+		*(void**)&HWD.pfnClearLightTables = hwSym("ClearLightTables",NULL);
+		*(void**)&HWD.pfnSetScreenPalette = hwSym("SetScreenPalette",NULL);
 		glstartup = true;
 	}
 

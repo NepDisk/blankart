@@ -1346,7 +1346,14 @@ consvar_t cv_mute = UnsavedNetVar("mute", "Off").on_off().onchange(Mute_OnChange
 
 	extern CV_PossibleValue_t glshaders_cons_t[];
 	consvar_t cv_glallowshaders = OpenGL("gr_allowclientshaders", "On").on_off().network().dont_save();
-	consvar_t cv_glshaders = OpenGL("gr_shaders", "On").values(glshaders_cons_t);
+	void CV_glshaders_OnChange(void);
+	consvar_t cv_glshaders = OpenGL("gr_shaders", "On").values(glshaders_cons_t).onchange(CV_glshaders_OnChange);
+
+	extern CV_PossibleValue_t glpalettedepth_cons_t[];
+	void CV_glpaletterendering_OnChange(void);
+	consvar_t cv_glpaletterendering = OpenGL("gr_paletterendering", "On").on_off().onchange(CV_glpaletterendering_OnChange);
+	void CV_glpalettedepth_OnChange(void);
+	consvar_t cv_glpalettedepth = OpenGL("gr_palettedepth", "16 bits").values(glpalettedepth_cons_t).onchange(CV_glpalettedepth_OnChange);
 
 	extern CV_PossibleValue_t glanisotropicmode_cons_t[];
 	void CV_glanisotropic_OnChange(void);
@@ -1367,7 +1374,8 @@ consvar_t cv_mute = UnsavedNetVar("mute", "Off").on_off().onchange(Mute_OnChange
 
 #ifdef BAD_MODEL_OPTIONS
 	consvar_t cv_glmodelinterpolation = OpenGL("gr_modelinterpolation", "Sometimes").values({{0, "Off"}, {1, "Sometimes"}, {2, "Always"}});
-	consvar_t cv_glmodellighting = OpenGL("gr_modellighting", "Off").on_off();
+	void CV_glmodellighting_OnChange(void);
+	consvar_t cv_glmodellighting = OpenGL("gr_modellighting", "Off").on_off().onchange(CV_glmodellighting_OnChange);
 #endif
 
 	consvar_t cv_glmodels = OpenGL("gr_models", "On").on_off();
