@@ -130,6 +130,8 @@ extern GLint			maximumAnisotropy;
 extern INT32            oglflags;
 extern GLint            textureformatGL;
 
+extern GLfloat 			projMatrix[16];
+
 typedef enum
 {
 	GLF_NOZBUFREAD = 0x01,

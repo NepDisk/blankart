@@ -24,6 +24,7 @@
 #include <math.h>
 #include "r_opengl.h"
 #include "r_vbo.h"
+#include "../hw_clip.h"
 
 #if defined (HWRENDER) && !defined (NOROPENGL)
 
@@ -84,7 +85,7 @@ const GLubyte *gl_extensions = NULL;
 
 //Hurdler: 04/10/2000: added for the kick ass coronas as Boris wanted;-)
 static GLfloat modelMatrix[16];
-static GLfloat projMatrix[16];
+GLfloat projMatrix[16];
 static GLint   viewport[4];
 
 // Sryder:	NextTexAvail is broken for these because palette changes or changes to the texture filter or antialiasing
