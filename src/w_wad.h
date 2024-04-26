@@ -38,6 +38,7 @@ struct filelump_t
 #pragma pack()
 #endif
 
+#define W_FileHasFolders(wadfile) ((wadfile)->type == RET_PK3)
 
 // ==============================================================
 //               WAD FILE STRUCTURE DEFINITIONS
