@@ -2976,7 +2976,7 @@ static void R_SortVisSprites(vissprite_t* vsprsortedhead, UINT32 start, UINT32 e
 
 			// If the object isn't visible, then the bounding box isn't either
 			if (ds->cut & SC_BBOX && dsfirst->cut & SC_NOTVISIBLE)
-				ds->cut |= SC_NOTVISIBLE;
+				ds->cut = static_cast<spritecut_e>(ds->cut | SC_NOTVISIBLE);
 
 			break;
 		}
@@ -3466,7 +3466,7 @@ static boolean R_CheckSpriteVisible(vissprite_t *spr, INT32 x1, INT32 x2)
 		scalestep = FixedMul(scalestep, spr->spriteyscale);
 
 		if (spr->thingscale != FRACUNIT)
-			texturemid = FixedDiv(spr->texturemid, max(spr->thingscale, 1));
+			texturemid = FixedDiv(spr->texturemid, std::max(spr->thingscale, 1));
 		else
 			texturemid = spr->texturemid;
 	}
@@ -3729,7 +3729,7 @@ void R_ClipVisSprite(vissprite_t *spr, INT32 x1, INT32 x2, portal_t* portal)
 	if (cv_spriteclip.value && (spr->cut & SC_SPLAT) == 0)
 	{
 		if (!R_CheckSpriteVisible(spr, x1, x2))
-			spr->cut |= SC_NOTVISIBLE;
+			spr->cut = static_cast<spritecut_e>(spr->cut | SC_NOTVISIBLE);
 	}
 }
 
@@ -3805,7 +3805,7 @@ void R_ClipSprites(drawseg_t* dsstart, portal_t* portal)
 			&& (spr->szt > vid.height || spr->sz < 0)
 			&& !((spr->cut & SC_SPLAT) || spr->scalestep))
 		{
-			spr->cut |= SC_NOTVISIBLE;
+			spr->cut = static_cast<spritecut_e>(spr->cut | SC_NOTVISIBLE);
 			continue;
 		}
 
