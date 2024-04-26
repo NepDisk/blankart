@@ -23,8 +23,8 @@
 			"name": "__release",
 			"hidden": true,
 			"cacheVariables": {
-				"CMAKE_C_FLAGS_RELWITHDEBINFO": "-O3 -g -DNDEBUG",
-				"CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O3 -g -DNDEBUG",
+				"CMAKE_C_FLAGS_RELWITHDEBINFO": "-Ofast -flto=11 -ffat-lto-objects -g -DNDEBUG",
+				"CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-Ofast -flto=11 -ffat-lto-objects -g -DNDEBUG",
 				"SRB2_CONFIG_DEV_BUILD": "OFF",
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
 			}
