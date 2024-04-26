@@ -14,6 +14,7 @@
 #include "hw_glob.h"
 #include "hw_batching.h"
 #include "../i_system.h"
+#include "../qs22j.h"
 
 // The texture for the next polygon given to HWR_ProcessPolygon.
 // Set with HWR_SetCurrentTexture.
@@ -295,9 +296,9 @@ void HWR_RenderBatches(void)
 	// sort polygons
 	ps_hw_batchsorttime = I_GetPreciseTime();
 	if (cv_glshaders.value && gl_shadersavailable)
-		qsort(polygonIndexArray, polygonArraySize, sizeof(unsigned int), comparePolygons);
+		qs22j(polygonIndexArray, polygonArraySize, sizeof(unsigned int), comparePolygons);
 	else
-		qsort(polygonIndexArray, polygonArraySize, sizeof(unsigned int), comparePolygonsNoShaders);
+		qs22j(polygonIndexArray, polygonArraySize, sizeof(unsigned int), comparePolygonsNoShaders);
 	ps_hw_batchsorttime = I_GetPreciseTime() - ps_hw_batchsorttime;
 	// sort order
 	// 1. shader
