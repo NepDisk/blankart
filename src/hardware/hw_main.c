@@ -5783,6 +5783,10 @@ static void HWR_RenderViewpoint(player_t *player, boolean drawSkyTexture, boolea
 
 	drawcount = 0;
 
+	//04/01/2000: Hurdler: added for T&L
+	//                     Actually it only works on Walls and Planes
+	HWD.pfnSetTransform(&atransform);
+
 	{
 		angle_t a1 = gld_FrustumAngle(gl_aimingangle);
 		gld_clipper_Clear();
@@ -5791,10 +5795,6 @@ static void HWR_RenderViewpoint(player_t *player, boolean drawSkyTexture, boolea
 		gld_FrustrumSetup();
 #endif
 	}
-
-	//04/01/2000: Hurdler: added for T&L
-	//                     Actually it only works on Walls and Planes
-	HWD.pfnSetTransform(&atransform);
 
 	// Reset the shader state.
 	HWR_SetShaderState();
