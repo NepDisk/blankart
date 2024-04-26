@@ -223,7 +223,13 @@ static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen, SDL_bool 
 	else
 #endif
 	{
-		SDL_GL_SetSwapInterval(cv_vidwait.value ? 1 : 0);
+		if (cv_vidwait.value)
+		{
+			if (SDL_GL_SetSwapInterval(-1) != 0) // try async vsync
+				SDL_GL_SetSwapInterval(1); // normal vsync
+		}
+		else
+			SDL_GL_SetSwapInterval(0);
 	}
 
 	SDL_GetWindowSize(window, &width, &height);
@@ -1827,7 +1833,13 @@ void srb2::cvarhandler::on_set_vid_wait()
 		{
 			return;
 		}
-		SDL_GL_SetSwapInterval(interval);
+		if (interval)
+		{
+			if (SDL_GL_SetSwapInterval(-1) != 0) // try async vsync
+				SDL_GL_SetSwapInterval(1); // normal vsync
+		}
+		else
+			SDL_GL_SetSwapInterval(0);
 		break;
 #ifdef HWRENDER
 	case render_opengl:
@@ -1835,7 +1847,13 @@ void srb2::cvarhandler::on_set_vid_wait()
 		{
 			return;
 		}
-		SDL_GL_SetSwapInterval(interval);
+		if (interval)
+		{
+			if (SDL_GL_SetSwapInterval(-1) != 0) // try async vsync
+				SDL_GL_SetSwapInterval(1); // normal vsync
+		}
+		else
+			SDL_GL_SetSwapInterval(0);
 #endif
 	default:
 		break;
