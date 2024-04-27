@@ -341,8 +341,8 @@ consvar_t cv_drawdist = Player("drawdist", "Normal").values({
 	{8192,  "Normal"},
 	{12288, "Far"},
 	{16384, "Farther"},
-	{24576, "Extreme"},
-	{32768, "Penultimate"},
+	{20480, "Extreme"},
+	{24576, "Penultimate"},
 	{0,     "Infinite"},
 });
 
@@ -643,7 +643,7 @@ consvar_t cv_advertise = UnsavedNetVar("advertise", "No").yes_no().onchange_noin
 consvar_t cv_allowexitlevel = UnsavedNetVar("allowexitlevel", "No").yes_no();
 consvar_t cv_allowmlook = UnsavedNetVar("allowmlook", "Yes").yes_no();
 consvar_t cv_allowteamchange = UnsavedNetVar("allowteamchange", "Yes").yes_no();
-consvar_t cv_antigrief = UnsavedNetVar("antigrief", "30").min_max(10, 180, {{0, "Off"}});
+consvar_t cv_antigrief = NetVar("antigrief", "30").min_max(10, 180, {{0, "Off"}});
 consvar_t cv_automate = UnsavedNetVar("automate", "On").on_off();
 
 // If on and you're an admin, your messages will automatically become shouts.
@@ -714,7 +714,7 @@ consvar_t cv_kartbot = UnsavedNetVar("bots", "Off").values({
 consvar_t cv_kartbumpers = UnsavedNetVar("battlebumpers", "3").min_max(0, 12);
 
 void KartEliminateLast_OnChange(void);
-consvar_t cv_karteliminatelast = UnsavedNetVar("eliminatelast", "Yes").yes_no().onchange(KartEliminateLast_OnChange);
+consvar_t cv_karteliminatelast = NetVar("eliminatelast", "Yes").yes_no().onchange(KartEliminateLast_OnChange);
 
 void KartEncore_OnChange(void);
 consvar_t cv_kartencore = UnsavedNetVar("encore", "Auto").values({{-1, "Auto"}, {0, "Off"}, {1, "On"}}).onchange_noinit(KartEncore_OnChange);
@@ -734,7 +734,7 @@ void LiveStudioAudience_OnChange(void);
 	consvar_t cv_livestudioaudience = UnsavedNetVar("livestudioaudience", "Off").on_off().onchange(LiveStudioAudience_OnChange);
 #endif
 
-consvar_t cv_maxplayers = UnsavedNetVar("maxplayers", "8").min_max(1, MAXPLAYERS);
+consvar_t cv_maxplayers = NetVar("maxplayers", "8").min_max(1, MAXPLAYERS);
 
 // Scoring type options
 consvar_t cv_overtime = UnsavedNetVar("overtime", "Yes").yes_no();
@@ -966,7 +966,7 @@ consvar_t cv_dummymenuplayer = MenuDummy("dummymenuplayer", "P1").onchange(Dummy
 
 consvar_t cv_dummyprofileautoroulette = MenuDummy("dummyprofileautoroulette", "Off").on_off();
 consvar_t cv_dummyprofilefov = MenuDummy("dummyprofilefov", "90").min_max(70, 140);
-consvar_t cv_dummyprofilelitesteer = MenuDummy("dummyprofilelitesteer", "On").on_off();
+consvar_t cv_dummyprofilelitesteer = MenuDummy("dummyprofilelitesteer", "Off").on_off();
 consvar_t cv_dummyprofilekickstart = MenuDummy("dummyprofilekickstart", "Off").on_off();
 consvar_t cv_dummyprofilename = MenuDummy("dummyprofilename", "");
 consvar_t cv_dummyprofileplayername = MenuDummy("dummyprofileplayername", "");
@@ -1073,10 +1073,10 @@ consvar_t cv_autoroulette[MAXSPLITSCREENPLAYERS] = {
 };
 
 consvar_t cv_litesteer[MAXSPLITSCREENPLAYERS] = {
-	Player("litesteer", "On").on_off().onchange(weaponPrefChange),
-	Player("litesteer2", "On").on_off().onchange(weaponPrefChange2),
-	Player("litesteer3", "On").on_off().onchange(weaponPrefChange3),
-	Player("litesteer4", "On").on_off().onchange(weaponPrefChange4),
+	Player("litesteer", "Off").on_off().onchange(weaponPrefChange),
+	Player("litesteer2", "Off").on_off().onchange(weaponPrefChange2),
+	Player("litesteer3", "Off").on_off().onchange(weaponPrefChange3),
+	Player("litesteer4", "Off").on_off().onchange(weaponPrefChange4),
 };
 
 consvar_t cv_cam_dist[MAXSPLITSCREENPLAYERS] = {

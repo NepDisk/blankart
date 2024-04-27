@@ -28,6 +28,9 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
+#define GD_VERSION_MAJOR (0xBA5ED321)
+#define GD_VERSION_MINOR (1)
+
 void srb2::save_ng_gamedata()
 {
 	if (gamedata == NULL || !gamedata->loaded)
@@ -76,6 +79,7 @@ void srb2::save_ng_gamedata()
 	ng.milestones.finishedtutorialchallenge = gamedata->finishedtutorialchallenge;
 	ng.milestones.enteredtutorialchallenge = gamedata->enteredtutorialchallenge;
 	ng.milestones.sealedswapalerted = gamedata->sealedswapalerted;
+	ng.milestones.tutorialdone = gamedata->tutorialdone;
 	ng.milestones.gonerlevel = gamedata->gonerlevel;
 	ng.prisons.thisprisoneggpickup = gamedata->thisprisoneggpickup;
 	ng.prisons.prisoneggstothispickup = gamedata->prisoneggstothispickup;
@@ -293,8 +297,8 @@ void srb2::save_ng_gamedata()
 		srb2::io::BufferedOutputStream<srb2::io::FileStream> bos {std::move(file)};
 
 		// The header is necessary to validate during loading.
-		srb2::io::write(static_cast<uint32_t>(0xBA5ED321), bos); // major
-		srb2::io::write(static_cast<uint8_t>(0), bos); // minor/flags
+		srb2::io::write(static_cast<uint32_t>(GD_VERSION_MAJOR), bos); // major
+		srb2::io::write(static_cast<uint8_t>(GD_VERSION_MINOR), bos); // minor/flags
 		srb2::io::write(static_cast<uint8_t>(gamedata->evercrashed), bos); // dirty (crash recovery)
 
 		std::vector<uint8_t> ubjson = json::to_ubjson(ng);
@@ -413,7 +417,7 @@ void srb2::load_ng_gamedata()
 		return;
 	}
 
-	if (majorversion != 0xBA5ED321)
+	if (majorversion != GD_VERSION_MAJOR)
 	{
 		const char* gdfolder = G_GameDataFolder();
 		I_Error("Game data is not for Ring Racers v2.0.\nDelete %s (maybe in %s) and try again.", gamedatafilename, gdfolder);
@@ -480,6 +484,7 @@ void srb2::load_ng_gamedata()
 	gamedata->finishedtutorialchallenge = js.milestones.finishedtutorialchallenge;
 	gamedata->enteredtutorialchallenge = js.milestones.enteredtutorialchallenge;
 	gamedata->sealedswapalerted = js.milestones.sealedswapalerted;
+	gamedata->tutorialdone = js.milestones.tutorialdone;
 	gamedata->gonerlevel = js.milestones.gonerlevel;
 	gamedata->thisprisoneggpickup = js.prisons.thisprisoneggpickup;
 	gamedata->prisoneggstothispickup = js.prisons.prisoneggstothispickup;
@@ -827,7 +832,42 @@ void srb2::load_ng_gamedata()
 		}
 	}
 
+	bool converted = false;
+	UINT32 chao_key_rounds = GDCONVERT_ROUNDSTOKEY;
+	UINT32 start_keys = GDINIT_CHAOKEYS;
+
+	if (minorversion == 0)
+	{
+		chao_key_rounds = 14;
+		start_keys = 3;
+	}
+
+	if (chao_key_rounds != GDCONVERT_ROUNDSTOKEY)
+	{
+		// Chao key rounds changed.
+		// Just reset all round progress, because there is a dumbass
+		// bug that can cause infinite chao keys from loading.
+		gamedata->pendingkeyrounds = 0;
+		gamedata->pendingkeyroundoffset = 0;
+		gamedata->keyspending = 0;
+		converted = true;
+	}
+
+	if (GDINIT_CHAOKEYS > start_keys)
+	{
+		// Chao key starting amount changed.
+		// Give some free keys!
+		gamedata->chaokeys += GDINIT_CHAOKEYS - start_keys;
+		converted = true;
+	}
+
 	M_FinaliseGameData();
+
+	if (converted)
+	{
+		CONS_Printf("Gamedata was converted from version %d to version %d\n",
+			minorversion, GD_VERSION_MINOR);
+	}
 }
 
 // G_LoadGameData
