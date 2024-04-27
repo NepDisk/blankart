@@ -9272,15 +9272,17 @@ UINT8 P_InitMapData(void)
 	return ret;
 }
 
+static UINT16 P_PartialAddWadFileEx(const char *wadfilename, boolean local);
+
 //
 // Add a wadfile to the active wad files,
 // replace sounds, musics, patches, textures, sprites and maps
 //
-boolean P_AddWadFile(const char *wadfilename)
+static boolean P_AddWadFileEx(const char *wadfilename, boolean local)
 {
 	UINT16 wadnum;
 
-	if ((wadnum = P_PartialAddWadFile(wadfilename)) == UINT16_MAX)
+	if ((wadnum = P_PartialAddWadFileEx(wadfilename, local)) == UINT16_MAX)
 		return false;
 
 	if (P_PartialAddGetStage() >= 0)
@@ -9289,11 +9291,28 @@ boolean P_AddWadFile(const char *wadfilename)
 	return true;
 }
 
+// I'm just too lazy and don't want to go through code and add extra argument everywhere
+boolean P_AddWadFile(const char *wadfilename)
+{
+	return P_AddWadFileEx(wadfilename, false);
+}
+
+boolean P_AddWadFileLocal(const char *wadfilename)
+{
+	boolean oldmodifiedgame = modifiedgame;
+
+	boolean result = P_AddWadFileEx(wadfilename, true);
+
+	modifiedgame = oldmodifiedgame;
+
+	return result;
+}
+
 //
 // Add a WAD file and do the per-WAD setup stages.
 // Call P_MultiSetupWadFiles as soon as possible after any number of these.
 //
-UINT16 P_PartialAddWadFile(const char *wadfilename)
+static UINT16 P_PartialAddWadFileEx(const char *wadfilename, boolean local)
 {
 	size_t i, j, sreplaces = 0, mreplaces = 0, digmreplaces = 0;
 	UINT16 numlumps, wadnum;
@@ -9321,6 +9340,12 @@ UINT16 P_PartialAddWadFile(const char *wadfilename)
 	}
 
 	wadnum = (UINT16)(numwadfiles-1);
+
+	// shhhhhhhh
+	if (local)
+	{
+		wadfiles[wadnum]->important = false;
+	}
 
 	// Init partadd.
 	if (wadfiles[wadnum]->important)
@@ -9453,6 +9478,12 @@ UINT16 P_PartialAddWadFile(const char *wadfilename)
 	refreshdirmenu &= ~REFRESHDIR_GAMEDATA; // Under usual circumstances we'd wait for REFRESHDIR_ flags to disappear the next frame, but this one's a bit too dangerous for that...
 
 	return true;
+}
+
+// Me being lazy again
+UINT16 P_PartialAddWadFile(const char *wadfilename)
+{
+	return P_PartialAddWadFileEx(wadfilename, false);
 }
 
 // Only exists to make sure there's no way to overwrite partadd_stage externally
