@@ -1,5 +1,5 @@
 add_subdirectory(glm)
-#add_subdirectory(discord-rpc)
+add_subdirectory(discord-rpc)
 add_subdirectory(xmp-lite)
 add_subdirectory(imgui)
 

@@ -93,10 +93,10 @@ void DRPC_Init(void);
 void DRPC_UpdatePresence(void);
 
 
+#endif // HAVE_DISCORDRPC
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
-
-#endif // HAVE_DISCORDRPC
 
 #endif // __DISCORD__
