@@ -106,6 +106,7 @@ void K_StripOther(player_t *player);
 void K_MomentumToFacing(player_t *player);
 boolean K_ApplyOffroad(player_t *player);
 boolean K_SlopeResistance(player_t *player);
+fixed_t K_PlayerTripwireSpeedThreshold(player_t *player);
 tripwirepass_t K_TripwirePassConditions(player_t *player);
 boolean K_TripwirePass(player_t *player);
 boolean K_MovingHorizontally(player_t *player);
