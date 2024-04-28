@@ -1,0 +1,17 @@
+- unfuck driving controls
+- Expsoe missing constants and functions to lua
+respawnvars_t
+BT_LOOKBACK and BT_RESPAWN
+object tracking
+TRICKSTATE_READY 
+TRIPSTATE_NONE
+MFE_PAUSED
+DMG_NORMAL
+DMG_TUMBLE
+DMG_STING
+DMG_STUMBLE
+DMG_WHUMBLE
+iskartitem?
+
+- r_splitscreen expose
+- 
