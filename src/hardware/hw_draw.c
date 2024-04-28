@@ -336,7 +336,7 @@ void HWR_DrawStretchyFixedPatch(patch_t *gpatch, fixed_t x, fixed_t y, fixed_t p
 		else if (alphalevel > 0 && alphalevel <= 10)
 			Surf.PolyColor.s.alpha = softwaretranstogl[10-alphalevel];
 		else 
-			Surf.PolyColor.s.alpha = 0xff;
+			Surf.PolyColor.s.alpha = 0x00;
 
 		HWD.pfnDrawPolygon(&Surf, v, 4, flags|PF_Modulated);
 	}
