@@ -375,6 +375,9 @@ consvar_t cv_fpscap = Player("fpscap", "Match refresh rate").values({
 void SCR_ChangeFullscreen(void);
 consvar_t cv_fullscreen = Player("fullscreen", "Yes").yes_no().onchange(SCR_ChangeFullscreen);
 
+void Highreshudscale_OnChange(void);
+consvar_t cv_highreshudscale   = Player("highreshudscale",   "1").floating_point().min_max(9*FRACUNIT/10, 11*FRACUNIT/10).onchange(Highreshudscale_OnChange);
+
 // Sound system toggles, saved into the config
 void GameDigiMusic_OnChange(void);
 void GameSounds_OnChange(void);
