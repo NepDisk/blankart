@@ -14,22 +14,23 @@
 
 - expose missing constants and functions to lua
 []respawnvars_t
-[]BT_LOOKBACK and BT_RESPAWN
+[x]BT_LOOKBACK and BT_RESPAWN
 []object tracking
 []r_splitscreen
-[]TRICKSTATE_READY
-[]TRIPSTATE_NONE
-[]MFE_PAUSED
-[]DMG_NORMAL
-[]DMG_TUMBLE
-[]DMG_STING
-[]DMG_STUMBLE
-[]DMG_WHUMBLE
+[x]TRICKSTATE_READY
+[x]TRIPSTATE_NONE
+[x]MFE_PAUSED
+[?]DMG_NORMAL
+[?]DMG_TUMBLE
+[?]DMG_STING
+[?]DMG_STUMBLE
+[?]DMG_WHUMBLE
 []iskartitem?
 Many many K_ functions
 []K_RainbowColor
 []FIRSTRAINBOWCOLOR
 []V_SetClipWindow
+player->whip
 - Restore music play functions
 []S_ChangeMusic
 
