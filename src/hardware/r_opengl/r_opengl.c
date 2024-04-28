@@ -755,8 +755,9 @@ EXPORT void HWRAPI(LoadShader) (int slot, char *code, hwdshaderstage_t stage)
 	shader = &gl_shaders[slot];
 
 #define LOADSHADER(source) { \
-	if (shader->source) \
+	if (shader->source){ \
 		Z_Free(shader->source); \
+	}							\
 		shader->source = code; \
 	}
 
@@ -3082,7 +3083,8 @@ EXPORT void HWRAPI(DrawScreenTexture)(int tex, FSurfaceInfo *surf, FBITFIELD pol
 		PreparePolygon(surf, NULL, polyflags);
 	else
 		Shader_SetUniforms(NULL, NULL, NULL, NULL); // prepare shader, if it is enabled
-		pglColor4ubv(white);
+
+	pglColor4ubv(white);
 
 	pglTexCoordPointer(2, GL_FLOAT, 0, fix);
 	pglVertexPointer(3, GL_FLOAT, 0, screenVerts);
