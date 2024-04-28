@@ -67,6 +67,7 @@ typedef enum
 	UC_REPLAY,			// Save a replay
 	UC_CRASH,			// Hee ho !
 	UC_TUTORIALSKIP,	// Complete the Tutorial Challenge
+	UC_TUTORIALDONE,	// Complete the Tutorial at all
 
 	UC_PASSWORD,		// Type in something funny
 
@@ -298,9 +299,9 @@ typedef enum {
 #define GDMAX_CHAOKEYS 9999
 #define GDMAX_SEALEDSWAPS 7
 
-#define GDCONVERT_ROUNDSTOKEY 14
+#define GDCONVERT_ROUNDSTOKEY 5
 
-#define GDINIT_CHAOKEYS 3 // Start with 3 Chao Keys !!
+#define GDINIT_CHAOKEYS 10 // Start with 10 Chao Keys !!
 #define GDINIT_PRISONSTOPRIZE 30 // 30 Prison Eggs to your [Wild Prize] !!
 
 typedef enum {
@@ -393,6 +394,7 @@ struct gamedata_t
 	boolean enteredtutorialchallenge;
 	boolean finishedtutorialchallenge;
 	boolean sealedswapalerted;
+	boolean tutorialdone;
 	gdmusic_t musicstate;
 
 	UINT8 gonerlevel;

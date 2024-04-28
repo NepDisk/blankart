@@ -8,6 +8,7 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 include(CMakeDependentOption)
+include(CheckCXXCompilerFlag)
 
 file(STRINGS src/version.h SRB2_VERSION)
 string(REGEX MATCH "[0-9]+\\.[0-9.]+" SRB2_VERSION ${SRB2_VERSION})
@@ -34,6 +35,8 @@ if("${SRB2_CPACK_GENERATOR}" STREQUAL "")
 		set(SRB2_CPACK_GENERATOR "TGZ")
 	elseif("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
 		set(SRB2_CPACK_GENERATOR "TGZ")
+	elseif("${CMAKE_SYSTEM_NAME}" MATCHES "FreeBSD")
+		set(SRB2_CPACK_GENERATOR "TGZ")
 	endif()
 endif()
 
@@ -57,6 +60,7 @@ option(
 	ON
 )
 option(SRB2_CONFIG_ENABLE_WEBM_MOVIES "Enable WebM recording support" ON)
+option(SRB2_CONFIG_ENABLE_DISCORDRPC "Enable Discord RPC features" ON)
 option(SRB2_CONFIG_HWRENDER "Enable hardware render (OpenGL) support" ON)
 option(SRB2_CONFIG_STATIC_OPENGL "Enable static linking GL (do not do this)" OFF)
 option(SRB2_CONFIG_ERRORMODE "Compile C code with warnings treated as errors." OFF)

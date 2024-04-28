@@ -80,7 +80,7 @@ profile_t* PR_MakeProfile(
 	newprofile->followercolor = fcol;
 	newprofile->kickstartaccel = false;
 	newprofile->autoroulette = false;
-	newprofile->litesteer = true;
+	newprofile->litesteer = false;
 	newprofile->rumble = true;
 	newprofile->fov = atoi(cv_dummyprofilefov.defaultvalue);
 
@@ -412,6 +412,7 @@ void PR_LoadProfiles(void)
 
 	for (size_t i = 1; i < numprofiles; i++)
 	{
+		bool converted = false;
 		auto& jsprof = js.profiles[i - 1];
 		profile_t* newprof = static_cast<profile_t*>(Z_Calloc(sizeof(profile_t), PU_STATIC, NULL));
 		profilesList[i] = newprof;
@@ -481,6 +482,38 @@ void PR_LoadProfiles(void)
 		{
 			I_Error("Profile '%s' controls are corrupt", jsprof.playername.c_str());
 			return;
+		}
+
+		if (jsprof.version == 1)
+		{
+			// Version 1 -> 2:
+			// - litesteer is now off by default, reset old profiles
+			newprof->litesteer = false;
+
+			// - fov is now 100 by default, reset if it was left at 90 (old default)
+			if (newprof->fov == 90)
+			{
+				newprof->fov = 100;
+			}
+
+			auto unbound = [](const INT32* map)
+			{
+				INT32 zero[MAXINPUTMAPPING] = {};
+				return !memcmp(map, zero, sizeof zero);
+			};
+			if (unbound(newprof->controls[gc_talk]))
+			{
+				// - unbound talk control gets reset to default
+				memcpy(newprof->controls[gc_talk], gamecontroldefault[gc_talk], sizeof newprof->controls[gc_talk]);
+			}
+
+			converted = true;
+		}
+
+		if (converted)
+		{
+			CONS_Printf("Profile '%s' was converted from version %d to version %d\n",
+				newprof->profilename, jsprof.version, PROFILEVER);
 		}
 	}
 
