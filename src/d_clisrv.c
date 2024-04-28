@@ -4925,7 +4925,7 @@ static void HandlePacketFromPlayer(SINT8 node)
 			tic_t faketic = maketic;
 
 			if ((!!(netcmds[maketic % BACKUPTICS][netconsole].flags & TICCMD_RECEIVED))
-				&& (maketic - firstticstosend < BACKUPTICS))
+				&& (maketic - firstticstosend < BACKUPTICS - 1))
 				faketic++;
 
 			FuzzTiccmd(&netbuffer->u.clientpak.cmd);

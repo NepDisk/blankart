@@ -116,6 +116,7 @@ void P_PostLoadLevel(void);
 void HWR_LoadLevel(void);
 #endif
 boolean P_AddWadFile(const char *wadfilename);
+boolean P_AddWadFileLocal(const char *wadfilename);
 
 #define MAPRET_ADDED (1)
 #define MAPRET_CURRENTREPLACED (1<<1)

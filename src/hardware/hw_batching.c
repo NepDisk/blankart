@@ -14,6 +14,7 @@
 #include "hw_glob.h"
 #include "hw_batching.h"
 #include "../i_system.h"
+#include "../qs22j.h"
 
 // The texture for the next polygon given to HWR_ProcessPolygon.
 // Set with HWR_SetCurrentTexture.
@@ -93,7 +94,7 @@ void HWR_SetCurrentTexture(GLMipmap_t *texture)
 // If batching is enabled, this function collects the polygon data and the chosen texture
 // for later use in HWR_RenderBatches. Otherwise the rendering backend is used to
 // render the polygon immediately.
-void HWR_ProcessPolygon(FSurfaceInfo *pSurf, FOutVector *pOutVerts, FUINT iNumPts, FBITFIELD PolyFlags, int shader, boolean horizonSpecial)
+void HWR_ProcessPolygon(FSurfaceInfo *pSurf, FOutVector *pOutVerts, FUINT iNumPts, FBITFIELD PolyFlags, int shader_target, boolean horizonSpecial)
 {
 	if (currently_batching)
 	{
@@ -132,7 +133,7 @@ void HWR_ProcessPolygon(FSurfaceInfo *pSurf, FOutVector *pOutVerts, FUINT iNumPt
 		polygonArray[polygonArraySize].polyFlags = PolyFlags;
 		polygonArray[polygonArraySize].texture = current_texture;
 		polygonArray[polygonArraySize].brightmap = current_brightmap;
-		polygonArray[polygonArraySize].shader = shader;
+		polygonArray[polygonArraySize].shader = (shader_target != -1) ? HWR_GetShaderFromTarget(shader_target) : shader_target;
 		polygonArray[polygonArraySize].horizonSpecial = horizonSpecial;
 		polygonArraySize++;
 
@@ -141,8 +142,7 @@ void HWR_ProcessPolygon(FSurfaceInfo *pSurf, FOutVector *pOutVerts, FUINT iNumPt
 	}
 	else
 	{
-		if (shader)
-			HWD.pfnSetShader(shader);
+		HWD.pfnSetShader((shader_target != SHADER_NONE) ? HWR_GetShaderFromTarget(shader_target) : shader_target);
 		HWD.pfnDrawPolygon(pSurf, pOutVerts, iNumPts, PolyFlags);
 	}
 }
@@ -295,9 +295,9 @@ void HWR_RenderBatches(void)
 	// sort polygons
 	ps_hw_batchsorttime = I_GetPreciseTime();
 	if (cv_glshaders.value && gl_shadersavailable)
-		qsort(polygonIndexArray, polygonArraySize, sizeof(unsigned int), comparePolygons);
+		qs22j(polygonIndexArray, polygonArraySize, sizeof(unsigned int), comparePolygons);
 	else
-		qsort(polygonIndexArray, polygonArraySize, sizeof(unsigned int), comparePolygonsNoShaders);
+		qs22j(polygonIndexArray, polygonArraySize, sizeof(unsigned int), comparePolygonsNoShaders);
 	ps_hw_batchsorttime = I_GetPreciseTime() - ps_hw_batchsorttime;
 	// sort order
 	// 1. shader

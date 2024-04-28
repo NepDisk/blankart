@@ -358,6 +358,7 @@ consvar_t cv_drawdist_precip = Player("drawdist_precip", "Normal").values({
 
 consvar_t cv_drawinput = Player("drawinput", "Off").on_off();
 consvar_t cv_ffloorclip = Player("ffloorclip", "On").on_off();
+consvar_t cv_spriteclip = Player("spriteclip", "On").on_off();
 
 consvar_t cv_fpscap = Player("fpscap", "Match refresh rate").values({
 #ifdef DEVELOP
@@ -373,6 +374,9 @@ consvar_t cv_fpscap = Player("fpscap", "Match refresh rate").values({
 
 void SCR_ChangeFullscreen(void);
 consvar_t cv_fullscreen = Player("fullscreen", "Yes").yes_no().onchange(SCR_ChangeFullscreen);
+
+void Highreshudscale_OnChange(void);
+consvar_t cv_highreshudscale   = Player("highreshudscale",   "1").floating_point().min_max(9*FRACUNIT/10, 11*FRACUNIT/10).onchange(Highreshudscale_OnChange);
 
 // Sound system toggles, saved into the config
 void GameDigiMusic_OnChange(void);
@@ -964,7 +968,7 @@ void Dummymenuplayer_OnChange(void);
 consvar_t cv_dummymenuplayer = MenuDummy("dummymenuplayer", "P1").onchange(Dummymenuplayer_OnChange).values({{0, "NOPE"}, {1, "P1"}, {2, "P2"}, {3, "P3"}, {4, "P4"}});
 
 consvar_t cv_dummyprofileautoroulette = MenuDummy("dummyprofileautoroulette", "Off").on_off();
-consvar_t cv_dummyprofilefov = MenuDummy("dummyprofilefov", "100").min_max(70, 110);
+consvar_t cv_dummyprofilefov = MenuDummy("dummyprofilefov", "100").min_max(70, 140);
 consvar_t cv_dummyprofilelitesteer = MenuDummy("dummyprofilelitesteer", "Off").on_off();
 consvar_t cv_dummyprofilekickstart = MenuDummy("dummyprofilekickstart", "Off").on_off();
 consvar_t cv_dummyprofilename = MenuDummy("dummyprofilename", "");
@@ -1166,10 +1170,10 @@ consvar_t cv_followercolor[MAXSPLITSCREENPLAYERS] = {
 
 void Fov_OnChange(void);
 consvar_t cv_fov[MAXSPLITSCREENPLAYERS] = {
-	Player("fov", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange).dont_save(),
-	Player("fov2", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange).dont_save(),
-	Player("fov3", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange).dont_save(),
-	Player("fov4", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange).dont_save(),
+	Player("fov", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange),
+	Player("fov2", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange),
+	Player("fov3", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange),
+	Player("fov4", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange),
 };
 
 consvar_t cv_freecam_speed = Player("freecam_speed", "1").min_max(-64, 10).dont_save();
@@ -1345,7 +1349,14 @@ consvar_t cv_mute = UnsavedNetVar("mute", "Off").on_off().onchange(Mute_OnChange
 
 	extern CV_PossibleValue_t glshaders_cons_t[];
 	consvar_t cv_glallowshaders = OpenGL("gr_allowclientshaders", "On").on_off().network().dont_save();
-	consvar_t cv_glshaders = OpenGL("gr_shaders", "On").values(glshaders_cons_t);
+	void CV_glshaders_OnChange(void);
+	consvar_t cv_glshaders = OpenGL("gr_shaders", "On").values(glshaders_cons_t).onchange(CV_glshaders_OnChange);
+
+	extern CV_PossibleValue_t glpalettedepth_cons_t[];
+	void CV_glpaletterendering_OnChange(void);
+	consvar_t cv_glpaletterendering = OpenGL("gr_paletterendering", "On").on_off().onchange(CV_glpaletterendering_OnChange);
+	void CV_glpalettedepth_OnChange(void);
+	consvar_t cv_glpalettedepth = OpenGL("gr_palettedepth", "16 bits").values(glpalettedepth_cons_t).onchange(CV_glpalettedepth_OnChange);
 
 	extern CV_PossibleValue_t glanisotropicmode_cons_t[];
 	void CV_glanisotropic_OnChange(void);
@@ -1366,7 +1377,8 @@ consvar_t cv_mute = UnsavedNetVar("mute", "Off").on_off().onchange(Mute_OnChange
 
 #ifdef BAD_MODEL_OPTIONS
 	consvar_t cv_glmodelinterpolation = OpenGL("gr_modelinterpolation", "Sometimes").values({{0, "Off"}, {1, "Sometimes"}, {2, "Always"}});
-	consvar_t cv_glmodellighting = OpenGL("gr_modellighting", "Off").on_off();
+	void CV_glmodellighting_OnChange(void);
+	consvar_t cv_glmodellighting = OpenGL("gr_modellighting", "Off").on_off().onchange(CV_glmodellighting_OnChange);
 #endif
 
 	consvar_t cv_glmodels = OpenGL("gr_models", "On").on_off();

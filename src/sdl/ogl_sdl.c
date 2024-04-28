@@ -195,7 +195,13 @@ boolean OglSdlSurface(INT32 w, INT32 h)
 
 	glanisotropicmode_cons_t[1].value = maximumAnisotropy;
 
-	SDL_GL_SetSwapInterval(cv_vidwait.value ? 1 : 0);
+	if (cv_vidwait.value)
+	{
+		if (SDL_GL_SetSwapInterval(-1) != 0) // try async vsync
+			SDL_GL_SetSwapInterval(1); // normal vsync
+	}
+	else
+		SDL_GL_SetSwapInterval(0);
 
 	SetModelView(w, h);
 	SetStates();
@@ -219,7 +225,13 @@ void OglSdlFinishUpdate(boolean waitvbl)
 	int sdlw, sdlh;
 	if (oldwaitvbl != waitvbl)
 	{
-		SDL_GL_SetSwapInterval(waitvbl ? 1 : 0);
+		if (waitvbl)
+		{
+			if (SDL_GL_SetSwapInterval(-1) != 0) // try async vsync
+				SDL_GL_SetSwapInterval(1); // normal vsync
+		}
+		else
+			SDL_GL_SetSwapInterval(0);
 	}
 
 	oldwaitvbl = waitvbl;
@@ -234,7 +246,9 @@ void OglSdlFinishUpdate(boolean waitvbl)
 
 	// Sryder:	We need to draw the final screen texture again into the other buffer in the original position so that
 	//			effects that want to take the old screen can do so after this
-	HWR_DrawScreenFinalTexture(realwidth, realheight);
+	// Generic2 has the screen image without palette rendering brightness adjustments.
+	// Using that here will prevent brightness adjustments being applied twice.
+	DrawScreenTexture(HWD_SCREENTEXTURE_GENERIC2, NULL, 0);
 }
 
 EXPORT void HWRAPI(OglSdlSetPalette) (RGBA_t *palette)

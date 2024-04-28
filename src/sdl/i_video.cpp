@@ -91,7 +91,7 @@
 #endif
 
 // maximum number of windowed modes (see windowedModes[][])
-#define MAXWINMODES (18)
+#define MAXWINMODES (19)
 
 using namespace srb2;
 
@@ -146,6 +146,7 @@ static uint32_t g_rhi_generation = 0;
 // windowed video modes from which to choose from.
 static INT32 windowedModes[MAXWINMODES][2] =
 {
+	{2560, 1440}, // 1.66
 	{1920,1200}, // 1.60,6.00
 	{1920,1080}, // 1.66
 	{1680,1050}, // 1.60,5.25
@@ -222,7 +223,13 @@ static void SDLSetMode(INT32 width, INT32 height, SDL_bool fullscreen, SDL_bool 
 	else
 #endif
 	{
-		SDL_GL_SetSwapInterval(cv_vidwait.value ? 1 : 0);
+		if (cv_vidwait.value)
+		{
+			if (SDL_GL_SetSwapInterval(-1) != 0) // try async vsync
+				SDL_GL_SetSwapInterval(1); // normal vsync
+		}
+		else
+			SDL_GL_SetSwapInterval(0);
 	}
 
 	SDL_GetWindowSize(window, &width, &height);
@@ -1721,32 +1728,33 @@ void VID_StartupOpenGL(void)
 		*(void**)&HWD.pfnSetTexture       = hwSym("SetTexture",NULL);
 		*(void**)&HWD.pfnUpdateTexture    = hwSym("UpdateTexture",NULL);
 		*(void**)&HWD.pfnDeleteTexture    = hwSym("DeleteTexture",NULL);
-		*(void**)&HWD.pfnReadRect         = hwSym("ReadRect",NULL);
+		*(void**)&HWD.pfnReadScreenTexture= hwSym("ReadScreenTexture",NULL);
 		*(void**)&HWD.pfnGClipRect        = hwSym("GClipRect",NULL);
 		*(void**)&HWD.pfnClearMipMapCache = hwSym("ClearMipMapCache",NULL);
 		*(void**)&HWD.pfnSetSpecialState  = hwSym("SetSpecialState",NULL);
-		*(void**)&HWD.pfnSetPalette       = hwSym("SetPalette",NULL);
+		*(void**)&HWD.pfnSetTexturePalette= hwSym("SetTexturePalette",NULL);
 		*(void**)&HWD.pfnGetTextureUsed   = hwSym("GetTextureUsed",NULL);
 		*(void**)&HWD.pfnDrawModel        = hwSym("DrawModel",NULL);
 		*(void**)&HWD.pfnCreateModelVBOs  = hwSym("CreateModelVBOs",NULL);
 		*(void**)&HWD.pfnSetTransform     = hwSym("SetTransform",NULL);
 		*(void**)&HWD.pfnPostImgRedraw    = hwSym("PostImgRedraw",NULL);
 		*(void**)&HWD.pfnFlushScreenTextures=hwSym("FlushScreenTextures",NULL);
-		*(void**)&HWD.pfnStartScreenWipe  = hwSym("StartScreenWipe",NULL);
-		*(void**)&HWD.pfnEndScreenWipe    = hwSym("EndScreenWipe",NULL);
 		*(void**)&HWD.pfnDoScreenWipe     = hwSym("DoScreenWipe",NULL);
-		*(void**)&HWD.pfnDrawIntermissionBG=hwSym("DrawIntermissionBG",NULL);
+		*(void**)&HWD.pfnDrawScreenTexture= hwSym("DrawScreenTexture",NULL);
 		*(void**)&HWD.pfnMakeScreenTexture= hwSym("MakeScreenTexture",NULL);
-		*(void**)&HWD.pfnMakeScreenFinalTexture=hwSym("MakeScreenFinalTexture",NULL);
 		*(void**)&HWD.pfnDrawScreenFinalTexture=hwSym("DrawScreenFinalTexture",NULL);
 
-		*(void**)&HWD.pfnCompileShaders   = hwSym("CompileShaders",NULL);
-		*(void**)&HWD.pfnCleanShaders     = hwSym("CleanShaders",NULL);
+		*(void**)&HWD.pfnInitShaders      = hwSym("InitShaders",NULL);
+		*(void**)&HWD.pfnLoadShader       = hwSym("LoadShader",NULL);
+		*(void**)&HWD.pfnCompileShader    = hwSym("CompileShader",NULL);
 		*(void**)&HWD.pfnSetShader        = hwSym("SetShader",NULL);
 		*(void**)&HWD.pfnUnSetShader      = hwSym("UnSetShader",NULL);
 
 		*(void**)&HWD.pfnSetShaderInfo    = hwSym("SetShaderInfo",NULL);
-		*(void**)&HWD.pfnLoadCustomShader = hwSym("LoadCustomShader",NULL);
+		*(void**)&HWD.pfnSetPaletteLookup = hwSym("SetPaletteLookup",NULL);
+		*(void**)&HWD.pfnCreateLightTable = hwSym("CreateLightTable",NULL);
+		*(void**)&HWD.pfnClearLightTables = hwSym("ClearLightTables",NULL);
+		*(void**)&HWD.pfnSetScreenPalette = hwSym("SetScreenPalette",NULL);
 		glstartup = true;
 	}
 
@@ -1826,7 +1834,13 @@ void srb2::cvarhandler::on_set_vid_wait()
 		{
 			return;
 		}
-		SDL_GL_SetSwapInterval(interval);
+		if (interval)
+		{
+			if (SDL_GL_SetSwapInterval(-1) != 0) // try async vsync
+				SDL_GL_SetSwapInterval(1); // normal vsync
+		}
+		else
+			SDL_GL_SetSwapInterval(0);
 		break;
 #ifdef HWRENDER
 	case render_opengl:
@@ -1834,7 +1848,13 @@ void srb2::cvarhandler::on_set_vid_wait()
 		{
 			return;
 		}
-		SDL_GL_SetSwapInterval(interval);
+		if (interval)
+		{
+			if (SDL_GL_SetSwapInterval(-1) != 0) // try async vsync
+				SDL_GL_SetSwapInterval(1); // normal vsync
+		}
+		else
+			SDL_GL_SetSwapInterval(0);
 #endif
 	default:
 		break;

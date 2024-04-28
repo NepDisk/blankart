@@ -195,6 +195,7 @@ static void InitLogging(void)
 }
 #endif
 
+#ifndef __MINGW64__
 #ifdef _WIN32
 static void init_exchndl()
 {
@@ -212,6 +213,7 @@ static void init_exchndl()
 	if (pfnExcHndlInit != NULL)
 		(pfnExcHndlInit)();
 }
+#endif
 #endif
 
 #ifdef _WIN32
@@ -296,7 +298,7 @@ int main(int argc, char **argv)
 
 	//I_OutputMsg("I_StartupSystem() ...\n");
 	I_StartupSystem();
-#if defined (_WIN32)
+#if defined (_WIN32) && !defined(__MINGW64__)
 	if (!M_CheckParm("-noexchndl"))
 	{
 #if 0 // just load the DLL

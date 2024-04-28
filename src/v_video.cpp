@@ -3369,6 +3369,12 @@ void V_Init(void)
 #endif
 }
 
+void Highreshudscale_OnChange(void)
+{
+	if (!con_startup)
+		V_Recalc();
+}
+
 void V_Recalc(void)
 {
 	// scale 1,2,3 times in x and y the patches for the menus and overlays...
@@ -3378,6 +3384,14 @@ void V_Recalc(void)
 	vid.dupx = vid.dupy = (vid.dupx < vid.dupy ? vid.dupx : vid.dupy);
 	vid.fdupx = FixedDiv(vid.width*FRACUNIT, BASEVIDWIDTH*FRACUNIT);
 	vid.fdupy = FixedDiv(vid.height*FRACUNIT, BASEVIDHEIGHT*FRACUNIT);
+
+	if ((vid.width > 720) && (vid.height > 1280)) // ehhhh well this thing has so many issues, so ill lock it to higher resolutions instead
+	{
+		vid.dupx = FixedDiv(vid.dupx, cv_highreshudscale.value);
+		vid.dupy = FixedDiv(vid.dupy, cv_highreshudscale.value);
+		vid.fdupx = FixedDiv(vid.fdupx, cv_highreshudscale.value);
+		vid.fdupy = FixedDiv(vid.fdupy, cv_highreshudscale.value);
+	}
 
 #ifdef HWRENDER
 	//if (rendermode != render_opengl && rendermode != render_none) // This was just placing it incorrectly at non aspect correct resolutions in opengl

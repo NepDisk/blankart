@@ -48,6 +48,14 @@
 #include "st_stuff.h"
 #include "v_video.h"
 
+#ifdef HWRENDER
+#include "hardware/hw_main.h"
+#include "hardware/hw_drv.h"
+// For dynamic referencing of HW rendering functions
+#include "sdl/hwsym_sdl.h"
+#include "sdl/ogl_sdl.h"
+#endif
+
 extern "C" consvar_t cv_scr_scale, cv_scr_x, cv_scr_y;
 
 using namespace srb2;
@@ -166,6 +174,14 @@ static void temp_legacy_finishupdate_draws()
 static void finish_legacy_ogl_update()
 {
 	temp_legacy_finishupdate_draws();
+	// Final postprocess step of palette rendering, after everything else has been drawn.
+	if (HWR_ShouldUsePaletteRendering())
+	{
+		HWD.pfnMakeScreenTexture(HWD_SCREENTEXTURE_GENERIC2);
+		HWD.pfnSetShader(HWR_GetShaderFromTarget(SHADER_PALETTE_POSTPROCESS));
+		HWD.pfnDrawScreenTexture(HWD_SCREENTEXTURE_GENERIC2, NULL, 0);
+		HWD.pfnUnSetShader();
+	}
 	OglSdlFinishUpdate(cv_vidwait.value);
 }
 #endif
