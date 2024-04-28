@@ -324,6 +324,7 @@ void HWR_DrawStretchyFixedPatch(patch_t *gpatch, fixed_t x, fixed_t y, fixed_t p
 	{
 		FSurfaceInfo Surf;
 		Surf.PolyColor.s.red = Surf.PolyColor.s.green = Surf.PolyColor.s.blue = 0xff;
+		int transindex = min(max((10 - alphalevel), 0), 10);
 
 		flags |= HWR_GetBlendModeFlag(blendmode);
 
@@ -333,10 +334,8 @@ void HWR_DrawStretchyFixedPatch(patch_t *gpatch, fixed_t x, fixed_t y, fixed_t p
 			Surf.PolyColor.s.alpha = softwaretranstogl[V_GetHUDTranslucency(option)];
 		else if (alphalevel == 12)
 			Surf.PolyColor.s.alpha = softwaretranstogl_hi[V_GetHUDTranslucency(option)];
-		else if (alphalevel > 0 && alphalevel <= 10)
-			Surf.PolyColor.s.alpha = softwaretranstogl[10-alphalevel];
-		else 
-			Surf.PolyColor.s.alpha = 0x00;
+		else
+			Surf.PolyColor.s.alpha = softwaretranstogl[transindex];
 
 		HWD.pfnDrawPolygon(&Surf, v, 4, flags|PF_Modulated);
 	}
@@ -480,6 +479,7 @@ void HWR_DrawCroppedPatch(patch_t *gpatch, fixed_t x, fixed_t y, fixed_t pscale,
 	{
 		FSurfaceInfo Surf;
 		Surf.PolyColor.s.red = Surf.PolyColor.s.green = Surf.PolyColor.s.blue = 0xff;
+		int transindex = min(max((10 - alphalevel), 0), 10);
 
 		flags |= HWR_GetBlendModeFlag(blendmode);
 
@@ -490,7 +490,7 @@ void HWR_DrawCroppedPatch(patch_t *gpatch, fixed_t x, fixed_t y, fixed_t pscale,
 		else if (alphalevel == 12)
 			Surf.PolyColor.s.alpha = softwaretranstogl_hi[V_GetHUDTranslucency(option)];
 		else
-			Surf.PolyColor.s.alpha = softwaretranstogl[10-alphalevel];
+			Surf.PolyColor.s.alpha = softwaretranstogl[transindex];
 
 		HWD.pfnDrawPolygon(&Surf, v, 4, flags|PF_Modulated);
 	}
