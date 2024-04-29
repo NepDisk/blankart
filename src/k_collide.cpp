@@ -446,7 +446,7 @@ boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 		{
 			// Melt item
 			S_StartSound(t2, sfx_s3k43);
-			//K_SetHitLagForObjects(t2, t1, t1->target, 3, false);
+			K_SetHitLagForObjects(t2, t1, t1->target, 3, false);
 		}
 		else
 		{
@@ -591,11 +591,11 @@ boolean K_DropTargetCollide(mobj_t *t1, mobj_t *t2)
 		t1->momy = (t1->momy + t2->momy)/2;
 		t1->momz = (t1->momz + t2->momz)/2;
 
-		//K_AddHitLag(t1->target, 6, false);
+		K_AddHitLag(t1->target, 6, false);
 	}
 
-	//K_AddHitLag(t1, 6, true);
-	//K_AddHitLag(t2, 6, false);
+	K_AddHitLag(t1, 6, true);
+	K_AddHitLag(t2, 6, false);
 
 	{
 		mobj_t *ghost = P_SpawnGhostMobj(t1);
@@ -929,8 +929,8 @@ boolean K_InstaWhipCollide(mobj_t *shield, mobj_t *victim)
 				P_DamageMobj(attacker, attacker, victim, 1, DMG_TUMBLE);
 
 				S_StartSound(victim, sfx_mbv92);
-				//K_AddHitLag(attacker, victimHitlag, true);
-				//K_AddHitLag(victim, attackerHitlag, false);
+				K_AddHitLag(attacker, victimHitlag, true);
+				K_AddHitLag(victim, attackerHitlag, false);
 
 				K_DoPowerClash(shield, victim); // REJECTED
 
@@ -951,8 +951,8 @@ boolean K_InstaWhipCollide(mobj_t *shield, mobj_t *victim)
 			angle_t thrangle = ANGLE_180 + R_PointToAngle2(victim->x, victim->y, shield->x, shield->y);
 			P_Thrust(victim, thrangle, mapobjectscale*40);
 
-			//K_AddHitLag(victim, victimHitlag, true);
-			//K_AddHitLag(attacker, attackerHitlag, false);
+			K_AddHitLag(victim, victimHitlag, true);
+			K_AddHitLag(attacker, attackerHitlag, false);
 			shield->hitlag = attacker->hitlag;
 
 			if (attackerPlayer->roundconditions.whip_hyuu == false
@@ -970,8 +970,8 @@ boolean K_InstaWhipCollide(mobj_t *shield, mobj_t *victim)
 	{
 		if (Obj_IsSuperFlickyWhippable(victim, attacker))
 		{
-			//K_AddHitLag(victim, victimHitlag, true);
-			//K_AddHitLag(attacker, attackerHitlag, false);
+			K_AddHitLag(victim, victimHitlag, true);
+			K_AddHitLag(attacker, attackerHitlag, false);
 			shield->hitlag = attacker->hitlag;
 
 			Obj_WhipSuperFlicky(victim);
@@ -995,7 +995,7 @@ boolean K_InstaWhipCollide(mobj_t *shield, mobj_t *victim)
 
 			if (P_DamageMobj(victim, shield, attacker, 1, DMG_NORMAL))
 			{
-				//K_AddHitLag(attacker, attackerHitlag, false);
+				K_AddHitLag(attacker, attackerHitlag, false);
 				shield->hitlag = attacker->hitlag;
 			}
 		}

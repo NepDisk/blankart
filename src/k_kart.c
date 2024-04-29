@@ -3965,8 +3965,8 @@ void K_DoPowerClash(mobj_t *t1, mobj_t *t2) {
 	}
 
 	S_StartSound(t1, sfx_parry);
-	//K_AddHitLag(t1, lag1+1, false);
-	//K_AddHitLag(t2, lag2+1, false);
+	K_AddHitLag(t1, lag1+1, false);
+	K_AddHitLag(t2, lag2+1, false);
 
 	clash = P_SpawnMobj((t1->x/2) + (t2->x/2), (t1->y/2) + (t2->y/2), (t1->z/2) + (t2->z/2), MT_POWERCLASH);
 
@@ -3991,7 +3991,7 @@ void K_DoGuardBreak(mobj_t *t1, mobj_t *t2) {
 	t1->player->defenseLockout = 1;
 
 	S_StartSound(t1, sfx_gbrk);
-	//K_AddHitLag(t1, 24, true);
+	K_AddHitLag(t1, 24, true);
 
 	K_AddMessageForPlayer(t2->player, "Smashed 'em!", false, false);
 	K_AddMessageForPlayer(t1->player, "BARRIER BREAK!!", false, false);
@@ -4762,7 +4762,7 @@ static void K_HandleTumbleBounce(player_t *player)
 
 	// A bit of damage hitlag.
 	// This gives a window for DI!!
-	//K_AddHitLag(player->mo, 3, true);
+	K_AddHitLag(player->mo, 3, true);
 
 	if (player->tumbleHeight >= 40)
 	{
@@ -4846,7 +4846,7 @@ void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 
 	if (player->hyudorotimer <= 0)
 	{
-		//K_AddHitLag(player->mo, 10, false);
+		K_AddHitLag(player->mo, 10, false);
 		player->mo->hitlag -= min(player->mo->hitlag, player->tripwireUnstuck/4);
 	}
 
@@ -6514,7 +6514,7 @@ void K_PuntMine(mobj_t *origMine, mobj_t *punter)
 	mine->momy = punter->momy + FixedMul(FINESINE(fa >> ANGLETOFINESHIFT), spd);
 	P_SetObjectMomZ(mine, z, false);
 
-	////K_SetHitLagForObjects(punter, mine, mine->target, 5);
+	//K_SetHitLagForObjects(punter, mine, mine->target, 5);
 
 	mine->flags &= ~(MF_NOCLIP|MF_NOCLIPTHING);
 }
@@ -13959,7 +13959,7 @@ void K_EggmanTransfer(player_t *source, player_t *victim)
 	if (victim->eggmanexplode)
 		return;
 
-	//K_AddHitLag(victim->mo, 5, false);
+	K_AddHitLag(victim->mo, 5, false);
 	K_DropItems(victim);
 	victim->eggmanexplode = 6*TICRATE;
 	victim->eggmanblame = (source - players);
@@ -13968,7 +13968,7 @@ void K_EggmanTransfer(player_t *source, player_t *victim)
 	if (P_IsDisplayPlayer(victim))
 		S_StartSound(NULL, sfx_itrole);
 
-	//K_AddHitLag(source->mo, 5, false);
+	K_AddHitLag(source->mo, 5, false);
 	source->eggmanexplode = 0;
 	source->eggmanblame = -1;
 	K_StopRoulette(&source->itemRoulette);
