@@ -781,6 +781,28 @@ consvar_t cv_timelimit = UnsavedNetVar("timelimit", "Default").min_max(1, 30*60,
 
 consvar_t cv_votetime = UnsavedNetVar("votetime", "20").min_max(10, 3600);
 
+//
+// Noire client related netvars for gameplay
+// These do not save...
+//
+
+consvar_t cv_ng_rings = UnsavedNetVar("ng_rings", "On").on_off();
+consvar_t cv_ng_ringdebt = UnsavedNetVar("ng_ringdebt", "On").on_off();
+consvar_t cv_ng_ringboxtransform = UnsavedNetVar("ng_ringboxtransform", "On").on_off();
+consvar_t cv_ng_mapringboxes = UnsavedNetVar("ng_mapringboxes", "On").on_off();
+consvar_t cv_ng_maprings = UnsavedNetVar("ng_maprings", "On").on_off();
+consvar_t cv_ng_ringsting = UnsavedNetVar("ng_ringsting", "On").on_off();
+consvar_t cv_ng_capsules = UnsavedNetVar("ng_capsules", "On").on_off();
+consvar_t cv_ng_fastfallbounce = UnsavedNetVar("ng_fastfallbounce", "On").values({
+	{0, "Off"},
+	{1, "Bubble Shield"},
+	{2, "On"},
+});
+consvar_t cv_ng_draft = UnsavedNetVar("ng_draft", "On").on_off();
+consvar_t cv_ng_instawhip = UnsavedNetVar("ng_instawhip", "On").on_off();
+consvar_t cv_ng_tumble = UnsavedNetVar("ng_tumble", "On").on_off();
+consvar_t cv_ng_stumble = UnsavedNetVar("ng_stumble", "On").on_off();
+consvar_t cv_ng_hitlag = UnsavedNetVar("ng_hitlag", "On").on_off();
 
 //
 // Online cheats - synced in netgames.

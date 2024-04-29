@@ -54,6 +54,9 @@
 #include "k_podium.h"
 #include "g_party.h"
 
+//Noire
+#include "noire/n_cvar.h"
+
 actioncache_t actioncachehead;
 
 static mobj_t *overlaycap = NULL;
@@ -12500,11 +12503,15 @@ static boolean P_AllowMobjSpawn(mapthing_t* mthing, mobjtype_t i)
 	switch (i)
 	{
 		case MT_RING:
-			if (modeattacking & ATTACKING_SPB)
+			if (modeattacking & ATTACKING_SPB || (!cv_ng_maprings.value))
 				return false;
 			break;
 		case MT_CHECKPOINT_END:
 			if (!(gametyperules & GTR_CHECKPOINTS))
+				return false;
+			break;
+		case MT_ITEMCAPSULE:
+			if (!cv_ng_capsules.value)
 				return false;
 			break;
 		default:

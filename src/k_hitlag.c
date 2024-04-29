@@ -22,6 +22,9 @@
 #include "s_sound.h"
 #include "m_easing.h"
 
+// Noire
+#include "noire/n_cvar.h"
+
 /*--------------------------------------------------
 	void K_AddHitLag(mobj_t *mo, INT32 tics, boolean fromDamage)
 
@@ -29,6 +32,10 @@
 --------------------------------------------------*/
 void K_AddHitLag(mobj_t *mo, INT32 tics, boolean fromDamage)
 {
+	if (!cv_ng_hitlag.value)
+		return;
+
+
 	if (mo == NULL || P_MobjWasRemoved(mo) || (mo->flags & MF_NOHITLAGFORME && mo->type != MT_PLAYER))
 	{
 		return;
@@ -258,6 +265,10 @@ static void K_SpawnHitLagEFX(mobj_t *victim, mobj_t *inflictor, mobj_t *source, 
 --------------------------------------------------*/
 void K_SetHitLagForObjects(mobj_t *victim, mobj_t *inflictor, mobj_t *source, INT32 tics, boolean fromDamage)
 {
+
+	if (!cv_ng_hitlag.value)
+		return;
+
 	INT32 finalTics = tics;
 
 	if (tics <= 0)

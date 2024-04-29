@@ -29,6 +29,9 @@
 #include "m_random.h"
 #include "k_hud.h" // K_AddMessage
 
+// Noire
+#include "noire/n_cvar.h"
+
 angle_t K_GetCollideAngle(mobj_t *t1, mobj_t *t2)
 {
 	fixed_t momux, momuy;
@@ -1157,36 +1160,41 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		return true;
 	}
 
-	// Ring sting, this is a bit more unique
-	auto doSting = [](mobj_t *t1, mobj_t *t2)
+	if (cv_ng_ringsting.value)
 	{
-		if (K_GetShieldFromItem(t2->player->itemtype) != KSHIELD_NONE)
+		// Ring sting, this is a bit more unique
+		auto doSting = [](mobj_t *t1, mobj_t *t2)
 		{
-			return false;
+			if (K_GetShieldFromItem(t2->player->itemtype) != KSHIELD_NONE)
+			{
+				return false;
+			}
+
+			bool stung = false;
+
+			if (t2->player->rings <= 0 && t2->health == 1) // no bumpers
+			{
+				P_DamageMobj(t2, t1, t1, 1, DMG_STING|DMG_WOMBO);
+				stung = true;
+			}
+
+			P_PlayerRingBurst(t2->player, 1);
+
+			return stung;
+		};
+
+
+		// No damage hitlag for stinging.
+		auto removeDamageHitlag = [](mobj_t *t1, mobj_t *t2)
+		{
+			t1->eflags &= ~MFE_DAMAGEHITLAG;
+		};
+
+		if (forEither(doSting, removeDamageHitlag))
+		{
+			return true;
 		}
 
-		bool stung = false;
-
-		if (t2->player->rings <= 0 && t2->health == 1) // no bumpers
-		{
-			P_DamageMobj(t2, t1, t1, 1, DMG_STING|DMG_WOMBO);
-			stung = true;
-		}
-
-		P_PlayerRingBurst(t2->player, 1);
-
-		return stung;
-	};
-
-	// No damage hitlag for stinging.
-	auto removeDamageHitlag = [](mobj_t *t1, mobj_t *t2)
-	{
-		t1->eflags &= ~MFE_DAMAGEHITLAG;
-	};
-
-	if (forEither(doSting, removeDamageHitlag))
-	{
-		return true;
 	}
 
 	return false;

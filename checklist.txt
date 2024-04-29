@@ -3,14 +3,18 @@
 []underwater
 
 - make stuff optional
-[]draft
-[]stumble
-[]tumble
-[]ringsting
-[]hitlag
-[]ringboxes
-[]maprings
-[]capsules
+[x]draft
+[x]fastfall bounce
+[x]instawhip
+[x]stumble
+[x]tumble
+[]rings
+[x]ringsting
+[x]ringdebt
+[x]hitlag
+[X]ringboxes
+[x]maprings
+[x]capsules
 
 - expose missing constants and functions to lua
 []respawnvars_t

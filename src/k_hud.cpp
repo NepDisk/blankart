@@ -55,6 +55,9 @@
 #include "f_finale.h"
 #include "m_easing.h"
 
+// Noire
+#include "noire/n_cvar.h"
+
 //{ 	Patch Definitions
 static patch_t *kp_nodraw;
 
@@ -2986,20 +2989,31 @@ static void K_drawRingCounter(boolean gametypeinfoshown)
 
 	if (stplyr->hudrings <= 0 && stplyr->ringvisualwarning > 1)
 	{
-		colorring = true;	
-		if ((leveltime/2 & 1))
+		if (cv_ng_ringsting.value)
 		{
-			ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_CRIMSON, GTC_CACHE);
+			colorring = true;
+			if ((leveltime/2 & 1))
+			{
+				ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_CRIMSON, GTC_CACHE);
+			}
+			else
+			{
+				ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_WHITE, GTC_CACHE);
+			}
 		}
 		else
-		{
-			ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_WHITE, GTC_CACHE);
-		}
+			colorring = false;
 	}
 	else if (stplyr->hudrings <= 0 && (leveltime/5 & 1)) // In debt
 	{
-		ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_CRIMSON, GTC_CACHE);
-		colorring = true;
+		if (cv_ng_ringsting.value || ((!cv_ng_ringsting.value) && cv_ng_ringdebt.value && (stplyr->hudrings < 0)))
+		{
+			ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_CRIMSON, GTC_CACHE);
+			colorring = true;
+		}
+		else
+			colorring = false;
+
 	}
 	else if (stplyr->hudrings >= 20) // Maxed out
 		ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_YELLOW, GTC_CACHE);

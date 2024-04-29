@@ -65,6 +65,9 @@
 #include "m_easing.h"
 #include "k_endcam.h"
 
+//Noire
+#include "noire/n_cvar.h"
+
 // SOME IMPORTANT VARIABLES DEFINED IN DOOMDEF.H:
 // gamespeed is cc (0 for easy, 1 for normal, 2 for hard)
 // franticitems is Frantic Mode items, bool
@@ -4210,6 +4213,13 @@ void K_TumblePlayer(player_t *player, mobj_t *inflictor, mobj_t *source)
 
 	K_DirectorFollowAttack(player, inflictor, source);
 
+	if (!cv_ng_tumble.value)
+	{
+		if (!player->spinouttimer)
+			P_DamageMobj(player->mo, inflictor, source, 1, DMG_NORMAL);
+		return;
+	}
+
 	player->tumbleBounces = 1;
 
 	if (player->tripwireState == TRIPSTATE_PASSED)
@@ -4257,8 +4267,15 @@ angle_t K_StumbleSlope(angle_t angle, angle_t pitch, angle_t roll)
 
 void K_StumblePlayer(player_t *player)
 {
+
 	P_ResetPlayer(player);
 
+	if (!cv_ng_stumble.value)
+	{
+		if (!player->spinouttimer)
+			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_NORMAL);
+		return;
+	}
 #if 0
 	// Single, medium bounce
 	player->tumbleBounces = TUMBLEBOUNCES;
@@ -8480,10 +8497,23 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	}
 
 	K_UpdateOffroad(player);
-	K_UpdateDraft(player);
+	if (cv_ng_draft.value)
+		K_UpdateDraft(player);
 	K_UpdateEngineSounds(player); // Thanks, VAda!
 
 	Obj_DashRingPlayerThink(player);
+
+	if (!cv_ng_tumble.value)
+	{
+		player->tumbleBounces = 0;
+		player->tumbleHeight = 0;
+	}
+
+	if (!cv_ng_ringdebt.value)
+	{
+			if (player->rings < 0)
+				player->rings = 0;
+	}
 
 	// update boost angle if not spun out
 	if (!player->spinouttimer && !player->wipeoutslow)
@@ -8557,7 +8587,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 		// Race: spawn ring debt indicator
 		// Battle: spawn zero-bumpers indicator
-		if ((gametyperules & GTR_SPHERES) ? player->mo->health <= 1 : player->rings <= 0)
+		if ((gametyperules & GTR_SPHERES) ? player->mo->health <= 1 : player->rings <= 0
+			&&  (cv_ng_ringsting.value
+			|| ((!cv_ng_ringsting.value) && cv_ng_ringdebt.value && (player->rings < 0))))
 		{
 			UINT8 doubler;
 
@@ -11811,7 +11843,8 @@ static void K_KartSpindash(player_t *player)
 boolean K_FastFallBounce(player_t *player)
 {
 	// Handle fastfall bounce.
-	if (player->fastfall != 0)
+	if (player->fastfall != 0
+	&& ((cv_ng_fastfallbounce.value == 1 && player->curshield == KSHIELD_BUBBLE) || (cv_ng_fastfallbounce.value == 2)))
 	{
 		const fixed_t maxBounce = mapobjectscale * 10;
 		const fixed_t minBounce = mapobjectscale;
@@ -11865,6 +11898,16 @@ boolean K_FastFallBounce(player_t *player)
 		player->mo->momz = bounce * P_MobjFlip(player->mo);
 
 		return true;
+	}
+	else if (player->fastfall != 0 && ((!cv_ng_fastfallbounce.value) || (cv_ng_fastfallbounce.value == 1 && player->curshield != KSHIELD_BUBBLE)))
+	{
+		S_StartSound(player->mo, sfx_doord2);
+
+		player->pflags |= PF_UPDATEMYRESPAWN;
+
+		player->fastfall = 0;
+
+		return false;
 	}
 
 	return false;
@@ -12247,8 +12290,8 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	// which is allowed during painstate as a last-ditch defensive option.
 	if (player && player->mo && player->mo->health > 0 && !player->spectator && !mapreset && leveltime > introtime)
 	{
-		boolean chargingwhip = (cmd->buttons & BT_ATTACK) && (player->rings <= 0) && (!player->instaWhipChargeLockout);
-		boolean releasedwhip = (!(cmd->buttons & BT_ATTACK)) && (player->rings <= 0 && player->instaWhipCharge) && !(P_PlayerInPain(player));
+		boolean chargingwhip = (cv_ng_instawhip.value) && (cmd->buttons & BT_ATTACK) && (player->rings <= 0) && (!player->instaWhipChargeLockout);
+		boolean releasedwhip = (cv_ng_instawhip.value) && (!(cmd->buttons & BT_ATTACK)) && (player->rings <= 0 && player->instaWhipCharge) && !(P_PlayerInPain(player));
 
 		if (K_PowerUpRemaining(player, POWERUP_BADGE))
 		{
@@ -12311,9 +12354,12 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 			{
 				if ((leveltime%(INSTAWHIP_RINGDRAINEVERY)) == 0 && !(gametyperules & GTR_SPHERES))
 				{
-					if (player->rings > -20 && P_IsDisplayPlayer(player))
-						S_StartSound(player->mo, sfx_antiri);
-					player->rings--;
+					if (cv_ng_ringdebt.value)
+					{
+						if (player->rings > -20 && P_IsDisplayPlayer(player))
+							S_StartSound(player->mo, sfx_antiri);
+						player->rings--;
+					}
 				}
 			}
 		}
@@ -13398,7 +13444,8 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				// Finalise everything.
 				if (player->trickpanel != TRICKSTATE_READY) // just changed from 1?
 				{
-					player->mo->hitlag = TRICKLAG;
+					if (cv_ng_hitlag.value)
+						player->mo->hitlag = TRICKLAG;
 					player->mo->eflags &= ~MFE_DAMAGEHITLAG;
 
 					if (abs(momz) < FRACUNIT*99)	// Let's use that as baseline for PERFECT trick.

@@ -49,6 +49,8 @@
 #include "m_easing.h"
 #include "k_hud.h" // K_AddMessage
 
+#include "noire/n_cvar.h"
+
 
 // CTF player names
 #define CTFTEAMCODE(pl) pl->ctfteam ? (pl->ctfteam == 1 ? "\x85" : "\x84") : ""
@@ -266,7 +268,7 @@ static void P_ItemPop(mobj_t *actor)
 	Obj_SpawnItemDebrisEffects(actor, actor->target);
 
 	if (!specialstageinfo.valid
-	&& (gametyperules & GTR_SPHERES) != GTR_SPHERES)
+	&& (gametyperules & GTR_SPHERES) != GTR_SPHERES && cv_ng_ringboxtransform.value)
 	{
 		// Doesn't apply to Special
 		P_SetMobjState(actor, S_RINGBOX1);
@@ -3274,17 +3276,36 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 			switch (type)
 			{
 				case DMG_STING:
-					K_DebtStingPlayer(player, source);
-					K_KartPainEnergyFling(player);
+					if (cv_ng_ringsting.value)
+					{
+						K_DebtStingPlayer(player, source);
+						K_KartPainEnergyFling(player);
+					}
 					ringburst = 0;
 					break;
 				case DMG_STUMBLE:
 				case DMG_WHUMBLE:
-					K_StumblePlayer(player);
+					if (cv_ng_stumble.value)
+						K_StumblePlayer(player);
+					else
+					{
+						if (!player->spinouttimer)
+						{
+ ;							K_SpinPlayer(player, inflictor, source, KSPIN_SPINOUT);
+						}
+					}
 					ringburst = 0;
 					break;
 				case DMG_TUMBLE:
-					K_TumblePlayer(player, inflictor, source);
+					if(cv_ng_tumble.value)
+						K_TumblePlayer(player, inflictor, source);
+					else
+					{
+						if (!player->spinouttimer)
+						{
+							K_SpinPlayer(player, inflictor, source, KSPIN_SPINOUT);
+						}
+					}
 					ringburst = 10;
 					break;
 				case DMG_EXPLODE:

@@ -21,6 +21,9 @@
 #include "../k_specialstage.h" // specialstageinfo
 #include "../k_kart.h"
 
+// Noire
+#include "../noire/n_cvar.h"
+
 #define FLOAT_HEIGHT ( 12 * FRACUNIT )
 #define FLOAT_TIME ( 2 * TICRATE )
 #define FLOAT_ANGLE ( ANGLE_MAX / FLOAT_TIME )
@@ -143,7 +146,12 @@ void Obj_RandomItemVisuals(mobj_t *mobj)
 			statenum_t animDelta = mobj->state - states - S_RINGBOX1;
 			P_SetMobjState(mobj, S_RANDOMITEM1 + (animDelta%12));
 		}
+
 	}
+
+
+
+
 }
 
 boolean Obj_RandomItemSpawnIn(mobj_t *mobj)
@@ -153,6 +161,15 @@ boolean Obj_RandomItemSpawnIn(mobj_t *mobj)
 	// battleprisons isn't set in time to do this on spawn. GROAN
 	if ((mobj->flags2 & MF2_BOSSFLEE) && (gametyperules & (GTR_CIRCUIT|GTR_PAPERITEMS)) == GTR_PAPERITEMS && !battleprisons)
 		mobj->renderflags |= RF_DONTDRAW;
+
+
+	if (!cv_ng_mapringboxes.value)
+	{
+		statenum_t boxstate = mobj->state - states;
+		if (boxstate >= S_RINGBOX1 || boxstate <= S_RINGBOX12)
+			P_SetMobjState(mobj, S_RANDOMITEM1);
+	}
+
 
 	if ((leveltime == starttime) && !(gametyperules & GTR_CIRCUIT) && (mobj->flags2 & MF2_BOSSFLEE)) // here on map start?
 	{
