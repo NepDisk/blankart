@@ -271,12 +271,12 @@ boolean M_OptionsInputs(INT32 ch)
 	if (menucmd[pid].dpad_ud > 0)
 	{
 		M_SetMenuDelay(pid);
-		optionsmenu.offset.dist = 48;
+		optionsmenu.offset.dist = 40;
 		M_NextOpt();
 		S_StartSound(NULL, sfx_s3k5b);
 
 		if (itemOn == 0)
-			optionsmenu.offset.dist -= currentMenu->numitems*48;
+			optionsmenu.offset.dist -= currentMenu->numitems*40;
 
 		optionsmenu.offset.start = I_GetTime();
 
@@ -285,12 +285,12 @@ boolean M_OptionsInputs(INT32 ch)
 	else if (menucmd[pid].dpad_ud < 0)
 	{
 		M_SetMenuDelay(pid);
-		optionsmenu.offset.dist = -48;
+		optionsmenu.offset.dist = -40;
 		M_PrevOpt();
 		S_StartSound(NULL, sfx_s3k5b);
 
 		if (itemOn == currentMenu->numitems-1)
-			optionsmenu.offset.dist += currentMenu->numitems*48;
+			optionsmenu.offset.dist += currentMenu->numitems*40;
 
 		optionsmenu.offset.start = I_GetTime();
 

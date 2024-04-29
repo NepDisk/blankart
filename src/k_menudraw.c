@@ -4383,7 +4383,7 @@ void M_DrawOptionsMovingButton(void)
 	UINT8 *c = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_PLAGUE, GTC_CACHE);
 	fixed_t t = M_DueFrac(optionsmenu.topt_start, M_OPTIONS_OFSTIME);
 	fixed_t z = Easing_OutSine(M_DueFrac(optionsmenu.offset.start, M_OPTIONS_OFSTIME), optionsmenu.offset.dist * FRACUNIT, 0);
-	fixed_t tx = Easing_OutQuad(t, optionsmenu.optx * FRACUNIT, optionsmenu.toptx * FRACUNIT) + z;
+	fixed_t tx = (140 + 24)*FRACUNIT;
 	fixed_t ty = Easing_OutQuad(t, optionsmenu.opty * FRACUNIT, optionsmenu.topty * FRACUNIT) + z;
 
 	V_DrawFixedPatch(tx, ty, FRACUNIT, 0, butt, c);
@@ -4414,7 +4414,7 @@ void M_DrawOptions(void)
 {
 	UINT8 i;
 	fixed_t t = Easing_OutSine(M_DueFrac(optionsmenu.offset.start, M_OPTIONS_OFSTIME), optionsmenu.offset.dist * FRACUNIT, 0);
-	fixed_t x = (140 - (48*itemOn))*FRACUNIT + t;
+	fixed_t x = (140 + 24)*FRACUNIT;
 	fixed_t y = 70*FRACUNIT + t;
 	fixed_t tx = M_EaseWithTransition(Easing_InQuart, 5 * 64 * FRACUNIT);
 	patch_t *buttback = W_CachePatchName("OPT_BUTT", PU_CACHE);
@@ -4423,7 +4423,7 @@ void M_DrawOptions(void)
 
 	for (i=0; i < currentMenu->numitems; i++)
 	{
-		fixed_t py = y - (itemOn*48)*FRACUNIT;
+		fixed_t py = y - (itemOn*40)*FRACUNIT;
 		fixed_t px = x - tx;
 		INT32 tflag = 0;
 
@@ -4461,8 +4461,8 @@ void M_DrawOptions(void)
 			);
 		}
 
-		y += 48*FRACUNIT;
-		x += 48*FRACUNIT;
+		y += 40*FRACUNIT;
+		// x += 32*FRACUNIT;
 	}
 
 	M_DrawMenuTooltips();
@@ -5641,7 +5641,7 @@ void M_DrawExtras(void)
 {
 	UINT8 i;
 	INT32 t = Easing_OutSine(M_DueFrac(extrasmenu.offset.start, M_EXTRAS_OFSTIME), extrasmenu.offset.dist, 0);
-	INT32 x = 140 - (48*itemOn) + t;
+	INT32 x = 140 + 24;
 	INT32 y = 70 + t;
 	patch_t *buttback = W_CachePatchName("OPT_BUTT", PU_CACHE);
 
@@ -5649,8 +5649,8 @@ void M_DrawExtras(void)
 
 	for (i=0; i < currentMenu->numitems; i++)
 	{
-		INT32 py = y - (itemOn*48);
-		INT32 px = x - menutransition.tics*64;
+		INT32 py = y - (itemOn*40);
+		INT32 px = x;
 		INT32 tflag = 0;
 
 		if (i == itemOn)
@@ -5667,8 +5667,8 @@ void M_DrawExtras(void)
 			V_DrawCenteredGamemodeString(px-3, py - 16, tflag, (i == itemOn ? c : NULL), currentMenu->menuitems[i].text);
 		}
 
-		y += 48;
-		x += 48;
+		y += 40;
+		// x += 48;
 	}
 
 	M_DrawMenuTooltips();
