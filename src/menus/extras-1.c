@@ -249,7 +249,7 @@ boolean M_ExtrasInputs(INT32 ch)
 		if (currentMenu->menuitems[itemOn].status & IT_TRANSTEXT)
 			return true;	// No.
 
-		extrasmenu.extx = 140;
+		extrasmenu.extx = 160;
 		extrasmenu.exty = 70;	// Default position for the currently selected option.
 
 		M_SetMenuDelay(pid);
