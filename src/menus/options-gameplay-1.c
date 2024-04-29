@@ -12,8 +12,20 @@
 #include "../k_menu.h"
 #include "../m_cond.h"
 
+// Noire
+#include "../noire/n_menu.h"
+
 menuitem_t OPTIONS_Gameplay[] =
 {
+
+	{IT_STRING | IT_SUBMENU, "Random Item Toggles...", "Which items appear in your games.",
+		NULL, {.submenu = &OPTIONS_GameplayItemsDef}, 0, 0},
+
+	{IT_STRING | IT_SUBMENU, "Noire Gameplay...", "Toggles for Noire client gameplay.",
+		NULL, {.submenu = &OPTIONS_NoireGameplayDef}, 0, 0},
+
+	{IT_SPACE | IT_DYBIGSPACE, NULL,  NULL,
+		NULL, {NULL}, 0, 0},
 
 	{IT_HEADER, "Race...", NULL,
 		NULL, {NULL}, 0, 0},
@@ -45,13 +57,6 @@ menuitem_t OPTIONS_Gameplay[] =
 
 	{IT_STRING | IT_CVAR, "Starting Bumpers", "How many bumpers players start with in Battle.",
 		NULL, {.cvar = &cv_kartbumpers}, 0, 0},
-
-
-	{IT_SPACE | IT_DYBIGSPACE, NULL,  NULL,
-		NULL, {NULL}, 0, 0},
-
-	{IT_STRING | IT_SUBMENU, "Random Item Toggles...", "Which items appear in your games.",
-		NULL, {.submenu = &OPTIONS_GameplayItemsDef}, 0, 0},
 
 };
 

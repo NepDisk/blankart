@@ -477,16 +477,17 @@ extern menu_t OPTIONS_HUDOnlineDef;
 typedef enum
 {
 	gopt_spacer0 = 0,
+	gopt_itemtoggles,
+	gopt_noiregameplay,
+	gopt_spacer1,
 	gopt_gamespeed,
 	gopt_frantic,
 	gopt_encore,
 	gopt_exitcountdown,
-	gopt_spacer1,
+	gopt_spacer2,
 	gopt_timelimit,
 	gopt_pointlimit,
-	gopt_startingbumpers,
-	gopt_spacer2,
-	gopt_itemtoggles
+	gopt_startingbumpers
 } gopt_e;
 
 extern menuitem_t OPTIONS_Gameplay[];
