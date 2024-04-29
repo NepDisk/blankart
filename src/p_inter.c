@@ -3280,13 +3280,11 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 					break;
 				case DMG_STUMBLE:
 				case DMG_WHUMBLE:
-					//K_StumblePlayer(player);
-					K_SpinPlayer(player, inflictor, source, KSPIN_SPINOUT);
+					K_StumblePlayer(player);
 					ringburst = 0;
 					break;
 				case DMG_TUMBLE:
-					//K_TumblePlayer(player, inflictor, source);
-					K_SpinPlayer(player, inflictor, source, KSPIN_SPINOUT);
+					K_TumblePlayer(player, inflictor, source);
 					ringburst = 10;
 					break;
 				case DMG_EXPLODE:
