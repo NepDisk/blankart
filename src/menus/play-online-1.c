@@ -200,7 +200,7 @@ menu_t PLAY_MP_OptSelectDef = {
 	#if defined (TESTERS)
 		&PLAY_CharSelectDef,
 	#else
-		&MainDef,
+		&PLAY_MainDef,
 	#endif
 	0,
 	PLAY_MP_OptSelect,
@@ -234,6 +234,15 @@ void M_MPOptSelectInit(INT32 choice)
 {
 	INT16 arrcpy[3][3] = {{0,68,0}, {0,12,0}, {0,74,0}};
 	const UINT32 forbidden = GTR_FORBIDMP;
+
+#ifndef TESTERS
+	if (choice != -1 && !M_SecretUnlocked(SECRET_ONLINE, true))
+	{
+		M_StartMessage("No Way? No Way!", "Online play is ""\x8B""not yet unlocked""\x80"".\n\nYou'll want experience in ""\x8B""Grand Prix""\x80""\nbefore even thinking about facing\nopponents from across the world.\n", NULL, MM_NOTHING, NULL, NULL);
+		S_StartSound(NULL, sfx_s3k36);
+		return;
+	}
+#endif
 
 	mpmenu.modechoice = 0;
 	mpmenu.ticker = 0;
