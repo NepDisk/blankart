@@ -215,12 +215,12 @@ boolean M_ExtrasInputs(INT32 ch)
 
 	if (menucmd[pid].dpad_ud > 0)
 	{
-		extrasmenu.offset.dist = 48;
+		extrasmenu.offset.dist = 40;
 		M_NextOpt();
 		S_StartSound(NULL, sfx_s3k5b);
 
 		if (itemOn == 0)
-			extrasmenu.offset.dist -= currentMenu->numitems*48;
+			extrasmenu.offset.dist -= currentMenu->numitems*40;
 
 		extrasmenu.offset.start = I_GetTime();
 
@@ -230,12 +230,12 @@ boolean M_ExtrasInputs(INT32 ch)
 
 	else if (menucmd[pid].dpad_ud < 0)
 	{
-		extrasmenu.offset.dist = -48;
+		extrasmenu.offset.dist = -40;
 		M_PrevOpt();
 		S_StartSound(NULL, sfx_s3k5b);
 
 		if (itemOn == currentMenu->numitems-1)
-			extrasmenu.offset.dist += currentMenu->numitems*48;
+			extrasmenu.offset.dist += currentMenu->numitems*40;
 
 		extrasmenu.offset.start = I_GetTime();
 
@@ -249,7 +249,7 @@ boolean M_ExtrasInputs(INT32 ch)
 		if (currentMenu->menuitems[itemOn].status & IT_TRANSTEXT)
 			return true;	// No.
 
-		extrasmenu.extx = 140;
+		extrasmenu.extx = 160;
 		extrasmenu.exty = 70;	// Default position for the currently selected option.
 
 		M_SetMenuDelay(pid);
