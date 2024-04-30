@@ -803,6 +803,11 @@ consvar_t cv_ng_instawhip = UnsavedNetVar("ng_instawhip", "On").on_off();
 consvar_t cv_ng_tumble = UnsavedNetVar("ng_tumble", "On").on_off();
 consvar_t cv_ng_stumble = UnsavedNetVar("ng_stumble", "On").on_off();
 consvar_t cv_ng_hitlag = UnsavedNetVar("ng_hitlag", "On").on_off();
+consvar_t cv_ng_rivals = UnsavedNetVar("ng_rivals", "On").on_off();
+consvar_t cv_ng_rivaltopspeed = UnsavedNetVar("ng_rivaltopspeed", "11").min_max(1, 100);
+consvar_t cv_ng_rivalringpower = UnsavedNetVar("ng_rivalringpower", "20").min_max(0, 100);
+consvar_t cv_ng_rivalfrantic = UnsavedNetVar("ng_rivalfrantic", "On").on_off();
+consvar_t cv_ng_rivaldraft = UnsavedNetVar("ng_rivaldraft", "On").on_off();
 
 //
 // Online cheats - synced in netgames.

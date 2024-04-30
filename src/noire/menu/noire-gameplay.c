@@ -34,7 +34,7 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Map Ringboxes", "Should maps have Ringboxes?",
 		NULL, {.cvar = &cv_ng_mapringboxes}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Ringbox transformation", "Should Itemboxes become Ringboxes?",
+	{IT_STRING | IT_CVAR, "Ringbox Transformation", "Should Itemboxes become Ringboxes?",
 		NULL, {.cvar = &cv_ng_ringboxtransform}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Capsules", "Should Capsules spawn in-game?",
@@ -60,6 +60,24 @@ menuitem_t OPTIONS_NoireGameplay[] =
 
 	{IT_STRING | IT_CVAR, "Hitlag", "Should there be hitlag?",
 		NULL, {.cvar = &cv_ng_hitlag}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Rivals", "Should there be rivals?",
+		NULL, {.cvar = &cv_ng_rivals}, 0, 0},
+
+	{IT_HEADER, "Rivals...", NULL,
+		NULL, {NULL}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Top Speed", "Adjust rival's top speed (10 for non-rivals)",
+		NULL, {.cvar = &cv_ng_rivaltopspeed}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Ring Power", "Adjust rival's ring power (10 for non-rivals)",
+		NULL, {.cvar = &cv_ng_rivalringpower}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Frantic Items", "Should rival use frantic items?",
+		NULL, {.cvar = &cv_ng_rivalfrantic}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "2x Draft Power", "Should rival pull ahead at double speed?",
+		NULL, {.cvar = &cv_ng_rivaldraft}, 0, 0},
 };
 
 menu_t OPTIONS_NoireGameplayDef = {

@@ -22,6 +22,9 @@
 #include "p_local.h"
 #include "r_things.h"
 
+//Noire
+#include "noire/n_cvar.h"
+
 struct grandprixinfo grandprixinfo;
 
 /*--------------------------------------------------
@@ -465,8 +468,11 @@ void K_UpdateGrandPrixBots(void)
 			oldrival->botvars.rival = false;
 		}
 
-		// Set our new rival!
-		newrival->botvars.rival = true;
+		if (cv_ng_rivals.value)
+		{
+			// Set our new rival!
+			newrival->botvars.rival = true;
+		}
 	}
 }
 
