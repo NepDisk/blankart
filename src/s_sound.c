@@ -1529,6 +1529,11 @@ ReadMusicDefFields
 			{
 				def->volume = atoi(textline);
 			}
+			else if (!stricmp(stoken, "contentidunsafe"))
+			{
+				textline[0] = toupper(textline[0]);
+				def->contentidunsafe = (textline[0] == 'Y' || textline[0] == 'T' || textline[0] == '1');
+			}
 			else
 			{
 				MusicDefError(CONS_WARNING,
