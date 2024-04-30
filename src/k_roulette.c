@@ -52,6 +52,9 @@
 #include "k_grandprix.h"
 #include "k_specialstage.h"
 
+//Noire
+#include "noire/n_cvar.h"
+
 // Magic number distance for use with item roulette tiers
 #define DISTVAR (2048)
 
@@ -229,7 +232,7 @@ static kartslotmachine_t K_KartItemReelRingBox[] =
 	KSM__MAX
 };
 
-static sfxenum_t ringboxsound[] = 
+static sfxenum_t ringboxsound[] =
 {
 	sfx_slot00,
 	sfx_slot01,
@@ -511,7 +514,7 @@ UINT32 K_GetItemRouletteDistance(const player_t *player, UINT8 numPlayers)
 	pdis = K_UndoMapScaling(pdis);
 	pdis = K_ScaleItemDistance(pdis, numPlayers);
 
-	if (player->bot && player->botvars.rival)
+	if (player->bot && player->botvars.rival && cv_ng_rivalfrantic.value)
 	{
 		// Rival has better odds :)
 		pdis = FixedMul(pdis, FRANTIC_ITEM_SCALE);
@@ -660,7 +663,7 @@ static fixed_t K_AdjustItemOddsToConditions(fixed_t newOdds, const itemcondition
 			newOdds *= 2;
 		}
 
-		if (conditions->rival == true)
+		if (conditions->rival == true && cv_ng_rivalfrantic.value)
 		{
 			// The Rival bot gets frantic-like items, also :p
 			newOdds *= 2;
@@ -1303,7 +1306,7 @@ void K_FillItemRouletteData(const player_t *player, itemroulette_t *const roulet
 	if (player != NULL)
 	{
 		roulette->baseDist = K_UndoMapScaling(player->distancetofinish);
-		
+
 		if (player->pflags & PF_AUTOROULETTE)
 			roulette->autoroulette = true;
 

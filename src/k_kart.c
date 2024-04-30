@@ -1490,7 +1490,7 @@ static boolean K_TryDraft(player_t *player, mobj_t *dest, fixed_t minDist, fixed
 		fixed_t add = (FRACUNIT/200) + ((9 - player->kartspeed) * ((3*FRACUNIT)/1600));;
 		player->draftpower += add;
 
-		if (player->bot && player->botvars.rival)
+		if (player->bot && player->botvars.rival && cv_ng_rivaldraft.value)
 		{
 			// Double speed for the rival!
 			player->draftpower += add;
@@ -3640,7 +3640,7 @@ fixed_t K_GetKartSpeed(const player_t *player, boolean doboostpower, boolean dor
 			if (player->bot && player->botvars.rival)
 			{
 				// +10% top speed for the rival
-				finalspeed = FixedMul(finalspeed, 11*FRACUNIT/10);
+				finalspeed = FixedMul(finalspeed, cv_ng_rivaltopspeed.value*FRACUNIT/10);
 			}
 		}
 	}
@@ -10305,7 +10305,7 @@ INT32 K_GetKartRingPower(const player_t *player, boolean boosted)
 		if (player->botvars.rival == true)
 		{
 			// x2.0 for Rival
-			ringPower = FixedMul(ringPower, 2*FRACUNIT);
+			ringPower = FixedMul(ringPower, cv_ng_rivalringpower.value*FRACUNIT/10);
 		}
 	}
 
@@ -12407,7 +12407,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	// if a player picks up an item during the instawhip input safety window—the one that triggers
 	// after you burn to 0 rings—they can continue to hold the input, then charge a usable whip
 	// without stopping the roulette and acquiring an item, which cancels it.
-	// 
+	//
 	// No ghosts use this technique, but your least favorite tournament player might.
 	if (player->itemRoulette.active)
 	{
