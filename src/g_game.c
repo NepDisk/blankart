@@ -307,7 +307,7 @@ boolean prevencoremode;
 boolean franticitems; // Frantic items currently enabled?
 
 // Voting system
-UINT16 g_voteLevels[4][2]; // Levels that were rolled by the host
+UINT16 g_voteLevels[8][2]; // Levels that were rolled by the host
 SINT8 g_votes[VOTE_TOTAL]; // Each player's vote
 SINT8 g_pickedVote; // What vote the host rolls
 

@@ -19,7 +19,7 @@
 extern "C" {
 #endif
 
-#define VOTE_NUM_LEVELS (4)
+#define VOTE_NUM_LEVELS (8)
 #define VOTE_NOT_PICKED (-1)
 
 #define VOTE_MOD_ENCORE (0x01)

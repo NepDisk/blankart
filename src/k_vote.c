@@ -87,11 +87,19 @@
 #define SELECTION_WIDTH (72*FRACUNIT)
 #define SELECTION_HEIGHT ((SELECTION_WIDTH * BASEVIDHEIGHT) / BASEVIDWIDTH)
 #define SELECTION_X (10*FRACUNIT + (SELECTION_WIDTH >> 1))
-#define SELECTION_Y (144*FRACUNIT + (SELECTION_HEIGHT >> 1))
+//#define SELECTION_Y (144*FRACUNIT + (SELECTION_HEIGHT >> 1))
 #define SELECTION_SPACE (4*FRACUNIT)
 #define SELECTION_SPACING_W (SELECTION_WIDTH + SELECTION_SPACE)
 #define SELECTION_SPACING_H (SELECTION_HEIGHT + SELECTION_SPACE)
 #define SELECTION_HOP (10*FRACUNIT)
+
+//NOIRE: Extra row support
+#define SELECTIONS_PER_ROW 4
+#if VOTE_NUM_LEVELS <= SELECTIONS_PER_ROW
+#define SELECTION_Y (144 * FRACUNIT + (SELECTION_HEIGHT >> 1))
+#else
+#define SELECTION_Y (144 * FRACUNIT + (SELECTION_HEIGHT >> 1)) - SELECTION_HEIGHT //Modify it for extra rows
+#endif // VOTE_NUM_LEVELS
 
 #define SELECTOR_SPACE (8*FRACUNIT)
 #define SELECTOR_Y ((SELECTION_HEIGHT / 2) + SELECTOR_SPACE)
@@ -737,7 +745,16 @@ static void Y_DrawVoteBackground(void)
 
 static void Y_DrawVoteSelector(const fixed_t y, const fixed_t time, const UINT8 localPlayer)
 {
-	const fixed_t destX = SELECTION_X + (vote.players[localPlayer].selection * SELECTION_SPACING_W);
+	//NOIRE: Extra map selections
+	const fixed_t destX =
+		SELECTION_X + (vote.players[localPlayer].selection >= SELECTIONS_PER_ROW
+						   ? (vote.players[localPlayer].selection - SELECTIONS_PER_ROW) * SELECTION_SPACING_W
+						   : vote.players[localPlayer].selection * SELECTION_SPACING_W);
+
+	// JANK: Since this is called after the thumbnails have been drawn, Y at this point will be by the second row.
+	// We need to undo that
+	// !!! While all of the extra votes code is written for the case of map votes being reduced again to 4, I'm UNSURE whenever this will break or not if that happens !!!
+	const fixed_t destY = vote.players[localPlayer].selection < SELECTIONS_PER_ROW ? y - SELECTION_SPACING_H : y;
 
 	vote_draw.selectors[localPlayer].x += FixedMul(
 		(destX - vote_draw.selectors[localPlayer].x) * 3 / 4,
@@ -759,7 +776,7 @@ static void Y_DrawVoteSelector(const fixed_t y, const fixed_t time, const UINT8 
 		colormap = R_GetTranslationColormap(TC_RAINBOW, players[ g_localplayers[localPlayer] ].skincolor, GTC_CACHE);
 
 		V_DrawFixedPatch(
-			vote_draw.selectors[localPlayer].x, y - SELECTOR_Y - (9*FRACUNIT),
+			vote_draw.selectors[localPlayer].x, destY - SELECTOR_Y - (9 * FRACUNIT),
 			FRACUNIT, 0,
 			vote_draw.selector_letter[localPlayer][blink],
 			colormap
@@ -777,7 +794,7 @@ static void Y_DrawVoteSelector(const fixed_t y, const fixed_t time, const UINT8 
 	}
 
 	V_DrawFixedPatch(
-		vote_draw.selectors[localPlayer].x, y - SELECTOR_Y + bob,
+		vote_draw.selectors[localPlayer].x, destY - SELECTOR_Y + bob,
 		FRACUNIT, 0,
 		vote_draw.selector_arrow,
 		colormap
@@ -800,6 +817,13 @@ static void Y_DrawVoteSelection(fixed_t offset)
 	//
 	for (i = 0; i < VOTE_NUM_LEVELS; i++)
 	{
+		// NOIRE: Support of the extra votes
+		if (i > 0 && (i & (SELECTIONS_PER_ROW - 1)) == 0) // Past the first row, Move Y further along, and reset X!
+		{
+			y += SELECTION_SPACING_H;
+			x = SELECTION_X;
+		}
+
 		boolean selected = false;
 		fixed_t destHop = 0;
 		INT32 j;
@@ -1049,10 +1073,9 @@ static void Y_PlayerSendVote(const UINT8 localPlayer)
 	y_vote_catcher *const catcher = &player->catcher;
 
 	catcher->action = CATCHER_FG_LOWER;
-
-	catcher->x = catcher->destX = SELECTION_X + (SELECTION_SPACING_W * player->selection);
+	catcher->x = catcher->destX = SELECTION_X + (SELECTION_SPACING_W * ((player->selection < SELECTIONS_PER_ROW) ? player->selection : player->selection - SELECTIONS_PER_ROW)); //NOIRE: More votes
 	catcher->y = CATCHER_OFFSCREEN;
-	catcher->destY = SELECTION_Y - SELECTION_HOP;
+	catcher->destY = player->selection < SELECTIONS_PER_ROW ? (SELECTION_Y - SELECTION_HOP) : (SELECTION_Y - SELECTION_HOP) + SELECTION_SPACING_H; // NOIRE: More votes
 	catcher->spr = 0;
 	catcher->level = VOTE_NOT_PICKED;
 

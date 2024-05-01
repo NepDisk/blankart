@@ -874,7 +874,7 @@ extern boolean comebackshowninfo;
 
 #define VOTE_SPECIAL (MAXPLAYERS)
 #define VOTE_TOTAL (MAXPLAYERS+1)
-extern UINT16 g_voteLevels[4][2];
+extern UINT16 g_voteLevels[8][2];
 extern SINT8 g_votes[VOTE_TOTAL];
 extern SINT8 g_pickedVote;
 
