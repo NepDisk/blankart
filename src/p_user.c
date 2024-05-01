@@ -74,6 +74,9 @@
 #include "m_easing.h"
 #include "acs/interface.h"
 
+// Noire
+#include "noire/n_cvar.h"
+
 #ifdef HWRENDER
 #include "hardware/hw_light.h"
 #include "hardware/hw_main.h"
@@ -1919,7 +1922,7 @@ static void P_3dMovement(player_t *player)
 	totalthrust.x = totalthrust.y = 0; // I forget if this is needed
 	totalthrust.z = FRACUNIT*P_MobjFlip(player->mo)/3; // A bit of extra push-back on slopes
 
-	if (K_SlopeResistance(player) == true)
+	if (K_SlopeResistance(player) == true || (!cv_ng_slopeclimb.value))
 	{
 		totalthrust.z = -(totalthrust.z);
 	}

@@ -61,11 +61,17 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Hitlag", "Should there be hitlag?",
 		NULL, {.cvar = &cv_ng_hitlag}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Rivals", "Should there be rivals?",
-		NULL, {.cvar = &cv_ng_rivals}, 0, 0},
+	{IT_STRING | IT_CVAR, "Slope Physics", "Should there be slope physics?",
+		NULL, {.cvar = &cv_ng_butteredslopes}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Slope Resistence", "Should slopes be hard to climb?",
+		NULL, {.cvar = &cv_ng_slopeclimb}, 0, 0},
 
 	{IT_HEADER, "Rivals...", NULL,
 		NULL, {NULL}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Rivals", "Should there be rivals?",
+		NULL, {.cvar = &cv_ng_rivals}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Top Speed", "Adjust rival's top speed (10 for non-rivals)",
 		NULL, {.cvar = &cv_ng_rivaltopspeed}, 0, 0},

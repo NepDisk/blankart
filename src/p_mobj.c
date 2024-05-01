@@ -3978,7 +3978,8 @@ static void P_PlayerMobjThinker(mobj_t *mobj)
 
 	P_MobjCheckWater(mobj);
 
-	P_ButteredSlope(mobj);
+	if (cv_ng_butteredslopes.value)
+		P_ButteredSlope(mobj);
 
 	// momentum movement
 	mobj->eflags &= ~MFE_JUSTSTEPPEDDOWN;

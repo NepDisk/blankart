@@ -27,6 +27,8 @@ extern consvar_t cv_ng_instawhip;
 extern consvar_t cv_ng_tumble;
 extern consvar_t cv_ng_stumble;
 extern consvar_t cv_ng_hitlag;
+extern consvar_t cv_ng_butteredslopes;
+extern consvar_t cv_ng_slopeclimb;
 extern consvar_t cv_ng_rivals;
 extern consvar_t cv_ng_rivaltopspeed;
 extern consvar_t cv_ng_rivalringpower;
