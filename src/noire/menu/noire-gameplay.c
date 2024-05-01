@@ -9,6 +9,8 @@
 
 #include "../../k_menu.h"
 #include "../../m_cond.h"
+#include "../../command.h"
+#include "../../console.h"
 
 // Noire
 #include "../n_cvar.h"
@@ -16,11 +18,17 @@
 menuitem_t OPTIONS_NoireGameplay[] =
 {
 
-	{IT_HEADER, "Collectables...", NULL,
+	{IT_HEADER, "Rings...", NULL,
 		NULL, {NULL}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Rings", "Use these for a burst of speed.",
 		NULL, {.cvar = &cv_ng_rings}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Ring Cap", "Adjust maximum ring count (minimum is maximum negated)",
+		NULL, {.cvar = &cv_ng_ringcap}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Spill Cap", "Adjust maximum ring loss upon taking damage",
+		NULL, {.cvar = &cv_ng_spillcap}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Ring Debt", "Should Rings go under 0?",
 		NULL, {.cvar = &cv_ng_ringdebt}, 0, 0},
@@ -37,17 +45,14 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Ringbox Transformation", "Should Itemboxes become Ringboxes?",
 		NULL, {.cvar = &cv_ng_ringboxtransform}, 0, 0},
 
+	{IT_HEADER, "Collectables...", NULL,
+		NULL, {NULL}, 0, 0},
+
 	{IT_STRING | IT_CVAR, "Capsules", "Should Capsules spawn in-game?",
 		NULL, {.cvar = &cv_ng_capsules}, 0, 0},
 
 	{IT_HEADER, "Mechanics...", NULL,
 		NULL, {NULL}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Ring Cap", "Adjust maximum ring count (minimum is maximum negated)",
-		NULL, {.cvar = &cv_ng_ringcap}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Spill Cap", "Adjust maximum ring loss upon taking damage",
-		NULL, {.cvar = &cv_ng_spillcap}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Fast Fall Bounce", "Should Fast Fall bounce?",
 		NULL, {.cvar = &cv_ng_fastfallbounce}, 0, 0},
@@ -73,7 +78,7 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Slope Physics", "Should there be slope physics?",
 		NULL, {.cvar = &cv_ng_butteredslopes}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Slope Resistence", "Should slopes be hard to climb?",
+	{IT_STRING | IT_CVAR, "Slope Resistance", "Should slopes be hard to climb?",
 		NULL, {.cvar = &cv_ng_slopeclimb}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Stairjank", "Whenever karts should be affected by sector steps, only bumpy roads or nothing.",
@@ -97,6 +102,54 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "2x Draft Power", "Should rival pull ahead at double speed?",
 		NULL, {.cvar = &cv_ng_rivaldraft}, 0, 0},
 };
+
+void NG_Rings_OnChange(void)
+{
+	if(cv_ng_rings.value)
+	{
+		if (!con_startup)
+		{
+			CV_SetValue(&cv_ng_ringcap, 20);
+			CV_SetValue(&cv_ng_spillcap, 20);
+			CV_Set(&cv_ng_ringdebt, "On");
+			CV_Set(&cv_ng_ringsting, "On");
+			CV_Set(&cv_ng_maprings, "On");
+			CV_Set(&cv_ng_mapringboxes, "On");
+			CV_Set(&cv_ng_ringboxtransform, "On");
+
+
+			// 3 - 9
+			for (int i = 2; i < 9; i++)
+			{
+				OPTIONS_NoireGameplay[i].status = IT_STRING | IT_CVAR;
+			}
+		}
+
+	}
+	else
+	{
+		if (!con_startup)
+		{
+			CV_SetValue(&cv_ng_ringcap, 0);
+			CV_SetValue(&cv_ng_spillcap, 0);
+			CV_Set(&cv_ng_ringdebt, "Off");
+			CV_Set(&cv_ng_ringsting, "Off");
+			CV_Set(&cv_ng_maprings, "Off");
+			CV_Set(&cv_ng_mapringboxes, "Off");
+			CV_Set(&cv_ng_ringboxtransform, "Off");
+
+
+			// 3 - 9
+			for (int i = 2; i < 9; i++)
+			{
+				OPTIONS_NoireGameplay[i].status = IT_GRAYEDOUT;
+
+			}
+		}
+
+
+	}
+}
 
 menu_t OPTIONS_NoireGameplayDef = {
 	sizeof (OPTIONS_NoireGameplay) / sizeof (menuitem_t),

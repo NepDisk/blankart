@@ -786,7 +786,8 @@ consvar_t cv_votetime = UnsavedNetVar("votetime", "20").min_max(10, 3600);
 // These do not save...
 //
 
-consvar_t cv_ng_rings = UnsavedNetVar("ng_rings", "On").on_off();
+void NG_Rings_OnChange(void);
+consvar_t cv_ng_rings = UnsavedNetVar("ng_rings", "On").on_off().onchange(NG_Rings_OnChange);
 consvar_t cv_ng_ringdebt = UnsavedNetVar("ng_ringdebt", "On").on_off();
 consvar_t cv_ng_ringboxtransform = UnsavedNetVar("ng_ringboxtransform", "On").on_off();
 consvar_t cv_ng_mapringboxes = UnsavedNetVar("ng_mapringboxes", "On").on_off();

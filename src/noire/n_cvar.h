@@ -38,6 +38,8 @@ extern consvar_t cv_ng_rivalringpower;
 extern consvar_t cv_ng_rivalfrantic;
 extern consvar_t cv_ng_rivaldraft;
 
+void NG_Rings_OnChange(void);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

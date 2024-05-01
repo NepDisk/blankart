@@ -3276,6 +3276,11 @@ static void K_drawKartSpeedometer(boolean gametypeinfoshown)
 		fy -= 2;
 	}
 
+	if (!cv_ng_rings.value || cv_ng_ringcap.value == 0)
+	{
+		fy += 15;
+	}
+
 	if (!stplyr->exiting) // Keep the same speed value as when you crossed the finish line!
 	{
 		switch (cv_kartspeedometer.value)
@@ -6308,7 +6313,31 @@ void K_drawKartHUD(void)
 			}
 			else
 			{
-				K_drawRingCounter(gametypeinfoshown);
+				if (cv_ng_rings.value || cv_ng_ringcap.value > 0)
+					K_drawRingCounter(gametypeinfoshown);
+				else
+				{
+					// Move later but for now redraw the lives for 1p with rings off
+					INT32 fr = LAPS_X - 45;
+					INT32 fy = LAPS_Y - 5;
+					INT32 splitflags = V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_SPLITSCREEN;
+					// Lives
+					if (G_GametypeUsesLives())
+					{
+						UINT8 *colormap = R_GetTranslationColormap(stplyr->skin, static_cast<skincolornum_t>(stplyr->skincolor), GTC_CACHE);
+						V_DrawMappedPatch(fr+46, fy-5, V_HUDTRANS|V_SLIDEIN|splitflags, faceprefix[stplyr->skin][FACE_RANK], colormap);
+						SINT8 livescount = 0;
+						if (stplyr->lives > 0)
+						{
+							livescount = stplyr->lives;
+							if (livescount > 10)
+								livescount = 10;
+						}
+						using srb2::Draw;
+						Draw row = Draw(fr+65, fy-4).flags(V_HUDTRANS|V_SLIDEIN|splitflags).font(Draw::Font::kThinTimer);
+						row.text("{}", livescount);
+					}
+				}
 			}
 
 			// Draw the item window
