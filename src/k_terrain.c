@@ -30,6 +30,9 @@
 
 #include "k_kart.h" // on the chopping block...
 
+// Noire
+#include "noire/n_cvar.h"
+
 static t_splash_t *splashDefs = NULL;
 static size_t numSplashDefs = 0;
 
@@ -632,7 +635,10 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			spark->renderflags |= RF_REDUCEVFX;
 		}
 
-		player->stairjank = 17;
+		if (cv_ng_stairjank.value > 0) //Only apply bumpy floor stairjank if the cvar is 1 or 2
+		{
+			player->stairjank = 17;
+		}
 	}
 
 	// (Offroad is handled elsewhere!)

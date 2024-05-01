@@ -67,11 +67,17 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Hitlag", "Should there be hitlag?",
 		NULL, {.cvar = &cv_ng_hitlag}, 0, 0},
 
+	{IT_HEADER, "Driving...", NULL,
+		NULL, {NULL}, 0, 0},
+
 	{IT_STRING | IT_CVAR, "Slope Physics", "Should there be slope physics?",
 		NULL, {.cvar = &cv_ng_butteredslopes}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Slope Resistence", "Should slopes be hard to climb?",
 		NULL, {.cvar = &cv_ng_slopeclimb}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Stairjank", "Whenever karts should be affected by sector steps, only bumpy roads or nothing.",
+		NULL, {.cvar = &cv_ng_stairjank}, 0, 0},
 
 	{IT_HEADER, "Rivals...", NULL,
 		NULL, {NULL}, 0, 0},

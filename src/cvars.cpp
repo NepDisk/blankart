@@ -807,6 +807,11 @@ consvar_t cv_ng_stumble = UnsavedNetVar("ng_stumble", "On").on_off();
 consvar_t cv_ng_hitlag = UnsavedNetVar("ng_hitlag", "On").on_off();
 consvar_t cv_ng_butteredslopes = UnsavedNetVar("ng_slopephysics", "On").on_off();
 consvar_t cv_ng_slopeclimb = UnsavedNetVar("ng_slopeclimb", "On").on_off();
+consvar_t cv_ng_stairjank = UnsavedNetVar("ng_stairjank", "All").values({
+	{0, "None"},
+	{1, "Bumpy roads only"},
+	{2, "All"},
+});
 consvar_t cv_ng_rivals = UnsavedNetVar("ng_rivals", "On").on_off();
 consvar_t cv_ng_rivaltopspeed = UnsavedNetVar("ng_rivaltopspeed", "11").min_max(1, 100);
 consvar_t cv_ng_rivalringpower = UnsavedNetVar("ng_rivalringpower", "20").min_max(0, 100);

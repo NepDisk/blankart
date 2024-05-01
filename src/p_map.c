@@ -46,6 +46,9 @@
 
 #include "m_perfstats.h" // ps_checkposition_calls
 
+// Noire
+#include "noire/n_cvar.h"
+
 tm_t g_tm = {0};
 
 void P_RestoreTMStruct(tm_t tmrestore)
@@ -2956,7 +2959,7 @@ increment_move
 
 	if (return_stairjank)
 	{
-		*return_stairjank = stairjank;
+		*return_stairjank = cv_ng_stairjank.value == 2 ? stairjank : 0; //NOIRE: All stairjank here is due to stepups or stepsdown, do not return the data if the cvar isn't set to accept it.
 	}
 
 	return true;
@@ -3115,8 +3118,8 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff, Try
 			P_SetTarget(&spark->owner, thing);
 			spark->renderflags |= RF_REDUCEVFX;
 		}
-
-		thing->player->stairjank = 17;
+		// Noire: This whole block of code is exact to the one in k_terrain.c for bumpy floor... but if we have stairjank here it should be due to stepups and stepdowns in increment_move, NOT sector flags.
+		thing->player->stairjank = 17; // In other words, the k_terrain.c code is mimicking this code, not the other way around.
 	}
 
 	thing->x = x;
