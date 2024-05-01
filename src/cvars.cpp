@@ -802,10 +802,13 @@ consvar_t cv_ng_fastfallbounce = UnsavedNetVar("ng_fastfallbounce", "On").values
 	{2, "On"},
 });
 consvar_t cv_ng_draft = UnsavedNetVar("ng_draft", "On").on_off();
-consvar_t cv_ng_instawhip = UnsavedNetVar("ng_instawhip", "On").on_off();
 consvar_t cv_ng_tumble = UnsavedNetVar("ng_tumble", "On").on_off();
 consvar_t cv_ng_stumble = UnsavedNetVar("ng_stumble", "On").on_off();
 consvar_t cv_ng_hitlag = UnsavedNetVar("ng_hitlag", "On").on_off();
+consvar_t cv_ng_instawhip = UnsavedNetVar("ng_instawhip", "On").on_off();
+consvar_t cv_ng_instawhipcharge = UnsavedNetVar("ng_instawhipcharge", "75").min_max(0, 1000);
+consvar_t cv_ng_instawhiplockout = UnsavedNetVar("ng_instawhiplockout", "70").min_max(0, 1000);
+consvar_t cv_ng_instawhipdrain = UnsavedNetVar("ng_instawhipdrain", "On").on_off();
 consvar_t cv_ng_butteredslopes = UnsavedNetVar("ng_slopephysics", "On").on_off();
 consvar_t cv_ng_slopeclimb = UnsavedNetVar("ng_slopeclimb", "On").on_off();
 consvar_t cv_ng_stairjank = UnsavedNetVar("ng_stairjank", "All").values({
