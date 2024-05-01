@@ -1,3 +1,9 @@
+# RingRacers Noire
+
+Noire is a modification of Dr. Robotnik's Ring Racers which adds new features and adds toggles to existing ones with more to come!
+
+Original Readme below
+
 # Dr. Robotnik's Ring Racers
 
 <p align="center">
