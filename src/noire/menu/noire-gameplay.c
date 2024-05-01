@@ -69,6 +69,9 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Hitlag", "Should there be hitlag?",
 		NULL, {.cvar = &cv_ng_hitlag}, 0, 0},
 
+	{IT_STRING | IT_CVAR, "Map Anger", "Can maps vote for themselves after being ignored by everyone in votation three times?",
+		NULL, {.cvar = &cv_ng_mapanger}, 0, 0},
+
 	{IT_HEADER, "Instawhip...", NULL,
 		NULL, {NULL}, 0, 0},
 
@@ -93,7 +96,7 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Slope Resistance", "Should slopes be hard to climb?",
 		NULL, {.cvar = &cv_ng_slopeclimb}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Stairjank", "Whenever karts should be affected by sector steps, only bumpy roads or nothing.",
+	{IT_STRING | IT_CVAR, "Stairjank", "Whenever karts should be affected by steps & bumpy roads, only roads or nothing.",
 		NULL, {.cvar = &cv_ng_stairjank}, 0, 0},
 
 	{IT_HEADER, "Rivals...", NULL,

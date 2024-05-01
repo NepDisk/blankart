@@ -1,0 +1,10 @@
+diff a/src/noire/menu/noire-gameplay.c b/src/noire/menu/noire-gameplay.c	(rejected hunks)
+@@ -76,7 +79,7 @@ menuitem_t OPTIONS_NoireGameplay[] =
+ 	{IT_STRING | IT_CVAR, "Slope Resistence", "Should slopes be hard to climb?",
+ 		NULL, {.cvar = &cv_ng_slopeclimb}, 0, 0},
+ 
+-	{IT_STRING | IT_CVAR, "Stairjank", "Whenever karts should be affected by sector steps, only bumpy roads or nothing.",
++	{IT_STRING | IT_CVAR, "Stairjank", "Whenever karts should be affected by steps & bumpy roads, only roads or nothing.",
+ 		NULL, {.cvar = &cv_ng_stairjank}, 0, 0},
+ 
+ 	{IT_HEADER, "Rivals...", NULL,

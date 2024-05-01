@@ -57,6 +57,8 @@
 #include "hardware/hw_main.h"
 #endif
 
+#include "noire/n_cvar.h" //cv_ng_mapanger
+
 // Wait for any player to vote before starting the timer.
 // Disabled because a player can join and be sent to
 // the waiting screen, and if there's only 1 player in
@@ -96,10 +98,10 @@
 //NOIRE: Extra row support
 #define SELECTIONS_PER_ROW 4
 #define SELECTION_NUM_ROWS ((VOTE_NUM_LEVELS + SELECTIONS_PER_ROW - 1) / SELECTIONS_PER_ROW)
-#if VOTE_NUM_LEVELS <= SELECTIONS_PER_ROW
+#if SELECTION_NUM_ROWS < 1
 #define SELECTION_Y (144 * FRACUNIT + (SELECTION_HEIGHT >> 1))
 #else
-#define SELECTION_Y (144 * FRACUNIT + (SELECTION_HEIGHT >> 1)) - SELECTION_HEIGHT //Modify it for extra rows
+#define SELECTION_Y (144 * FRACUNIT + (SELECTION_HEIGHT >> 1)) - (SELECTION_HEIGHT * (SELECTION_NUM_ROWS - 1)) //Modify it for extra rows
 #endif // VOTE_NUM_LEVELS
 
 #define SELECTOR_SPACE (8*FRACUNIT)
@@ -1583,7 +1585,8 @@ static void Y_TickVoteSelection(void)
 
 			if (server)
 			{
-				Y_TryMapAngerVote();
+				if (cv_ng_mapanger.value)
+					Y_TryMapAngerVote();
 				D_PickVote();
 			}
 		}

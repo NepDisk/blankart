@@ -28,10 +28,13 @@ extern consvar_t cv_ng_draft;
 extern consvar_t cv_ng_tumble;
 extern consvar_t cv_ng_stumble;
 extern consvar_t cv_ng_hitlag;
+extern consvar_t cv_ng_mapanger;
+
 extern consvar_t cv_ng_instawhip;
 extern consvar_t cv_ng_instawhipcharge;
 extern consvar_t cv_ng_instawhiplockout;
 extern consvar_t cv_ng_instawhipdrain;
+
 extern consvar_t cv_ng_butteredslopes;
 extern consvar_t cv_ng_slopeclimb;
 extern consvar_t cv_ng_stairjank;
