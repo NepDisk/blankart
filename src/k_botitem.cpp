@@ -32,6 +32,9 @@
 #include "r_things.h" // numskins
 #include "k_roulette.h"
 
+//Noire
+#include "noire/n_cvar.h"
+
 /*--------------------------------------------------
 	static inline boolean K_ItemButtonWasDown(const player_t *player)
 
@@ -1549,7 +1552,8 @@ static void K_BotItemInstashield(const player_t *player, ticcmd_t *cmd)
 			cmd->buttons &= ~BT_ATTACK;
 
 		// ...or we're ready to rock.
-		if (attackOpportunity && player->instaWhipCharge >= (INSTAWHIP_CHARGETIME + reactiontime) && player->botvars.itemconfirm >= reactiontime)
+		int instaWhipChargeTime = cv_ng_instawhipcharge.value*TICRATE/100;
+		if (attackOpportunity && player->instaWhipCharge >= (instaWhipChargeTime + reactiontime) && player->botvars.itemconfirm >= reactiontime)
 			cmd->buttons &= ~BT_ATTACK;
 	}
 	else // When should we get spooked and start a charge?

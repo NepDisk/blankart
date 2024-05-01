@@ -60,9 +60,6 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Draft/Tether", "Should players ahead pull?",
 		NULL, {.cvar = &cv_ng_draft}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Instawhip", "Should you be allowed to Instawhip?",
-		NULL, {.cvar = &cv_ng_instawhip}, 0, 0},
-
 	{IT_STRING | IT_CVAR, "Tumble", "Should you tumble?",
 		NULL, {.cvar = &cv_ng_tumble}, 0, 0},
 
@@ -71,6 +68,21 @@ menuitem_t OPTIONS_NoireGameplay[] =
 
 	{IT_STRING | IT_CVAR, "Hitlag", "Should there be hitlag?",
 		NULL, {.cvar = &cv_ng_hitlag}, 0, 0},
+
+	{IT_HEADER, "Instawhip...", NULL,
+		NULL, {NULL}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Instawhip", "Should you be allowed to instawhip?",
+		NULL, {.cvar = &cv_ng_instawhip}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Charge Time", "Adjust how long instawhip charges for (in hundredths of a second)",
+		NULL, {.cvar = &cv_ng_instawhipcharge}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Lockout", "Adjust wait time before using instawhip again (in hundredths of a second)",
+		NULL, {.cvar = &cv_ng_instawhiplockout}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Drain Rings", "Should holding instawhip drain rings?",
+		NULL, {.cvar = &cv_ng_instawhipdrain}, 0, 0},
 
 	{IT_HEADER, "Driving...", NULL,
 		NULL, {NULL}, 0, 0},

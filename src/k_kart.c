@@ -8905,7 +8905,8 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	}
 	else if (player->oldGuard)
 	{
-		player->defenseLockout = PUNISHWINDOW;
+		int punishWindow = cv_ng_instawhiplockout.value*TICRATE/100;
+		player->defenseLockout = punishWindow;
 		player->oldGuard = false;
 	}
 
@@ -12286,6 +12287,9 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 		}
 	}
 
+	int instaWhipChargeTime = cv_ng_instawhipcharge.value*TICRATE/100;
+	int punishWindow = cv_ng_instawhiplockout.value*TICRATE/100;
+
 	// This looks a lot like the check that's right under it, but this check is specifically for instawhip charge,
 	// which is allowed during painstate as a last-ditch defensive option.
 	if (player && player->mo && player->mo->health > 0 && !player->spectator && !mapreset && leveltime > introtime)
@@ -12303,7 +12307,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 			else
 			{
 				releasedwhip = (ATTACK_IS_DOWN && player->rings <= 0 && player->itemflags & IF_USERINGS);
-				player->instaWhipCharge = INSTAWHIP_CHARGETIME;
+				player->instaWhipCharge = instaWhipChargeTime;
 			}
 
 			chargingwhip = false;
@@ -12323,7 +12327,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 			if (P_IsObjectOnGround(player->mo) || K_PlayerGuard(player))
 			{
 				if (player->instaWhipCharge)
-					player->defenseLockout = PUNISHWINDOW;
+					player->defenseLockout = punishWindow;
 				player->instaWhipCharge = 0;
 			}
 		}
@@ -12345,12 +12349,12 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				Obj_SpawnInstaWhipRecharge(player, ANGLE_240);
 			}
 
-			if (player->instaWhipCharge == INSTAWHIP_CHARGETIME)
+			if (player->instaWhipCharge == instaWhipChargeTime)
 			{
 				Obj_SpawnInstaWhipReject(player);
 			}
 
-			if (player->instaWhipCharge > INSTAWHIP_CHARGETIME)
+			if (player->instaWhipCharge > instaWhipChargeTime && cv_ng_instawhipdrain.value)
 			{
 				if ((leveltime%(INSTAWHIP_RINGDRAINEVERY)) == 0 && !(gametyperules & GTR_SPHERES))
 				{
@@ -12365,7 +12369,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 		}
 		else if (releasedwhip)
 		{
-			if (player->instaWhipCharge < INSTAWHIP_CHARGETIME)
+			if (player->instaWhipCharge < instaWhipChargeTime)
 			{
 				// OOPSIES FIXME pt.3: See OOPSIES FIXME pt.1.
 				if (!player->itemRoulette.active)
@@ -12378,7 +12382,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				player->instaWhipCharge = 0;
 				if (!K_PowerUpRemaining(player, POWERUP_BARRIER))
 				{
-					player->defenseLockout = PUNISHWINDOW;
+					player->defenseLockout = punishWindow;
 				}
 
 				S_StartSound(player->mo, sfx_iwhp);
@@ -12399,7 +12403,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				player->botvars.itemconfirm = 0;
 			}
 		}
-		else if (!(player->instaWhipCharge >= INSTAWHIP_CHARGETIME && P_PlayerInPain(player))) // Allow reversal whip
+		else if (!(player->instaWhipCharge >= instaWhipChargeTime && P_PlayerInPain(player))) // Allow reversal whip
 			player->instaWhipCharge = 0;
 	}
 
