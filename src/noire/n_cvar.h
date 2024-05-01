@@ -21,6 +21,8 @@ extern consvar_t cv_ng_mapringboxes;
 extern consvar_t cv_ng_maprings;
 extern consvar_t cv_ng_ringsting;
 extern consvar_t cv_ng_capsules;
+extern consvar_t cv_ng_ringcap;
+extern consvar_t cv_ng_spillcap;
 extern consvar_t cv_ng_fastfallbounce;
 extern consvar_t cv_ng_draft;
 extern consvar_t cv_ng_instawhip;

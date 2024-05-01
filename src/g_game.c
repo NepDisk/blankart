@@ -76,6 +76,9 @@
 #include "k_credits.h"
 #include "g_gamedata.h"
 
+//Noire
+#include "noire/n_cvar.h"
+
 #ifdef HAVE_DISCORDRPC
 #include "discord.h"
 #endif
@@ -357,7 +360,7 @@ void G_ClearRecords(void)
 
 	// TODO: Technically, these should only remove time attack records here.
 	// But I'm out of juice for dev (+ literally, just finished some OJ).
-	// The stats need to be cleared in M_ClearStats, and I guess there's 
+	// The stats need to be cleared in M_ClearStats, and I guess there's
 	// no perfect place to wipe mapvisited because it's not actually part of
 	// basegame progression... so here's fine for launch.  ~toast 100424
 	unloaded_mapheader_t *unloadedmap, *nextunloadedmap = NULL;
@@ -4529,8 +4532,8 @@ static void G_DoCompleted(void)
 				INT32 ringtotal = player->hudrings;
 				if (ringtotal > 0 && grandprixinfo.eventmode != GPEVENT_SPECIAL)
 				{
-					if (ringtotal > 20)
-						ringtotal = 20;
+					if (ringtotal > cv_ng_ringcap.value)
+						ringtotal = cv_ng_ringcap.value;
 					player->totalring += ringtotal;
 					grandprixinfo.rank.rings += ringtotal;
 				}
