@@ -3015,7 +3015,7 @@ static void K_drawRingCounter(boolean gametypeinfoshown)
 			colorring = false;
 
 	}
-	else if (stplyr->hudrings >= 20) // Maxed out
+	else if (stplyr->hudrings >= cv_ng_ringcap.value) // Maxed out
 		ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_YELLOW, GTC_CACHE);
 
 	if (stplyr->karthud[khud_ringframe] > RINGANIM_FLIPFRAME)

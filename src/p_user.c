@@ -461,10 +461,10 @@ INT32 P_GivePlayerRings(player_t *player, INT32 num_rings)
 	}
 
 	test = player->rings + num_rings;
-	if (test > 20) // Caps at 20 rings, sorry!
-		num_rings -= (test-20);
-	else if (test < -20) // Chaotix ring debt!
-		num_rings -= (test+20);
+	if (test > cv_ng_ringcap.value) // Caps at 20 rings, sorry!
+		num_rings -= (test-cv_ng_ringcap.value);
+	else if (test < -cv_ng_ringcap.value) // Chaotix ring debt!
+		num_rings -= (test+cv_ng_ringcap.value);
 
 	player->rings += num_rings;
 
@@ -1284,8 +1284,8 @@ void P_DoPlayerExit(player_t *player, pflags_t flags)
 		if (!(gametyperules & GTR_SPHERES))
 		{
 			player->hudrings = RINGTOTAL(player);
-			if (player->hudrings > 20)
-				player->hudrings = 20;
+			if (player->hudrings > cv_ng_ringcap.value)
+				player->hudrings = cv_ng_ringcap.value;
 
 			if (grandprixinfo.gp == true
 				&& grandprixinfo.eventmode != GPEVENT_SPECIAL
@@ -2219,7 +2219,7 @@ static INT16 P_FindClosestTurningForAngle(player_t *player, INT32 targetAngle, I
 
 	// Slightly frumpy binary search for the ideal turning input.
 	// We do this instead of reversing K_GetKartTurnValue so that future handling changes are automatically accounted for.
-	
+
 	while (attempts++ < 20) // Practical calls of this function search maximum 10 times, this is solely for safety.
 	{
 		// These need to be treated as signed, or situations where boundaries straddle 0 are a mess.
@@ -2340,7 +2340,7 @@ static void P_UpdatePlayerAngle(player_t *player)
 		// Corrections via fake turn go through easing.
 		// That means undoing them takes the same amount of time as doing them.
 		// This can lead to oscillating death spiral states on a multi-tic correction, as we swing past the target angle.
-		// So before we go into death-spirals, if our predicton is _almost_ right... 
+		// So before we go into death-spirals, if our predicton is _almost_ right...
 		angle_t leniency = (4*ANG1/3) * min(player->cmd.latency, 6);
 		// Don't force another turning tic, just give them the desired angle!
 
@@ -2439,7 +2439,7 @@ void P_MovePlayer(player_t *player)
 	//////////////////////
 
 	P_UpdatePlayerAngle(player);
-	
+
 	ticruned++;
 	if (!(cmd->flags & TICCMD_RECEIVED))
 		ticmiss++;
@@ -4539,7 +4539,7 @@ void P_PlayerThink(player_t *player)
 	{
 		player->stairjank--;
 	}
-	
+
 	// Random skin / "ironman"
 	{
 		UINT32 skinflags = (demo.playback)

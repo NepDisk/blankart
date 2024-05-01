@@ -43,6 +43,12 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_HEADER, "Mechanics...", NULL,
 		NULL, {NULL}, 0, 0},
 
+	{IT_STRING | IT_CVAR, "Ring Cap", "Adjust maximum ring count (minimum is maximum negated)",
+		NULL, {.cvar = &cv_ng_ringcap}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Spill Cap", "Adjust maximum ring loss upon taking damage",
+		NULL, {.cvar = &cv_ng_spillcap}, 0, 0},
+
 	{IT_STRING | IT_CVAR, "Fast Fall Bounce", "Should Fast Fall bounce?",
 		NULL, {.cvar = &cv_ng_fastfallbounce}, 0, 0},
 

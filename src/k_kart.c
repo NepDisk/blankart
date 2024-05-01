@@ -3908,11 +3908,11 @@ void K_AwardPlayerRings(player_t *player, UINT16 rings, boolean overload)
 			RINGTOTAL(player) + (player->superring);
 
 		/* capped at 20 rings */
-		if ((totalrings + rings) > 20)
+		if ((totalrings + rings) > cv_ng_ringcap.value)
 		{
-			if (totalrings >= 20)
+			if (totalrings >= cv_ng_ringcap.value)
 				return; // woah dont let that go negative buster
-			rings = (20 - totalrings);
+			rings = (cv_ng_ringcap.value - totalrings);
 		}
 	}
 
@@ -4923,9 +4923,9 @@ INT32 K_ExplodePlayer(player_t *player, mobj_t *inflictor, mobj_t *source) // A 
 		player->spinouttimer = FixedMul(player->spinouttimer, spbMultiplier + ((spbMultiplier - FRACUNIT) / 2));
 
 		ringburst = FixedMul(ringburst * FRACUNIT, spbMultiplier) / FRACUNIT;
-		if (ringburst > 20)
+		if (ringburst > cv_ng_ringcap.value)
 		{
-			ringburst = 20;
+			ringburst = cv_ng_ringcap.value;
 		}
 	}
 
@@ -8317,7 +8317,7 @@ static inline BlockItReturn_t PIT_AttractingRings(mobj_t *thing)
 		return BMIT_CONTINUE; // Too far away
 	}
 
-	if (RINGTOTAL(attractmo->player) >= 20 || (attractmo->player->pflags & PF_RINGLOCK))
+	if (RINGTOTAL(attractmo->player) >= cv_ng_ringcap.value || (attractmo->player->pflags & PF_RINGLOCK))
 	{
 		// Already reached max -- just joustle rings around.
 
@@ -8734,10 +8734,10 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->wipeoutslow = 0;
 	}
 
-	if (player->rings > 20)
-		player->rings = 20;
-	else if (player->rings < -20)
-		player->rings = -20;
+	if (player->rings > cv_ng_ringcap.value)
+		player->rings = cv_ng_ringcap.value;
+	else if (player->rings < -cv_ng_ringcap.value)
+		player->rings = -cv_ng_ringcap.value;
 
 	if (cv_kartdebugbotwhip.value)
 	{
@@ -12356,7 +12356,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				{
 					if (cv_ng_ringdebt.value)
 					{
-						if (player->rings > -20 && P_IsDisplayPlayer(player))
+						if (player->rings > -cv_ng_ringcap.value && P_IsDisplayPlayer(player))
 							S_StartSound(player->mo, sfx_antiri);
 						player->rings--;
 					}
