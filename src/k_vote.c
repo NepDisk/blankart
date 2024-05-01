@@ -95,6 +95,7 @@
 
 //NOIRE: Extra row support
 #define SELECTIONS_PER_ROW 4
+#define SELECTION_NUM_ROWS ((VOTE_NUM_LEVELS + SELECTIONS_PER_ROW - 1) / SELECTIONS_PER_ROW)
 #if VOTE_NUM_LEVELS <= SELECTIONS_PER_ROW
 #define SELECTION_Y (144 * FRACUNIT + (SELECTION_HEIGHT >> 1))
 #else
@@ -817,12 +818,14 @@ static void Y_DrawVoteSelection(fixed_t offset)
 	//
 	for (i = 0; i < VOTE_NUM_LEVELS; i++)
 	{
-		// NOIRE: Support of the extra votes
-		if (i > 0 && (i & (SELECTIONS_PER_ROW - 1)) == 0) // Past the first row, Move Y further along, and reset X!
+		// NOIRE: Support of the extra votes. This one here should be able to create an indeterminate amount of rows.
+		#if SELECTION_NUM_ROWS > 1
+		if (i > 0 && (i & (SELECTIONS_PER_ROW - 1)) == 0) // Past the amount of items per row. Move Y further along, and reset X!
 		{
 			y += SELECTION_SPACING_H;
 			x = SELECTION_X;
 		}
+		#endif
 
 		boolean selected = false;
 		fixed_t destHop = 0;
@@ -1488,14 +1491,29 @@ static void Y_TickVoteSelection(void)
 					moved = true;
 				}
 
+				//NOIRE: Extra map votes, we have more than two rows, let the player switch with up and duwn
+				#if SELECTION_NUM_ROWS > 1
+				if (G_PlayerInputDown(i, gc_up, 0))
+				{
+					vote.players[i].selection -= SELECTIONS_PER_ROW;
+					moved = true;
+				}
+
+				if (G_PlayerInputDown(i, gc_down, 0))
+				{
+					vote.players[i].selection += SELECTIONS_PER_ROW;
+					moved = true;
+				}
+				#endif
+
 				if (vote.players[i].selection < 0)
 				{
-					vote.players[i].selection = VOTE_NUM_LEVELS - 1;
+					vote.players[i].selection += SELECTION_NUM_ROWS * SELECTIONS_PER_ROW;
 				}
 
 				if (vote.players[i].selection >= VOTE_NUM_LEVELS)
 				{
-					vote.players[i].selection = 0;
+					vote.players[i].selection -= SELECTION_NUM_ROWS * SELECTIONS_PER_ROW;
 				}
 
 				if (G_PlayerInputDown(i, gc_a, 0) && moved == false)
