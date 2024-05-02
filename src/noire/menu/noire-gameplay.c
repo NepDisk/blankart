@@ -69,7 +69,7 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Hitlag", "Should there be hitlag?",
 		NULL, {.cvar = &cv_ng_hitlag}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Map Anger", "Can maps vote for themselves after being ignored by everyone in votation three times?",
+	{IT_STRING | IT_CVAR, "Map Anger", "Amount of times a map has to be ignored by everyone to vote itself.",
 		NULL, {.cvar = &cv_ng_mapanger}, 0, 0},
 
 	{IT_HEADER, "Instawhip...", NULL,

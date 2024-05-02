@@ -1426,7 +1426,7 @@ static void Y_TryMapAngerVote(void)
 			// Increment map anger for maps that weren't picked by a single soul.
 			mapheaderinfo[ mapID ]->anger++;
 
-			if (mapheaderinfo[ mapID ]->anger > MAP_ANGER_MAX)
+			if (mapheaderinfo[mapID]->anger > cv_ng_mapanger.value)
 			{
 				// If they are angry enough, then it can vote for itself!
 				angryMaps[ angryMapsCount ] = i;
@@ -1585,7 +1585,7 @@ static void Y_TickVoteSelection(void)
 
 			if (server)
 			{
-				if (cv_ng_mapanger.value)
+				if (cv_ng_mapanger.value > -1)
 					Y_TryMapAngerVote();
 				D_PickVote();
 			}
