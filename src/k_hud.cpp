@@ -3060,33 +3060,37 @@ static void K_drawRingCounter(boolean gametypeinfoshown)
 			fy -= 10;
 		}
 
-		// Rings
-		if (!uselives)
-		{
-			V_DrawScaledPatch(fx-2 + (flipflag ? (SHORT(kp_ringstickersplit[1]->width) - 3) : 0), fy, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[1]);
-			if (flipflag)
-				fr += 15;
-		}
-		else
-			V_DrawScaledPatch(fx-2 + (flipflag ? (SHORT(kp_ringstickersplit[0]->width) - 3) : 0), fy, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[0]);
 
-		V_DrawMappedPatch(fr+ringx, fy-3, V_HUDTRANS|V_SLIDEIN|splitflags|ringflip, kp_smallring[ringanim_realframe], (colorring ? ringmap : NULL));
+			if (cv_ng_ringcap.value > 0)
+			{
+				// Rings
+				if (!uselives)
+				{
+					V_DrawScaledPatch(fx-2 + (flipflag ? (SHORT(kp_ringstickersplit[1]->width) - 3) : 0), fy, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[1]);
+					if (flipflag)
+						fr += 15;
+				}
+				else
+					V_DrawScaledPatch(fx-2 + (flipflag ? (SHORT(kp_ringstickersplit[0]->width) - 3) : 0), fy, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[0]);
 
-		if (stplyr->hudrings < 0) // Draw the minus for ring debt
-		{
-			V_DrawMappedPatch(fr+11, fy, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringdebtminussmall, ringmap);
-			V_DrawMappedPatch(fr+15, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[0]], ringmap);
-			V_DrawMappedPatch(fr+19, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[1]], ringmap);
-		}
-		else
-		{
-			V_DrawMappedPatch(fr+11, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[0]], ringmap);
-			V_DrawMappedPatch(fr+15, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[1]], ringmap);
-		}
+				V_DrawMappedPatch(fr+ringx, fy-3, V_HUDTRANS|V_SLIDEIN|splitflags|ringflip, kp_smallring[ringanim_realframe], (colorring ? ringmap : NULL));
 
-		// SPB ring lock
-		if (stplyr->pflags & PF_RINGLOCK)
-			V_DrawScaledPatch(fr-12, fy-13, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringspblocksmall[stplyr->karthud[khud_ringspblock]]);
+				if (stplyr->hudrings < 0) // Draw the minus for ring debt
+				{
+					V_DrawMappedPatch(fr+11, fy, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringdebtminussmall, ringmap);
+					V_DrawMappedPatch(fr+15, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[0]], ringmap);
+					V_DrawMappedPatch(fr+19, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[1]], ringmap);
+				}
+				else
+				{
+					V_DrawMappedPatch(fr+11, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[0]], ringmap);
+					V_DrawMappedPatch(fr+15, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[1]], ringmap);
+				}
+
+				// SPB ring lock
+				if (stplyr->pflags & PF_RINGLOCK)
+					V_DrawScaledPatch(fr-12, fy-13, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringspblocksmall[stplyr->karthud[khud_ringspblock]]);
+			}
 
 		// Lives
 		if (uselives)
@@ -3113,45 +3117,58 @@ static void K_drawRingCounter(boolean gametypeinfoshown)
 			fy += 9;
 		}
 
-		// Rings
-		using srb2::Draw;
-		Draw(LAPS_X+7, fy+1)
-			.flags(V_HUDTRANS|V_SLIDEIN|splitflags)
-			.align(Draw::Align::kCenter)
-			.width(uselives ? (stplyr->lives >= 10 ? 70 : 64) : 33)
-			.small_sticker();
-
-		V_DrawMappedPatch(LAPS_X+ringx+7, fy-5, V_HUDTRANS|V_SLIDEIN|splitflags|ringflip, kp_ring[ringanim_realframe], (colorring ? ringmap : NULL));
-
-		// "Why fy-4? Why LAPS_X+29+1?"
-		// "use magic numbers" - jartha 2024-03-05
-		if (stplyr->hudrings < 0) // Draw the minus for ring debt
+		if (cv_ng_ringcap.value > 0)
 		{
-			V_DrawMappedPatch(LAPS_X+23-1, fy, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringdebtminus, ringmap);
+			// Rings
 			using srb2::Draw;
-			Draw row = Draw(LAPS_X+29+0, fy-4).flags(V_HUDTRANS|V_SLIDEIN|splitflags).font(Draw::Font::kThinTimer).colormap(ringmap);
-			row.text("{:02}", abs(stplyr->hudrings));
-			// V_DrawMappedPatch(LAPS_X+29, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[TALLNUM_FONT].font[rn[0]], ringmap);
-			// V_DrawMappedPatch(LAPS_X+35, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[TALLNUM_FONT].font[rn[1]], ringmap);
+			Draw(LAPS_X+7, fy+1)
+				.flags(V_HUDTRANS|V_SLIDEIN|splitflags)
+				.align(Draw::Align::kCenter)
+				.width(uselives ? (stplyr->lives >= 10 ? 70 : 64) : 33)
+				.small_sticker();
+
+			V_DrawMappedPatch(LAPS_X+ringx+7, fy-5, V_HUDTRANS|V_SLIDEIN|splitflags|ringflip, kp_ring[ringanim_realframe], (colorring ? ringmap : NULL));
+
+			// "Why fy-4? Why LAPS_X+29+1?"
+			// "use magic numbers" - jartha 2024-03-05
+			if (stplyr->hudrings < 0) // Draw the minus for ring debt
+			{
+				V_DrawMappedPatch(LAPS_X+23-1, fy, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringdebtminus, ringmap);
+				using srb2::Draw;
+				Draw row = Draw(LAPS_X+29+0, fy-4).flags(V_HUDTRANS|V_SLIDEIN|splitflags).font(Draw::Font::kThinTimer).colormap(ringmap);
+				row.text("{:02}", abs(stplyr->hudrings));
+				// V_DrawMappedPatch(LAPS_X+29, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[TALLNUM_FONT].font[rn[0]], ringmap);
+				// V_DrawMappedPatch(LAPS_X+35, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[TALLNUM_FONT].font[rn[1]], ringmap);
+			}
+			else
+			{
+				using srb2::Draw;
+				Draw row = Draw(LAPS_X+23+3, fy-4).flags(V_HUDTRANS|V_SLIDEIN|splitflags).font(Draw::Font::kThinTimer).colormap(ringmap);
+				row.text("{:02}", abs(stplyr->hudrings));
+				// V_DrawMappedPatch(LAPS_X+23, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[TALLNUM_FONT].font[rn[0]], ringmap);
+				// V_DrawMappedPatch(LAPS_X+29, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[TALLNUM_FONT].font[rn[1]], ringmap);
+			}
+
+			// SPB ring lock
+			if (stplyr->pflags & PF_RINGLOCK)
+				V_DrawScaledPatch(LAPS_X-5, fy-17, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringspblock[stplyr->karthud[khud_ringspblock]]);
+		}
+		INT32 rco = 0;
+
+		if (cv_ng_ringcap.value == 0)
+		{
+			rco += 10;
 		}
 		else
 		{
-			using srb2::Draw;
-			Draw row = Draw(LAPS_X+23+3, fy-4).flags(V_HUDTRANS|V_SLIDEIN|splitflags).font(Draw::Font::kThinTimer).colormap(ringmap);
-			row.text("{:02}", abs(stplyr->hudrings));
-			// V_DrawMappedPatch(LAPS_X+23, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[TALLNUM_FONT].font[rn[0]], ringmap);
-			// V_DrawMappedPatch(LAPS_X+29, fy, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[TALLNUM_FONT].font[rn[1]], ringmap);
+			rco = 0;
 		}
-
-		// SPB ring lock
-		if (stplyr->pflags & PF_RINGLOCK)
-			V_DrawScaledPatch(LAPS_X-5, fy-17, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringspblock[stplyr->karthud[khud_ringspblock]]);
 
 		// Lives
 		if (uselives)
 		{
 			UINT8 *colormap = R_GetTranslationColormap(stplyr->skin, static_cast<skincolornum_t>(stplyr->skincolor), GTC_CACHE);
-			V_DrawMappedPatch(LAPS_X+46, fy-5, V_HUDTRANS|V_SLIDEIN|splitflags, faceprefix[stplyr->skin][FACE_RANK], colormap);
+			V_DrawMappedPatch(LAPS_X+rco+46, fy-5, V_HUDTRANS|V_SLIDEIN|splitflags, faceprefix[stplyr->skin][FACE_RANK], colormap);
 			SINT8 livescount = 0;
 			if (stplyr->lives > 0)
 			{
@@ -3160,7 +3177,7 @@ static void K_drawRingCounter(boolean gametypeinfoshown)
 					livescount = 10;
 			}
 			using srb2::Draw;
-			Draw row = Draw(LAPS_X+65, fy-4).flags(V_HUDTRANS|V_SLIDEIN|splitflags).font(Draw::Font::kThinTimer);
+			Draw row = Draw(LAPS_X+rco+65, fy-4).flags(V_HUDTRANS|V_SLIDEIN|splitflags).font(Draw::Font::kThinTimer);
 			row.text("{}", livescount);
 		}
 	}
@@ -3276,7 +3293,7 @@ static void K_drawKartSpeedometer(boolean gametypeinfoshown)
 		fy -= 2;
 	}
 
-	if (!cv_ng_rings.value || cv_ng_ringcap.value == 0)
+	if (cv_ng_ringcap.value == 0)
 	{
 		fy += 15;
 	}
@@ -6313,31 +6330,7 @@ void K_drawKartHUD(void)
 			}
 			else
 			{
-				if (cv_ng_rings.value || cv_ng_ringcap.value > 0)
 					K_drawRingCounter(gametypeinfoshown);
-				else
-				{
-					// Move later but for now redraw the lives for 1p with rings off
-					INT32 fr = LAPS_X - 45;
-					INT32 fy = LAPS_Y - 5;
-					INT32 splitflags = V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_SPLITSCREEN;
-					// Lives
-					if (G_GametypeUsesLives())
-					{
-						UINT8 *colormap = R_GetTranslationColormap(stplyr->skin, static_cast<skincolornum_t>(stplyr->skincolor), GTC_CACHE);
-						V_DrawMappedPatch(fr+46, fy-5, V_HUDTRANS|V_SLIDEIN|splitflags, faceprefix[stplyr->skin][FACE_RANK], colormap);
-						SINT8 livescount = 0;
-						if (stplyr->lives > 0)
-						{
-							livescount = stplyr->lives;
-							if (livescount > 10)
-								livescount = 10;
-						}
-						using srb2::Draw;
-						Draw row = Draw(fr+65, fy-4).flags(V_HUDTRANS|V_SLIDEIN|splitflags).font(Draw::Font::kThinTimer);
-						row.text("{}", livescount);
-					}
-				}
 			}
 
 			// Draw the item window
