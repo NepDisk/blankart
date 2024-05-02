@@ -36,6 +36,9 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Ringsting", "Should having no Rings hurt?",
 		NULL, {.cvar = &cv_ng_ringsting}, 0, 0},
 
+	{IT_STRING | IT_CVAR, "Ring Deathmark", "Mark player for death when rings are equal to or below this value",
+		NULL, {.cvar = &cv_ng_ringsmarkedfordeath}, 0, 0},
+
 	{IT_STRING | IT_CVAR, "Map Rings", "Should maps have Rings?",
 		NULL, {.cvar = &cv_ng_maprings}, 0, 0},
 

@@ -20,6 +20,7 @@ extern consvar_t cv_ng_ringboxtransform;
 extern consvar_t cv_ng_mapringboxes;
 extern consvar_t cv_ng_maprings;
 extern consvar_t cv_ng_ringsting;
+extern consvar_t cv_ng_ringsmarkedfordeath;
 extern consvar_t cv_ng_capsules;
 extern consvar_t cv_ng_ringcap;
 extern consvar_t cv_ng_spillcap;
