@@ -877,7 +877,7 @@ extern CV_PossibleValue_t numlaps_cons_t[];
 void NumLaps_OnChange(void);
 consvar_t cv_numlaps = OnlineCheat("numlaps", "Map default").values(numlaps_cons_t).onchange(NumLaps_OnChange).description("Race maps always have the same number of laps");
 
-consvar_t cv_restrictskinchange = OnlineCheat("restrictskinchange", "Yes").yes_no().description("Don't let players change their skin in the middle of gameplay");
+consvar_t cv_restrictskinchange = OnlineCheat("restrictskinchange", "No").yes_no().description("Don't let players change their skin in the middle of gameplay");
 consvar_t cv_spbtest = OnlineCheat("spbtest", "Off").on_off().description("SPB can never target a player");
 consvar_t cv_showgremlins = OnlineCheat("showgremlins", "No").yes_no().description("Show line collision errors");
 consvar_t cv_timescale = OnlineCheat(cvlist_timer)("timescale", "1.0").floating_point().min_max(FRACUNIT/20, 20*FRACUNIT).description("Overclock or slow down the game");
