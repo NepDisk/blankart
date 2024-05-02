@@ -486,23 +486,36 @@ static void F_IntroDrawScene(void)
 
 			INT32 runningtally = (intro_curtime - (TICRATE + TICRATE/3));
 
-			if (runningtally > 0)
+			if (runningtally > 0) //Starts off in negatives, can reach up to 57
 			{
-				if (runningtally < 10)
+				if (runningtally < 10 || (runningtally >= 30 && runningtally < 40)) //Slide between 0-9 and 30-39
 				{
-					textoffs += runningtally * FRACUNIT;
+					// Animate a Slide...
+					// The original code exploited the way runningTally ticks up and the kart krew text offset is the same to it [the time]
+					// So we need to take in consideration the fact that for the second slide, time has advanced 30 units, while our text has only a offset of 20...
+					// And so we have to substract 20. Why 20 instead of 30? Because we need to start sliding off the kartkrew text, not from the beginning!
+					textoffs += runningtally >= 30 ? (runningtally - 20) * FRACUNIT : runningtally * FRACUNIT; 
+				}
+				else if (runningtally >= 10 && runningtally < 30)
+				{
+					textoffs += 10 * FRACUNIT; // Hold the first one (kartkrew.org)
 				}
 				else
 				{
-					textoffs += 10 * FRACUNIT;
+					textoffs += 20 * FRACUNIT; //Hold the second one
 				}
 			}
+
+			CONS_Printf("tally: %d, textoff: %d\n", runningtally, textoffs);
 
 			// Joyeaux Anniversaire
 			V_DrawCenteredMenuString(BASEVIDWIDTH/2, 174 - (textoffs/FRACUNIT), (trans<<V_ALPHASHIFT)|V_SUBTRACT, "2013 - 11 years - 2024");
 
 			// Joyeaux Adressaire
 			V_DrawCenteredMenuString(BASEVIDWIDTH/2, 184 - (textoffs/FRACUNIT), (trans<<V_ALPHASHIFT)|V_SUBTRACT, "kartkrew.org");
+
+			//NOIRE. Could change to V_MODULATE for it to be more noticeable... but then it doesn't match with the rest, and it's weird.
+			V_DrawCenteredMenuString(BASEVIDWIDTH/2, 194 - (textoffs/FRACUNIT), (trans << V_ALPHASHIFT)|V_SUBTRACT, "Noire Custom Client" );
 
 			V_ClearClipRect();
 
@@ -855,8 +868,10 @@ void F_IntroTicker(void)
 	const boolean disclaimerskippable =
 	(
 		intro_scenenum == INTROSCENE_DISCLAIMER
-		&& dc_state == DISCLAIMER_FINAL
-		&& dc_tics >= (TICRATE/2) + (5*6) // bottom text needs to fade all the way in
+		 /*ORIGINAL CODE
+		 && dc_state == DISCLAIMER_FINAL
+		 && dc_tics >= (TICRATE/2) + (5*6) // bottom text needs to fade all the way in
+		 */
 	);
 	const boolean doskip =
 	(

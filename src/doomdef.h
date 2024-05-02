@@ -91,8 +91,8 @@ extern char logfilename[1024];
 //#define DEVELOP // Disable this for release builds to remove excessive cheat commands and enable MD5 checking and stuff, all in one go. :3
 #ifdef DEVELOP
 #define PARANOIA // On by default for DEVELOP builds
-#define VERSIONSTRING "Development EXE"
-#define VERSIONSTRING_RC "Development EXE" "\0"
+#define VERSIONSTRING "Noire Development EXE"
+#define VERSIONSTRING_RC "Noire Development EXE" "\0"
 // most interface strings are ignored in development mode.
 // we use comprevision and compbranch instead.
 // VERSIONSTRING_RC is for the resource-definition script used by windows builds
@@ -101,7 +101,7 @@ extern char logfilename[1024];
 #define VERSIONSTRING "v" SRB2VERSION " " BETAVERSION
 #define VERSIONSTRING_RC SRB2VERSION " " BETAVERSION "\0"
 #else
-#define VERSIONSTRING "v" SRB2VERSION
+#define VERSIONSTRING "v" SRB2VERSION " Noire"
 #define VERSIONSTRING_RC SRB2VERSION "\0"
 #endif
 // Hey! If you change this, add 1 to the MODVERSION below!

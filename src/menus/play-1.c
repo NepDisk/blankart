@@ -37,12 +37,12 @@ void M_SetupPlayMenu(INT32 choice)
 	if (!M_SecretUnlocked(SECRET_ONLINE, true))
 	{
 		PLAY_MainMenu[1].status = IT_TRANSTEXT2 | IT_CALL;
-		PLAY_MainMenu[1].tooltip = "You'll need experience to play over the internet!";
+		PLAY_MainMenu[1].tooltip = "You'll need experience to play over the Internet!";
 	}
 	else
 	{
 		PLAY_MainMenu[1].status = IT_STRING | IT_CALL;
-		PLAY_MainMenu[1].tooltip = "Connect to other computers over the internet.";
+		PLAY_MainMenu[1].tooltip = "Connect to other computers over the Internet.";
 	}
 
 	if (choice != -1)

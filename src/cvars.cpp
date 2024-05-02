@@ -805,7 +805,7 @@ consvar_t cv_ng_draft = UnsavedNetVar("ng_draft", "On").on_off();
 consvar_t cv_ng_tumble = UnsavedNetVar("ng_tumble", "On").on_off();
 consvar_t cv_ng_stumble = UnsavedNetVar("ng_stumble", "On").on_off();
 consvar_t cv_ng_hitlag = UnsavedNetVar("ng_hitlag", "On").on_off();
-consvar_t cv_ng_mapanger = UnsavedNetVar("cv_ng_mapanger", "Default (2)").min_max(0, INT32_MAX, {{-1, "Disabled"}, {2, "Default (2)"}});
+consvar_t cv_ng_mapanger = UnsavedNetVar("ng_mapanger", "Default (2)").min_max(0, INT32_MAX, {{-1, "Disabled"}, {2, "Default (2)"}});
 
 consvar_t cv_ng_instawhip = UnsavedNetVar("ng_instawhip", "On").on_off();
 consvar_t cv_ng_instawhipcharge = UnsavedNetVar("ng_instawhipcharge", "75").min_max(0, 1000);

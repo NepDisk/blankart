@@ -70,8 +70,8 @@ void M_MPRoomSelectInit(INT32 choice)
 
 	if (modifiedgame)
 	{
-		M_StartMessage("Server Browser & Add-Ons", M_GetText("You have add-ons loaded.\nYou won't be able to join netgames!\n\nTo play online, restart the game\nand don't load any addons.\n\n\"Dr. Robotnik's Ring Racers\" will\nautomatically add everything\nyou need when you join.\n"), NULL, MM_NOTHING, NULL, NULL);
-		return;
+		M_StartMessage("Server Browser & Add-Ons", M_GetText("You have add-ons loaded.\nMake sure you enter a netgame with the same addons\notherwise you\'ll be unable to join!\n\nIf that occurs, reboot the game,\ndon't load any addons\nand \"Dr. Robotnik's Ring Racers\" will\nautomatically add everything\nyou need when joining.\n"), NULL, MM_NOTHING, NULL, NULL);
+		//return; //NOIRE: Like with SRB2K, do not prohibit the player from joining netgames with already loaded addons, THATS ANNOYING.
 	}
 
 	// The following behaviour is affected by modifiedgame despite the above restriction.
