@@ -36,6 +36,11 @@ extern consvar_t cv_ng_instawhipcharge;
 extern consvar_t cv_ng_instawhiplockout;
 extern consvar_t cv_ng_instawhipdrain;
 
+extern consvar_t cv_ng_spindash;
+extern consvar_t cv_ng_spindashthreshold;
+extern consvar_t cv_ng_spindashcharge;
+extern consvar_t cv_ng_spindashoverheat;
+
 extern consvar_t cv_ng_butteredslopes;
 extern consvar_t cv_ng_slopeclimb;
 extern consvar_t cv_ng_stairjank;
