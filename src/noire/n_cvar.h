@@ -53,6 +53,7 @@ extern consvar_t cv_ng_spindashoverheat;
 extern consvar_t cv_ng_butteredslopes;
 extern consvar_t cv_ng_slopeclimb;
 extern consvar_t cv_ng_stairjank;
+extern consvar_t cv_ng_underwaterhandling;
 
 //Rivals
 extern consvar_t cv_ng_rivals;

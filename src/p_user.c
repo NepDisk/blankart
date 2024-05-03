@@ -2537,7 +2537,7 @@ void P_MovePlayer(player_t *player)
 			{
 				INT32 a = (ANGLE_45 / 5) * player->drift;
 
-				if (player->mo->eflags & MFE_UNDERWATER)
+				if (player->mo->eflags & MFE_UNDERWATER && cv_ng_underwaterhandling.value)
 					a /= 2;
 
 				player->drawangle += a;

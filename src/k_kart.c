@@ -10539,7 +10539,7 @@ INT16 K_GetKartTurnValue(const player_t *player, INT16 turnvalue)
 		turnfixed = FixedMul(turnfixed, FRACUNIT + finalhandleboost);
 	}
 
-	if (player->curshield == KSHIELD_TOP)
+	if (player->curshield == KSHIELD_TOP || !cv_ng_underwaterhandling.value) //NOIRE: Take into consideration the underwater handling cvar
 		;
 	else if (player->mo->eflags & MFE_UNDERWATER)
 	{
@@ -10561,7 +10561,7 @@ INT16 K_GetKartTurnValue(const player_t *player, INT16 turnvalue)
 
 INT32 K_GetUnderwaterTurnAdjust(const player_t *player)
 {
-	if (player->mo->eflags & MFE_UNDERWATER)
+	if (player->mo->eflags & MFE_UNDERWATER && cv_ng_underwaterhandling.value) //NOIRE: Take into consideration the underwater handling cvar
 	{
 		INT32 steer = (K_GetKartTurnValue(player,
 					player->steering) << TICCMD_REDUCE);
