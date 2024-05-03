@@ -3370,7 +3370,7 @@ static boolean P_CheckLineSideTripWire(line_t *ld, int p)
 	if (tripwire)
 	{
 		// NOIRE: Tripwire toggle
-		if (cv_ng_disabletripwires.value)
+		if (!cv_ng_tripwireactive.value)
 		{
 			sdb = &sides[n]; // Get the other side
 

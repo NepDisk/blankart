@@ -84,8 +84,8 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Map Anger", "Amount of times a map has to be ignored by everyone to vote itself.",
 		NULL, {.cvar = &cv_ng_mapanger}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Disable Tripwires", "Should terrain recognized as tripwires exist?",
-		NULL, {.cvar = &cv_ng_disabletripwires}, 0, 0},
+	{IT_STRING | IT_CVAR, "Tripwires", "Whenever terrain recognized as tripwires should exist.",
+		NULL, {.cvar = &cv_ng_tripwireactive}, 0, 0},
 
 	///////////
 	// INSTAWHIP
@@ -184,7 +184,6 @@ void NG_Rings_OnChange(void)
 				OPTIONS_NoireGameplay[i].status = IT_STRING | IT_CVAR;
 			}
 		}
-
 	}
 	else
 	{
@@ -206,8 +205,6 @@ void NG_Rings_OnChange(void)
 
 			}
 		}
-
-
 	}
 }
 
