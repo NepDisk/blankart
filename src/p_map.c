@@ -259,14 +259,29 @@ static boolean P_SpecialIsLinedefCrossType(line_t *ld)
 	return linedefcrossspecial;
 }
 
+//
+// P_DoSpringExMaxMin
+//
+// object = object being sprung
+// scaleVal = number to multiply horizspeed and vertispeed by. Normally, it's the map object scale.
+// vertispeed = vertical speed to be applied to the object's momz. If this does not exist, finalAngle will be modified to reflect against the surface of the spring.
+// horizspeed = horizontal speed to be applied to the object. If the object's speed exceeds this even after multiplication operations, the object's speed will be applied instead. 
+// finalAngle = angle to thrust towards.
+// starcolor = color of the star particle effect.
+// maxSpeed = Maximum horizontal speed to be applied.
+// minSpeed = Minimum horizontal speed to be applied.
+//
 void
-P_DoSpringEx
+P_DoSpringExMaxMin
 (		mobj_t * object,
 		fixed_t scaleVal,
 		fixed_t vertispeed,
 		fixed_t horizspeed,
 		angle_t finalAngle,
-		UINT16 starcolor)
+		UINT16 starcolor,
+		fixed_t maxSpeed,
+		fixed_t minSpeed
+)
 {
 	if (object->eflags & MFE_SPRUNG)
 	{
@@ -274,7 +289,7 @@ P_DoSpringEx
 		return;
 	}
 
-	if (horizspeed < 0)
+	if (horizspeed < 0) //If horizontal speed is negative, turn around.
 	{
 		horizspeed = -(horizspeed);
 		finalAngle += ANGLE_180;
@@ -322,11 +337,22 @@ P_DoSpringEx
 		// Horizontal speed is used as a minimum thrust, not a direct replacement
 		finalSpeed = max(objectSpeed, finalSpeed);
 
+		// NOIRE: Use minSpeed and maxSpeed params.
+		if (minSpeed != -1)
+		{ 
+			finalSpeed = max(finalSpeed, minSpeed); 
+		}
+		if (maxSpeed != -1) {
+			finalSpeed = min(finalSpeed, maxSpeed);
+		}
+
 		P_InstaThrust(object, finalAngle, finalSpeed);
 	}
 
 	if (object->player)
 	{
+		object->player->isGroundedUntilNextGrounding = true; //NOIRE: Set pogoSpring stuff...
+
 		K_TumbleInterrupt(object->player);
 		P_ResetPlayer(object->player);
 
@@ -335,6 +361,30 @@ P_DoSpringEx
 
 		K_SetTireGrease(object->player, max(object->player->tiregrease, greasetics));
 	}
+}
+
+//
+// P_DoSpringEx
+// Wrapper for P_DoSpringExMaxMin without minSpeed and maxSpeed, to match the original method signature.
+//
+// object = object being sprung
+// scaleVal = number to multiply horizspeed and vertispeed by.
+// vertispeed = vertical speed to be applied to the object's momz. If this does not exist, finalAngle will be modified
+// to reflect against the surface of the spring. horizspeed = horizontal speed to be applied to the object. If the
+// object's speed exceeds this even after multiplication operations, the object's speed will be applied instead.
+// finalAngle = angle to thrust towards.
+// starcolor = color of the star particle effect.
+//
+void P_DoSpringEx(
+	mobj_t* object,
+	fixed_t scaleVal,
+	fixed_t vertispeed,
+	fixed_t horizspeed,
+	angle_t finalAngle,
+	UINT16 starcolor
+)
+{
+	P_DoSpringExMaxMin(object, scaleVal, vertispeed, horizspeed, finalAngle, starcolor, -1, -1);
 }
 
 //
@@ -1392,7 +1442,13 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			if ( thing->z <= g_tm.thing->z + g_tm.thing->height
 			&& g_tm.thing->z <= thing->z + thing->height)
 				if (P_DoSpring(thing, g_tm.thing))
+				{
+					if (thing->player) { // NOIRE: Replicate pogoSpring behaviour
+						thing->player->isGroundedUntilNextGrounding = true;
+					}
 					return BMIT_ABORT;
+				}
+					
 			return BMIT_CONTINUE;
 		}
 	}
@@ -4029,6 +4085,8 @@ static void P_BouncePlayerMove(mobj_t *mo, TryMoveResult_t *result)
 
 	mmomx = mo->player->rmomx;
 	mmomy = mo->player->rmomy;
+
+	mo->player->isGroundedUntilNextGrounding = false; //NOIRE: Replicate pogoSpring behaviour.
 
 	slidemo = mo;
 	bestslideline = result->line;

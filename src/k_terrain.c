@@ -607,11 +607,17 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			angle = slope->xydirection;
 		}
 
-		P_DoSpringEx(player->mo, mapobjectscale,
-				FixedMul(terrain->springStrength, co),
-				FixedMul(terrain->springStrength, si),
-				angle, terrain->springStarColor);
-
+		P_DoSpringExMaxMin(
+			player->mo,
+			mapobjectscale,
+			FixedMul(terrain->springStrength, co),
+			FixedMul(terrain->springStrength, si),
+			angle,
+			terrain->springStarColor,
+			terrain->springMinSpeed,
+			terrain->springMaxSpeed
+		);
+		
 		sector->soundorg.z = player->mo->z;
 		S_StartSound(&sector->soundorg, sfx_s3kb1);
 	}
@@ -1573,6 +1579,8 @@ static void K_TerrainDefaults(terrain_t *terrain)
 	terrain->speedPad = 0;
 	terrain->speedPadAngle = 0;
 	terrain->springStrength = 0;
+	terrain->springMinSpeed = -1;
+	terrain->springMaxSpeed = -1;
 	terrain->springStarColor = SKINCOLOR_NONE;
 	terrain->flags = TRF_REMAP;
 }
@@ -1692,6 +1700,14 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 			terrain->springStrength =
 				FLOAT_TO_FIXED(15.625 * pow(1.6, fval));
 		}
+	}
+	else if (stricmp(param, "springMinSpeed") == 0) //NOIRE: Add new terrain properties for springs...
+	{
+		terrain->springMinSpeed = FLOAT_TO_FIXED(atof(val));
+	}
+	else if (stricmp(param, "springMaxSpeed") == 0)
+	{
+		terrain->springMaxSpeed = FLOAT_TO_FIXED(atof(val));
 	}
 	else if (stricmp(param, "springStarColor") == 0)
 	{

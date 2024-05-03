@@ -2012,7 +2012,7 @@ static void P_3dMovement(player_t *player)
 	//}
 
 	// Do not let the player control movement if not onground.
-	onground = P_IsObjectOnGround(player->mo);
+	onground = P_IsObjectOnGround(player->mo) || player->isGroundedUntilNextGrounding; //NOIRE: Readd the extra condition that Kart had for springs
 
 	K_AdjustPlayerFriction(player);
 
@@ -2510,7 +2510,7 @@ void P_MovePlayer(player_t *player)
 
 		player->mo->rollangle = 0;
 	}
-	else
+	else //NOIRE: Around here is where we need to animate the drawangles (formerly frameangles) when in pogospring...
 	{
 		if (player->trickpanel > TRICKSTATE_READY)
 		{

@@ -197,7 +197,6 @@ void NG_Rings_OnChange(void)
 			CV_Set(&cv_ng_mapringboxes, "Off");
 			CV_Set(&cv_ng_ringboxtransform, "Off");
 
-
 			// 3 - 10
 			for (int i = 2; i < 10; i++)
 			{
