@@ -837,6 +837,7 @@ consvar_t cv_ng_stairjank = UnsavedNetVar("ng_stairjank", "All").values({
 	{1, "Bumpy roads only"},
 	{2, "All"},
 });
+consvar_t cv_ng_oldturncode = UnsavedNetVar("ng_oldturncode", "Off").on_off();
 consvar_t cv_ng_underwaterhandling = UnsavedNetVar("ng_underwaterhandling", "On").on_off();
 
 //Rivals
