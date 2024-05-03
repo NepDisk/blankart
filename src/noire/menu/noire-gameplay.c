@@ -11,13 +11,16 @@
 #include "../../m_cond.h"
 #include "../../command.h"
 #include "../../console.h"
+#include "../../g_state.h" //For the tripwire toggle
 
 // Noire
 #include "../n_cvar.h"
 
 menuitem_t OPTIONS_NoireGameplay[] =
 {
-
+	///////////
+	// RINGS
+	///////////
 	{IT_HEADER, "Rings...", NULL,
 		NULL, {NULL}, 0, 0},
 
@@ -27,7 +30,7 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Ring Cap", "Adjust maximum ring count (minimum is maximum negated)",
 		NULL, {.cvar = &cv_ng_ringcap}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Spill Cap", "Adjust maximum ring loss upon taking damage",
+	{IT_STRING | IT_CVAR, "Spill Cap", "Adjust maximum ring loss upon taking damage.",
 		NULL, {.cvar = &cv_ng_spillcap}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Ring Debt", "Should Rings go under 0?",
@@ -36,7 +39,7 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Ringsting", "Should having no Rings hurt?",
 		NULL, {.cvar = &cv_ng_ringsting}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Ring Deathmark", "Mark player for death when rings are equal to or below this value",
+	{IT_STRING | IT_CVAR, "Ring Deathmark", "Mark player for death when rings are equal to or below this value.",
 		NULL, {.cvar = &cv_ng_ringsmarkedfordeath}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Map Rings", "Should maps have Rings?",
@@ -48,12 +51,18 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Ringbox Transformation", "Should Itemboxes become Ringboxes?",
 		NULL, {.cvar = &cv_ng_ringboxtransform}, 0, 0},
 
+	///////////
+	// COLLECTABLES
+	///////////
 	{IT_HEADER, "Collectables...", NULL,
 		NULL, {NULL}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Capsules", "Should Capsules spawn in-game?",
 		NULL, {.cvar = &cv_ng_capsules}, 0, 0},
 
+	///////////
+	// MECHANICS
+	///////////
 	{IT_HEADER, "Mechanics...", NULL,
 		NULL, {NULL}, 0, 0},
 
@@ -75,6 +84,12 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Map Anger", "Amount of times a map has to be ignored by everyone to vote itself.",
 		NULL, {.cvar = &cv_ng_mapanger}, 0, 0},
 
+	{IT_STRING | IT_CVAR, "Disable Tripwires", "Should terrain recognized as tripwires exist?",
+		NULL, {.cvar = &cv_ng_disabletripwires}, 0, 0},
+
+	///////////
+	// INSTAWHIP
+	///////////
 	{IT_HEADER, "Instawhip...", NULL,
 		NULL, {NULL}, 0, 0},
 
@@ -90,21 +105,27 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Drain Rings", "Should holding instawhip drain rings?",
 		NULL, {.cvar = &cv_ng_instawhipdrain}, 0, 0},
 
+	///////////
+	// SPINDASH
+	///////////
 	{IT_HEADER, "Spindash...", NULL,
 		NULL, {NULL}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Spindash", "Should you be allowed to spindash?",
 		NULL, {.cvar = &cv_ng_spindash}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Threshold", "Adjust how low your speed must get to begin charging a spindash",
+	{IT_STRING | IT_CVAR, "Threshold", "Adjust how low your speed must get to begin charging a spindash.",
 		NULL, {.cvar = &cv_ng_spindashthreshold}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Charge Time", "Adjust time before maximum spindash thrust (in tics; 0 is default behavior)",
 		NULL, {.cvar = &cv_ng_spindashcharge}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Overheat", "Should charging a spindash for too long hurt you?",
+	{IT_STRING | IT_CVAR, "Overheat", "Whenever charging a spindash too much hurts players.",
 		NULL, {.cvar = &cv_ng_spindashoverheat}, 0, 0},
 
+	///////////
+	// DRIVING
+	///////////
 	{IT_HEADER, "Driving...", NULL,
 		NULL, {NULL}, 0, 0},
 
@@ -114,9 +135,12 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Slope Resistance", "Should slopes be hard to climb?",
 		NULL, {.cvar = &cv_ng_slopeclimb}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Stairjank", "Whenever karts should be affected by steps & bumpy roads, only roads or nothing.",
+	{IT_STRING | IT_CVAR, "Stairjank", "Should karts be affected by steps & bumpy roads, only roads or nothing?",
 		NULL, {.cvar = &cv_ng_stairjank}, 0, 0},
 
+	///////////
+	// RIVALS
+	///////////
 	{IT_HEADER, "Rivals...", NULL,
 		NULL, {NULL}, 0, 0},
 
@@ -151,8 +175,8 @@ void NG_Rings_OnChange(void)
 			CV_Set(&cv_ng_ringboxtransform, "On");
 
 
-			// 3 - 9
-			for (int i = 2; i < 9; i++)
+			// 3 - 10
+			for (int i = 2; i < 10; i++)
 			{
 				OPTIONS_NoireGameplay[i].status = IT_STRING | IT_CVAR;
 			}
@@ -172,8 +196,8 @@ void NG_Rings_OnChange(void)
 			CV_Set(&cv_ng_ringboxtransform, "Off");
 
 
-			// 3 - 9
-			for (int i = 2; i < 9; i++)
+			// 3 - 10
+			for (int i = 2; i < 10; i++)
 			{
 				OPTIONS_NoireGameplay[i].status = IT_GRAYEDOUT;
 
@@ -181,6 +205,57 @@ void NG_Rings_OnChange(void)
 		}
 
 
+	}
+}
+
+void NG_MapRings_OnChange(void)
+{
+	static boolean messageHasBeenDelivered = false;
+	if (gamestate == GS_LEVEL && !messageHasBeenDelivered && menuactive)
+	{
+		M_StartMessage(
+			"Map Rings Toggling",
+			M_GetText("Changing this value requires a map reset for the new option to apply."),
+			NULL,
+			MM_NOTHING,
+			NULL,
+			NULL
+		);
+		messageHasBeenDelivered = true; //Through patches of violet
+	}
+}
+
+void NG_Capsules_OnChange(void)
+{
+	static boolean messageHasBeenDelivered = false;
+	if (gamestate == GS_LEVEL && !messageHasBeenDelivered && menuactive)
+	{
+		M_StartMessage(
+			"Capsule Toggling",
+			M_GetText("Changing this value requires a map reset for the new option to apply."),
+			NULL,
+			MM_NOTHING,
+			NULL,
+			NULL
+		);
+		messageHasBeenDelivered = true; //Through patches of violet
+	}
+}
+
+void NG_Tripwire_OnChange(void)
+{
+	static boolean messageHasBeenDelivered = false;
+	if (gamestate == GS_LEVEL && !messageHasBeenDelivered && menuactive)
+	{
+		M_StartMessage(
+			"Tripwire Toggling",
+			M_GetText("Changing this value requires a map reset for the new option to apply."),
+			NULL,
+			MM_NOTHING,
+			NULL,
+			NULL
+		);
+		messageHasBeenDelivered = true; //Through patches of violet
 	}
 }
 

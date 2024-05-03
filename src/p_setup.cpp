@@ -119,6 +119,8 @@
 #include "k_endcam.h"
 #include "k_credits.h"
 
+#include "noire/n_cvar.h" //NOIRE: Disable tripwires.
+
 // Replay names have time
 #if !defined (UNDER_CE)
 #include <time.h>
@@ -3367,6 +3369,21 @@ static boolean P_CheckLineSideTripWire(line_t *ld, int p)
 
 	if (tripwire)
 	{
+		// NOIRE: Tripwire toggle
+		if (cv_ng_disabletripwires.value)
+		{
+			sdb = &sides[n]; // Get the other side
+
+			// Nuke them
+			sda->midtexture = 0xffff;
+			sdb->midtexture = 0xffff;
+
+			// We could not check for the other side's texture, as this method is used in an OR, if this returns false (it will) the program will be forced to check for the other side
+			// but by nuking it here at the same time, we are saving a couple of instructions, as the second call will return earlier in the earlier if (n == 0xffff) check
+			
+			return false; //nuh-huh
+		}
+
 		// copy midtexture to other side
 		n = ld->sidenum[!p];
 

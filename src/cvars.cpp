@@ -786,17 +786,25 @@ consvar_t cv_votetime = UnsavedNetVar("votetime", "20").min_max(10, 3600);
 // These do not save...
 //
 
+//Rings
 void NG_Rings_OnChange(void);
+void NG_MapRings_OnChange(void);
 consvar_t cv_ng_rings = UnsavedNetVar("ng_rings", "On").on_off().onchange(NG_Rings_OnChange);
+consvar_t cv_ng_ringcap = UnsavedNetVar("ng_ringcap", "20").min_max(INT8_MIN, INT8_MAX); //Rings in player are a Signed int, so we'll put the limits to the technical limits
+consvar_t cv_ng_spillcap = UnsavedNetVar("ng_spillcap", "20").min_max(INT8_MIN, INT8_MAX);
 consvar_t cv_ng_ringdebt = UnsavedNetVar("ng_ringdebt", "On").on_off();
-consvar_t cv_ng_ringboxtransform = UnsavedNetVar("ng_ringboxtransform", "On").on_off();
-consvar_t cv_ng_mapringboxes = UnsavedNetVar("ng_mapringboxes", "On").on_off();
-consvar_t cv_ng_maprings = UnsavedNetVar("ng_maprings", "On").on_off();
 consvar_t cv_ng_ringsting = UnsavedNetVar("ng_ringsting", "On").on_off();
-consvar_t cv_ng_ringsmarkedfordeath = UnsavedNetVar("ng_ringsmarkedfordeath", "-20").min_max(-127, 127);
-consvar_t cv_ng_capsules = UnsavedNetVar("ng_capsules", "On").on_off();
-consvar_t cv_ng_ringcap = UnsavedNetVar("ng_ringcap", "20").min_max(0, 127);
-consvar_t cv_ng_spillcap = UnsavedNetVar("ng_spillcap", "20").min_max(0, 127);
+consvar_t cv_ng_ringsmarkedfordeath = UnsavedNetVar("ng_ringsmarkedfordeath", "-20").min_max(INT8_MIN, INT8_MAX);
+consvar_t cv_ng_maprings = UnsavedNetVar("ng_maprings", "On").on_off().onchange(NG_MapRings_OnChange);
+consvar_t cv_ng_mapringboxes = UnsavedNetVar("ng_mapringboxes", "On").on_off();
+consvar_t cv_ng_ringboxtransform = UnsavedNetVar("ng_ringboxtransform", "On").on_off();
+
+//Collectables
+void NG_Capsules_OnChange(void);
+consvar_t cv_ng_capsules = UnsavedNetVar("ng_capsules", "On").on_off().onchange(NG_Capsules_OnChange);
+
+//Mechanics
+void NG_Tripwire_OnChange(void);
 consvar_t cv_ng_fastfallbounce = UnsavedNetVar("ng_fastfallbounce", "On").values({
 	{0, "Off"},
 	{1, "Bubble Shield"},
@@ -807,17 +815,21 @@ consvar_t cv_ng_tumble = UnsavedNetVar("ng_tumble", "On").on_off();
 consvar_t cv_ng_stumble = UnsavedNetVar("ng_stumble", "On").on_off();
 consvar_t cv_ng_hitlag = UnsavedNetVar("ng_hitlag", "On").on_off();
 consvar_t cv_ng_mapanger = UnsavedNetVar("ng_mapanger", "Default (2)").min_max(0, INT32_MAX, {{-1, "Disabled"}, {2, "Default (2)"}});
+consvar_t cv_ng_disabletripwires = UnsavedNetVar("ng_disabletripwires", "Off").on_off().onchange(NG_Tripwire_OnChange);
 
+//Instawhip
 consvar_t cv_ng_instawhip = UnsavedNetVar("ng_instawhip", "On").on_off();
 consvar_t cv_ng_instawhipcharge = UnsavedNetVar("ng_instawhipcharge", "75").min_max(0, 1000);
 consvar_t cv_ng_instawhiplockout = UnsavedNetVar("ng_instawhiplockout", "70").min_max(0, 1000);
 consvar_t cv_ng_instawhipdrain = UnsavedNetVar("ng_instawhipdrain", "On").on_off();
 
+//Spindash
 consvar_t cv_ng_spindash = UnsavedNetVar("ng_spindash", "On").on_off();
 consvar_t cv_ng_spindashthreshold = UnsavedNetVar("ng_spindashthreshold", "6").min_max(0, 100);
 consvar_t cv_ng_spindashcharge = UnsavedNetVar("ng_spindashcharge", "0").min_max(0, 100);
 consvar_t cv_ng_spindashoverheat = UnsavedNetVar("ng_spindashoverheat", "On").on_off();
 
+//Driving
 consvar_t cv_ng_butteredslopes = UnsavedNetVar("ng_slopephysics", "On").on_off();
 consvar_t cv_ng_slopeclimb = UnsavedNetVar("ng_slopeclimb", "On").on_off();
 consvar_t cv_ng_stairjank = UnsavedNetVar("ng_stairjank", "All").values({
@@ -825,6 +837,8 @@ consvar_t cv_ng_stairjank = UnsavedNetVar("ng_stairjank", "All").values({
 	{1, "Bumpy roads only"},
 	{2, "All"},
 });
+
+//Rivals
 consvar_t cv_ng_rivals = UnsavedNetVar("ng_rivals", "On").on_off();
 consvar_t cv_ng_rivaltopspeed = UnsavedNetVar("ng_rivaltopspeed", "11").min_max(1, 100);
 consvar_t cv_ng_rivalringpower = UnsavedNetVar("ng_rivalringpower", "20").min_max(0, 100);
