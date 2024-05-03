@@ -1,6 +1,6 @@
 - unfuck driving controls while making it optional
 []main driving
-[]underwater
+[x]underwater
 
 - make stuff optional
 [x]draft
