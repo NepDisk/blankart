@@ -813,6 +813,11 @@ consvar_t cv_ng_instawhipcharge = UnsavedNetVar("ng_instawhipcharge", "75").min_
 consvar_t cv_ng_instawhiplockout = UnsavedNetVar("ng_instawhiplockout", "70").min_max(0, 1000);
 consvar_t cv_ng_instawhipdrain = UnsavedNetVar("ng_instawhipdrain", "On").on_off();
 
+consvar_t cv_ng_spindash = UnsavedNetVar("ng_spindash", "On").on_off();
+consvar_t cv_ng_spindashthreshold = UnsavedNetVar("ng_spindashthreshold", "6").min_max(0, 100);
+consvar_t cv_ng_spindashcharge = UnsavedNetVar("ng_spindashcharge", "0").min_max(0, 100);
+consvar_t cv_ng_spindashoverheat = UnsavedNetVar("ng_spindashoverheat", "On").on_off();
+
 consvar_t cv_ng_butteredslopes = UnsavedNetVar("ng_slopephysics", "On").on_off();
 consvar_t cv_ng_slopeclimb = UnsavedNetVar("ng_slopeclimb", "On").on_off();
 consvar_t cv_ng_stairjank = UnsavedNetVar("ng_stairjank", "All").values({

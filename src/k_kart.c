@@ -3342,7 +3342,9 @@ INT16 K_GetSpindashChargeTime(const player_t *player)
 {
 	// more charge time for higher speed
 	// Tails = 1.7s, Knuckles = 2.2s, Metal = 2.7s
-	return ((player->kartspeed + 8) * TICRATE) / 6;
+	return cv_ng_spindashcharge.value == 0
+		? ((player->kartspeed + 8) * TICRATE) / 6
+		: cv_ng_spindashcharge.value;
 }
 
 fixed_t K_GetSpindashChargeSpeed(const player_t *player)
@@ -11776,7 +11778,7 @@ static void K_KartSpindash(player_t *player)
 		S_ReducedVFXSound(player->mo, sfx_ruburn, player);
 	}
 
-	if (player->speed < 6*player->mo->scale)
+	if (cv_ng_spindash.value && player->speed < cv_ng_spindashthreshold.value*player->mo->scale)
 	{
 		if ((buttons & (BT_DRIFT|BT_BRAKE)) == (BT_DRIFT|BT_BRAKE))
 		{
@@ -11826,7 +11828,7 @@ static void K_KartSpindash(player_t *player)
 					S_ReducedVFXSound(player->mo, sfx_s3kab, player);
 				}
 			}
-			else if (chargetime < -TICRATE)
+			else if (chargetime < -TICRATE && cv_ng_spindashoverheat.value)
 			{
 				P_DamageMobj(player->mo, NULL, NULL, 1, DMG_NORMAL);
 			}

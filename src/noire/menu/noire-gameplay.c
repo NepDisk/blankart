@@ -90,6 +90,21 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Drain Rings", "Should holding instawhip drain rings?",
 		NULL, {.cvar = &cv_ng_instawhipdrain}, 0, 0},
 
+	{IT_HEADER, "Spindash...", NULL,
+		NULL, {NULL}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Spindash", "Should you be allowed to spindash?",
+		NULL, {.cvar = &cv_ng_spindash}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Threshold", "Adjust how low your speed must get to begin charging a spindash",
+		NULL, {.cvar = &cv_ng_spindashthreshold}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Charge Time", "Adjust time before maximum spindash thrust (in tics; 0 is default behavior)",
+		NULL, {.cvar = &cv_ng_spindashcharge}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Overheat", "Should charging a spindash for too long hurt you?",
+		NULL, {.cvar = &cv_ng_spindashoverheat}, 0, 0},
+
 	{IT_HEADER, "Driving...", NULL,
 		NULL, {NULL}, 0, 0},
 
