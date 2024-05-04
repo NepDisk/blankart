@@ -272,7 +272,7 @@ void NG_SpringPanelDoKartPogo_OnChange(void)
 	{
 		M_StartMessage(
 			"Spring Panel Pogo Toggling",
-			M_GetText("This will let players do Kart Pogo jumps off every spring panel that is flat.\nThis might break some maps and diagonal / sloped spring panels won\'t be affected.\n\nToggle at your own discretion!"),
+			M_GetText("This will let players do Kart Pogo jumps off every spring panel that is flat, in addition to flat Spring objects.\nThis might break some maps and diagonal / sloped spring panels won\'t be affected.\n\nToggle at your own discretion!"),
 			NULL,
 			MM_NOTHING,
 			NULL,
