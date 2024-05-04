@@ -2515,7 +2515,7 @@ void P_MovePlayer(player_t *player)
 
 		player->mo->rollangle = 0;
 	}
-	else //NOIRE: Around here is where we need to animate the drawangles (formerly frameangles) when in pogospring...
+	else
 	{
 		if (player->trickpanel > TRICKSTATE_READY)
 		{
@@ -2532,7 +2532,10 @@ void P_MovePlayer(player_t *player)
 		{
 			K_KartMoveAnimation(player);
 
-			player->drawangle = player->mo->angle;
+			if (player->pogoSpringJumped) // NOIRE Springs: Replicate pogo spring shit
+				player->drawangle += ANGLE_22h;
+			else // Else vanilla behavior
+				player->drawangle = player->mo->angle;
 
 			if (player->aizdriftturn)
 			{

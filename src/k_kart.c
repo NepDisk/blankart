@@ -3858,6 +3858,24 @@ fixed_t K_3dKartMovement(const player_t *player)
 	fixed_t movemul = FRACUNIT;
 	SINT8 forwardmove = K_GetForwardMove(player);
 
+
+	if (player->pogoSpringJumped) // NOIRE Pogo Spring minimum/maximum thrust
+	{
+		const fixed_t hscale = mapobjectscale /*+ (mapobjectscale - player->mo->scale)*/;
+		//Max speed
+		if (player->pogoMaxSpeed != 0) {
+			const fixed_t maxspeed = player->pogoMaxSpeed * hscale;
+			if (finalspeed > maxspeed)
+				finalspeed = maxspeed;
+		}
+		//Min speed
+		if (player->pogoMinSpeed != 0) {
+			const fixed_t minSpeed = player->pogoMinSpeed * hscale;
+			if (finalspeed < minSpeed)
+				finalspeed = minSpeed;
+		}
+	}
+
 	movemul = abs(forwardmove * FRACUNIT) / 50;
 
 	// forwardmove is:
@@ -4918,7 +4936,7 @@ INT32 K_ExplodePlayer(player_t *player, mobj_t *inflictor, mobj_t *source) // A 
 
 	player->spinouttype = KSPIN_EXPLOSION;
 	player->spinouttimer = (3*TICRATE/2)+2;
-
+	//NOIRE: Around here in original kart code it reset sneaker timers, drift, drift charge and pogo state, should we do that?
 	if (spbMultiplier != FRACUNIT)
 	{
 		player->mo->momz = FixedMul(player->mo->momz, spbMultiplier);
@@ -9468,6 +9486,13 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		}
 	}
 
+	//NOIRE Springs: Pogo stuff put in the same place as in the original code (after eggman stuff)
+	if (P_IsObjectOnGround(player->mo) && player->pogoSpringJumped)
+	{
+		if (P_MobjFlip(player->mo) * player->mo->momz <= 0)
+			player->pogoSpringJumped = false;
+	}
+
 	if (player->itemtype == KITEM_BUBBLESHIELD)
 	{
 		if (player->bubblecool)
@@ -10713,7 +10738,7 @@ void K_SpawnDriftBoostExplosion(player_t *player, int stage)
 
 static void K_KartDrift(player_t *player, boolean onground)
 {
-	const fixed_t minspeed = (10 * player->mo->scale);
+	fixed_t minspeed = (10 * player->mo->scale); //NOIRE: No longer a const due to the pogo spring grow check we do below.
 
 	const INT32 dsone = K_GetKartDriftSparkValueForStage(player, 1);
 	const INT32 dstwo = K_GetKartDriftSparkValueForStage(player, 2);
@@ -10723,6 +10748,13 @@ static void K_KartDrift(player_t *player, boolean onground)
 	const UINT16 buttons = K_GetKartButtons(player);
 
 	boolean dokicker = false;
+
+	// NOIRE:
+	// Grown players taking yellow spring panels will go below minspeed for one tic,
+	// and will then wrongdrift or have their sparks removed because of this.
+	// This fixes this problem.
+	if (player->pogoSpringJumped && player->pogoMaxSpeed && player->mo->scale > mapobjectscale)
+		minspeed = FixedMul(10 << FRACBITS, mapobjectscale);
 
 	// Drifting is actually straffing + automatic turning.
 	// Holding the Jump button will enable drifting.
@@ -12065,7 +12097,10 @@ void K_AdjustPlayerFriction(player_t *player)
 {
 	const fixed_t prevfriction = K_PlayerBaseFriction(player, player->mo->friction);
 
-	if (P_IsObjectOnGround(player->mo) == false)
+	// NOIRE SPRINGS: Check for pogo status as well, originally this was in K_MoveKartPlayer...
+	// Original comment for checking pogoSpring: JugadorXEI: Do *not* calculate friction when a player is pogo'd
+	// because they'll be in the air and friction will not reset!
+	if (P_IsObjectOnGround(player->mo) == false || player->pogoSpringJumped) 
 	{
 		return;
 	}
