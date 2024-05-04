@@ -27,6 +27,7 @@
 #include "g_game.h"
 #include "g_input.h"    // for device rumble
 #include "m_random.h"
+#include "noire/n_func.h"
 #include "p_local.h"
 #include "p_slopes.h"
 #include "p_setup.h"
@@ -11238,39 +11239,49 @@ void K_KartUpdatePosition(player_t *player)
 void K_UpdateAllPlayerPositions(void)
 {
 	INT32 i;
-
-	// First loop: Ensure all players' distance to the finish line are all accurate
-	for (i = 0; i < MAXPLAYERS; i++)
+	if (numbosswaypoints == 0)
 	{
-		player_t *player = &players[i];
-		if (!playeringame[i] || player->spectator || !player->mo || P_MobjWasRemoved(player->mo))
+		// First loop: Ensure all players' distance to the finish line are all accurate
+		for (i = 0; i < MAXPLAYERS; i++)
 		{
-			continue;
+			player_t *player = &players[i];
+			if (!playeringame[i] || player->spectator || !player->mo || P_MobjWasRemoved(player->mo))
+			{
+				continue;
+			}
+
+			if (K_PodiumSequence() == true)
+			{
+				K_UpdatePodiumWaypoints(player);
+				continue;
+			}
+
+			if (player->respawn.state == RESPAWNST_MOVE &&
+				player->respawn.init == true &&
+				player->lastsafelap != player->laps)
+			{
+				player->laps = player->lastsafelap;
+				player->cheatchecknum = player->lastsafecheatcheck;
+			}
+
+			K_UpdatePlayerWaypoints(player);
 		}
 
-		if (K_PodiumSequence() == true)
+		// Second loop: Ensure all player positions reflect everyone's distances
+		for (i = 0; i < MAXPLAYERS; i++)
 		{
-			K_UpdatePodiumWaypoints(player);
-			continue;
+			if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
+			{
+				K_KartUpdatePosition(&players[i]);
+			}
 		}
-
-		if (player->respawn.state == RESPAWNST_MOVE &&
-			player->respawn.init == true &&
-			player->lastsafelap != player->laps)
-		{
-			player->laps = player->lastsafelap;
-			player->cheatchecknum = player->lastsafecheatcheck;
-		}
-
-		K_UpdatePlayerWaypoints(player);
 	}
-
-	// Second loop: Ensure all player positions reflect everyone's distances
-	for (i = 0; i < MAXPLAYERS; i++)
+	else
 	{
-		if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
+		// Use legacy postion update code from v1
+		for (i = 0; i < MAXPLAYERS; i++)
 		{
-			K_KartUpdatePosition(&players[i]);
+			K_KartLegacyUpdatePosition(&players[i]);
 		}
 	}
 }

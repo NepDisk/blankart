@@ -19,6 +19,10 @@ void N_UpdatePlayerAngle(player_t *player);
 INT16 N_GetKartTurnValue(player_t *player, INT16 turnvalue);
 INT16 N_GetKartDriftValue(player_t *player, fixed_t countersteer);
 
+
+void K_KartLegacyUpdatePosition(player_t *player);
+mobj_t *P_GetObjectTypeInSectorNum(mobjtype_t type, size_t s);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

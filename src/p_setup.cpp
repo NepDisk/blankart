@@ -27,6 +27,7 @@
 
 #include "p_local.h"
 #include "p_setup.h"
+#include "p_mobj.h"
 #include "p_spec.h"
 #include "p_saveg.h"
 
@@ -158,6 +159,7 @@ sector_t *spawnsectors;
 line_t *spawnlines;
 side_t *spawnsides;
 INT32 numcheatchecks;
+INT32 numbosswaypoints;
 UINT16 bossdisabled;
 boolean stoppedclock;
 boolean levelloading;
@@ -7663,6 +7665,8 @@ static void P_InitLevelSettings(void)
 	// circuit, race and competition stuff
 	numcheatchecks = 0;
 
+	numbosswaypoints = 0;
+
 	if (!g_reloadinggamestate)
 		timeinmap = 0;
 
@@ -8731,7 +8735,7 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	// Load the waypoints please!
 	if (gametyperules & GTR_CIRCUIT && gamestate != GS_TITLESCREEN)
 	{
-		if (K_SetupWaypointList() == false)
+		if (K_SetupWaypointList() == false && numbosswaypoints == 0)
 		{
 			CONS_Alert(CONS_ERROR, "Waypoints were not able to be setup! Player positions will not work correctly.\n");
 		}

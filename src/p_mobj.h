@@ -592,6 +592,7 @@ extern INT32 modulothing;
 extern mapthing_t *huntemeralds[MAXHUNTEMERALDS];
 extern INT32 numhuntemeralds;
 extern INT32 numcheatchecks;
+extern INT32 numbosswaypoints;
 extern UINT16 bossdisabled;
 extern boolean stoppedclock;
 

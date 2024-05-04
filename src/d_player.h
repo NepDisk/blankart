@@ -910,6 +910,9 @@ struct player_t
 	UINT8 latestlap;
 	UINT32 lapPoints; // Points given from laps
 	INT32 cheatchecknum; // The number of the last cheatcheck you hit
+	INT32 prevcheck;
+	INT32 nextcheck;
+	tic_t cheatchecktime;
 	INT32 checkpointId; // Players respawn here, objects/checkpoint.cpp
 
 	UINT8 ctfteam; // 0 == Spectator, 1 == Red, 2 == Blue

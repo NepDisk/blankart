@@ -14,6 +14,7 @@
 #include <vector>
 #include <deque>
 
+#include "p_mobj.h"
 #include "v_draw.hpp"
 
 #include "k_hud.h"
@@ -5706,11 +5707,13 @@ static void K_DrawWaypointDebugger(void)
 
 	if (numcheatchecks > 0)
 	{
-		if (stplyr->cheatchecknum == numcheatchecks)
+		if ((numbosswaypoints > 0) ? (stplyr->cheatchecknum >= (numcheatchecks - (numcheatchecks/2))) : stplyr->cheatchecknum == numcheatchecks)
 			put("Cheat Check:", "{} / {} (Can finish)", stplyr->cheatchecknum, numcheatchecks);
 		else
 			put("Cheat Check:", "{} / {}", stplyr->cheatchecknum, numcheatchecks);
 		put("Last Safe Cheat Check:", "{}", stplyr->lastsafecheatcheck);
+		if (numbosswaypoints > 0)
+			put("Legacy Waypoint dist:", "Prev {}, Next {}", stplyr->prevcheck, stplyr->nextcheck);
 	}
 
 	if (stplyr->bigwaypointgap)
