@@ -68,6 +68,7 @@ void NG_Rings_OnChange(void);
 void NG_MapRings_OnChange(void);
 void NG_Capsules_OnChange(void);
 void NG_Tripwire_OnChange(void);
+void NG_SpringPanelDoKartPogo_OnChange(void);
 
 #ifdef __cplusplus
 } // extern "C"

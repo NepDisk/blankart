@@ -271,6 +271,7 @@ static boolean P_SpecialIsLinedefCrossType(line_t *ld)
 // starcolor = color of the star particle effect.
 // maxSpeed = Maximum horizontal speed to be applied. Ideally in common situations, it should come in already multiplied by the same value as scaleVal. Set to zero to don't use.
 // minSpeed = Minimum horizontal speed to be applied. Ideally in common situations, it should come in already multiplied by the same value as scaleVal. Set to zero to don't use.
+// pogoOptions = 0 -> No pogo, default. 1 -> Does pogo jump, but no diagonal projection on the surface. 2 -> Does pogo jump and a diagonal projection
 //
 void
 P_DoSpringExMaxMin
@@ -281,7 +282,8 @@ P_DoSpringExMaxMin
 		angle_t finalAngle,
 		UINT16 starcolor,
 		fixed_t maxSpeed,
-		fixed_t minSpeed
+		fixed_t minSpeed,
+		UINT8 pogoOptions
 )
 {
 	if (object->eflags & MFE_SPRUNG)
@@ -327,7 +329,7 @@ P_DoSpringExMaxMin
 
 			// Reflect your momentum angle against the surface of horizontal springs.
 			// This makes it a bit more interesting & unique than just being a speed boost in a pre-defined direction
-			if (object->momx || object->momy)
+			if ((object->momx || object->momy) && pogoOptions != 1)
 			{
 				finalAngle = K_ReflectAngle(
 					R_PointToAngle2(0, 0, object->momx, object->momy), finalAngle,
@@ -363,7 +365,7 @@ P_DoSpringExMaxMin
 	{
 		// NOIRE: Set pogoSpring stuff...
 		//CONS_Printf("pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
-		if (!horizspeed && cv_ng_springpanelsdokartpogo.value) {
+		if ((!horizspeed && cv_ng_springpanelsdokartpogo.value) || pogoOptions > 0) {
 			object->player->pogoSpringJumped = true;
 			object->player->pogoMaxSpeed = maxSpeed;
 			object->player->pogoMinSpeed = minSpeed;
@@ -406,7 +408,7 @@ void P_DoSpringEx(
 	UINT16 starcolor
 )
 {
-	P_DoSpringExMaxMin(object, scaleVal, vertispeed, horizspeed, finalAngle, starcolor, 0, 0);
+	P_DoSpringExMaxMin(object, scaleVal, vertispeed, horizspeed, finalAngle, starcolor, 0, 0, 0);
 }
 
 //

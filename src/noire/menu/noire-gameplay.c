@@ -265,6 +265,23 @@ void NG_Tripwire_OnChange(void)
 	}
 }
 
+void NG_SpringPanelDoKartPogo_OnChange(void)
+{
+	static boolean displayedWarning = false;
+	if (!displayedWarning && menuactive)
+	{
+		M_StartMessage(
+			"Spring Panel Pogo Toggling",
+			M_GetText("This will let players do Kart Pogo jumps off every spring panel that is flat.\nThis might break some maps and diagonal / sloped spring panels won\'t be affected.\n\nToggle at your own discretion!"),
+			NULL,
+			MM_NOTHING,
+			NULL,
+			NULL
+		);
+		displayedWarning = true;
+	}
+}
+
 menu_t OPTIONS_NoireGameplayDef = {
 	sizeof (OPTIONS_NoireGameplay) / sizeof (menuitem_t),
 	&OPTIONS_GameplayDef,

@@ -615,7 +615,8 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			angle,
 			terrain->springStarColor,
 			terrain->springMinSpeed * mapobjectscale,
-			terrain->springMaxSpeed * mapobjectscale
+			terrain->springMaxSpeed * mapobjectscale,
+			terrain->springDoKartPogo
 		);
 		
 		sector->soundorg.z = player->mo->z;
@@ -1581,6 +1582,7 @@ static void K_TerrainDefaults(terrain_t *terrain)
 	terrain->springStrength = 0;
 	terrain->springMinSpeed = 0;
 	terrain->springMaxSpeed = 0;
+	terrain->springDoKartPogo = 0;
 	terrain->springStarColor = SKINCOLOR_NONE;
 	terrain->flags = TRF_REMAP;
 }
@@ -1708,6 +1710,10 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	else if (stricmp(param, "springMaxSpeed") == 0)
 	{
 		terrain->springMaxSpeed = FLOAT_TO_FIXED(atof(val));
+	}
+	else if (stricmp(param, "springDoKartPogo") == 0)
+	{
+		terrain->springDoKartPogo = FLOAT_TO_FIXED(atof(val));
 	}
 	else if (stricmp(param, "springStarColor") == 0)
 	{

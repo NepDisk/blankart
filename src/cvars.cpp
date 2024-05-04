@@ -830,6 +830,7 @@ consvar_t cv_ng_spindashcharge = UnsavedNetVar("ng_spindashcharge", "0").min_max
 consvar_t cv_ng_spindashoverheat = UnsavedNetVar("ng_spindashoverheat", "On").on_off();
 
 //Driving
+void NG_SpringPanelDoKartPogo_OnChange(void);
 consvar_t cv_ng_butteredslopes = UnsavedNetVar("ng_slopephysics", "On").on_off();
 consvar_t cv_ng_slopeclimb = UnsavedNetVar("ng_slopeclimb", "On").on_off();
 consvar_t cv_ng_stairjank = UnsavedNetVar("ng_stairjank", "All").values({
@@ -838,7 +839,7 @@ consvar_t cv_ng_stairjank = UnsavedNetVar("ng_stairjank", "All").values({
 	{2, "All"},
 });
 consvar_t cv_ng_oldturncode = UnsavedNetVar("ng_oldturncode", "Off").on_off();
-consvar_t cv_ng_springpanelsdokartpogo = UnsavedNetVar("ng_springpanelsdopogo", "Off").on_off();
+consvar_t cv_ng_springpanelsdokartpogo = UnsavedNetVar("ng_springpanelsdopogo", "Off").on_off().onchange(NG_SpringPanelDoKartPogo_OnChange);
 consvar_t cv_ng_underwaterhandling = UnsavedNetVar("ng_underwaterhandling", "On").on_off();
 
 //Rivals
