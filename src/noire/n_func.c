@@ -8,18 +8,20 @@
 // See the 'LICENSE' file for more details.
 //-----------------------------------------------------------------------------
 
-#include "../k_kart.h"
-#include "../doomdef.h"
-#include "../d_player.h"
-#include "../g_game.h"
-#include "../r_main.h"
-#include "../p_local.h"
 #include "../byteptr.h"
-#include "n_func.h"
+#include "../d_player.h"
+#include "../doomdef.h"
+#include "../g_game.h"
+#include "../k_kart.h"
 #include "../k_respawn.h"
+#include "../p_local.h"
+#include "../r_main.h"
+#include "../s_sound.h" //S_StartSound
+
+#include "n_func.h"
 
 // Old update Player angle taken from old kart commits
-void N_UpdatePlayerAngle(player_t *player)
+void N_UpdatePlayerAngle(player_t* player)
 {
 	angle_t angleChange = N_GetKartTurnValue(player, player->cmd.turning) << TICCMD_REDUCE;
 	player->steering = player->cmd.turning;
@@ -35,7 +37,7 @@ void N_UpdatePlayerAngle(player_t *player)
 	else
 	{
 		player->aiming += (player->cmd.aiming << TICCMD_REDUCE);
-		player->aiming = G_ClipAimingPitch((INT32 *)&player->aiming);
+		player->aiming = G_ClipAimingPitch((INT32*) &player->aiming);
 	}
 
 	for (i = 0; i <= r_splitscreen; i++)
@@ -50,10 +52,10 @@ void N_UpdatePlayerAngle(player_t *player)
 
 // countersteer is how strong the controls are telling us we are turning
 // turndir is the direction the controls are telling us to turn, -1 if turning right and 1 if turning left
-INT16 N_GetKartDriftValue(player_t *player, fixed_t countersteer)
+INT16 N_GetKartDriftValue(player_t* player, fixed_t countersteer)
 {
 	INT16 basedrift, driftadjust;
-	fixed_t driftweight = player->kartweight*14; // 12
+	fixed_t driftweight = player->kartweight * 14; // 12
 
 	if (player->drift == 0 || !P_IsObjectOnGround(player->mo))
 	{
@@ -64,7 +66,7 @@ INT16 N_GetKartDriftValue(player_t *player, fixed_t countersteer)
 	if (player->pflags & PF_DRIFTEND)
 	{
 		// Drift has ended and we are tweaking their angle back a bit
-		return -266*player->drift;
+		return -266 * player->drift;
 	}
 
 	basedrift = (83 * player->drift) - (((driftweight - 14) * player->drift) / 5); // 415 - 303
@@ -75,15 +77,15 @@ INT16 N_GetKartDriftValue(player_t *player, fixed_t countersteer)
 		basedrift += (basedrift / greasetics) * player->tiregrease;
 	}
 
-	if (player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER))
+	if (player->mo->eflags & (MFE_UNDERWATER | MFE_TOUCHWATER))
 	{
-		countersteer = FixedMul(countersteer, 3*FRACUNIT/2);
+		countersteer = FixedMul(countersteer, 3 * FRACUNIT / 2);
 	}
 
 	return basedrift + (FixedMul(driftadjust * FRACUNIT, countersteer) / FRACUNIT);
 }
 
-INT16 N_GetKartTurnValue(player_t *player, INT16 turnvalue)
+INT16 N_GetKartTurnValue(player_t* player, INT16 turnvalue)
 {
 	fixed_t p_maxspeed;
 	fixed_t p_speed;
@@ -113,9 +115,9 @@ INT16 N_GetKartTurnValue(player_t *player, INT16 turnvalue)
 
 	currentSpeed = R_PointToDist2(0, 0, player->mo->momx, player->mo->momy);
 
-	if ((currentSpeed <= 0) // Not moving
-	&& ((player->cmd.buttons & BT_EBRAKEMASK) != BT_EBRAKEMASK) // not e-braking
-	&& (player->respawn.state == RESPAWNST_NONE)) // Not respawning
+	if ((currentSpeed <= 0)											// Not moving
+		&& ((player->cmd.buttons & BT_EBRAKEMASK) != BT_EBRAKEMASK) // not e-braking
+		&& (player->respawn.state == RESPAWNST_NONE))				// Not respawning
 	{
 		return 0;
 	}
@@ -126,13 +128,13 @@ INT16 N_GetKartTurnValue(player_t *player, INT16 turnvalue)
 
 	if (K_PlayerUsesBotMovement(player))
 	{
-		turnfixed = FixedMul(turnfixed, 5*FRACUNIT/4); // Base increase to turning
+		turnfixed = FixedMul(turnfixed, 5 * FRACUNIT / 4); // Base increase to turning
 		turnfixed = FixedMul(turnfixed, K_BotRubberband(player));
 	}
 
 	if (player->drift != 0 && P_IsObjectOnGround(player->mo))
 	{
-		fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN*FRACUNIT);
+		fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN * FRACUNIT);
 
 		// If we're drifting we have a completely different turning value
 
@@ -149,9 +151,9 @@ INT16 N_GetKartTurnValue(player_t *player, INT16 turnvalue)
 		turnfixed = FixedMul(turnfixed, FRACUNIT + player->handleboost);
 	}
 
-	if (player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER))
+	if (player->mo->eflags & (MFE_UNDERWATER | MFE_TOUCHWATER))
 	{
-		turnfixed = FixedMul(turnfixed, 3*FRACUNIT/2);
+		turnfixed = FixedMul(turnfixed, 3 * FRACUNIT / 2);
 	}
 
 	// Weight has a small effect on turning
@@ -160,3 +162,143 @@ INT16 N_GetKartTurnValue(player_t *player, INT16 turnvalue)
 	return (turnfixed / FRACUNIT);
 }
 
+//
+// N_DoPogoSpring
+//
+// Copy-pasted version of K_DoPogoSpring from Kart as-is with bare minimum modifications to work with RR
+/*void N_DoPogoSpring(mobj_t* mo, fixed_t vertispeed, UINT8 sound)
+{
+	const fixed_t vscale = mapobjectscale + (mo->scale - mapobjectscale);
+
+	if (mo->player && mo->player->spectator)
+		return;
+
+	if (mo->eflags & MFE_SPRUNG)
+		return;
+
+	mo->standingslope = NULL;
+	mo->terrain = NULL; //Clear terrain
+
+	mo->eflags |= MFE_SPRUNG;
+
+	if (mo->eflags & MFE_VERTICALFLIP)
+		vertispeed *= -1;
+
+	if (vertispeed == 0)
+	{
+		fixed_t thrust;
+
+		if (mo->player)
+		{
+			thrust = 3 * mo->player->speed / 2;
+			if (thrust < 48 << FRACBITS)
+				thrust = 48 << FRACBITS;
+			if (thrust > 72 << FRACBITS)
+				thrust = 72 << FRACBITS;
+			if (mo->player->pogoSpringJumped) // If its not speedcapped
+			{
+				if (mo->player->sneakertimer || //mo->player->kartstuff[k_paneltimer]
+				)
+					thrust = FixedMul(thrust, 5 * FRACUNIT / 4);
+				else if (mo->player->invincibilitytimer)
+					thrust = FixedMul(thrust, 9 * FRACUNIT / 8);
+			}
+		}
+		else
+		{
+			thrust = FixedDiv(3 * P_AproxDistance(mo->momx, mo->momy) / 2, 5 * FRACUNIT / 2);
+			if (thrust < 16 << FRACBITS)
+				thrust = 16 << FRACBITS;
+			if (thrust > 32 << FRACBITS)
+				thrust = 32 << FRACBITS;
+		}
+
+		mo->momz = P_MobjFlip(mo) * FixedMul(FINESINE(ANGLE_22h >> ANGLETOFINESHIFT), FixedMul(thrust, vscale));
+	}
+	else
+		mo->momz = FixedMul(vertispeed, vscale);
+
+	if (mo->eflags & MFE_UNDERWATER)
+		mo->momz = (117 * mo->momz) / 200;
+
+	if (sound)
+		S_StartSound(mo, (sound == 1 ? sfx_kc2f : sfx_kpogos));
+}*/
+
+//
+// N_DoPogoSpring
+//
+// Copy-pasted version of K_DoPogoSpring from Kart with more modifications to match RR closer.
+void N_DoPogoSpring(mobj_t* mo, fixed_t vertispeed, UINT8 sound)
+{
+	fixed_t thrust = 0; // Define thrust up here...
+	boolean applyMomz = true;
+
+	if (mo->player && mo->player->spectator)
+		return;
+
+	if (mo->eflags & MFE_SPRUNG)
+		return;
+
+	mo->standingslope = NULL;
+	mo->terrain = NULL; // Clear terrain
+
+	mo->eflags |= MFE_SPRUNG;
+
+	// if (mo->eflags & MFE_VERTICALFLIP) //We do not need this as we are doing P_MobjFlip below
+	//	vertispeed *= -1;
+
+	//Handle vertispeed depending on its value...
+	if (vertispeed == 0)
+	{
+
+	}
+	else if (vertispeed < 0)
+	{
+		vertispeed = -vertispeed; //Make it positive
+		applyMomz = false;
+	}
+	else
+	{
+		vertispeed = FixedMul(vertispeed, mapobjectscale);
+	}
+
+	thrust = vertispeed * P_MobjFlip(mo); // Flip it for ceiling gravity
+
+	if (mo->player)
+	{
+		thrust = 3 * mo->player->speed / 2;
+		if (thrust < 48 << FRACBITS)
+			thrust = 48 << FRACBITS;
+		if (thrust > 72 << FRACBITS)
+			thrust = 72 << FRACBITS;
+		if (mo->player->pogoSpringJumped) // If its not speedcapped
+		{
+			if (mo->player->sneakertimer /* || mo->player->kartstuff[k_paneltimer]*/)
+				thrust = FixedMul(thrust, 5 * FRACUNIT / 4);
+			else if (mo->player->invincibilitytimer)
+				thrust = FixedMul(thrust, 9 * FRACUNIT / 8);
+		}
+	}
+	else
+	{
+		thrust = FixedDiv(3 * P_AproxDistance(mo->momx, mo->momy) / 2, 5 * FRACUNIT / 2);
+		if (thrust < 16 << FRACBITS)
+			thrust = 16 << FRACBITS;
+		if (thrust > 32 << FRACBITS)
+			thrust = 32 << FRACBITS;
+	}
+
+	mo->momz = FixedMul(FINESINE(ANGLE_22h >> ANGLETOFINESHIFT), FixedMul(thrust, mapobjectscale));
+
+	if (applyMomz)
+	{
+		mo->momz = FixedMul(thrust, mapobjectscale);
+
+		if (mo->eflags & MFE_UNDERWATER)
+			mo->momz = (117 * mo->momz) / 200;
+	}
+
+	if (sound)
+		S_StartSound(mo, (sound == 1 ? sfx_kc2f : sfx_kpogos));
+}

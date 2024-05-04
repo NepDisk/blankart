@@ -48,6 +48,7 @@
 
 // Noire
 #include "noire/n_cvar.h"
+#include "noire/n_func.h"
 
 tm_t g_tm = {0};
 
@@ -263,13 +264,13 @@ static boolean P_SpecialIsLinedefCrossType(line_t *ld)
 // P_DoSpringExMaxMin
 //
 // object = object being sprung
-// scaleVal = number to multiply horizspeed and vertispeed by. Normally, it's the map object scale.
+// scaleVal = number to multiply horizspeed and vertispeed by. Normally, it's the map object scale. By default, it gives the same calculation as Kart's pogo springs (scaleVal + (scaleVal - object->scale)
 // vertispeed = vertical speed to be applied to the object's momz. If this does not exist, finalAngle will be modified to reflect against the surface of the spring.
 // horizspeed = horizontal speed to be applied to the object. If the object's speed exceeds this even after multiplication operations, the object's speed will be applied instead. 
 // finalAngle = angle to thrust towards.
 // starcolor = color of the star particle effect.
-// maxSpeed = Maximum horizontal speed to be applied.
-// minSpeed = Minimum horizontal speed to be applied.
+// maxSpeed = Maximum horizontal speed to be applied. Ideally in common situations, it should come in already multiplied by the same value as scaleVal. Set to zero to don't use.
+// minSpeed = Minimum horizontal speed to be applied. Ideally in common situations, it should come in already multiplied by the same value as scaleVal. Set to zero to don't use.
 //
 void
 P_DoSpringExMaxMin
@@ -299,7 +300,7 @@ P_DoSpringExMaxMin
 	object->standingslope = NULL; // Okay, now we know it's not going to be relevant - no launching off at silly angles for you.
 	object->terrain = NULL;
 
-	//object->eflags |= MFE_SPRUNG; // apply this flag asap!
+	object->eflags |= MFE_SPRUNG; // apply this flag asap!
 
 	if ((vertispeed < 0) ^ P_IsObjectFlipped(object))
 		vertispeed *= 2;
@@ -339,30 +340,38 @@ P_DoSpringExMaxMin
 		finalSpeed = max(objectSpeed, finalSpeed);
 
 		// NOIRE: Use minSpeed and maxSpeed params.
-		if (minSpeed != -1) { 
+		if (minSpeed != 0) { 
 			finalSpeed = max(finalSpeed, minSpeed); 
 		}
-		if (maxSpeed != -1) {
+		if (maxSpeed != 0) {
 			finalSpeed = min(finalSpeed, maxSpeed);
 		}
 		CONS_Printf("final finalSpeed: %d\n", finalSpeed);
-
+	}
+	else
+	{
+		finalAngle = FixedHypot(object->momx, object->momy) ? R_PointToAngle2(0, 0, object->momx, object->momy) : object->angle;
+		// if we have no speed for SOME REASON, use the player's angle, otherwise we'd be forcefully thrusted to what I
+		// can only assume is angle 0
 	}
 
-	// NOIRE TEMP:
-	const fixed_t hscale = scaleVal + (scaleVal - object->scale);
-	CONS_Printf("hscale replica: %d\n", 24 * hscale);
-
-	finalAngle = FixedHypot(object->momx, object->momy) ? R_PointToAngle2(0, 0, object->momx, object->momy) : object->angle;
-	// if we have no speed for SOME REASON, use the player's angle, otherwise we'd be forcefully thrusted to what I
-	// can only assume is angle 0
-	if (object->player->speed < 24 * hscale)
-		P_InstaThrust(object, finalAngle, 24 * hscale);
-	K_DoPogoSpringKart(object, 0, 1);
+	K_DoPogoSpring(object, 0, 1); //Change to N_DoPogoSpring in case anything feels wrong
 
 	if (object->player)
 	{
-		object->player->pogoSpringJumped = true; //NOIRE: Set pogoSpring stuff...
+		// NOIRE: Set pogoSpring stuff...
+		CONS_Printf("pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
+
+		object->player->pogoSpringJumped = true;
+		object->player->pogoMaxSpeed = maxSpeed;
+		object->player->pogoMinSpeed = minSpeed;
+		// In original Kart code, this is BEFORE the PogoSpring call, but this should be fine... Execute the speed cap!
+		if (minSpeed != 0 && object->player->speed < minSpeed)
+			P_InstaThrust(object, finalAngle, minSpeed);
+		if (maxSpeed != 0 && object->player->speed > maxSpeed)
+			P_InstaThrust(object, finalAngle, maxSpeed);
+
+		CONS_Printf("Post Thrust: pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
 
 		K_TumbleInterrupt(object->player);
 		P_ResetPlayer(object->player);
@@ -395,7 +404,7 @@ void P_DoSpringEx(
 	UINT16 starcolor
 )
 {
-	P_DoSpringExMaxMin(object, scaleVal, vertispeed, horizspeed, finalAngle, starcolor, -1, -1);
+	P_DoSpringExMaxMin(object, scaleVal, vertispeed, horizspeed, finalAngle, starcolor, 0, 0);
 }
 
 //

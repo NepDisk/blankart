@@ -614,8 +614,8 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			FixedMul(terrain->springStrength, si),
 			angle,
 			terrain->springStarColor,
-			terrain->springMinSpeed,
-			terrain->springMaxSpeed
+			terrain->springMinSpeed * mapobjectscale,
+			terrain->springMaxSpeed * mapobjectscale
 		);
 		
 		sector->soundorg.z = player->mo->z;
@@ -1579,8 +1579,8 @@ static void K_TerrainDefaults(terrain_t *terrain)
 	terrain->speedPad = 0;
 	terrain->speedPadAngle = 0;
 	terrain->springStrength = 0;
-	terrain->springMinSpeed = -1;
-	terrain->springMaxSpeed = -1;
+	terrain->springMinSpeed = 0;
+	terrain->springMaxSpeed = 0;
 	terrain->springStarColor = SKINCOLOR_NONE;
 	terrain->flags = TRF_REMAP;
 }

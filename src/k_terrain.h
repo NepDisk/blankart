@@ -122,8 +122,8 @@ struct terrain_t
 	fixed_t speedPad;		// Speed pad strength
 	angle_t speedPadAngle;	// Speed pad angle
 	fixed_t springStrength;	// Spring strength
-	fixed_t springMinSpeed; // NOIRE Spring: speed at which things will be put at if less than. (Negative means no usage)
-	fixed_t springMaxSpeed; // NOIRE Spring: speed at which things will be put at if exceeding it.(Negative means no usage)
+	fixed_t springMinSpeed; // NOIRE Spring: speed at which things will be put at if less than. (Zero means no usage)
+	fixed_t springMaxSpeed; // NOIRE Spring: speed at which things will be put at if exceeding it.(Zero means no usage)
 	UINT16 springStarColor; // Spring star color
 	fixed_t outrun;			// Raise top speed by this amount, for super fast road.
 	fixed_t floorClip;		// Offset for sprites on this ground

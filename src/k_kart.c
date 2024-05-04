@@ -3858,22 +3858,14 @@ fixed_t K_3dKartMovement(const player_t *player)
 	fixed_t movemul = FRACUNIT;
 	SINT8 forwardmove = K_GetForwardMove(player);
 
-
 	if (player->pogoSpringJumped) // NOIRE Pogo Spring minimum/maximum thrust
 	{
-		const fixed_t hscale = mapobjectscale /*+ (mapobjectscale - player->mo->scale)*/;
-		//Max speed
-		if (player->pogoMaxSpeed != 0) {
-			const fixed_t maxspeed = player->pogoMaxSpeed * hscale;
-			if (finalspeed > maxspeed)
-				finalspeed = maxspeed;
-		}
-		//Min speed
-		if (player->pogoMinSpeed != 0) {
-			const fixed_t minSpeed = player->pogoMinSpeed * hscale;
-			if (finalspeed < minSpeed)
-				finalspeed = minSpeed;
-		}
+		//This code is different to Kart, keep in mind!
+		//const fixed_t hscale = mapobjectscale /*+ (mapobjectscale - player->mo->scale)*/; // The value in the player should already be multiplied.
+		if (player->pogoMaxSpeed != 0 && finalspeed > player->pogoMaxSpeed)
+			finalspeed = player->pogoMaxSpeed;
+		if (player->pogoMinSpeed != 0 && finalspeed < player->pogoMinSpeed)
+			finalspeed = player->pogoMinSpeed;
 	}
 
 	movemul = abs(forwardmove * FRACUNIT) / 50;
@@ -6750,67 +6742,6 @@ static void K_DoShrink(player_t *user)
 		}
 	}
 #endif
-}
-
-//
-// K_DoPogoSpringKart
-//
-// Copy-pasted function from kart
-void K_DoPogoSpringKart(mobj_t* mo, fixed_t vertispeed, UINT8 sound)
-{
-	const fixed_t vscale = mapobjectscale + (mo->scale - mapobjectscale);
-
-	if (mo->player && mo->player->spectator)
-		return;
-
-	if (mo->eflags & MFE_SPRUNG)
-		return;
-
-	mo->standingslope = NULL;
-
-	mo->eflags |= MFE_SPRUNG;
-
-	if (mo->eflags & MFE_VERTICALFLIP)
-		vertispeed *= -1;
-
-	if (vertispeed == 0)
-	{
-		fixed_t thrust;
-
-		if (mo->player)
-		{
-			thrust = 3 * mo->player->speed / 2;
-			if (thrust < 48 << FRACBITS)
-				thrust = 48 << FRACBITS;
-			if (thrust > 72 << FRACBITS)
-				thrust = 72 << FRACBITS;
-			if (mo->player->pogoSpringJumped) //If its not speedcapped
-			{
-				if (mo->player->sneakertimer /* || mo->player->kartstuff[k_paneltimer]*/)
-					thrust = FixedMul(thrust, 5 * FRACUNIT / 4);
-				else if (mo->player->invincibilitytimer)
-					thrust = FixedMul(thrust, 9 * FRACUNIT / 8);
-			}
-		}
-		else
-		{
-			thrust = FixedDiv(3 * P_AproxDistance(mo->momx, mo->momy) / 2, 5 * FRACUNIT / 2);
-			if (thrust < 16 << FRACBITS)
-				thrust = 16 << FRACBITS;
-			if (thrust > 32 << FRACBITS)
-				thrust = 32 << FRACBITS;
-		}
-
-		mo->momz = P_MobjFlip(mo) * FixedMul(FINESINE(ANGLE_22h >> ANGLETOFINESHIFT), FixedMul(thrust, vscale));
-	}
-	else
-		mo->momz = FixedMul(vertispeed, vscale);
-
-	if (mo->eflags & MFE_UNDERWATER)
-		mo->momz = (117 * mo->momz) / 200;
-
-	if (sound)
-		S_StartSound(mo, (sound == 1 ? sfx_kc2f : sfx_kpogos));
 }
 
 void K_DoPogoSpring(mobj_t *mo, fixed_t vertispeed, UINT8 sound)
@@ -10753,7 +10684,7 @@ static void K_KartDrift(player_t *player, boolean onground)
 	// Grown players taking yellow spring panels will go below minspeed for one tic,
 	// and will then wrongdrift or have their sparks removed because of this.
 	// This fixes this problem.
-	if (player->pogoSpringJumped && player->pogoMaxSpeed && player->mo->scale > mapobjectscale)
+	if (player->pogoSpringJumped && player->pogoMaxSpeed != 0 && player->mo->scale > mapobjectscale)
 		minspeed = FixedMul(10 << FRACBITS, mapobjectscale);
 
 	// Drifting is actually straffing + automatic turning.
