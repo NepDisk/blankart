@@ -290,7 +290,7 @@ P_DoSpringExMaxMin
 		return;
 	}
 
-	CONS_Printf("Sprung, scaleVal: %d, vertispeed: %d, horizspeed: %d, finalAngle: %d, maxSpeed: %d, minSpeed: %d\n", scaleVal, vertispeed, horizspeed, finalAngle, maxSpeed, minSpeed);
+	//CONS_Printf("Sprung, scaleVal: %d, vertispeed: %d, horizspeed: %d, finalAngle: %d, maxSpeed: %d, minSpeed: %d\n", scaleVal, vertispeed, horizspeed, finalAngle, maxSpeed, minSpeed);
 	if (horizspeed < 0) //If horizontal speed is negative, turn around.
 	{
 		horizspeed = -(horizspeed);
@@ -309,8 +309,8 @@ P_DoSpringExMaxMin
 	{
 		object->momz = FixedMul(vertispeed, scaleVal);
 	}
-
-	if (horizspeed)
+	boolean doKartPogo = false;
+	if (horizspeed) // For horizontal and diagonal spring things
 	{
 		fixed_t finalSpeed = FixedMul(horizspeed, scaleVal);
 		fixed_t objectSpeed;
@@ -346,10 +346,12 @@ P_DoSpringExMaxMin
 		if (maxSpeed != 0) {
 			finalSpeed = min(finalSpeed, maxSpeed);
 		}
-		CONS_Printf("final finalSpeed: %d\n", finalSpeed);
+		//CONS_Printf("final finalSpeed: %d\n", finalSpeed);
+		P_InstaThrust(object, finalAngle, finalSpeed);
 	}
 	else
 	{
+		//NOIRE: This code originally wasn't here... make sure it doesn't break anything?
 		finalAngle = FixedHypot(object->momx, object->momy) ? R_PointToAngle2(0, 0, object->momx, object->momy) : object->angle;
 		// if we have no speed for SOME REASON, use the player's angle, otherwise we'd be forcefully thrusted to what I
 		// can only assume is angle 0
@@ -360,18 +362,18 @@ P_DoSpringExMaxMin
 	if (object->player)
 	{
 		// NOIRE: Set pogoSpring stuff...
-		CONS_Printf("pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
-
-		object->player->pogoSpringJumped = true;
-		object->player->pogoMaxSpeed = maxSpeed;
-		object->player->pogoMinSpeed = minSpeed;
-		// In original Kart code, this is BEFORE the PogoSpring call, but this should be fine... Execute the speed cap!
-		if (minSpeed != 0 && object->player->speed < minSpeed)
-			P_InstaThrust(object, finalAngle, minSpeed);
-		if (maxSpeed != 0 && object->player->speed > maxSpeed)
-			P_InstaThrust(object, finalAngle, maxSpeed);
-
-		CONS_Printf("Post Thrust: pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
+		//CONS_Printf("pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
+		if (doKartPogo){
+			object->player->pogoSpringJumped = true;
+			object->player->pogoMaxSpeed = maxSpeed;
+			object->player->pogoMinSpeed = minSpeed;
+			// In Kart code, this is BEFORE the DoPogoSpring call, but this should be fine... Execute the speedcap!
+			if (minSpeed != 0 && object->player->speed < minSpeed)
+				P_InstaThrust(object, finalAngle, minSpeed);
+			if (maxSpeed != 0 && object->player->speed > maxSpeed)
+				P_InstaThrust(object, finalAngle, maxSpeed);
+		}
+		//CONS_Printf("Post Thrust: pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
 
 		K_TumbleInterrupt(object->player);
 		P_ResetPlayer(object->player);
