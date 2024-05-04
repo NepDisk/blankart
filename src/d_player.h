@@ -1041,7 +1041,7 @@ struct player_t
 	tic_t darkness_end;
 
 	//NOIRE: Re-declare pogoSpring stuff. If the game affords to declare one trillion variables for hardcoded lua, we can do this too.
-	boolean isGroundedUntilNextGrounding; //Replication of Kart's pogoSpring, but just a boolean as most of the logic is now in k_terrain.c. Will be set to false in the same places as pogoSpring did, and when grounded.
+	boolean pogoSpringJumped; //Replication of Kart's pogoSpring, but just a boolean as most of the logic is now in k_terrain.c. Will be set to false in the same places as pogoSpring did, and when grounded.
 };
 
 // WARNING FOR ANYONE ABOUT TO ADD SOMETHING TO THE PLAYER STRUCT, G_PlayerReborn WANTS YOU TO SUFFER

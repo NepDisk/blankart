@@ -289,6 +289,7 @@ P_DoSpringExMaxMin
 		return;
 	}
 
+	CONS_Printf("Sprung, scaleVal: %d, vertispeed: %d, horizspeed: %d, finalAngle: %d, maxSpeed: %d, minSpeed: %d\n", scaleVal, vertispeed, horizspeed, finalAngle, maxSpeed, minSpeed);
 	if (horizspeed < 0) //If horizontal speed is negative, turn around.
 	{
 		horizspeed = -(horizspeed);
@@ -298,7 +299,7 @@ P_DoSpringExMaxMin
 	object->standingslope = NULL; // Okay, now we know it's not going to be relevant - no launching off at silly angles for you.
 	object->terrain = NULL;
 
-	object->eflags |= MFE_SPRUNG; // apply this flag asap!
+	//object->eflags |= MFE_SPRUNG; // apply this flag asap!
 
 	if ((vertispeed < 0) ^ P_IsObjectFlipped(object))
 		vertispeed *= 2;
@@ -338,20 +339,30 @@ P_DoSpringExMaxMin
 		finalSpeed = max(objectSpeed, finalSpeed);
 
 		// NOIRE: Use minSpeed and maxSpeed params.
-		if (minSpeed != -1)
-		{ 
+		if (minSpeed != -1) { 
 			finalSpeed = max(finalSpeed, minSpeed); 
 		}
 		if (maxSpeed != -1) {
 			finalSpeed = min(finalSpeed, maxSpeed);
 		}
+		CONS_Printf("final finalSpeed: %d\n", finalSpeed);
 
-		P_InstaThrust(object, finalAngle, finalSpeed);
 	}
+
+	// NOIRE TEMP:
+	const fixed_t hscale = scaleVal + (scaleVal - object->scale);
+	CONS_Printf("hscale replica: %d\n", 24 * hscale);
+
+	finalAngle = FixedHypot(object->momx, object->momy) ? R_PointToAngle2(0, 0, object->momx, object->momy) : object->angle;
+	// if we have no speed for SOME REASON, use the player's angle, otherwise we'd be forcefully thrusted to what I
+	// can only assume is angle 0
+	if (object->player->speed < 24 * hscale)
+		P_InstaThrust(object, finalAngle, 24 * hscale);
+	K_DoPogoSpringKart(object, 0, 1);
 
 	if (object->player)
 	{
-		object->player->isGroundedUntilNextGrounding = true; //NOIRE: Set pogoSpring stuff...
+		object->player->pogoSpringJumped = true; //NOIRE: Set pogoSpring stuff...
 
 		K_TumbleInterrupt(object->player);
 		P_ResetPlayer(object->player);
@@ -1444,7 +1455,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 				if (P_DoSpring(thing, g_tm.thing))
 				{
 					if (thing->player) { // NOIRE: Replicate pogoSpring behaviour
-						thing->player->isGroundedUntilNextGrounding = true;
+						thing->player->pogoSpringJumped = true;
 					}
 					return BMIT_ABORT;
 				}
@@ -4086,7 +4097,7 @@ static void P_BouncePlayerMove(mobj_t *mo, TryMoveResult_t *result)
 	mmomx = mo->player->rmomx;
 	mmomy = mo->player->rmomy;
 
-	mo->player->isGroundedUntilNextGrounding = false; //NOIRE: Replicate pogoSpring behaviour.
+	mo->player->pogoSpringJumped = false; //NOIRE: Replicate pogoSpring behaviour.
 
 	slidemo = mo;
 	bestslideline = result->line;

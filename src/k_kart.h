@@ -168,6 +168,7 @@ void K_Squish(mobj_t *mo);
 mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, INT32 defaultDir, INT32 altthrow, angle_t angleOffset);
 void K_PuntMine(mobj_t *mine, mobj_t *punter);
 void K_DoSneaker(player_t *player, INT32 type);
+void K_DoPogoSpringKart(mobj_t* mo, fixed_t vertispeed, UINT8 sound); // Kart Pogo Spring
 void K_DoPogoSpring(mobj_t *mo, fixed_t vertispeed, UINT8 sound);
 void K_DoInvincibility(player_t *player, tic_t time);
 void K_KillBananaChain(mobj_t *banana, mobj_t *inflictor, mobj_t *source);

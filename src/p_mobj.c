@@ -1209,6 +1209,11 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 			if (mo->player->curshield == KSHIELD_BUBBLE)
 				gravityadd *= 2;
 		}
+
+		//NOIRE SPRINGS: AAAAAAAAAAAAAAAAAAAAAA
+		if (mo->player->pogoSpringJumped) {
+			gravityadd = (5 * gravityadd) / 2;
+		}
 	}
 	else
 	{
