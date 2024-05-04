@@ -309,7 +309,7 @@ P_DoSpringExMaxMin
 	{
 		object->momz = FixedMul(vertispeed, scaleVal);
 	}
-	boolean doKartPogo = false;
+
 	if (horizspeed) // For horizontal and diagonal spring things
 	{
 		fixed_t finalSpeed = FixedMul(horizspeed, scaleVal);
@@ -363,7 +363,7 @@ P_DoSpringExMaxMin
 	{
 		// NOIRE: Set pogoSpring stuff...
 		//CONS_Printf("pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
-		if (doKartPogo){
+		if (!horizspeed && cv_ng_springpanelsdokartpogo.value) {
 			object->player->pogoSpringJumped = true;
 			object->player->pogoMaxSpeed = maxSpeed;
 			object->player->pogoMinSpeed = minSpeed;

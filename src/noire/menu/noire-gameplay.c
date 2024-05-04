@@ -141,8 +141,12 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Old Turn Code", "Should the turning of karts use code from an indev version of v2?",
 		NULL, {.cvar = &cv_ng_oldturncode}, 0, 0},
 
+	{IT_STRING | IT_CVAR, "Spring Kart Pogojump", "Whenever standard spring panels give you air control like in Kart.",
+		NULL, {.cvar = &cv_ng_springpanelsdokartpogo}, 0, 0},
+
 	{IT_STRING | IT_CVAR, "Underwater Handling Adjust", "Should the turning of karts be affected when underwater?",
 		NULL, {.cvar = &cv_ng_underwaterhandling}, 0, 0},
+
 
 	///////////
 	// RIVALS
