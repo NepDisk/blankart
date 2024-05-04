@@ -135,24 +135,23 @@ typedef enum
 	SC_NONE       = 0,
 	SC_TOP        = 1,
 	SC_BOTTOM     = 1<<1,
-	SC_NOTVISIBLE = 1<<2,
 	// other flags
-	SC_PRECIP     = 1<<3,
-	SC_LINKDRAW   = 1<<4,
-	SC_FULLBRIGHT = 1<<5,
-	SC_FULLDARK   = 1<<6,
-	SC_VFLIP      = 1<<7,
-	SC_ISSCALED   = 1<<8,
-	SC_ISROTATED  = 1<<9,
-	SC_SHADOW     = 1<<10,
-	SC_SHEAR      = 1<<11,
-	SC_SPLAT      = 1<<12,
+	SC_PRECIP     = 1<<2,
+	SC_LINKDRAW   = 1<<3,
+	SC_FULLBRIGHT = 1<<4,
+	SC_FULLDARK   = 1<<5,
+	SC_VFLIP      = 1<<6,
+	SC_ISSCALED   = 1<<7,
+	SC_ISROTATED  = 1<<8,
+	SC_SHADOW     = 1<<9,
+	SC_SHEAR      = 1<<10,
+	SC_SPLAT      = 1<<11,
 	// srb2kart
-	SC_SEMIBRIGHT = 1<<13,
-	SC_BBOX       = 1<<14,
-	SC_CULL       = 1<<15,
+	SC_SEMIBRIGHT = 1<<12,
+	SC_BBOX       = 1<<13,
+	SC_CULL       = 1<<14,
 	// masks
-	SC_CUTMASK    = SC_TOP|SC_BOTTOM|SC_NOTVISIBLE,
+	SC_CUTMASK    = SC_TOP|SC_BOTTOM,
 	SC_FLAGMASK   = ~SC_CUTMASK
 } spritecut_e;
 
@@ -239,7 +238,7 @@ struct vissprite_t
 	fixed_t floorclip; // Cut off your tires in tall grass
 };
 
-extern UINT32 visspritecount, numvisiblesprites;
+extern UINT32 visspritecount;
 
 void R_ClipSprites(drawseg_t* dsstart, portal_t* portal);
 void R_ClipVisSprite(vissprite_t *spr, INT32 x1, INT32 x2, portal_t* portal);
