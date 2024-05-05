@@ -6948,7 +6948,8 @@ void P_SpawnSpecials(boolean fromnetsave)
 			case 10: // Circuit finish line
 				if (udmf)
 					break;
-				//CONS_Alert(CONS_WARNING, M_GetText("Deprecated finish line sector type detected. Please use the linedef type instead.\n"));
+					//NOIRE: This is annoying on binary maps using the old system please shut up
+					//CONS_Alert(CONS_WARNING, M_GetText("Deprecated finish line sector type detected. Please use the linedef type instead.\n"));
 				break;
 		}
 	}

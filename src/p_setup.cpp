@@ -6576,15 +6576,18 @@ static void P_ConvertBinarySectorTypes(void)
 				sectors[i].damagetype = SD_GENERIC;
 				break;
 			case 2: //Offroad (Weak)
-				CONS_Alert(CONS_WARNING, "Offroad specials will be deprecated soon. Use the TERRAIN effect!\n");
+				if(udmf)//NOIRE: This is annoying on binary maps using the old system please shut up
+					CONS_Alert(CONS_WARNING, "Offroad specials will be deprecated soon. Use the TERRAIN effect!\n");
 				sectors[i].offroad = FRACUNIT;
 				break;
 			case 3: //Offroad
-				CONS_Alert(CONS_WARNING, "Offroad specials will be deprecated soon. Use the TERRAIN effect!\n");
+				if(udmf)//NOIRE: This is annoying on binary maps using the old system please shut up
+					CONS_Alert(CONS_WARNING, "Offroad specials will be deprecated soon. Use the TERRAIN effect!\n");
 				sectors[i].offroad = 2*FRACUNIT;
 				break;
 			case 4: //Offroad (Strong)
-				CONS_Alert(CONS_WARNING, "Offroad specials will be deprecated soon. Use the TERRAIN effect!\n");
+				if(udmf)//NOIRE: This is annoying on binary maps using the old system please shut up
+					CONS_Alert(CONS_WARNING, "Offroad specials will be deprecated soon. Use the TERRAIN effect!\n");
 				sectors[i].offroad = 3*FRACUNIT;
 				break;
 			case 5: //Spikes
@@ -6656,10 +6659,12 @@ static void P_ConvertBinarySectorTypes(void)
 		{
 			case 1: //Trick panel
 			case 3:
-				CONS_Alert(CONS_WARNING, "Trick Panel special is deprecated. Use the TERRAIN effect!\n");
+				if(udmf)//NOIRE: This is annoying on binary maps using the old system please shut up
+					CONS_Alert(CONS_WARNING, "Trick Panel special is deprecated. Use the TERRAIN effect!\n");
 				break;
 			case 5: //Speed pad
-				CONS_Alert(CONS_WARNING, "Speed Pad special is deprecated. Use the TERRAIN effect!\n");
+				if(udmf)//NOIRE: This is annoying on binary maps using the old system please shut up
+					CONS_Alert(CONS_WARNING, "Speed Pad special is deprecated. Use the TERRAIN effect!\n");
 				break;
 			default:
 				break;
@@ -6677,7 +6682,8 @@ static void P_ConvertBinarySectorTypes(void)
 				sectors[i].specialflags = static_cast<sectorspecialflags_t>(sectors[i].specialflags | SSF_FAN);
 				break;
 			case 6: //Sneaker panel
-				CONS_Alert(CONS_WARNING, "Sneaker Panel special is deprecated. Use the TERRAIN effect!\n");
+				if(udmf)//NOIRE: This is annoying on binary maps using the old system please shut up
+					CONS_Alert(CONS_WARNING, "Sneaker Panel special is deprecated. Use the TERRAIN effect!\n");
 				break;
 			case 7: //Destroy items
 				sectors[i].specialflags = static_cast<sectorspecialflags_t>(sectors[i].specialflags | SSF_DELETEITEMS);
