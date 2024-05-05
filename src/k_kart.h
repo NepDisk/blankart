@@ -276,6 +276,7 @@ void K_BumperInflate(player_t *player);
 
 boolean K_ThunderDome(void);
 
+void K_PlayerResetPogo(player_t* player); //For NOIRE Spring pogo stuff...
 #ifdef __cplusplus
 } // extern "C"
 #endif

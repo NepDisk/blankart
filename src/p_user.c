@@ -432,7 +432,8 @@ void P_ResetPlayer(player_t *player)
 	player->fastfall = 0;
 	player->turbine = 0;
 	Obj_EndBungee(player);
-
+	K_PlayerResetPogo(player); //NOIRE: Reset pogo status, as this method is called in some places its important and should be done.
+							   //But This method also gets called K_HandleLapIncrement, so make sure that just by passing the finish line pogo stuff doesn't break...
 	if (player->mo != NULL && P_MobjWasRemoved(player->mo) == false)
 	{
 		P_ResetPitchRoll(player->mo);

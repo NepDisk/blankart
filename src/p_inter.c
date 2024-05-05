@@ -1844,7 +1844,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			P_AddPlayerScore(target->player, -2);
 		}
 
-		target->player->pogoSpringJumped = false; //NOIRE: Replicate pogoSpring behaviour.
+		K_PlayerResetPogo(target->player); //NOIRE: Replicate pogoSpring behaviour by resetting its state.
 		target->player->trickpanel = TRICKSTATE_NONE;
 
 		ACS_RunPlayerDeathScript(target->player);

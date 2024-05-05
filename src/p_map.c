@@ -363,9 +363,15 @@ P_DoSpringExMaxMin
 
 	if (object->player)
 	{
-		// NOIRE: Set pogoSpring stuff...
-		//CONS_Printf("\x88PLAYER\x80's pogoMaxSpeed and pogoMinSpeed: \x88%d\x80, \x88%d\x80, \x85SPRING\x80's maxSpeed and minSpeed: \x85%d\x80, \x85%d\x80\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
-		if ((!horizspeed && cv_ng_springpanelsdokartpogo.value) || pogoOptions > 0) {
+		K_TumbleInterrupt(object->player);
+		P_ResetPlayer(object->player);
+
+		// NOIRE: Set pogoSpring stuff... We do this AFTER Interrupting tumble and RESETTING the player, which also resets POGO STATUS.
+		// CONS_Printf("\x88PLAYER\x80's pogoMaxSpeed and pogoMinSpeed: \x88%d\x80, \x88%d\x80, \x85SPRING\x80's
+		// maxSpeed and minSpeed: \x85%d\x80, \x85%d\x80\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed,
+		// maxSpeed, minSpeed);
+		if ((!horizspeed && cv_ng_springpanelsdokartpogo.value) || pogoOptions > 0)
+		{
 			object->player->pogoSpringJumped = true;
 			object->player->pogoMaxSpeed = maxSpeed;
 			object->player->pogoMinSpeed = minSpeed;
@@ -375,10 +381,8 @@ P_DoSpringExMaxMin
 			if (maxSpeed != 0 && object->player->speed > maxSpeed)
 				P_InstaThrust(object, finalAngle, maxSpeed);
 		}
-		//CONS_Printf("Post Thrust: pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
-
-		K_TumbleInterrupt(object->player);
-		P_ResetPlayer(object->player);
+		// CONS_Printf("Post Thrust: pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n\n",
+		// object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
 
 		object->player->springstars = max(abs(vertispeed), horizspeed) / FRACUNIT / 2;
 		object->player->springcolor = starcolor;
@@ -579,6 +583,11 @@ static void P_DoFanAndGasJet(mobj_t *spring, mobj_t *object)
 
 			if (spring->thing_args[1])
 			{
+				if (object->player) //NOIRE: Replicate Red Kart Spring behavior that this object had in Kart
+				{
+					object->player->pogoSpringJumped = true;
+					object->player->pogoMinSpeed = 24 * FRACBITS;
+				}
 				K_DoPogoSpring(object, 32<<FRACBITS, 0);
 			}
 			else
@@ -1467,9 +1476,6 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			&& g_tm.thing->z <= thing->z + thing->height)
 				if (P_DoSpring(thing, g_tm.thing))
 				{
-					if (thing->player) { // NOIRE: Replicate pogoSpring behaviour
-						thing->player->pogoSpringJumped = true;
-					}
 					return BMIT_ABORT;
 				}
 					
@@ -4110,7 +4116,7 @@ static void P_BouncePlayerMove(mobj_t *mo, TryMoveResult_t *result)
 	mmomx = mo->player->rmomx;
 	mmomy = mo->player->rmomy;
 
-	mo->player->pogoSpringJumped = false; //NOIRE: Replicate pogoSpring behaviour.
+	K_PlayerResetPogo(mo->player); // NOIRE: Replicate pogoSpring behaviour by resetting it.
 
 	slidemo = mo;
 	bestslideline = result->line;

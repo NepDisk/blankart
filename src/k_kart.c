@@ -4130,6 +4130,7 @@ void K_SpinPlayer(player_t *player, mobj_t *inflictor, mobj_t *source, INT32 typ
 	}
 
 	player->spinouttimer = (3*TICRATE/2)+2;
+	K_PlayerResetPogo(player); //NOIRE: Reset pogo state as it did in Kart
 	P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
 }
 
@@ -9431,8 +9432,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	//NOIRE Springs: Pogo stuff put in the same place as in the original code (after eggman stuff)
 	if (P_IsObjectOnGround(player->mo) && player->pogoSpringJumped)
 	{
-		if (P_MobjFlip(player->mo) * player->mo->momz <= 0)
-			player->pogoSpringJumped = false;
+		if (P_MobjFlip(player->mo) * player->mo->momz <= 0) {
+			K_PlayerResetPogo(player);
+		}
 	}
 
 	if (player->itemtype == KITEM_BUBBLESHIELD)
@@ -14249,3 +14251,9 @@ void K_MakeObjectReappear(mobj_t *mo)
 }
 
 //}
+
+void inline K_PlayerResetPogo(player_t* player) {
+	player->pogoSpringJumped = false;
+	player->pogoMaxSpeed = 0;
+	player->pogoMinSpeed = 0;
+}
