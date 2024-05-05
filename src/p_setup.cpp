@@ -3359,7 +3359,7 @@ static boolean P_CheckLineSideTripWire(line_t *ld, int p)
 
 	n = ld->sidenum[p];
 
-	if (n == 0xffff)
+	if (n == 0xffff) //This side does not exist
 		return false;
 
 	sda = &sides[n];
@@ -3369,23 +3369,21 @@ static boolean P_CheckLineSideTripWire(line_t *ld, int p)
 
 	if (tripwire)
 	{
+		// copy midtexture to other side
+		n = ld->sidenum[!p];
+
 		// NOIRE: Tripwire toggle
 		if (!cv_ng_tripwireactive.value)
 		{
-			sdb = &sides[n]; // Get the other side
-
-			// Nuke them
+			//Nuke the first side
 			sda->midtexture = 0xffff;
-			sdb->midtexture = 0xffff;
-
-			// We could not check for the other side's texture, as this method is used in an OR, if this returns false (it will) the program will be forced to check for the other side
-			// but by nuking it here at the same time, we are saving a couple of instructions, as the second call will return earlier in the earlier if (n == 0xffff) check
-			
-			return false; //nuh-huh
+			if (n != 0xffff) // Extra safety: make sure the other side exists
+			{
+				sdb = &sides[n]; // Get the other side
+				sdb->midtexture = 0xffff; // Nuke it
+			}
+			return false; // nuh-huh
 		}
-
-		// copy midtexture to other side
-		n = ld->sidenum[!p];
 
 		if (n != 0xffff)
 		{

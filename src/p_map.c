@@ -292,7 +292,7 @@ P_DoSpringExMaxMin
 		return;
 	}
 
-	CONS_Printf("Sprung, scaleVal: %d, vertispeed: %d, horizspeed: %d, finalAngle: %d, maxSpeed: %d, minSpeed: %d, pogoOptions: %d\n", scaleVal, vertispeed, horizspeed, finalAngle, maxSpeed, minSpeed, pogoOptions);
+	//CONS_Printf("Sprung, scaleVal: %d, vertispeed: %d, horizspeed: %d, finalAngle: %d, maxSpeed: %d, minSpeed: %d, pogoOptions: %d\n", scaleVal, vertispeed, horizspeed, finalAngle, maxSpeed, minSpeed, pogoOptions);
 	if (horizspeed < 0) //If horizontal speed is negative, turn around.
 	{
 		horizspeed = -(horizspeed);
@@ -364,7 +364,7 @@ P_DoSpringExMaxMin
 	if (object->player)
 	{
 		// NOIRE: Set pogoSpring stuff...
-		CONS_Printf("\x88PLAYER\x80's pogoMaxSpeed and pogoMinSpeed: \x88%d\x80, \x88%d\x80, \x85SPRING\x80's maxSpeed and minSpeed: \x85%d\x80, \x85%d\x80\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
+		//CONS_Printf("\x88PLAYER\x80's pogoMaxSpeed and pogoMinSpeed: \x88%d\x80, \x88%d\x80, \x85SPRING\x80's maxSpeed and minSpeed: \x85%d\x80, \x85%d\x80\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
 		if ((!horizspeed && cv_ng_springpanelsdokartpogo.value) || pogoOptions > 0) {
 			object->player->pogoSpringJumped = true;
 			object->player->pogoMaxSpeed = maxSpeed;
@@ -375,7 +375,7 @@ P_DoSpringExMaxMin
 			if (maxSpeed != 0 && object->player->speed > maxSpeed)
 				P_InstaThrust(object, finalAngle, maxSpeed);
 		}
-		CONS_Printf("Post Thrust: pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
+		//CONS_Printf("Post Thrust: pogoMaxSpeed and pogoMinSpeed: %d, %d, maxSpeed and minSpeed: %d, %d\n\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed, maxSpeed, minSpeed);
 
 		K_TumbleInterrupt(object->player);
 		P_ResetPlayer(object->player);
