@@ -3848,23 +3848,23 @@ fixed_t K_GetNewSpeed(const player_t *player)
 
 	if (player->pogoSpringJumped) // NOIRE Pogo Spring minimum/maximum thrust. This goes here, before that finalSpeed line below, as it was in Kart code.
 	{
-		CONS_Printf("K_GetNewSpeed: newSpeed: \x82%d\x80, pogoMaxSpeed: \x85%d\x80. pogoMinSpeed: \x88%d\x80 ",newspeed, player->pogoMaxSpeed,player->pogoMinSpeed);
+		//CONS_Printf("K_GetNewSpeed: newSpeed: \x82%d\x80, pogoMaxSpeed: \x85%d\x80. pogoMinSpeed: \x88%d\x80 ",newspeed, player->pogoMaxSpeed,player->pogoMinSpeed);
 		if (player->pogoMinSpeed != 0) //First do the speedcap, AKA pogospring == 2
 		{
 			const fixed_t minSpeed = player->pogoMinSpeed * mapobjectscale;
-			CONS_Printf(" minSpeed: \x84%d\x80 ", minSpeed);
+			//CONS_Printf(" minSpeed: \x84%d\x80 ", minSpeed);
 			if (newspeed < minSpeed)
 				newspeed = minSpeed;
 		}
 		if (player->pogoMaxSpeed != 0)
 		{
 			const fixed_t maxspeed = player->pogoMaxSpeed * mapobjectscale;
-			CONS_Printf(" maxSpeed: \x87%d\x80 ", maxspeed);
+			//CONS_Printf(" maxSpeed: \x87%d\x80 ", maxspeed);
 			if (newspeed > maxspeed)
 				newspeed = maxspeed;
 		}
 
-		CONS_Printf("K_GetNewSpeed: newspeed: \x85%d\x80\n", newspeed);
+		//CONS_Printf(" final newspeed: \x85%d\x80\n", newspeed);
 	}
 
 	finalspeed = newspeed - oldspeed;
