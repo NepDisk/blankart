@@ -197,7 +197,8 @@ void K_DoIngameRespawn(player_t *player)
 	{
 		player->respawn.distanceleft = 0;
 		player->respawn.pointz += K_RespawnOffset(player, player->respawn.flip);
-		player->respawn.manual = false; // one respawn only!
+		if (numbosswaypoints == 0)
+			player->respawn.manual = false; // one respawn only!
 	}
 	else if (player->respawn.wp != NULL)
 	{

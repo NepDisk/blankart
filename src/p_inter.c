@@ -1089,7 +1089,7 @@ void P_TouchCheatcheck(mobj_t *post, player_t *player, boolean snaptopost)
 	(void)snaptopost;
 
 	// Player must have touched all previous cheatchecks
-	if (post->health - player->cheatchecknum > 1)
+	if ((post->health - player->cheatchecknum > 1) && numbosswaypoints == 0) // NOIRE: Don't run this check on binary maps using legacy checkpoints!!!!
 	{
 		if (!player->checkskip)
 			S_StartSound(toucher, sfx_lose);
@@ -1106,6 +1106,17 @@ void P_TouchCheatcheck(mobj_t *post, player_t *player, boolean snaptopost)
 
 	if (player->cheatchecknum >= post->health)
 		return; // Already hit this post
+
+	if (numbosswaypoints > 0) // NOIRE: Handles Respawning related things on Binary maps using legacy checkpoints
+	{
+		player->respawn.pointx = toucher->x;
+		player->respawn.pointy = toucher->y;
+		player->respawn.pointz = post->z;
+		player->respawn.pointangle = post->angle;
+		player->respawn.flip = ((post->flags2 & MF2_OBJECTFLIP) || (post->spawnpoint->options & MTF_OBJECTFLIP)) ? true : false;	// store flipping
+		player->respawn.manual = true;
+	}
+
 
 	player->cheatchecknum = post->health;
 }

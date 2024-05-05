@@ -5420,60 +5420,15 @@ static void P_EvaluateOldSectorSpecial(player_t *player, sector_t *sector, secto
 			break;
 
 		case 10: // Finish Line
-			/*// SRB2kart - 150117
-			if ((gametyperules & GTR_CIRCUIT) && (player->cheatchecknum >= (numcheatchecks - (numcheatchecks/2)) || player->exiting))
-				//player->kartstuff[k_cheatcheckwp] = player->kartstuff[k_waypoint] = 0;
-			//
-			if ((gametyperules & GTR_CIRCUIT) && !player->exiting)
+
+			if ((gametyperules & GTR_CIRCUIT) && (player->exiting == 0) && !(player->pflags & PF_HITFINISHLINE))
 			{
-				if ((player->cheatchecknum >= (numcheatchecks - (numcheatchecks/2)))) // srb2kart: must have touched *enough* cheatchecks (was originally "(player->cheatchecknum == numcheatchecks)")
-				{
-					UINT8 nump = 0;
-
-					for (int i = 0; i < MAXPLAYERS; i++)
-					{
-						if (!playeringame[i] || players[i].spectator)
-							continue;
-						nump++;
-					}
-
-
-
-					if (netgame && player->laps >= numlaps)
-						CON_LogMessage(va(M_GetText("%s has finished the race.\n"), player_names[player-players]));
-
-					player->cheatchecktime = player->realtime;
-					player->cheatchecknum = 0;
-
-					if (mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE)
-					{
-						// SRB2Kart 281118
-						// Save the player's time and position.
-						player->respawn.pointx = player->mo->x>>FRACBITS;
-						player->respawn.pointy = player->mo->y>>FRACBITS;
-						player->respawn.pointz = player->mo->floorz>>FRACBITS;
-						player->respawn.flip = player->mo->flags2 & MF2_OBJECTFLIP;	// store flipping
-						player->respawn.pointangle = player->mo->angle; //R_PointToAngle2(0, 0, player->mo->momx, player->mo->momy); torn; a momentum-based guess is less likely to be wrong in general, but when it IS wrong, it fucks you over entirely...
-					}
-					else
-					{
-						// SRB2kart 200117
-						// Reset cheatchecks (checkpoints) info
-						player->respawn.pointangle = player->respawn.pointx = player->respawn.pointy = player->respawn.pointz = player->respawn.flip = 0;
-					}
-
-					//player->cheatcheckangle = player->cheatchecktime = player->cheatchecknum = 0;
-					//player->cheatcheckx = player->cheatchecky = player->cheatcheckz = 0;
-
-					// Play the cheatcheck sound for 'consistency'
-					// S_StartSound(player->mo, sfx_strpst);
-
-					thwompsactive = true; // Lap 2 effects
-					//player->grieftime = 0;
-				}*/
-
 					K_HandleLapIncrement(player);
-			//}
+
+					//ACS_RunLapScript(mo, line);
+					//K_HandleLapIncrement(player);
+					player->pflags |= PF_HITFINISHLINE;
+			}
 
 
 	}
