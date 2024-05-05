@@ -1705,17 +1705,14 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	}
 	else if (stricmp(param, "springDoKartPogo") == 0) //NOIRE: Add new terrain properties for springs...
 	{
-		CONS_Printf("FOUND SPRING DO KART POGO: val: %s, calculated: %d\n", val, get_number(val));
 		terrain->springDoKartPogo = (UINT8)get_number(val);
 	}
 	else if (stricmp(param, "springMinSpeed") == 0)
 	{
-		CONS_Printf("FOUND SPRING MIN SPEED: val: %s, calculated: %d\n", val, get_number(val));
 		terrain->springMinSpeed = get_number(val);
 	}
 	else if (stricmp(param, "springMaxSpeed") == 0)
 	{
-		CONS_Printf("FOUND SPRING MAX SPEED: val: %s, calculated: %d\n", val, get_number(val));
 		terrain->springMaxSpeed = get_number(val);
 	}
 	else if (stricmp(param, "springStarColor") == 0)
