@@ -3850,7 +3850,14 @@ fixed_t K_GetNewSpeed(const player_t *player)
 	{
 		// This code is different to Kart, keep in mind!
 		// const fixed_t hscale = mapobjectscale /*+ (mapobjectscale - player->mo->scale)*/; // The value in the player
-		CONS_Printf("K_GetNewSpeed: pogoMaxSpeed: \x85%d\x80, calc: \x87%d\x80. pogoMinSpeed: \x88%d\x80, calc: \x8A%d\x80 ",player->pogoMaxSpeed,(player->pogoMaxSpeed * FRACUNIT),player->pogoMinSpeed,(player->pogoMinSpeed * FRACUNIT));
+		// should already be multiplied.
+		CONS_Printf(
+			"K_GetNewSpeed: pogoMaxSpeed: \x85%d\x80, calc: \x87%d\x80. pogoMinSpeed: \x88%d\x80, calc: \x8A%d\x80 ",
+			player->pogoMaxSpeed,
+			(player->pogoMaxSpeed * FRACUNIT),
+			player->pogoMinSpeed,
+			(player->pogoMinSpeed * FRACUNIT)
+		);
 		if (player->pogoMaxSpeed != 0 && newspeed > player->pogoMaxSpeed)
 			newspeed = (player->pogoMaxSpeed * FRACUNIT);
 		if (player->pogoMinSpeed != 0 && (newspeed < (player->pogoMinSpeed || !newspeed)))

@@ -614,8 +614,8 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			FixedMul(terrain->springStrength, si),
 			angle,
 			terrain->springStarColor,
-			terrain->springMinSpeed * mapobjectscale,
-			terrain->springMaxSpeed * mapobjectscale,
+			terrain->springMaxSpeed,
+			terrain->springMinSpeed,
 			terrain->springDoKartPogo
 		);
 		
@@ -1703,17 +1703,20 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 				FLOAT_TO_FIXED(15.625 * pow(1.6, fval));
 		}
 	}
-	else if (stricmp(param, "springMinSpeed") == 0) //NOIRE: Add new terrain properties for springs...
+	else if (stricmp(param, "springDoKartPogo") == 0) //NOIRE: Add new terrain properties for springs...
 	{
-		terrain->springMinSpeed = FLOAT_TO_FIXED(atof(val));
+		CONS_Printf("FOUND SPRING DO KART POGO: val: %s, calculated: %d\n", val, get_number(val));
+		terrain->springDoKartPogo = (UINT8)get_number(val);
+	}
+	else if (stricmp(param, "springMinSpeed") == 0)
+	{
+		CONS_Printf("FOUND SPRING MIN SPEED: val: %s, calculated: %d\n", val, get_number(val));
+		terrain->springMinSpeed = get_number(val);
 	}
 	else if (stricmp(param, "springMaxSpeed") == 0)
 	{
-		terrain->springMaxSpeed = FLOAT_TO_FIXED(atof(val));
-	}
-	else if (stricmp(param, "springDoKartPogo") == 0)
-	{
-		terrain->springDoKartPogo = FLOAT_TO_FIXED(atof(val));
+		CONS_Printf("FOUND SPRING MAX SPEED: val: %s, calculated: %d\n", val, get_number(val));
+		terrain->springMaxSpeed = get_number(val);
 	}
 	else if (stricmp(param, "springStarColor") == 0)
 	{
@@ -2078,7 +2081,9 @@ static boolean K_TERRAINLumpParser(char *data, size_t size)
 					}
 					else
 					{
-						CONS_Alert(CONS_ERROR, "No terrain for floor definition.\n");
+						CONS_Alert(CONS_ERROR, "No terrain '%s' for floor definition. Pos and size: %d, %d.\n", tkn, pos, size);
+						// NOIRE: Help the user figure out a possible problem for this because this is fucking STUPID
+						CONS_Printf("This problem might be due to the order in which the terrain was assigned to textures, are they in the same order as the terrain was defined in?\n"); 
 						valid = false;
 					}
 				}
