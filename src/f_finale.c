@@ -506,8 +506,6 @@ static void F_IntroDrawScene(void)
 				}
 			}
 
-			CONS_Printf("tally: %d, textoff: %d\n", runningtally, textoffs);
-
 			// Joyeaux Anniversaire
 			V_DrawCenteredMenuString(BASEVIDWIDTH/2, 174 - (textoffs/FRACUNIT), (trans<<V_ALPHASHIFT)|V_SUBTRACT, "2013 - 11 years - 2024");
 
