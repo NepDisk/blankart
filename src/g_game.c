@@ -2082,6 +2082,10 @@ static inline void G_PlayerFinishLevel(INT32 player)
 	P_FlashPal(p, 0, 0); // Resets
 
 	p->cheatchecknum = 0;
+	p->cheatchecktime = 0;
+	p->prevcheck = 0;
+	p->nextcheck = 0;
+
 	memset(&p->respawn, 0, sizeof (p->respawn));
 
 	p->spectatorReentry = 0; // Clean up any pending re-entry forbiddings
@@ -2118,6 +2122,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	UINT8 ctfteam;
 
 	INT32 cheatchecknum;
+	tic_t cheatchecktime; // NOIRE: The time of the last cheatcheck you hit
+	INT32 prevcheck; // NOIRE: Distance from Previous Legacy Checkpoint
+	INT32 nextcheck; // NOIRE: Distace to Next Legacy Checkpoint
 	INT32 exiting;
 	INT32 khudfinish;
 	INT16 totalring;
@@ -2316,6 +2323,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		exiting = 0;
 		khudfinish = 0;
 		cheatchecknum = 0;
+		cheatchecktime = 0;
+		prevcheck = 0;
+		nextcheck = 0;
 		lastsafelap = 0;
 		lastsafecheatcheck = 0;
 		bigwaypointgap = 0;
@@ -2356,6 +2366,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		khudfinish = (exiting > 0) ? players[player].karthud[khud_finish] : 0;
 
 		cheatchecknum = players[player].cheatchecknum;
+		cheatchecktime = players[player].cheatchecktime;
+		prevcheck = players[player].prevcheck;
+		prevcheck = players[player].nextcheck;
 
 		pflags |= (players[player].pflags & (PF_STASIS|PF_ELIMINATED|PF_NOCONTEST|PF_FAULT|PF_LOSTLIFE));
 
@@ -2457,6 +2470,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->followitem = followitem;
 
 	p->cheatchecknum = cheatchecknum;
+	p->cheatchecktime = cheatchecktime;
+	p->prevcheck = prevcheck;
+	p->nextcheck = nextcheck;
 	p->exiting = exiting;
 	p->karthud[khud_finish] = khudfinish;
 
