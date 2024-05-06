@@ -318,6 +318,7 @@ void Captioning_OnChange(void);
 consvar_t cv_closedcaptioning = Player("closedcaptioning", "Off").on_off().onchange(Captioning_OnChange);
 
 consvar_t cv_continuousmusic = Player("continuousmusic", "On").on_off();
+consvar_t cv_streamersafemusic = Player("streamersafemusic", "Off").on_off();
 consvar_t cv_controlperkey = Player("controlperkey", "One").values({{1, "One"}, {2, "Several"}});
 
 // actual general (maximum) sound & music volume, saved into the config
@@ -402,7 +403,6 @@ consvar_t cv_menuframeskip = Player("menuframeskip", "Off").values({
 	{144, "MAX"},
 	{0, "Off"},
 });
-consvar_t cv_mindelay = Player("mindelay", "2").min_max(0, 15);
 consvar_t cv_movebob = Player("movebob", "1.0").floating_point().min_max(0, 4*FRACUNIT);
 consvar_t cv_netstat = Player("netstat", "Off").on_off().dont_save(); // show bandwidth statistics
 consvar_t cv_netticbuffer = Player("netticbuffer", "1").min_max(0, 3);
@@ -410,6 +410,11 @@ consvar_t cv_netticbuffer = Player("netticbuffer", "1").min_max(0, 3);
 // number of channels available
 void SetChannelsNum(void);
 consvar_t cv_numChannels = Player("snd_channels", "64").values(CV_Unsigned).onchange(SetChannelsNum);
+
+extern CV_PossibleValue_t soundmixingbuffersize_cons_t[];
+consvar_t cv_soundmixingbuffersize = Player("snd_mixingbuffersize", "2048")
+	.values(soundmixingbuffersize_cons_t)
+	.onchange_noinit([]() { COM_ImmedExecute("restartaudio"); });
 
 extern CV_PossibleValue_t perfstats_cons_t[];
 consvar_t cv_perfstats = Player("perfstats", "Off").dont_save().values(perfstats_cons_t);
@@ -549,11 +554,14 @@ consvar_t cv_pause = NetVar("pausepermission", "Server Admins").values({{0, "Ser
 consvar_t cv_pingmeasurement = Server("pingmeasurement", "Frames").values({{0, "Frames"}, {1, "Milliseconds"}});
 consvar_t cv_playbackspeed = Server("playbackspeed", "1").min_max(1, 10).dont_save();
 
+static constexpr const char* kNetDemoRecordDefault =
 #ifdef DEVELOP
-	consvar_t cv_recordmultiplayerdemos = Server("netdemo_record", "Auto Save").values({{2, "Auto Save"}});
+	"Auto Save";
 #else
-	consvar_t cv_recordmultiplayerdemos = Server("netdemo_record", "Manual Save").values({{0, "Disabled"}, {1, "Manual Save"}, {2, "Auto Save"}});
+	"Manual Save";
 #endif
+
+consvar_t cv_recordmultiplayerdemos = Server("netdemo_record", kNetDemoRecordDefault).values({{0, "Disabled"}, {1, "Manual Save"}, {2, "Auto Save"}});
 
 consvar_t cv_reducevfx = Server("reducevfx", "No").yes_no();
 consvar_t cv_screenshake = Server("screenshake", "Full").values({{0, "Off"}, {1, "Half"}, {2, "Full"}});
@@ -787,6 +795,7 @@ consvar_t cv_votetime = UnsavedNetVar("votetime", "20").min_max(10, 3600);
 //
 
 consvar_t cv_4thgear = OnlineCheat("4thgear", "Off").values(CV_OnOff).flags(CV_NOSHOWHELP).description("Surpassing your limits!");
+consvar_t cv_levelskull = OnlineCheat("levelskull", "Off").values(CV_OnOff).flags(CV_NOSHOWHELP).description("What Storm Rig looked like 2 months before 2.0");
 
 consvar_t cv_barriertime = OnlineCheat("barriertime", "30").values(CV_Natural).description("How long it takes for the Barrier to shrink in Battle Overtime");
 consvar_t cv_battlespawn = OnlineCheat("battlespawn", "0").values(CV_Unsigned).description("Spawn every player at the same spawnpoint in Battle (0 = random spawns)");
@@ -937,7 +946,7 @@ consvar_t cv_dummyextraspassword = MenuDummy("dummyextraspassword", "");
 
 extern CV_PossibleValue_t gpdifficulty_cons_t[];
 void Dummygpdifficulty_OnChange(void);
-consvar_t cv_dummygpdifficulty = MenuDummy("dummygpdifficulty", "Normal").values(gpdifficulty_cons_t).onchange(Dummygpdifficulty_OnChange);
+consvar_t cv_dummygpdifficulty = MenuDummy("dummygpdifficulty", "Intense").values(gpdifficulty_cons_t).onchange(Dummygpdifficulty_OnChange);
 consvar_t cv_dummygpencore = MenuDummy("dummygpencore", "Off").on_off();
 
 consvar_t cv_dummyip = MenuDummy("dummyip", "");
@@ -969,6 +978,7 @@ consvar_t cv_dummymenuplayer = MenuDummy("dummymenuplayer", "P1").onchange(Dummy
 consvar_t cv_dummyprofileautoroulette = MenuDummy("dummyprofileautoroulette", "Off").on_off();
 consvar_t cv_dummyprofilefov = MenuDummy("dummyprofilefov", "100").min_max(70, 140);
 consvar_t cv_dummyprofilelitesteer = MenuDummy("dummyprofilelitesteer", "Off").on_off();
+consvar_t cv_dummyprofileautoring = MenuDummy("dummyprofileautoring", "Off").on_off();
 consvar_t cv_dummyprofilekickstart = MenuDummy("dummyprofilekickstart", "Off").on_off();
 consvar_t cv_dummyprofilename = MenuDummy("dummyprofilename", "");
 consvar_t cv_dummyprofileplayername = MenuDummy("dummyprofileplayername", "");
@@ -1079,6 +1089,13 @@ consvar_t cv_litesteer[MAXSPLITSCREENPLAYERS] = {
 	Player("litesteer2", "Off").on_off().onchange(weaponPrefChange2),
 	Player("litesteer3", "Off").on_off().onchange(weaponPrefChange3),
 	Player("litesteer4", "Off").on_off().onchange(weaponPrefChange4),
+};
+
+consvar_t cv_autoring[MAXSPLITSCREENPLAYERS] = {
+	Player("autoring", "Off").on_off().onchange(weaponPrefChange),
+	Player("autoring2", "Off").on_off().onchange(weaponPrefChange2),
+	Player("autoring3", "Off").on_off().onchange(weaponPrefChange3),
+	Player("autoring4", "Off").on_off().onchange(weaponPrefChange4),
 };
 
 consvar_t cv_cam_dist[MAXSPLITSCREENPLAYERS] = {
@@ -1195,6 +1212,8 @@ consvar_t cv_kickstartaccel[MAXSPLITSCREENPLAYERS] = {
 	Player("kickstartaccel3", "Off").on_off().onchange(weaponPrefChange3),
 	Player("kickstartaccel4", "Off").on_off().onchange(weaponPrefChange4)
 };
+
+consvar_t cv_mindelay = Player("mindelay", "2").min_max(0, 15).onchange(weaponPrefChange);
 
 extern CV_PossibleValue_t Color_cons_t[];
 void Color1_OnChange(void);

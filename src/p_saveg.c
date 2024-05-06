@@ -434,6 +434,7 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEINT32(save->p, players[i].nullHitlag);
 		WRITEUINT8(save->p, players[i].wipeoutslow);
 		WRITEUINT8(save->p, players[i].justbumped);
+		WRITEUINT8(save->p, players[i].noEbrakeMagnet);
 		WRITEUINT8(save->p, players[i].tumbleBounces);
 		WRITEUINT16(save->p, players[i].tumbleHeight);
 
@@ -483,6 +484,7 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].tripwireState);
 		WRITEUINT8(save->p, players[i].tripwirePass);
 		WRITEUINT16(save->p, players[i].tripwireLeniency);
+		WRITEUINT8(save->p, players[i].fakeBoost);
 
 		WRITESINT8(save->p, players[i].itemtype);
 		WRITEUINT8(save->p, players[i].itemamount);
@@ -506,6 +508,7 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].bubblecool);
 		WRITEUINT8(save->p, players[i].bubbleblowup);
 		WRITEUINT16(save->p, players[i].flamedash);
+		WRITEUINT16(save->p, players[i].counterdash);
 		WRITEUINT16(save->p, players[i].flamemeter);
 		WRITEUINT8(save->p, players[i].flamelength);
 
@@ -540,6 +543,7 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT32(save->p, players[i].trickboostpower);
 		WRITEUINT8(save->p, players[i].trickboostdecay);
 		WRITEUINT8(save->p, players[i].trickboost);
+		WRITEUINT8(save->p, players[i].tricklock);
 
 		WRITEUINT8(save->p, players[i].dashRingPullTics);
 		WRITEUINT8(save->p, players[i].dashRingPushTics);
@@ -562,6 +566,7 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].typing_duration);
 
 		WRITEUINT8(save->p, players[i].kickstartaccel);
+		WRITEUINT8(save->p, players[i].autoring);
 
 		WRITEUINT8(save->p, players[i].stairjank);
 		WRITEUINT8(save->p, players[i].topdriftheld);
@@ -586,6 +591,8 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 
 		WRITEUINT8(save->p, players[i].lastsafelap);
 		WRITEUINT8(save->p, players[i].lastsafecheatcheck);
+
+		WRITEUINT8(save->p, players[i].ignoreAirtimeLeniency);
 
 		WRITEFIXED(save->p, players[i].topAccel);
 
@@ -1030,6 +1037,7 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].nullHitlag = READINT32(save->p);
 		players[i].wipeoutslow = READUINT8(save->p);
 		players[i].justbumped = READUINT8(save->p);
+		players[i].noEbrakeMagnet = READUINT8(save->p);
 		players[i].tumbleBounces = READUINT8(save->p);
 		players[i].tumbleHeight = READUINT16(save->p);
 
@@ -1079,6 +1087,7 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].tripwireState = READUINT8(save->p);
 		players[i].tripwirePass = READUINT8(save->p);
 		players[i].tripwireLeniency = READUINT16(save->p);
+		players[i].fakeBoost = READUINT8(save->p);
 
 		players[i].itemtype = READSINT8(save->p);
 		players[i].itemamount = READUINT8(save->p);
@@ -1102,6 +1111,7 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].bubblecool = READUINT8(save->p);
 		players[i].bubbleblowup = READUINT8(save->p);
 		players[i].flamedash = READUINT16(save->p);
+		players[i].counterdash = READUINT16(save->p);
 		players[i].flamemeter = READUINT16(save->p);
 		players[i].flamelength = READUINT8(save->p);
 
@@ -1136,6 +1146,7 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].trickboostpower = READUINT32(save->p);
 		players[i].trickboostdecay = READUINT8(save->p);
 		players[i].trickboost = READUINT8(save->p);
+		players[i].tricklock = READUINT8(save->p);
 
 		players[i].dashRingPullTics = READUINT8(save->p);
 		players[i].dashRingPushTics = READUINT8(save->p);
@@ -1158,6 +1169,7 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].typing_duration = READUINT8(save->p);
 
 		players[i].kickstartaccel = READUINT8(save->p);
+		players[i].autoring = READUINT8(save->p);
 
 		players[i].stairjank = READUINT8(save->p);
 		players[i].topdriftheld = READUINT8(save->p);
@@ -1182,6 +1194,8 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 
 		players[i].lastsafelap = READUINT8(save->p);
 		players[i].lastsafecheatcheck = READUINT8(save->p);
+
+		players[i].ignoreAirtimeLeniency = READUINT8(save->p);
 
 		players[i].topAccel = READFIXED(save->p);
 
@@ -6059,6 +6073,8 @@ static inline void P_ArchiveMisc(savebuffer_t *save)
 	WRITEUINT8(save->p, (UINT8)grandprixinfo.encore);
 	WRITEUINT8(save->p, (UINT8)grandprixinfo.masterbots);
 
+	WRITEUINT32(save->p, grandprixinfo.specialDamage);
+
 	WRITESTRINGL(save->p, grandprixinfo.cup->name, MAXCUPNAME);
 
 	// Round Queue information
@@ -6206,6 +6222,8 @@ void P_GetBackupCupData(savebuffer_t *save)
 	cupsavedata.encore = (boolean)READUINT8(save->p);
 	boolean masterbots = (boolean)READUINT8(save->p);
 
+	save->p += 4; // specialDamage
+
 	if (masterbots == true)
 		cupsavedata.difficulty = KARTGP_MASTER;
 
@@ -6254,6 +6272,8 @@ static boolean P_UnArchiveSPGame(savebuffer_t *save)
 	grandprixinfo.gamespeed = READUINT8(save->p);
 	grandprixinfo.encore = (boolean)READUINT8(save->p);
 	grandprixinfo.masterbots = (boolean)READUINT8(save->p);
+
+	grandprixinfo.specialDamage = READUINT32(save->p);
 
 	// Find the relevant cup.
 	char cupname[MAXCUPNAME];

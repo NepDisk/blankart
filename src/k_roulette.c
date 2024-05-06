@@ -511,7 +511,7 @@ UINT32 K_GetItemRouletteDistance(const player_t *player, UINT8 numPlayers)
 	pdis = K_UndoMapScaling(pdis);
 	pdis = K_ScaleItemDistance(pdis, numPlayers);
 
-	if (player->bot && player->botvars.rival)
+	if (player->bot && (player->botvars.rival || cv_levelskull.value))
 	{
 		// Rival has better odds :)
 		pdis = FixedMul(pdis, FRANTIC_ITEM_SCALE);
@@ -563,6 +563,18 @@ static boolean K_DenyShieldOdds(kartitems_t item)
 	}
 
 	return false;
+}
+
+static boolean K_DenyAutoRouletteOdds(kartitems_t item)
+{
+	// Deny items that are too hard for newbies
+	switch (item)
+	{
+		case KITEM_GARDENTOP:
+			return true;
+		default:
+			return false;
+	}
 }
 
 /*--------------------------------------------------
@@ -700,7 +712,7 @@ INT32 K_KartGetItemOdds(const player_t *player, itemroulette_t *const roulette, 
 	if (player != NULL)
 	{
 		bot = player->bot;
-		conditions.rival = (bot == true && player->botvars.rival == true);
+		conditions.rival = (bot == true && (player->botvars.rival || cv_levelskull.value));
 		position = player->position;
 	}
 
@@ -736,6 +748,14 @@ INT32 K_KartGetItemOdds(const player_t *player, itemroulette_t *const roulette, 
 	if (K_DenyShieldOdds(item))
 	{
 		return 0;
+	}
+
+	if (roulette && roulette->autoroulette == true)
+	{
+		if (K_DenyAutoRouletteOdds(item))
+		{
+			return 0;
+		}
 	}
 
 	if (gametype == GT_BATTLE)
@@ -1356,7 +1376,7 @@ void K_FillItemRouletteData(const player_t *player, itemroulette_t *const roulet
 	}
 	else if (K_TimeAttackRules() == true)
 	{
-		kartitems_t *presetlist = K_KartItemReelRingSneaker;
+		kartitems_t *presetlist = NULL;
 
 		// If the objective is not to go fast, it's to cause serious damage.
 		if (battleprisons == true)
@@ -1367,10 +1387,55 @@ void K_FillItemRouletteData(const player_t *player, itemroulette_t *const roulet
 		{
 			presetlist = K_KartItemReelSPBAttack;
 		}
-
-		for (i = 0; presetlist[i] != KITEM_NONE; i++)
+		else if (gametype == GT_TUTORIAL)
 		{
-			K_PushToRouletteItemList(roulette, presetlist[i]);
+			presetlist = K_KartItemReelRingSneaker;
+		}
+
+		if (presetlist != NULL)
+		{
+			for (i = 0; presetlist[i] != KITEM_NONE; i++)
+			{
+				K_PushToRouletteItemList(roulette, presetlist[i]);
+			}
+		}
+		else
+		{
+			// New FREE PLAY behavior;
+			// every item in the game!
+
+			// Create the same item reel given the same inputs.
+			P_SetRandSeed(PR_ITEM_ROULETTE, ITEM_REEL_SEED);
+
+			for (i = 1; i < NUMKARTRESULTS; i++)
+			{
+				if (K_ItemEnabled(i) == true)
+				{
+					spawnChance[i] = ( totalSpawnChance += 1 );
+				}
+			}
+
+			while (totalSpawnChance > 0)
+			{
+				rngRoll = P_RandomKey(PR_ITEM_ROULETTE, totalSpawnChance);
+				for (i = 1; i < NUMKARTRESULTS && spawnChance[i] <= rngRoll; i++)
+				{
+					continue;
+				}
+
+				K_PushToRouletteItemList(roulette, i);
+
+				for (; i < NUMKARTRESULTS; i++)
+				{
+					// Be sure to fix the remaining items' odds too.
+					if (spawnChance[i] > 0)
+					{
+						spawnChance[i]--;
+					}
+				}
+
+				totalSpawnChance--;
+			}
 		}
 
 		return;
@@ -1630,7 +1695,7 @@ void K_KartItemRoulette(player_t *const player, ticcmd_t *const cmd)
 		else if (roulette->autoroulette)
 		{
 			// confirmItem = (roulette->speed > 15);
-			confirmItem = (roulette->elapsed == TICRATE*2);
+			confirmItem = (roulette->elapsed >= TICRATE*2);
 		}
 		else
 		{
@@ -1642,7 +1707,7 @@ void K_KartItemRoulette(player_t *const player, ticcmd_t *const cmd)
 	// If the roulette finishes or the player presses BT_ATTACK, stop the roulette and calculate the item.
 	// I'm returning via the exact opposite, however, to forgo having another bracket embed. Same result either way, I think.
 	// Finally, if you get past this check, now you can actually start calculating what item you get.
-	if (confirmItem == true && (player->itemflags & (IF_ITEMOUT|IF_EGGMANOUT|IF_USERINGS)) == 0)
+	if (confirmItem == true && ((roulette->autoroulette) || (player->itemflags & (IF_ITEMOUT|IF_EGGMANOUT|IF_USERINGS)) == 0))
 	{
 		if (roulette->eggman == true)
 		{

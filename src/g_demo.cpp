@@ -162,7 +162,28 @@ demoghost *ghosts = NULL;
 // - 0x0009 (older staff ghosts)
 //   - Player names, skin names and color names were 16
 //     bytes. See get_buffer_sizes().
-#define DEMOVERSION 0x000A
+// - 0x000A (Ring Racers v2.0)
+//   - A bug was preventing control after ending a drift.
+//     Older behavior is kept around for staff ghost compat.
+//   - Also, polyobject bounce-back was fixed!
+// - 0x000B (Ring Racers v2.1 + In dev revisions)
+//   - SPB cup TA replays were recorded at this time
+//   - Slope physics changed with a scaling fix
+// - 0x000C (Ring Racers v2.2)
+
+#define DEMOVERSION 0x000C
+
+boolean G_CompatLevel(UINT16 level)
+{
+	if (demo.playback)
+	{
+		// Check gameplay differences for older ghosts
+		return (demo.version <= level);
+	}
+
+	return false;
+}
+
 #define DEMOHEADER  "\xF0" "KartReplay" "\x0F"
 
 #define DF_ATTACKMASK   (ATTACKING_TIME|ATTACKING_LAP|ATTACKING_SPB) // This demo contains time/lap data
@@ -184,6 +205,7 @@ demoghost *ghosts = NULL;
 #define DEMO_SHRINKME		0x04
 #define DEMO_BOT			0x08
 #define DEMO_AUTOROULETTE	0x10
+#define DEMO_AUTORING		0x20
 
 // For demos
 #define ZT_FWD		0x0001
@@ -2289,6 +2311,8 @@ void G_BeginRecording(void)
 				i |= DEMO_KICKSTART;
 			if (player->pflags & PF_AUTOROULETTE)
 				i |= DEMO_AUTOROULETTE;
+			if (player->pflags & PF_AUTORING)
+				i |= DEMO_AUTORING;
 			if (player->pflags & PF_SHRINKME)
 				i |= DEMO_SHRINKME;
 			if (player->bot == true)
@@ -2501,6 +2525,8 @@ UINT8 G_CmpDemoTime(char *oldname, char *newname)
 	{
 	case DEMOVERSION: // latest always supported
 	case 0x0009: // older staff ghosts
+	case 0x000A: // older staff ghosts
+	case 0x000B: // older staff ghosts
 		break;
 	// too old, cannot support.
 	default:
@@ -2650,6 +2676,8 @@ void G_LoadDemoInfo(menudemo_t *pdemo, boolean allownonmultiplayer)
 	{
 	case DEMOVERSION: // latest always supported
 	case 0x0009: // older staff ghosts
+	case 0x000A: // older staff ghosts
+	case 0x000B: // older staff ghosts
 		if (P_SaveBufferRemaining(&info) < 64)
 		{
 			goto corrupt;
@@ -3077,6 +3105,8 @@ void G_DoPlayDemoEx(const char *defdemoname, lumpnum_t deflumpnum)
 	{
 	case DEMOVERSION: // latest always supported
 	case 0x0009: // older staff ghosts
+	case 0x000A: // older staff ghosts
+	case 0x000B: // older staff ghosts
 		break;
 	// too old, cannot support.
 	default:
@@ -3362,6 +3392,11 @@ void G_DoPlayDemoEx(const char *defdemoname, lumpnum_t deflumpnum)
 		else
 			players[p].pflags &= ~PF_AUTOROULETTE;
 
+		if (flags & DEMO_AUTORING)
+			players[p].pflags |= PF_AUTORING;
+		else
+			players[p].pflags &= ~PF_AUTORING;
+
 		if (flags & DEMO_SHRINKME)
 			players[p].pflags |= PF_SHRINKME;
 		else
@@ -3530,6 +3565,8 @@ void G_AddGhost(savebuffer_t *buffer, const char *defdemoname)
 	{
 	case DEMOVERSION: // latest always supported
 	case 0x0009: // older staff ghosts
+	case 0x000A: // older staff ghosts
+	case 0x000B: // older staff ghosts
 		break;
 	// too old, cannot support.
 	default:
@@ -3786,6 +3823,8 @@ staffbrief_t *G_GetStaffGhostBrief(UINT8 *buffer)
 	{
 		case DEMOVERSION: // latest always supported
 		case 0x0009: // older staff ghosts
+		case 0x000A: // older staff ghosts
+		case 0x000B: // older staff ghosts
 			break;
 
 		// too old, cannot support.
@@ -4037,7 +4076,7 @@ boolean G_CheckDemoStatus(void)
 			else if (wasmodeattacking)
 				M_EndModeAttackRun();
 			else if (demo.attract == DEMO_ATTRACT_CREDITS)
-				F_ContinueCredits();
+				F_DeferContinueCredits();
 			else
 				D_SetDeferredStartTitle(true);
 		}
@@ -4120,7 +4159,7 @@ void G_SaveDemo(void)
 				strindex++;
 				dash = false;
 			}
-			else if (!dash)
+			else if (strindex && !dash)
 			{
 				demo_slug[strindex] = '-';
 				strindex++;
@@ -4128,12 +4167,31 @@ void G_SaveDemo(void)
 			}
 		}
 
-		demo_slug[strindex] = 0;
-		if (dash) demo_slug[strindex-1] = 0;
+		if (dash && strindex)
+		{
+			strindex--;
+		}
+		demo_slug[strindex] = '\0';
 
-		writepoint = strstr(strrchr(demoname, *PATHSEP), "-") + 1;
-		demo_slug[128 - (writepoint - demoname) - 4] = 0;
-		sprintf(writepoint, "%s.lmp", demo_slug);
+		if (demo_slug[0] != '\0')
+		{
+			// Slug is valid, write the chosen filename.
+			writepoint = strstr(strrchr(demoname, *PATHSEP), "-") + 1;
+			demo_slug[128 - (writepoint - demoname) - 4] = 0;
+			sprintf(writepoint, "%s.lmp", demo_slug);
+		}
+		else if (demo.titlename[0] == '\0')
+		{
+			// Slug is completely blank? Will crash if we attempt to save
+			// No bailout because empty seems like a good "no thanks" choice
+			G_ResetDemoRecording();
+			return;
+		}
+		// If a title that is invalid is provided, the user clearly wanted
+		// to save. But we can't do so at that name, so we only apply the
+		// title INSIDE the file, not in the naked filesystem.
+		// (A hypothetical example is bamboozling bot behaviour causing
+		// a player to write "?????????".) ~toast 010524
 	}
 
 	length = *(UINT32 *)demoinfo_p;
@@ -4159,8 +4217,11 @@ void G_SaveDemo(void)
 			if (gamedata->eversavedreplay == false)
 			{
 				gamedata->eversavedreplay = true;
-				M_UpdateUnlockablesAndExtraEmblems(true, true);
-				G_SaveGameData();
+				// The following will IMMEDIATELY happen on either next level load
+				// or returning to menu, so don't make the sound just to get cut off
+				//M_UpdateUnlockablesAndExtraEmblems(true, true);
+				//G_SaveGameData();
+				gamedata->deferredsave = true;
 			}
 		}
 		else

@@ -212,6 +212,7 @@ static patch_t *kp_bossret[4];
 static patch_t *kp_trickcool[2];
 
 patch_t *kp_autoroulette;
+patch_t *kp_autoring;
 
 patch_t *kp_capsuletarget_arrow[2][2];
 patch_t *kp_capsuletarget_icon[2];
@@ -237,6 +238,7 @@ patch_t *kp_button_up[2];
 patch_t *kp_button_down[2];
 patch_t *kp_button_right[2];
 patch_t *kp_button_left[2];
+patch_t *kp_button_dpad[2];
 
 static void K_LoadButtonGraphics(patch_t *kp[2], int letter)
 {
@@ -780,6 +782,7 @@ void K_LoadKartHUDGraphics(void)
 	HU_UpdatePatch(&kp_trickcool[1], "K_COOL2");
 
 	HU_UpdatePatch(&kp_autoroulette, "A11YITEM");
+	HU_UpdatePatch(&kp_autoring, "A11YRING");
 
 	sprintf(buffer, "K_BOSB0x");
 	for (i = 0; i < 8; i++)
@@ -910,6 +913,7 @@ void K_LoadKartHUDGraphics(void)
 	K_LoadButtonGraphics(kp_button_down, 'K');
 	K_LoadButtonGraphics(kp_button_right, 'L');
 	K_LoadButtonGraphics(kp_button_left, 'M');
+	K_LoadButtonGraphics(kp_button_dpad, 'T');
 }
 
 // For the item toggle menu
@@ -3248,6 +3252,19 @@ static void K_drawKartAccessibilityIcons(boolean gametypeinfoshown, INT32 fx)
         else
             fx += 12 + 1;
     }
+
+	if (stplyr->pflags & PF_AUTORING)
+    {
+        if (mirror)
+            fx -= 14;
+
+        V_DrawScaledPatch(fx, fy-1, V_SLIDEIN|splitflags, kp_autoring);
+
+        if (mirror)
+            fx--;
+        else
+            fx += 14 + 1;
+    }
 }
 
 static void K_drawKartSpeedometer(boolean gametypeinfoshown)
@@ -3962,7 +3979,7 @@ playertagtype_t K_WhichPlayerTag(player_t *p)
 	}
 	else if (p->bot)
 	{
-		if (p->botvars.rival == true)
+		if (p->botvars.rival == true || cv_levelskull.value)
 		{
 			return PLAYERTAG_RIVAL;
 		}
@@ -5536,7 +5553,9 @@ void K_drawKartFreePlay(void)
 static void
 Draw_party_ping (int ss, INT32 snap)
 {
-	HU_drawMiniPing(0, 0, playerpingtable[displayplayers[ss]], V_SPLITSCREEN|V_SNAPTOTOP|snap);
+	UINT32 ping = playerpingtable[displayplayers[ss]];
+	UINT32 mindelay = playerdelaytable[displayplayers[ss]];
+	HU_drawMiniPing(0, 0, ping, mindelay, V_SPLITSCREEN|V_SNAPTOTOP|snap);
 }
 
 static void
@@ -5936,6 +5955,9 @@ void K_AddMessageForPlayer(player_t *player, const char *msg, boolean interrupt,
 		return;
 
 	if (player && !P_IsDisplayPlayer(player))
+		return;
+
+	if (player && K_PlayerUsesBotMovement(player))
 		return;
 
 	messagestate_t *state = &messagestates[G_PartyPosition(player - players)];

@@ -137,7 +137,7 @@ void K_BattleAwardHit(player_t *player, player_t *victim, mobj_t *inflictor, UIN
 void K_RemoveGrowShrink(player_t *player);
 boolean K_IsBigger(mobj_t *compare, mobj_t *other);
 void K_SpinPlayer(player_t *player, mobj_t *inflictor, mobj_t *source, INT32 type);
-void K_TumblePlayer(player_t *player, mobj_t *inflictor, mobj_t *source);
+void K_TumblePlayer(player_t *player, mobj_t *inflictor, mobj_t *source, boolean soften);
 void K_TumbleInterrupt(player_t *player);
 angle_t K_StumbleSlope(angle_t angle, angle_t pitch, angle_t roll);
 void K_StumblePlayer(player_t *player);
@@ -201,6 +201,7 @@ void K_StripOther(player_t *player);
 void K_MomentumToFacing(player_t *player);
 boolean K_ApplyOffroad(const player_t *player);
 boolean K_SlopeResistance(const player_t *player);
+fixed_t K_PlayerTripwireSpeedThreshold(const player_t *player);
 tripwirepass_t K_TripwirePassConditions(const player_t *player);
 boolean K_TripwirePass(const player_t *player);
 boolean K_MovingHorizontally(mobj_t *mobj);
@@ -275,6 +276,8 @@ void K_MakeObjectReappear(mobj_t *mo);
 void K_BumperInflate(player_t *player);
 
 boolean K_ThunderDome(void);
+
+boolean K_PlayerCanUseItem(player_t *player);
 
 #ifdef __cplusplus
 } // extern "C"

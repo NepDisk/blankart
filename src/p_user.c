@@ -1917,7 +1917,11 @@ static void P_3dMovement(player_t *player)
 	vector3_t totalthrust;
 
 	totalthrust.x = totalthrust.y = 0; // I forget if this is needed
-	totalthrust.z = FRACUNIT*P_MobjFlip(player->mo)/3; // A bit of extra push-back on slopes
+
+	if (G_CompatLevel(0x000B)) // Ring Racers 2.1 behavior
+		totalthrust.z = FRACUNIT*P_MobjFlip(player->mo)/3; // A bit of extra push-back on slopes
+	else
+		totalthrust.z = FixedMul(mapobjectscale, K_GrowShrinkSpeedMul(player))*P_MobjFlip(player->mo)/3; // A bit of extra push-back on slopes, but scaled for mapobject and player size
 
 	if (K_SlopeResistance(player) == true)
 	{
@@ -2338,7 +2342,17 @@ static void P_UpdatePlayerAngle(player_t *player)
 		// That means undoing them takes the same amount of time as doing them.
 		// This can lead to oscillating death spiral states on a multi-tic correction, as we swing past the target angle.
 		// So before we go into death-spirals, if our predicton is _almost_ right... 
-		angle_t leniency = (4*ANG1/3) * min(player->cmd.latency, 6);
+		angle_t leniency_base;
+		if (G_CompatLevel(0x000A))
+		{
+			// Compat level for 2.0 staff ghosts
+			leniency_base = 4 * ANG1 / 3;
+		}
+		else
+		{
+			leniency_base = 8 * ANG1 / 3;
+		}
+		angle_t leniency = leniency_base * min(player->cmd.latency, 6);
 		// Don't force another turning tic, just give them the desired angle!
 
 		if (targetDelta == angleChange || (maxTurnRight == 0 && maxTurnLeft == 0))

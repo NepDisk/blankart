@@ -840,6 +840,7 @@ static void K_PlayerJustBumped(player_t *player)
 	}
 
 	player->justbumped = bumptime;
+	player->noEbrakeMagnet = ebraketime;
 	player->spindash = 0;
 
 	// If spinouttimer is not set yet but could be set later,
@@ -983,12 +984,14 @@ boolean K_KartBouncing(mobj_t *mobj1, mobj_t *mobj2)
 	if (mobj1->player && mobj1->player->justbumped && !K_JustBumpedException(mobj2))
 	{
 		mobj1->player->justbumped = bumptime;
+		mobj1->player->noEbrakeMagnet = ebraketime;
 		return false;
 	}
 
 	if (mobj2->player && mobj2->player->justbumped && !K_JustBumpedException(mobj1))
 	{
 		mobj2->player->justbumped = bumptime;
+		mobj2->player->noEbrakeMagnet = ebraketime;
 		return false;
 	}
 
@@ -1487,7 +1490,7 @@ static boolean K_TryDraft(player_t *player, mobj_t *dest, fixed_t minDist, fixed
 		fixed_t add = (FRACUNIT/200) + ((9 - player->kartspeed) * ((3*FRACUNIT)/1600));;
 		player->draftpower += add;
 
-		if (player->bot && player->botvars.rival)
+		if (player->bot && (player->botvars.rival || cv_levelskull.value))
 		{
 			// Double speed for the rival!
 			player->draftpower += add;
@@ -2862,11 +2865,12 @@ void K_TryHurtSoundExchange(mobj_t *victim, mobj_t *attacker)
 	attacker->player->confirmVictim = (victim->player - players);
 	attacker->player->confirmVictimDelay = TICRATE/2;
 
+	const INT32 followerskin = K_GetEffectiveFollowerSkin(attacker->player);
 	if (attacker->player->follower != NULL
-		&& attacker->player->followerskin >= 0
-		&& attacker->player->followerskin < numfollowers)
+		&& followerskin >= 0
+		&& followerskin < numfollowers)
 	{
-		const follower_t *fl = &followers[attacker->player->followerskin];
+		const follower_t *fl = &followers[followerskin];
 		attacker->player->follower->movecount = fl->hitconfirmtime; // movecount is used to play the hitconfirm animation for followers.
 	}
 }
@@ -2967,10 +2971,32 @@ boolean K_SlopeResistance(const player_t *player)
 	return false;
 }
 
+fixed_t K_PlayerTripwireSpeedThreshold(const player_t *player)
+{
+	fixed_t required_speed = 2 * K_GetKartSpeed(player, false, false); // 200%
+
+	if (player->offroad && K_ApplyOffroad(player))
+	{
+		// Increase to 300% if you're lawnmowering.
+		required_speed = (required_speed * 3) / 2;
+	}
+
+	if (player->botvars.rubberband > FRACUNIT && K_PlayerUsesBotMovement(player) == true)
+	{
+		// Make it harder for bots to do this when rubberbanding.
+
+		// This is actually biased really hard against the bot,
+		// because the bot rubberbanding speed increase is
+		// decreased with other boosts.
+
+		required_speed = FixedMul(required_speed, player->botvars.rubberband);
+	}
+
+	return required_speed;
+}
+
 tripwirepass_t K_TripwirePassConditions(const player_t *player)
 {
-	UINT8 tripwirereq = player->offroad ? 3 : 2;
-
 	if (
 			player->invincibilitytimer ||
 			player->sneakertimer
@@ -2979,7 +3005,8 @@ tripwirepass_t K_TripwirePassConditions(const player_t *player)
 
 	if (
 			player->flamedash ||
-			(player->speed > (tripwirereq * K_GetKartSpeed(player, false, false)) && player->tripwireReboundDelay == 0)
+			((player->speed > K_PlayerTripwireSpeedThreshold(player)) && player->tripwireReboundDelay == 0) ||
+			player->fakeBoost
 	)
 		return TRIPWIRE_BOOST;
 
@@ -3053,7 +3080,7 @@ boolean K_WaterRun(mobj_t *mobj)
 				return K_IsHoldingDownTop(mobj->player) == false;
 			}
 
-			minspeed = 2 * K_GetKartSpeed(mobj->player, false, false); // 200%
+			minspeed = K_PlayerTripwireSpeedThreshold(mobj->player);
 
 			if (mobj->player->speed < minspeed / 5) // 40%
 			{
@@ -3347,11 +3374,43 @@ fixed_t K_GetSpindashChargeSpeed(const player_t *player)
 	// more speed for higher weight & speed
 	// Tails = +16.94%, Fang = +34.94%, Mighty = +34.94%, Metal = +43.61%
 	// (can be higher than this value when overcharged)
-	const fixed_t val = (10*FRACUNIT/277) + (((player->kartspeed + player->kartweight) + 2) * FRACUNIT) / 45;
+
+	// The above comment is now strictly incorrect and I can't be assed to do the math properly.
+	// 2.2 introduces a power fudge to compensate for the removal of spindash overcharge. -Tyron
+	fixed_t val = (10*FRACUNIT/277) + (((player->kartspeed + player->kartweight) + 2) * FRACUNIT) / 45;
+
+	// 2.2 - Improved Spindash
+	if (!G_CompatLevel(0x000A))
+	{
+		if (gametyperules & GTR_CIRCUIT)
+			val = 5 * val / 4;
+	}
 
 	// Old behavior before desperation spindash
 	// return (gametyperules & GTR_CLOSERPLAYERS) ? (4 * val) : val;
 	return val;
+}
+
+static fixed_t K_RingDurationBoost(const player_t *player)
+{
+	fixed_t ret = FRACUNIT;
+
+	if (K_PlayerUsesBotMovement(player))
+	{
+		// x2.0 for Lv. 9
+		const fixed_t modifier = K_BotMapModifier();
+		fixed_t add = ((player->botvars.difficulty-1) * modifier) / (DIFFICULTBOT-1);
+
+		ret += add;
+
+		if (player->botvars.rival == true || cv_levelskull.value)
+		{
+			// x2.0 for Rival
+			ret *= 2;
+		}
+	}
+
+	return ret;
 }
 
 // v2 almost broke sliptiding when it fixed turning bugs!
@@ -3418,6 +3477,16 @@ static void K_GetKartBoostPower(player_t *player)
 	if (player->flamedash) // Flame Shield dash
 	{
 		fixed_t dash = K_FlameShieldDashVar(player->flamedash);
+		ADDBOOST(
+			dash, // + infinite top speed
+			3*FRACUNIT, // + 300% acceleration
+			FixedMul(FixedDiv(dash, FRACUNIT/2), SLIPTIDEHANDLING/2) // + infinite handling
+		);
+	}
+
+	if (player->counterdash) // "Fake Flame" (bubble, voltage)
+	{
+		fixed_t dash = K_FlameShieldDashVar(player->counterdash);
 		ADDBOOST(
 			dash, // + infinite top speed
 			3*FRACUNIT, // + 300% acceleration
@@ -3508,7 +3577,12 @@ static void K_GetKartBoostPower(player_t *player)
 	{
 		// This one's a little special: we add extra top speed per tic of ringboost stored up, to allow for Ring Box to really rocket away.
 		// (We compensate when decrementing ringboost to avoid runaway exponential scaling hell.)
-		ADDBOOST(FRACUNIT/4 + (FRACUNIT / 1750 * (player->ringboost)), 4*FRACUNIT, Easing_InCubic(min(FRACUNIT, player->ringboost * FRACUNIT / (TICRATE*12)), 0, 2*SLIPTIDEHANDLING/5)); // + 20% + ???% top speed, + 400% acceleration, +???% handling
+		fixed_t rb = FixedDiv(player->ringboost * FRACUNIT, max(FRACUNIT, K_RingDurationBoost(player)));
+		ADDBOOST(
+			FRACUNIT/4 + FixedMul(FRACUNIT / 1750, rb),
+			4*FRACUNIT,
+			Easing_InCubic(min(FRACUNIT, rb / (TICRATE*12)), 0, 2*SLIPTIDEHANDLING/5)
+		); // + 20% + ???% top speed, + 400% acceleration, +???% handling
 	}
 
 	if (player->eggmanexplode) // Ready-to-explode
@@ -3634,7 +3708,7 @@ fixed_t K_GetKartSpeed(const player_t *player, boolean doboostpower, boolean dor
 			fixed_t add = ((player->botvars.difficulty-1) * FixedMul(FRACUNIT / 10, modifier)) / (DIFFICULTBOT-1);
 			finalspeed = FixedMul(finalspeed, FRACUNIT + add);
 
-			if (player->bot && player->botvars.rival)
+			if (player->bot && (player->botvars.rival || cv_levelskull.value))
 			{
 				// +10% top speed for the rival
 				finalspeed = FixedMul(finalspeed, 11*FRACUNIT/10);
@@ -4204,7 +4278,7 @@ static fixed_t K_TumbleZ(mobj_t *mo, fixed_t input)
 	return FixedMul(input, -gravityAdjust);
 }
 
-void K_TumblePlayer(player_t *player, mobj_t *inflictor, mobj_t *source)
+void K_TumblePlayer(player_t *player, mobj_t *inflictor, mobj_t *source, boolean soften)
 {
 	(void)source;
 
@@ -4228,9 +4302,16 @@ void K_TumblePlayer(player_t *player, mobj_t *inflictor, mobj_t *source)
 
 	if (inflictor && !P_MobjWasRemoved(inflictor))
 	{
-		const fixed_t addHeight = FixedHypot(FixedHypot(inflictor->momx, inflictor->momy) / 2, FixedHypot(player->mo->momx, player->mo->momy) / 2);
+		fixed_t addHeight = FixedHypot(FixedHypot(inflictor->momx, inflictor->momy) / 2, FixedHypot(player->mo->momx, player->mo->momy) / 2);
+		if (soften)
+			addHeight = FixedMul(addHeight, 6*FRACUNIT/10);
 		player->tumbleHeight += (addHeight / player->mo->scale);
 		player->tumbleHeight = min(200, player->tumbleHeight);
+	}
+
+	if (soften)
+	{
+		player->tumbleBounces = 2;
 	}
 
 	S_StartSound(player->mo, sfx_s3k9b);
@@ -4812,7 +4893,7 @@ void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 {
 	// We are either softlocked or wildly misbehaving. Stop that!
 	if (state == TRIPSTATE_BLOCKED && player->tripwireReboundDelay && (player->speed > 5 * K_GetKartSpeed(player, false, false)))
-		K_TumblePlayer(player, NULL, NULL);
+		K_TumblePlayer(player, NULL, NULL, false);
 
 	if (state == TRIPSTATE_PASSED)
 	{
@@ -4840,6 +4921,8 @@ void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 	{
 		S_StartSound(player->mo, sfx_kc40);
 		player->tripwireReboundDelay = 60;
+		if (player->curshield == KSHIELD_BUBBLE)
+			player->tripwireReboundDelay *= 2;
 	}
 
 	player->tripwireState = state;
@@ -4851,9 +4934,9 @@ void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 	}
 
 	if (state == TRIPSTATE_PASSED && player->spinouttimer &&
-			player->speed > 2 * K_GetKartSpeed(player, false, true))
+			player->speed > K_PlayerTripwireSpeedThreshold(player))
 	{
-		K_TumblePlayer(player, NULL, NULL);
+		K_TumblePlayer(player, NULL, NULL, false);
 	}
 
 	player->tripwireUnstuck += 10;
@@ -8794,6 +8877,18 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->ringdelay)
 		player->ringdelay--;
 
+	if (player->trickpanel == TRICKSTATE_READY)
+	{
+		if (!player->throwdir && !cmd->turning)
+			player->tricklock = TICRATE/10;
+		else if (player->tricklock)
+			player->tricklock--;
+	}
+	else
+	{
+		player->tricklock = 0;
+	}
+
 	if (P_PlayerInPain(player))
 	{
 		player->ringboost = 0;
@@ -8835,6 +8930,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		else if (player->flamedash == 3 && player->curshield == KSHIELD_FLAME) // "Why 3?" We can't blend sounds so this is the best shit I've got
 			S_StartSoundAtVolume(player->mo, sfx_fshld3, 255/3);
 	}
+
+	if (player->counterdash)
+		player->counterdash--;
 
 	if (player->sneakertimer && player->wipeoutslow > 0 && player->wipeoutslow < wipeoutslowtime+1)
 		player->wipeoutslow = wipeoutslowtime+1;
@@ -8925,7 +9023,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		}
 	}
 
-	if (player->invincibilitytimer && (onground == true || K_PowerUpRemaining(player, POWERUP_SMONITOR)))
+	if (player->invincibilitytimer && (player->ignoreAirtimeLeniency > 0 || onground == true || K_PowerUpRemaining(player, POWERUP_SMONITOR)))
 		player->invincibilitytimer--;
 
 	if (!player->invincibilitytimer)
@@ -8961,7 +9059,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if ((player->respawn.state == RESPAWNST_NONE) && player->growshrinktimer != 0)
 	{
-		if (player->growshrinktimer > 0 && onground == true)
+		if (player->growshrinktimer > 0 && (onground == true || player->ignoreAirtimeLeniency > 0))
 			player->growshrinktimer--;
 		if (player->growshrinktimer < 0)
 			player->growshrinktimer++;
@@ -8986,6 +9084,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	{
 		player->finalfailsafe = 0;
 	}
+
+	if (player->ignoreAirtimeLeniency)
+		player->ignoreAirtimeLeniency--;
 
 	if (player->freeRingShooterCooldown && !player->mo->hitlag)
 		player->freeRingShooterCooldown--;
@@ -9036,7 +9137,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	{
 		if (rainbowstartavailable && ((leveltime <= starttime) || (leveltime - starttime < 10*TICRATE)))
 		{
-			player->nocontrol = 50;
+			player->nocontrol = TICRATE/2;
 			player->mo->renderflags |= RF_DONTDRAW;
 			player->mo->flags |= MF_NOCLIPTHING;
 		}
@@ -9060,6 +9161,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (player->hyudorotimer)
 		player->hyudorotimer--;
+
+	if (player->fakeBoost)
+		player->fakeBoost--;
 
 	if (player->bumperinflate && player->mo->hitlag == 0)
 	{
@@ -9113,6 +9217,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (player->justbumped > 0)
 		player->justbumped--;
+
+	if (player->noEbrakeMagnet > 0)
+		player->noEbrakeMagnet--;
 
 	if (player->defenseLockout)
 	{
@@ -10257,27 +10364,13 @@ static void K_UpdatePlayerWaypoints(player_t *const player)
 INT32 K_GetKartRingPower(const player_t *player, boolean boosted)
 {
 	fixed_t ringPower = ((9 - player->kartspeed) + (9 - player->kartweight)) * (FRACUNIT/2);
-	fixed_t basePower = ringPower;
 
-	// FIXME: Bot ringboost adjustments can award negative ringboost per ring, which seems bad.
-	// Revisit these values if bot ringboost needs to respond to low-complexity maps better,
-	// but for now we're just lazily making sure that bots never have their ringboost "boosted"
-	// below the value that a player would have when playing the same stat combo.
-	if (boosted == true && K_PlayerUsesBotMovement(player))
+	if (boosted == true)
 	{
-		// x2.0 for Lv. 9
-		const fixed_t modifier = K_BotMapModifier();
-		fixed_t add = ((player->botvars.difficulty-1) * modifier) / (DIFFICULTBOT-1);
-		ringPower = FixedMul(ringPower, FRACUNIT + add);
-
-		if (player->botvars.rival == true)
-		{
-			// x2.0 for Rival
-			ringPower = FixedMul(ringPower, 2*FRACUNIT);
-		}
+		ringPower = FixedMul(ringPower, K_RingDurationBoost(player));
 	}
 
-	return max(ringPower, basePower) / FRACUNIT;
+	return max(ringPower / FRACUNIT, 1);
 }
 
 // Returns false if this player being placed here causes them to collide with any other player
@@ -10336,7 +10429,7 @@ static INT16 K_GetKartDriftValue(const player_t *player, fixed_t countersteer)
 	}
 #endif
 
-	return basedrift + (FixedMul(driftadjust * FRACUNIT, countersteer) / FRACUNIT);
+	return basedrift + FixedMul(driftadjust, countersteer);
 }
 
 INT16 K_UpdateSteeringValue(INT16 inputSteering, INT16 destSteering)
@@ -10417,10 +10510,14 @@ INT16 K_GetKartTurnValue(const player_t *player, INT16 turnvalue)
 		return 0;
 	}
 
-	if (player->trickpanel == TRICKSTATE_READY || player->trickpanel == TRICKSTATE_FORWARD)
+	// Staff ghosts - direction-only trickpanel behavior
+	if (G_CompatLevel(0x000A) || K_PlayerUsesBotMovement(player))
 	{
-		// Forward trick or rising from trickpanel
-		return 0;
+		if (player->trickpanel == TRICKSTATE_READY || player->trickpanel == TRICKSTATE_FORWARD)
+		{
+			// Forward trick or rising from trickpanel
+			return 0;
+		}
 	}
 
 	if (player->justDI > 0)
@@ -10456,7 +10553,24 @@ INT16 K_GetKartTurnValue(const player_t *player, INT16 turnvalue)
 	}
 	else
 	{
-		p_speed = min(currentSpeed, (p_maxspeed * 2));
+		if (G_CompatLevel(0x000A))
+		{
+			// Compat level for 2.0 staff ghosts
+			p_speed = min(currentSpeed, p_maxspeed * 2);
+		}
+		else
+		{
+			// Turning dampens as you go faster, but at extremely high speeds, keeping some control is important.
+			// Dampening is applied in two stages, one harsh and one soft.
+			// The harsh window is larger for characters with better baseline maneuverability.
+			fixed_t stageSpeed = min(currentSpeed, (110 + 2*(9-player->kartweight)) * p_maxspeed/100);
+			if (stageSpeed < currentSpeed)
+			{
+				stageSpeed += (currentSpeed - stageSpeed) / 2;
+			}
+
+			p_speed = min(stageSpeed, p_maxspeed * 2);
+		}
 	}
 
 	if (K_PodiumSequence() == true)
@@ -10477,16 +10591,45 @@ INT16 K_GetKartTurnValue(const player_t *player, INT16 turnvalue)
 
 	if (player->drift != 0 && P_IsObjectOnGround(player->mo))
 	{
-		fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN*FRACUNIT);
-
-		// If we're drifting we have a completely different turning value
-
-		if (player->pflags & PF_DRIFTEND)
+		if (G_CompatLevel(0x000A))
 		{
-			countersteer = FRACUNIT;
-		}
+			// Compat level for 2.0 staff ghosts
+			fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN * FRACUNIT);
 
-		return K_GetKartDriftValue(player, countersteer);
+			if (player->pflags & PF_DRIFTEND)
+			{
+				countersteer = FRACUNIT;
+			}
+
+			return K_GetKartDriftValue(player, countersteer);
+		}
+		else
+		{
+			if (player->pflags & PF_DRIFTEND)
+			{
+				// Sal: This was an unintended control regression from SRB2Kart, but we
+				// kind of prefer how it feels. It kind of sucks because the original
+				// eats turning entirely for a few tics. Let's do a healthy medium between
+				// SRB2Kart and RR: the kick-out value is eased towards normal turning control.
+
+				fixed_t drift_end_term = K_GetKartDriftValue(player, FRACUNIT) * FRACUNIT;
+				fixed_t drift_exit_frac = (abs(player->drift) * FRACUNIT) / 5;
+
+				turnfixed = Easing_InSine(
+					drift_exit_frac,
+					turnfixed,
+					drift_end_term
+				);
+
+				return (turnfixed / FRACUNIT);
+			}
+			else
+			{
+				// If we're drifting we have a completely different turning value
+				fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN * FRACUNIT);
+				return K_GetKartDriftValue(player, countersteer);
+			}
+		}
 	}
 
 	fixed_t finalhandleboost = player->handleboost;
@@ -10496,7 +10639,19 @@ INT16 K_GetKartTurnValue(const player_t *player, INT16 turnvalue)
 	fixed_t topspeed = K_GetKartSpeed(player, false, false);
 	if (K_Sliptiding(player))
 	{
-		finalhandleboost = FixedMul(5*SLIPTIDEHANDLING/4, FixedDiv(player->speed, topspeed));
+		fixed_t sliptide_handle;
+
+		if (G_CompatLevel(0x000A))
+		{
+			// Compat level for 2.0 staff ghosts
+			sliptide_handle = 5 * SLIPTIDEHANDLING / 4;
+		}
+		else
+		{
+			sliptide_handle = 3 * SLIPTIDEHANDLING / 4;
+		}
+
+		finalhandleboost = FixedMul(sliptide_handle, FixedDiv(player->speed, topspeed));
 	}
 
 	if (finalhandleboost > 0 && player->respawn.state == RESPAWNST_NONE)
@@ -10519,6 +10674,18 @@ INT16 K_GetKartTurnValue(const player_t *player, INT16 turnvalue)
 	if (player->trickpanel == TRICKSTATE_LEFT || player->trickpanel == TRICKSTATE_RIGHT)
 	{
 		turnfixed /= 2;
+	}
+
+	// 2.2 - Presteering allowed in trickpanels
+	if (!G_CompatLevel(0x000A) && !K_PlayerUsesBotMovement(player))
+	{
+		if (player->trickpanel == TRICKSTATE_READY || player->trickpanel == TRICKSTATE_FORWARD)
+		{
+			// Forward trick or rising from trickpanel
+			turnfixed /= 2;
+			if (player->tricklock)
+				turnfixed /= (player->tricklock/2 + 1);
+		}
 	}
 
 	return (turnfixed / FRACUNIT);
@@ -10713,10 +10880,21 @@ static void K_KartDrift(player_t *player, boolean onground)
 
 			if (player->trickcharge && dokicker)
 			{
-				player->driftboost += 20;
-				player->wavedashboost += 10;
-				player->wavedashpower = FRACUNIT;
-				P_Thrust(player->mo, pushdir, player->speed / 2);
+				// 2.2 - Egg-friendly trick stuff
+				if (G_CompatLevel(0x000B))
+				{
+					player->driftboost += 20;
+					player->wavedashboost += 10;
+					player->wavedashpower = FRACUNIT;
+					P_Thrust(player->mo, pushdir, player->speed / 2);
+				}
+				else
+				{
+					player->driftboost += TICRATE;
+					player->counterdash += TICRATE/2;
+					P_Thrust(player->mo, pushdir, player->speed / 6);
+				}
+
 				S_StartSound(player->mo, sfx_gshba);
 				player->trickcharge = 0;
 				player->infinitether = TICRATE*2;
@@ -11697,11 +11875,33 @@ static void K_KartSpindash(player_t *player)
 		K_KartSpindashDust(player->mo);
 	}
 
+	// 2.2 - Driftbrake slideoff fastfall prevention
+	if (!G_CompatLevel(0x000A))
+	{
+		if (player->drift && onGround && player->cmd.buttons & BT_BRAKE)
+		{
+			player->pflags |= PF_NOFASTFALL;
+			return;
+		}
+	}
+
 	if (K_PlayerEBrake(player) == false)
 	{
 		player->spindash = 0;
 		player->pflags &= ~PF_NOFASTFALL;
 		return;
+	}
+	else
+	{
+		// 2.2 - More responsive ebrake
+		if (!G_CompatLevel(0x000A))
+		{
+			if (onGround && player->noEbrakeMagnet == 0 && (FixedHypot(player->mo->momx, player->mo->momy) < 20*player->mo->scale))
+			{
+				P_Thrust(player->mo, K_MomentumAngleReal(player->mo) + ANGLE_180, FixedHypot(player->mo->momx, player->mo->momy)/8);
+			}
+		}
+
 	}
 
 	// Handle fast falling behaviors first.
@@ -11776,7 +11976,17 @@ static void K_KartSpindash(player_t *player)
 				// Intentionally a lop-sided trade-off, so the game doesn't become
 				// Funky Kong's Ring Racers.
 
-				P_PlayerRingBurst(player, 1);
+				// 2.2 - No extended ring debt for recovery spindash
+				if (G_CompatLevel(0x000A))
+				{
+					P_PlayerRingBurst(player, 1);
+				}
+				else
+				{
+					if (player->rings > 0)
+						P_PlayerRingBurst(player, 1);
+				}
+
 			}
 
 			if (chargetime > 0)
@@ -11848,7 +12058,36 @@ boolean K_FastFallBounce(player_t *player)
 			fixed_t fallspeed = abs(player->fastfall);
 			P_InstaThrust(player->mo, player->mo->angle, 11*max(minspeed, fallspeed)/10);
 
+			player->ignoreAirtimeLeniency = max(player->ignoreAirtimeLeniency, TICRATE);
+
 			bounce += 3 * mapobjectscale;
+
+			UINT8 i;
+			UINT8 numplayers = 0;
+			if (gametyperules & GTR_CIRCUIT)
+			{
+				for (i = 0; i < MAXPLAYERS; i++)
+				{
+					if (playeringame[i] && !players[i].spectator)
+						numplayers++;
+				}
+			}
+			else
+			{
+				numplayers = 1; // solo behavior
+			}
+
+			if (player->position == 1 && player->positiondelay <= 0 && numplayers != 1)
+			{
+				S_StartSound(player->mo, sfx_kc31);
+				K_StripItems(player);
+				K_AddHitLag(player->mo, 4, false);
+				vector3_t offset = { 0, 0, 0 };
+				K_SpawnSingleHitLagSpark(player->mo, &offset, player->mo->scale*2, 4, 0, player->skincolor);
+			}
+
+			if (player->tripwireReboundDelay)
+				bounce /= 2;
 		}
 		else
 		{
@@ -11861,6 +12100,23 @@ boolean K_FastFallBounce(player_t *player)
 		player->pflags |= PF_UPDATEMYRESPAWN;
 
 		player->fastfall = 0;
+
+		// 2.2 - More lenient fastfall
+		if (!G_CompatLevel(0x000A))
+		{
+			if (player->curshield != KSHIELD_BUBBLE)
+			{
+				// Nudge the player in their facing angle, and provide a little starting momentum if they need it.
+				// The bounce is already a strong tradeoff, so this allows it to be used for saves and get you back into flow.
+				angle_t momangle = K_MomentumAngle(player->mo);
+				fixed_t minspeed = K_GetKartSpeed(player, false, false)/2;
+				fixed_t returnspeed = max(FixedHypot(player->mo->momx, player->mo->momy), minspeed);
+
+				// Initial momentum set uses real speed to avoid some weird twitchy behavior at low XY speed
+				P_InstaThrust(player->mo, momangle, FixedHypot(player->mo->momx, player->mo->momy)/2);
+				P_Thrust(player->mo, player->mo->angle, returnspeed/2);
+			}
+		}
 
 		player->mo->momz = bounce * P_MobjFlip(player->mo);
 
@@ -12368,14 +12624,45 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 		player->instaWhipCharge = min(player->instaWhipCharge, INSTAWHIP_CHARGETIME - 2);
 	}
 
-	if (player && player->mo && player->mo->health > 0 && !player->spectator && !P_PlayerInPain(player) && !mapreset && leveltime > introtime)
+	if (player && player->mo && K_PlayerCanUseItem(player))
 	{
 		// First, the really specific, finicky items that function without the item being directly in your item slot.
 		{
 			// Ring boosting
 			if (player->itemflags & IF_USERINGS)
 			{
-				if ((cmd->buttons & BT_ATTACK) && !player->ringdelay && player->rings > 0)
+				// Auto-Ring
+				UINT8 tiereddelay = 5;
+				player->autoring = false;
+				if (
+					player->pflags & PF_AUTORING
+					&& leveltime > starttime
+					&& K_GetForwardMove(player) > 0
+					&& P_IsObjectOnGround(player->mo)
+				)
+				{
+					fixed_t pspeed = FixedDiv(player->speed * 100, K_GetKartSpeed(player, false, true));
+
+					if (player->rings >= 18 && pspeed < 100*FRACUNIT)
+					{
+						player->autoring = true;
+						tiereddelay = 3;
+					}
+					else if (player->rings >= 10 && pspeed < 85*FRACUNIT)
+					{
+						player->autoring = true;
+						tiereddelay = 4;
+					}
+					else if (player->rings >= 4 && pspeed < 35*FRACUNIT)
+					{
+						player->autoring = true;
+						tiereddelay = 5;
+					}
+					else
+						player->autoring = false;
+				}
+
+				if (((cmd->buttons & BT_ATTACK) || player->autoring) && !player->ringdelay && player->rings > 0)
 				{
 					mobj_t *ring = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_RING);
 					P_SetMobjState(ring, S_FASTRING1);
@@ -12397,9 +12684,41 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 					ring->extravalue2 = 1; // Ring use animation flag
 					ring->shadowscale = 0;
 					P_SetTarget(&ring->target, player->mo); // user
+
+					const INT32 followerskin = K_GetEffectiveFollowerSkin(player);
+					if (player->autoring
+						&& player->follower != NULL
+						&& P_MobjWasRemoved(player->follower) == false
+						&& followerskin >= 0
+						&& followerskin < numfollowers)
+					{
+						const follower_t *fl = &followers[followerskin];
+
+						ring->cusval = player->follower->x - player->mo->x;
+						ring->cvmem = player->follower->y - player->mo->y;
+						ring->movefactor = P_GetMobjHead(player->follower) - P_GetMobjHead(player->mo);
+
+						// cvmem is used to play the ring animation for followers
+						player->follower->cvmem = fl->ringtime;
+					}
+					else
+					{
+						ring->cusval = ring->cvmem = ring->movefactor = 0;
+					}
+
+					// really silly stupid dumb HACK to fix interp
+					// without needing to duplicate any code
+					A_AttractChase(ring);
+					P_SetOrigin(ring, ring->x, ring->y, ring->z);
+					ring->extravalue1 = 1;
+
 					player->rings--;
-					player->ringdelay = 3;
+					if (player->autoring && !(cmd->buttons & BT_ATTACK))
+						player->ringdelay = tiereddelay;
+					else
+						player->ringdelay = 3;
 				}
+
 			}
 			// Other items
 			else
@@ -12494,12 +12813,13 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							if (ATTACK_IS_DOWN && !HOLDING_ITEM && NO_HYUDORO) // Doesn't hold your item slot hostage normally, so you're free to waste it if you have multiple
 							{
 								UINT32 behind = K_GetItemRouletteDistance(player, player->itemRoulette.playing);
-								UINT32 behindScaled = behind * TICRATE / 4000;
+								UINT32 behindScaled = behind * TICRATE / 4500;
 								behindScaled = min(behindScaled, 10*TICRATE);
 
 								K_DoInvincibility(player,
-									max(10u * TICRATE + behindScaled, player->invincibilitytimer + 5u*TICRATE));
+									max(7u * TICRATE + behindScaled, player->invincibilitytimer + 5u*TICRATE));
 								K_PlayPowerGloatSound(player->mo);
+
 								player->itemamount--;
 								player->botvars.itemconfirm = 0;
 							}
@@ -12958,11 +13278,11 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									{
 										K_ThrowKartItem(player, (player->throwdir > 0), MT_BUBBLESHIELDTRAP, -1, 0, 0);
 										if (player->throwdir == -1)
-										{
+										{		
 											P_InstaThrust(player->mo, player->mo->angle, player->speed + (80 * mapobjectscale));
-											player->wavedashboost += TICRATE; // Just for keeping speed briefly vs. tripwire etc.
+											player->wavedashboost += TICRATE;
 											player->wavedashpower = FRACUNIT;
-											// If this doesn't turn out to be reliable, I'll change it to directly set leniency or something.
+											player->fakeBoost += TICRATE/2;
 										}
 										K_PlayAttackTaunt(player->mo);
 										player->bubbleblowup = 0;
@@ -13042,6 +13362,10 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 											player->mo, player->mo->angle,
 											FixedMul((50*player->mo->scale), K_GetKartGameSpeedScalar(gamespeed))
 										);
+										
+										player->wavedashboost += TICRATE;
+										player->wavedashpower = FRACUNIT;
+										player->fakeBoost = TICRATE/3;
 
 										S_StopSoundByID(player->mo, sfx_fshld1);
 										S_StopSoundByID(player->mo, sfx_fshld0);
@@ -13284,6 +13608,8 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				player->tumbleHeight = 30;	// Base tumble bounce height
 				player->trickpanel = TRICKSTATE_NONE;
 				P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
+				if (gametype != GT_TUTORIAL)
+					K_AddMessageForPlayer(player, "Press <dpad> + <a> to trick!", true, false);
 				if (player->itemflags & (IF_ITEMOUT|IF_EGGMANOUT))
 				{
 					//K_PopPlayerShield(player); // shield is just being yeeted, don't pop
@@ -13299,6 +13625,15 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				angle_t baseangle = player->mo->angle + angledelta/2;
 
 				INT16 aimingcompare = abs(cmd->throwdir) - abs(cmd->turning);
+
+				// 2.2 - Pre-steering trickpanels
+				if (!G_CompatLevel(0x000A) && !K_PlayerUsesBotMovement(player))
+				{
+					if (!(player->cmd.buttons & BT_ACCELERATE))
+					{
+						aimingcompare = 0;
+					}
+				}
 
 				// Uses cmd->turning over steering intentionally.
 #define TRICKTHRESHOLD (KART_FULLTURN/2)
@@ -13530,12 +13865,24 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 			player->trickboostdecay = 0;
 		}
 
-		// Wait until we let go off the control stick to remove the delay
-		// buttons must be neutral after the initial trick delay. This prevents weirdness where slight nudges after blast off would send you flying.
-		if ((player->pflags & PF_TRICKDELAY) && !player->throwdir && !cmd->turning && (player->tricktime >= TRICKDELAY))
+		// 2.2 - Lenient trickpanels
+		if (G_CompatLevel(0x000A) || K_PlayerUsesBotMovement(player))
 		{
-			player->pflags &= ~PF_TRICKDELAY;
+			// Wait until we let go off the control stick to remove the delay
+			// buttons must be neutral after the initial trick delay. This prevents weirdness where slight nudges after blast off would send you flying.
+			if ((player->pflags & PF_TRICKDELAY) && !player->throwdir && !cmd->turning && (player->tricktime >= TRICKDELAY))
+			{
+				player->pflags &= ~PF_TRICKDELAY;
+			}
 		}
+		else
+		{
+			if ((player->pflags & PF_TRICKDELAY) && !(player->cmd.buttons & BT_ACCELERATE) && (player->tricktime >= TRICKDELAY))
+			{
+				player->pflags &= ~PF_TRICKDELAY;
+			}
+		}
+
 	}
 
 	K_KartDrift(player, onground);
@@ -14144,7 +14491,7 @@ boolean K_PlayerCanPunt(player_t *player)
 		return true;
 	}
 
-	if (player->tripwirePass >= TRIPWIRE_BLASTER && player->speed >= 2 * K_GetKartSpeed(player, false, false))
+	if (player->tripwirePass >= TRIPWIRE_BLASTER && player->speed >= K_PlayerTripwireSpeedThreshold(player))
 	{
 		return true;
 	}
@@ -14155,6 +14502,11 @@ boolean K_PlayerCanPunt(player_t *player)
 void K_MakeObjectReappear(mobj_t *mo)
 {
 	(!P_MobjWasRemoved(mo->punt_ref) ? mo->punt_ref : mo)->reappear = leveltime + (30*TICRATE);
+}
+
+boolean K_PlayerCanUseItem(player_t *player)
+{
+	return (player->mo->health > 0 && !player->spectator && !P_PlayerInPain(player) && !mapreset && leveltime > introtime);
 }
 
 //}

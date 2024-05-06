@@ -3098,7 +3098,7 @@ windataemeraldmaybe:
 				colormap ? '\0' : 'B'
 			);
 
-			V_DrawFixedPatch((rankx)*FRACUNIT, (ranky)*FRACUNIT, FRACUNIT, 0, W_CachePatchName(emname, PU_CACHE), colormap);
+			V_DrawFixedPatch((rankx)*FRACUNIT, (ranky)*FRACUNIT, FRACUNIT, 0, W_CachePatchName(emname, PU_HUDGFX), colormap);
 		}
 	}
 	else if (statsmode)
@@ -5414,7 +5414,7 @@ void M_DrawVideoModes(void)
 			va("\x87" "Default mode is %dx%d",
 				cv_scr_width.value, cv_scr_height.value));
 
-		
+
 
 		if (vid.width > 1280 || vid.height > 800)
 			V_DrawCenteredMenuString(BASEVIDWIDTH/2 + t, currentMenu->y + 75+24,
@@ -5689,10 +5689,10 @@ static char *M_GetGameplayMode(void)
 		if (grandprixinfo.masterbots)
 			return va("Master");
 		if (grandprixinfo.gamespeed == KARTSPEED_HARD)
-			return va("Hard");
+			return va("Vicious");
 		if (grandprixinfo.gamespeed == KARTSPEED_NORMAL)
-			return va("Normal");
-		return va("Easy");
+			return va("Intense");
+		return va("Relaxed");
 	}
 
 	if (cv_4thgear.value)
@@ -8093,13 +8093,24 @@ static void M_DrawStatsMaps(void)
 		return;
 	}
 
-	INT32 mapsunfinished = 0;
+	INT32 mapsunfinished = 0, medalspos;
 
-	V_DrawThinString(30, 60, 0, va("x %d/%d", statisticsmenu.gotmedals, statisticsmenu.nummedals));
+	char *medalcountstr = va("x %d/%d", statisticsmenu.gotmedals, statisticsmenu.nummedals);
+
+	V_DrawThinString(30, 60, 0, medalcountstr);
 	V_DrawMappedPatch(20, 60, 0, W_CachePatchName("GOTITA", PU_CACHE),
 				                       R_GetTranslationColormap(TC_DEFAULT, SKINCOLOR_GOLD, GTC_MENUCACHE));
 
-	INT32 medalspos = BASEVIDWIDTH - 20;
+	if (gamedata->numspraycans)
+	{
+		medalspos = 30 + V_ThinStringWidth(medalcountstr, 0);
+		medalcountstr = va("x %d/%d", gamedata->gotspraycans, gamedata->numspraycans);
+		V_DrawThinString(20 + medalspos, 60, 0, medalcountstr);
+		V_DrawMappedPatch(10 + medalspos, 60, 0, W_CachePatchName("GOTCAN", PU_CACHE),
+										   R_GetTranslationColormap(TC_DEFAULT, gamedata->spraycans[0].col, GTC_MENUCACHE));
+	}
+
+	medalspos = BASEVIDWIDTH - 20;
 
 	boolean timeattack[3];
 	timeattack[0] = M_SecretUnlocked(SECRET_TIMEATTACK, true);
@@ -8833,7 +8844,16 @@ void M_DrawSoundTest(void)
 		if (soundtest.current->source)
 			V_DrawThinString(x+1, (y += 10), 0, soundtest.current->source);
 		if (soundtest.current->composers)
-			V_DrawThinString(x+1, (y += 10), 0, soundtest.current->composers);
+		{
+			char *wrappedcomposers = V_ScaledWordWrap(
+				(BASEVIDWIDTH - ((x+1)*2)) << FRACBITS,
+				FRACUNIT, FRACUNIT, FRACUNIT,
+				0, TINY_FONT,
+				soundtest.current->composers
+			);
+			V_DrawThinString(x+1, (y += 10), 0, wrappedcomposers);
+			Z_Free(wrappedcomposers);
+		}
 	}
 	else
 	{

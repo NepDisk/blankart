@@ -295,7 +295,7 @@ static boolean K_RivalBotAggression(const player_t *bot, const player_t *target)
 		return false;
 	}
 
-	if (bot->botvars.rival == false)
+	if (bot->botvars.rival == false && !cv_levelskull.value)
 	{
 		// Not the rival, we aren't self-aware.
 		return false;
@@ -1494,6 +1494,13 @@ static void K_BotItemInstashield(const player_t *player, ticcmd_t *cmd)
 	if (leveltime < starttime || player->spindash || player->defenseLockout)
 	{
 		// Instashield is on cooldown.
+		return;
+	}
+
+	if (player->botvars.difficulty <= 7)
+	{
+		// Weak players don't whip.
+		// Weak bots don't either.
 		return;
 	}
 
