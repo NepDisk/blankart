@@ -2456,7 +2456,7 @@ void P_MovePlayer(player_t *player)
 	// MOVEMENT CODE	//
 	//////////////////////
 
-	if (!cv_ng_oldturncode.value)
+	if (cv_ng_turnstyle.value == 1 || cv_ng_turnstyle.value == 2)
 		P_UpdatePlayerAngle(player);
 	else
 		N_UpdatePlayerAngle(player);
