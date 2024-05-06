@@ -12666,7 +12666,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				S_StartSound(player->mo, sfx_iwhp);
 				mobj_t *whip = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_INSTAWHIP);
 				P_SetTarget(&player->whip, whip);
-				P_SetScale(whip, player->mo->scale);
+				P_InstaScale(whip, player->mo->scale);
 				P_SetTarget(&whip->target, player->mo);
 				K_MatchGenericExtraFlags(whip, player->mo);
 				P_SpawnFakeShadow(whip, 20);
