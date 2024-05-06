@@ -53,7 +53,7 @@ extern consvar_t cv_ng_spindashoverheat;
 extern consvar_t cv_ng_butteredslopes;
 extern consvar_t cv_ng_slopeclimb;
 extern consvar_t cv_ng_stairjank;
-extern consvar_t cv_ng_oldturncode;
+extern consvar_t cv_ng_turnstyle;
 extern consvar_t cv_ng_springpanelsdokartpogo; //Quite long...
 extern consvar_t cv_ng_underwaterhandling;
 

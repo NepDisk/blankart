@@ -2275,6 +2275,8 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y, TryMoveResult_t *re
 		}
 	}
 
+	P_ClearTestLines();
+
 	// The bounding box is extended by MAXRADIUS
 	// because mobj_ts are grouped into mapblocks
 	// based on their origin point, and can overlap
@@ -2411,8 +2413,6 @@ boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y, TryMoveResult_t *re
 	}
 
 	validcount++;
-
-	P_ClearTestLines();
 
 	// check lines
 	for (bx = xl; bx <= xh; bx++)

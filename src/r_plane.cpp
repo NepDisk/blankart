@@ -106,6 +106,10 @@ void R_InitPlanes(void)
 // ripples da water texture
 static fixed_t R_CalculateRippleOffset(drawspandata_t* ds, INT32 y)
 {
+	if (cv_reducevfx.value)
+	{
+		return 0;
+	}
 	fixed_t distance = FixedMul(ds->planeheight, yslope[y]);
 	const INT32 yay = (ds->planeripple.offset + (distance>>9)) & 8191;
 	return FixedDiv(FINESINE(yay), (1<<12) + (distance>>11));
@@ -233,7 +237,7 @@ static void R_MapTiltedPlane(drawspandata_t *ds, void(*spanfunc)(drawspandata_t*
 	{
 		ds->bgofs = R_CalculateRippleOffset(ds, y);
 
-		R_SetTiltedSpan(ds, std::clamp(y, 0, viewheight));
+		R_SetTiltedSpan(ds, std::clamp<INT32>(y, 0, viewheight));
 
 		R_CalculatePlaneRipple(ds, ds->currentplane->viewangle + ds->currentplane->plangle);
 		R_SetSlopePlaneVectors(ds, ds->currentplane, y, (ds->xoffs + ds->planeripple.xfrac), (ds->yoffs + ds->planeripple.yfrac));

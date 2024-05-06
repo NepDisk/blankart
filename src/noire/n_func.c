@@ -17,8 +17,10 @@
 #include "../p_local.h"
 #include "../r_main.h"
 #include "../s_sound.h" //S_StartSound
+#include "../k_objects.h"
 
 #include "n_func.h"
+#include "n_cvar.h"
 
 // Old update Player angle taken from old kart commits
 void N_UpdatePlayerAngle(player_t* player)
@@ -77,7 +79,7 @@ INT16 N_GetKartDriftValue(player_t* player, fixed_t countersteer)
 		basedrift += (basedrift / greasetics) * player->tiregrease;
 	}
 
-	if (player->mo->eflags & (MFE_UNDERWATER | MFE_TOUCHWATER))
+	if (player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER) && cv_ng_underwaterhandling.value)
 	{
 		countersteer = FixedMul(countersteer, 3 * FRACUNIT / 2);
 	}
@@ -108,10 +110,34 @@ INT16 N_GetKartTurnValue(player_t* player, INT16 turnvalue)
 		return 0;
 	}
 
-	if (player->trickpanel != 0)
+	if (player->respawn.state == RESPAWNST_MOVE)
 	{
+		// No turning during respawn
 		return 0;
 	}
+
+	// Staff ghosts - direction-only trickpanel behavior
+	if (G_CompatLevel(0x000A) || K_PlayerUsesBotMovement(player))
+	{
+		if (player->trickpanel == TRICKSTATE_READY || player->trickpanel == TRICKSTATE_FORWARD)
+		{
+			// Forward trick or rising from trickpanel
+			return 0;
+		}
+	}
+
+	if (player->justDI > 0)
+	{
+		// No turning until you let go after DI-ing.
+		return 0;
+	}
+
+	if (Obj_PlayerRingShooterFreeze(player) == true)
+	{
+		// No turning while using Ring Shooter
+		return 0;
+	}
+
 
 	currentSpeed = R_PointToDist2(0, 0, player->mo->momx, player->mo->momy);
 
@@ -134,16 +160,23 @@ INT16 N_GetKartTurnValue(player_t* player, INT16 turnvalue)
 
 	if (player->drift != 0 && P_IsObjectOnGround(player->mo))
 	{
-		fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN * FRACUNIT);
-
-		// If we're drifting we have a completely different turning value
-
 		if (player->pflags & PF_DRIFTEND)
 		{
-			countersteer = FRACUNIT;
+			// Sal: K_GetKartDriftValue is short-circuited to give a weird additive magic number,
+			// instead of an entirely replaced turn value. This gaslit me years ago when I was doing a
+			// code readability pass, where I missed that fact because it also returned early.
+			turnfixed += N_GetKartDriftValue(player, FRACUNIT) * FRACUNIT;
+			return (turnfixed / FRACUNIT);
+
+		}
+		else
+		{
+			// If we're drifting we have a completely different turning value
+			fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN * FRACUNIT);
+			return N_GetKartDriftValue(player, countersteer);
+
 		}
 
-		return N_GetKartDriftValue(player, countersteer);
 	}
 
 	if (player->handleboost > 0)
@@ -151,13 +184,33 @@ INT16 N_GetKartTurnValue(player_t* player, INT16 turnvalue)
 		turnfixed = FixedMul(turnfixed, FRACUNIT + player->handleboost);
 	}
 
-	if (player->mo->eflags & (MFE_UNDERWATER | MFE_TOUCHWATER))
+
+	if (player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER) && cv_ng_underwaterhandling.value)
 	{
 		turnfixed = FixedMul(turnfixed, 3 * FRACUNIT / 2);
 	}
 
 	// Weight has a small effect on turning
 	turnfixed = FixedMul(turnfixed, weightadjust);
+
+	// Side trick
+	if (player->trickpanel == TRICKSTATE_LEFT || player->trickpanel == TRICKSTATE_RIGHT)
+	{
+		turnfixed /= 2;
+	}
+
+	// 2.2 - Presteering allowed in trickpanels
+	if (!G_CompatLevel(0x000A) && !K_PlayerUsesBotMovement(player))
+	{
+		if (player->trickpanel == TRICKSTATE_READY || player->trickpanel == TRICKSTATE_FORWARD)
+		{
+			// Forward trick or rising from trickpanel
+			turnfixed /= 2;
+			if (player->tricklock)
+				turnfixed /= (player->tricklock/2 + 1);
+		}
+	}
+
 
 	return (turnfixed / FRACUNIT);
 }

@@ -109,7 +109,7 @@ typedef enum
 	PF_TRUSTWAYPOINTS	= 1<<15, // Do not activate lap cheat prevention next time finish line distance is updated
 	PF_FREEZEWAYPOINTS	= 1<<16, // Skip the next waypoint/finish line distance update
 
-	//1<<17 free, was previously itemflags stuff
+	PF_AUTORING			= 1<<17, // Accessibility: Non-deterministic item box, no manual stop.
 
 	PF_DRIFTINPUT		= 1<<18, // Drifting!
 	PF_GETSPARKS		= 1<<19, // Can get sparks
@@ -698,6 +698,7 @@ struct player_t
 	INT32 nullHitlag;		// Numbers of tics of hitlag that will ultimately be ignored by subtracting from hitlag
 	UINT8 wipeoutslow;		// Timer before you slowdown when getting wiped out
 	UINT8 justbumped;		// Prevent players from endlessly bumping into each other
+	UINT8 noEbrakeMagnet;	// Briefly disable 2.2 responsive ebrake if you're bumped by another player.
 	UINT8 tumbleBounces;
 	UINT16 tumbleHeight;	// In *mobjscaled* fracunits, or mfu, not raw fu
 	UINT8 justDI;			// Turn-lockout timer to briefly prevent unintended turning after DI, resets when actionable or no input
@@ -746,6 +747,7 @@ struct player_t
 	UINT8 tripwireState; // see tripwirestate_t
 	UINT8 tripwirePass; // see tripwirepass_t
 	UINT16 tripwireLeniency;	// When reaching a state that lets you go thru tripwire, you get an extra second leniency after it ends to still go through it.
+	UINT8 fakeBoost;	// Some items need to grant tripwire pass briefly, even when their effect is thrust/instathrust. This is a fake boost type to control that.
 
 	itemroulette_t itemRoulette;	// Item roulette data
 
@@ -776,6 +778,8 @@ struct player_t
 	UINT16 flamedash;	// Flame Shield dash power
 	UINT16 flamemeter;	// Flame Shield dash meter left
 	UINT8 flamelength;	// Flame Shield dash meter, number of segments
+
+	UINT16 counterdash;	// Flame Shield boost without the flame, largely. Used in places where awarding thrust would affect player control.
 
 	UINT16 ballhogcharge;	// Ballhog charge up -- the higher this value, the more projectiles
 	boolean ballhogtap;		// Ballhog released during charge: used to allow semirapid tapfire
@@ -809,6 +813,7 @@ struct player_t
 	fixed_t trickboostpower;	// Save the rough speed multiplier. Used for upwards tricks.
 	UINT8 trickboostdecay;		// used to know how long you've waited
 	UINT8 trickboost;			// Trick boost. This one is weird and has variable speed. Dear god.
+	UINT8 tricklock;			// Input safety for 2.2 lenient tricks.
 
 	UINT8 dashRingPullTics; // Timer during which the player is pulled towards a dash ring
 	UINT8 dashRingPushTics; // Timer during which the player displays effects and has no gravity after being thrust by a dash ring
@@ -952,6 +957,7 @@ struct player_t
 	UINT8 typing_duration; // How long since resumed timer
 
 	UINT8 kickstartaccel;
+	boolean autoring;	// did we autoring this tic?
 
 	UINT8 stairjank;
 	UINT8 topdriftheld;
@@ -981,6 +987,8 @@ struct player_t
 
 	UINT8 lastsafelap;
 	UINT8 lastsafecheatcheck;
+
+	UINT8 ignoreAirtimeLeniency; // We bubblebounced or otherwise did an airtime thing with control, powerup timers should still count down
 
 	fixed_t topAccel; // Reduced on straight wall collisions to give players extra recovery time
 

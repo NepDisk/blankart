@@ -398,6 +398,20 @@ badgrid:
 	gamedata->challengegridwidth = 0;
 }
 
+static void M_ChallengeGridExtraDataAdjacencyRules(challengegridextradata_t *extradata, UINT16 adjacent)
+{
+	// Adjacent unlocked tile, permit hint/general key skip.
+	if (gamedata->unlocked[adjacent] == true)
+	{
+		extradata->flags |= CHE_HINT;
+	}
+	// Adjacent locked small tile, prevent 10x key skip.
+	else if (unlockables[adjacent].majorunlock == false)
+	{
+		extradata->flags &= ~CHE_ALLCLEAR;
+	}
+}
+
 void M_UpdateChallengeGridExtraData(challengegridextradata_t *extradata)
 {
 	UINT16 i, j, num, id, tempid, work;
@@ -489,14 +503,7 @@ void M_UpdateChallengeGridExtraData(challengegridextradata_t *extradata)
 				}
 				else if (work < MAXUNLOCKABLES)
 				{
-					if (gamedata->unlocked[work] == true)
-					{
-						extradata[id].flags |= CHE_HINT;
-					}
-					else
-					{
-						extradata[id].flags &= ~CHE_ALLCLEAR;
-					}
+					M_ChallengeGridExtraDataAdjacencyRules(extradata+id, work);
 				}
 			}
 
@@ -534,14 +541,7 @@ void M_UpdateChallengeGridExtraData(challengegridextradata_t *extradata)
 				}
 				else if (work < MAXUNLOCKABLES)
 				{
-					if (gamedata->unlocked[work] == true)
-					{
-						extradata[id].flags |= CHE_HINT;
-					}
-					else
-					{
-						extradata[id].flags &= ~CHE_ALLCLEAR;
-					}
+					M_ChallengeGridExtraDataAdjacencyRules(extradata+id, work);
 				}
 			}
 
@@ -566,14 +566,7 @@ void M_UpdateChallengeGridExtraData(challengegridextradata_t *extradata)
 				}
 				else if (work < MAXUNLOCKABLES)
 				{
-					if (gamedata->unlocked[work] == true)
-					{
-						extradata[id].flags |= CHE_HINT;
-					}
-					else
-					{
-						extradata[id].flags &= ~CHE_ALLCLEAR;
-					}
+					M_ChallengeGridExtraDataAdjacencyRules(extradata+id, work);
 				}
 			}
 
@@ -595,14 +588,7 @@ void M_UpdateChallengeGridExtraData(challengegridextradata_t *extradata)
 				}
 				else if (work < MAXUNLOCKABLES)
 				{
-					if (gamedata->unlocked[work] == true)
-					{
-						extradata[id].flags |= CHE_HINT;
-					}
-					else
-					{
-						extradata[id].flags &= ~CHE_ALLCLEAR;
-					}
+					M_ChallengeGridExtraDataAdjacencyRules(extradata+id, work);
 				}
 			}
 		}
@@ -2388,11 +2374,11 @@ static const char *M_GetConditionString(condition_t *cn)
 
 			if (cn->extrainfo2 == KARTSPEED_NORMAL)
 			{
-				speedtext = " on Normal";
+				speedtext = " on Intense";
 			}
 			else if (cn->extrainfo2 == KARTSPEED_HARD)
 			{
-				speedtext = " on Hard";
+				speedtext = " on Vicious";
 			}
 			else if (cn->extrainfo2 == KARTGP_MASTER)
 			{
@@ -2438,7 +2424,7 @@ static const char *M_GetConditionString(condition_t *cn)
 			else*/
 			if (cn->requirement == KARTSPEED_HARD)
 			{
-				speedtext = " on Hard";
+				speedtext = " on Vicious";
 			}
 			else if (cn->requirement == KARTGP_MASTER)
 			{
@@ -2700,11 +2686,11 @@ static const char *M_GetConditionString(condition_t *cn)
 
 			if (cn->requirement == KARTSPEED_NORMAL)
 			{
-				speedtext = "on Normal";
+				speedtext = "on Intense";
 			}
 			else if (cn->requirement == KARTSPEED_HARD)
 			{
-				speedtext = "on Hard";
+				speedtext = "on Vicious";
 			}
 			else if (cn->requirement == KARTGP_MASTER)
 			{
@@ -2737,7 +2723,7 @@ static const char *M_GetConditionString(condition_t *cn)
 					default: { break; }
 				}
 
-				if (cn->requirement < GRADE_S)
+				if (cn->extrainfo1 < GRADE_S)
 					orbetter = " or better in";
 				else
 					orbetter = " in";

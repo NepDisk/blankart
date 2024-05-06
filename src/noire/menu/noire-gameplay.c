@@ -138,8 +138,8 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Stairjank", "Should karts be affected by steps & bumpy roads, only roads or nothing?",
 		NULL, {.cvar = &cv_ng_stairjank}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Old Turn Code", "Should the turning of karts use code from an indev version of v2?",
-		NULL, {.cvar = &cv_ng_oldturncode}, 0, 0},
+	{IT_STRING | IT_CVAR, "Turn Control Style", "Choose how turning will work. V2 Indev, tweaked vanilla or vanilla",
+		NULL, {.cvar = &cv_ng_turnstyle}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Spring Kart Pogojump", "Whenever standard spring panels give you air control like in Kart.",
 		NULL, {.cvar = &cv_ng_springpanelsdokartpogo}, 0, 0},

@@ -215,6 +215,7 @@ static patch_t *kp_bossret[4];
 static patch_t *kp_trickcool[2];
 
 patch_t *kp_autoroulette;
+patch_t *kp_autoring;
 
 patch_t *kp_capsuletarget_arrow[2][2];
 patch_t *kp_capsuletarget_icon[2];
@@ -240,6 +241,7 @@ patch_t *kp_button_up[2];
 patch_t *kp_button_down[2];
 patch_t *kp_button_right[2];
 patch_t *kp_button_left[2];
+patch_t *kp_button_dpad[2];
 
 static void K_LoadButtonGraphics(patch_t *kp[2], int letter)
 {
@@ -783,6 +785,7 @@ void K_LoadKartHUDGraphics(void)
 	HU_UpdatePatch(&kp_trickcool[1], "K_COOL2");
 
 	HU_UpdatePatch(&kp_autoroulette, "A11YITEM");
+	HU_UpdatePatch(&kp_autoring, "A11YRING");
 
 	sprintf(buffer, "K_BOSB0x");
 	for (i = 0; i < 8; i++)
@@ -913,6 +916,7 @@ void K_LoadKartHUDGraphics(void)
 	K_LoadButtonGraphics(kp_button_down, 'K');
 	K_LoadButtonGraphics(kp_button_right, 'L');
 	K_LoadButtonGraphics(kp_button_left, 'M');
+	K_LoadButtonGraphics(kp_button_dpad, 'T');
 }
 
 // For the item toggle menu
@@ -1699,7 +1703,7 @@ static void K_drawKartItem(void)
 
 	// Quick Eggman numbers
 	if (stplyr->eggmanexplode > 1)
-		V_DrawScaledPatch(fx+17, fy+13-offset, V_HUDTRANS|V_SLIDEIN|fflags, kp_eggnum[std::min(5, G_TicsToSeconds(stplyr->eggmanexplode))]);
+		V_DrawScaledPatch(fx+17, fy+13-offset, V_HUDTRANS|V_SLIDEIN|fflags, kp_eggnum[std::min<INT32>(5, G_TicsToSeconds(stplyr->eggmanexplode))]);
 
 	if (stplyr->itemtype == KITEM_FLAMESHIELD && stplyr->flamelength > 0)
 	{
@@ -2696,7 +2700,7 @@ static void K_drawBossHealthBar(void)
 		;
 	else if (bossinfo.visualbarimpact)
 	{
-		INT32 mag = std::min((bossinfo.visualbarimpact/4) + 1, 8u);
+		INT32 mag = std::min<UINT32>((bossinfo.visualbarimpact/4) + 1, 8u);
 		if (bossinfo.visualbarimpact & 1)
 			starty -= mag;
 		else
@@ -3278,6 +3282,19 @@ static void K_drawKartAccessibilityIcons(boolean gametypeinfoshown, INT32 fx)
             fx--;
         else
             fx += 12 + 1;
+    }
+
+	if (stplyr->pflags & PF_AUTORING)
+    {
+        if (mirror)
+            fx -= 14;
+
+        V_DrawScaledPatch(fx, fy-1, V_SLIDEIN|splitflags, kp_autoring);
+
+        if (mirror)
+            fx--;
+        else
+            fx += 14 + 1;
     }
 }
 
@@ -3898,7 +3915,7 @@ static void K_DrawNameTagSphereMeter(INT32 x, INT32 y, INT32 width, INT32 sphere
 	// see also K_drawBlueSphereMeter
 	const UINT8 segColors[] = {73, 64, 52, 54, 55, 35, 34, 33, 202, 180, 181, 182, 164, 165, 166, 153, 152};
 
-	spheres = std::clamp(spheres, 0, 40);
+	spheres = std::clamp<INT32>(spheres, 0, 40);
 	int colorIndex = (spheres * sizeof segColors) / (40 + 1);
 
 	int px = r_splitscreen > 1 ? 1 : 2;
@@ -3998,7 +4015,7 @@ playertagtype_t K_WhichPlayerTag(player_t *p)
 	}
 	else if (p->bot)
 	{
-		if (p->botvars.rival == true)
+		if (p->botvars.rival == true || cv_levelskull.value)
 		{
 			return PLAYERTAG_RIVAL;
 		}
@@ -5331,7 +5348,7 @@ static void K_drawInput(void)
 	char mode = ((stplyr->pflags & PF_ANALOGSTICK) ? '4' : '2') + (r_splitscreen > 1);
 	bool local = !demo.playback && P_IsMachineLocalPlayer(stplyr);
 	fixed_t slide = K_GetDialogueSlide(FRACUNIT);
-	INT32 tallySlide = []
+	INT32 tallySlide = []() -> INT32
 	{
 		if (r_splitscreen <= 1)
 		{
@@ -5345,7 +5362,7 @@ static void K_drawInput(void)
 		if (stplyr->tally.state == TALLY_ST_GOTTHRU_SLIDEIN ||
 			stplyr->tally.state == TALLY_ST_GAMEOVER_SLIDEIN)
 		{
-			return Easing_OutQuad(std::min<fixed_t>(stplyr->tally.transition * 2, FRACUNIT), 0, kSlideDown);
+			return static_cast<INT32>(Easing_OutQuad(std::min<fixed_t>(stplyr->tally.transition * 2, FRACUNIT), 0, kSlideDown));
 		}
 		return kSlideDown;
 	}();
@@ -5384,7 +5401,7 @@ static void K_drawChallengerScreen(void)
 		19,20,19,20,19,20,19,20,19,20, // frame 20-21, 1 tic, 5 alternating: all text vibrates from impact
 		21,22,23,24 // frame 22-25, 1 tic: CHALLENGER turns gold
 	};
-	const UINT8 offset = std::min(52-1u, (3*TICRATE)-mapreset);
+	const UINT8 offset = std::min<UINT32>(52-1u, (3*TICRATE)-mapreset);
 
 	V_DrawFadeScreen(0xFF00, 16); // Fade out
 	V_DrawScaledPatch(0, 0, 0, kp_challenger[anim[offset]]);
@@ -5572,7 +5589,9 @@ void K_drawKartFreePlay(void)
 static void
 Draw_party_ping (int ss, INT32 snap)
 {
-	HU_drawMiniPing(0, 0, playerpingtable[displayplayers[ss]], V_SPLITSCREEN|V_SNAPTOTOP|snap);
+	UINT32 ping = playerpingtable[displayplayers[ss]];
+	UINT32 mindelay = playerdelaytable[displayplayers[ss]];
+	HU_drawMiniPing(0, 0, ping, mindelay, V_SPLITSCREEN|V_SNAPTOTOP|snap);
 }
 
 static void
@@ -5972,6 +5991,9 @@ void K_AddMessageForPlayer(player_t *player, const char *msg, boolean interrupt,
 		return;
 
 	if (player && !P_IsDisplayPlayer(player))
+		return;
+
+	if (player && K_PlayerUsesBotMovement(player))
 		return;
 
 	messagestate_t *state = &messagestates[G_PartyPosition(player - players)];
