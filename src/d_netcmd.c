@@ -1260,6 +1260,7 @@ enum {
 	WP_SHRINKME = 1<<1,
 	WP_AUTOROULETTE = 1<<2,
 	WP_ANALOGSTICK = 1<<3,
+	WP_AUTORING = 1<<4,
 };
 
 void WeaponPref_Send(UINT8 ssplayer)
@@ -1278,7 +1279,14 @@ void WeaponPref_Send(UINT8 ssplayer)
 	if (gamecontrolflags[ssplayer] & GCF_ANALOGSTICK)
 		prefs |= WP_ANALOGSTICK;
 
-	SendNetXCmdForPlayer(ssplayer, XD_WEAPONPREF, &prefs, 1);
+	if (cv_autoring[ssplayer].value)
+		prefs |= WP_AUTORING;
+
+	UINT8 buf[2];
+	buf[0] = prefs;
+	buf[1] = cv_mindelay.value;
+
+	SendNetXCmdForPlayer(ssplayer, XD_WEAPONPREF, buf, sizeof buf);
 }
 
 void WeaponPref_Save(UINT8 **cp, INT32 playernum)
@@ -1299,6 +1307,9 @@ void WeaponPref_Save(UINT8 **cp, INT32 playernum)
 	if (player->pflags & PF_ANALOGSTICK)
 		prefs |= WP_ANALOGSTICK;
 
+	if (player->pflags & PF_AUTORING)
+		prefs |= WP_AUTORING;
+
 	WRITEUINT8(*cp, prefs);
 }
 
@@ -1309,7 +1320,7 @@ size_t WeaponPref_Parse(const UINT8 *bufstart, INT32 playernum)
 
 	UINT8 prefs = READUINT8(p);
 
-	player->pflags &= ~(PF_KICKSTARTACCEL|PF_SHRINKME|PF_AUTOROULETTE);
+	player->pflags &= ~(PF_KICKSTARTACCEL|PF_SHRINKME|PF_AUTOROULETTE|PF_AUTORING);
 
 	if (prefs & WP_KICKSTARTACCEL)
 		player->pflags |= PF_KICKSTARTACCEL;
@@ -1325,6 +1336,9 @@ size_t WeaponPref_Parse(const UINT8 *bufstart, INT32 playernum)
 	else
 		player->pflags &= ~PF_ANALOGSTICK;
 
+	if (prefs & WP_AUTORING)
+		player->pflags |= PF_AUTORING;
+
 	if (leveltime < 2)
 	{
 		// BAD HACK: No other place I tried to slot this in
@@ -1339,6 +1353,13 @@ size_t WeaponPref_Parse(const UINT8 *bufstart, INT32 playernum)
 static void Got_WeaponPref(const UINT8 **cp,INT32 playernum)
 {
 	*cp += WeaponPref_Parse(*cp, playernum);
+
+	UINT8 mindelay = READUINT8(*cp);
+	if (server)
+	{
+		for (UINT8 i = 0; i < G_LocalSplitscreenPartySize(playernum); ++i)
+			playerdelaytable[G_LocalSplitscreenPartyMember(playernum, i)] = mindelay;
+	}
 
 	// SEE ALSO g_demo.c
 	demo_extradata[playernum] |= DXD_WEAPONPREF;
@@ -2981,6 +3002,12 @@ static void Command_RestartLevel(void)
 	if (!Playing())
 	{
 		CONS_Printf(M_GetText("You must be in a game to use this.\n"));
+		return;
+	}
+
+	if (K_CanChangeRules(false) == false && CV_CheatsEnabled() == false)
+	{
+		CONS_Printf(M_GetText("Cheats must be enabled.\n"));
 		return;
 	}
 
@@ -6462,7 +6489,7 @@ void Command_ExitGame_f(void)
 		// YES, this is where demo.attract gets cleared!
 		if (demo.attract == DEMO_ATTRACT_CREDITS)
 		{
-			F_ContinueCredits(); // <-- clears demo.attract
+			F_DeferContinueCredits(); // <-- clears demo.attract
 		}
 		else if (restoreMenu == NULL) // this is true for attract demos too!
 		{

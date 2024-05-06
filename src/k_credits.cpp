@@ -126,6 +126,8 @@ constexpr const fixed_t kScrollFactor = FRACUNIT * 7 / 8;
 constexpr const int kSkipSpeed = 8;
 constexpr const int kScrollSkipSpeed = 4;
 
+static bool g_deferred_continue_credits = false;
+
 void F_LoadCreditsDefinitions(void)
 {
 	// Load credits definitions from bios.pk3
@@ -448,8 +450,20 @@ static void F_CreditsNextSlide(void)
 	F_InitCreditsSlide();
 }
 
+void F_DeferContinueCredits(void)
+{
+	g_deferred_continue_credits = true;
+	demo.attract = DEMO_ATTRACT_OFF;
+}
+
+boolean F_IsDeferredContinueCredits(void)
+{
+	return g_deferred_continue_credits;
+}
+
 void F_ContinueCredits(void)
 {
+	g_deferred_continue_credits = false;
 	G_SetGamestate(GS_CREDITS);
 	F_CreditsReset();
 	demo.attract = DEMO_ATTRACT_OFF;
@@ -541,7 +555,6 @@ static boolean F_CreditsPlayDemo(void)
 
 	UINT8 ghost_id = M_RandomKey( mapheaderinfo[map_id]->ghostCount );
 	brief = mapheaderinfo[map_id]->ghostBrief[ghost_id];
-	std::string demo_name = static_cast<const char *>(W_CheckNameForNumPwad(brief->wad, brief->lump));
 
 	demo.attract = DEMO_ATTRACT_CREDITS;
 	demo.ignorefiles = true;
@@ -564,7 +577,7 @@ void F_TickCreditsDemoExit(void)
 
 	if (!menuactive && M_MenuConfirmPressed(0))
 	{
-		g_credits.demo_exit = std::max(g_credits.demo_exit, kDemoExitTicCount - 64);
+		g_credits.demo_exit = std::max<tic_t>(g_credits.demo_exit, kDemoExitTicCount - 64);
 	}
 
 	if (INT32 val = F_CreditsDemoExitFade(); val >= 0)
@@ -654,7 +667,7 @@ static boolean F_TickCreditsSlide(void)
 
 	if (g_credits.transition < FRACUNIT)
 	{
-		g_credits.transition = std::min(g_credits.transition + (FRACUNIT / TICRATE), FRACUNIT);
+		g_credits.transition = std::min<INT32>(g_credits.transition + (FRACUNIT / TICRATE), FRACUNIT);
 
 		if (g_credits.split_slide_id < g_credits.split_slide_strings.size())
 		{

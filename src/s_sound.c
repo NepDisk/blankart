@@ -43,6 +43,15 @@
 
 extern consvar_t cv_mastervolume;
 
+CV_PossibleValue_t soundmixingbuffersize_cons_t[] = {
+	{256, "256"},
+	{512, "512"},
+	{1024, "1024"},
+	{2048, "2048"},
+	{4096, "4096"},
+	{0, NULL}
+};
+
 static boolean S_AdjustSoundParams(const mobj_t *listener, const mobj_t *source, INT32 *vol, INT32 *sep, INT32 *pitch, sfxinfo_t *sfxinfo);
 
 static void Command_Tunes_f(void);
@@ -2041,6 +2050,11 @@ ReadMusicDefFields
 				textline[0] = toupper(textline[0]);
 				def->important = (textline[0] == 'Y' || textline[0] == 'T' || textline[0] == '1');
 			}
+			else if (!stricmp(stoken, "contentidunsafe"))
+			{
+				textline[0] = toupper(textline[0]);
+				def->contentidunsafe = (textline[0] == 'Y' || textline[0] == 'T' || textline[0] == '1');
+			}
 			else
 			{
 				MusicDefError(CONS_WARNING,
@@ -2190,7 +2204,7 @@ void S_LoadMusicCredit(void)
 
 		widthused -= V_ThinStringWidth(credittext, 0);
 
-#define MUSICCREDITAPPEND(field)\
+#define MUSICCREDITAPPEND(field, force)\
 		if (field)\
 		{\
 			work = va(" - %s", field);\
@@ -2198,7 +2212,7 @@ void S_LoadMusicCredit(void)
 			if (worklen <= len)\
 			{\
 				workwidth = V_ThinStringWidth(work, 0);\
-				if (widthused >= workwidth)\
+				if (force || widthused >= workwidth)\
 				{\
 					strncat(credittext, work, len);\
 					len -= worklen;\
@@ -2207,8 +2221,8 @@ void S_LoadMusicCredit(void)
 			}\
 		}
 
-		MUSICCREDITAPPEND(def->author);
-		MUSICCREDITAPPEND(def->source);
+		MUSICCREDITAPPEND(def->author, true);
+		MUSICCREDITAPPEND(def->source, false);
 
 #undef MUSICCREDITAPPEND
 	}
@@ -2418,8 +2432,6 @@ static void Command_RestartAudio_f(void)
 	S_SetSfxVolume();
 	S_SetMusicVolume();
 	S_SetMasterVolume();
-
-	S_StartSound(NULL, sfx_strpst);
 
 	S_AttemptToRestoreMusic();
 }

@@ -12,6 +12,7 @@
 /// \brief implements methods for profiles etc.
 
 #include <algorithm>
+#include <exception>
 
 #include <fmt/format.h>
 
@@ -81,6 +82,7 @@ profile_t* PR_MakeProfile(
 	newprofile->kickstartaccel = false;
 	newprofile->autoroulette = false;
 	newprofile->litesteer = false;
+	newprofile->autoring = false;
 	newprofile->rumble = true;
 	newprofile->fov = atoi(cv_dummyprofilefov.defaultvalue);
 
@@ -102,6 +104,7 @@ profile_t* PR_MakeProfileFromPlayer(const char *prname, const char *pname, const
 	newprofile->kickstartaccel = cv_kickstartaccel[pnum].value;
 	newprofile->autoroulette = cv_autoroulette[pnum].value;
 	newprofile->litesteer = cv_litesteer[pnum].value;
+	newprofile->autoring = cv_autoring[pnum].value;
 	newprofile->rumble = cv_rumble[pnum].value;
 	newprofile->fov = cv_fov[pnum].value / FRACUNIT;
 
@@ -298,6 +301,7 @@ void PR_SaveProfiles(void)
 		jsonprof.preferences.kickstartaccel = cprof->kickstartaccel;
 		jsonprof.preferences.autoroulette = cprof->autoroulette;
 		jsonprof.preferences.litesteer = cprof->litesteer;
+		jsonprof.preferences.autoring = cprof->autoring;
 		jsonprof.preferences.rumble = cprof->rumble;
 		jsonprof.preferences.fov = cprof->fov;
 
@@ -315,25 +319,27 @@ void PR_SaveProfiles(void)
 	std::vector<uint8_t> ubjson = json::to_ubjson(ng);
 
 	std::string realpath = fmt::format("{}/{}", srb2home, PROFILESFILE);
-	std::string tmppath = fmt::format("{}.tmp", realpath);
+	int random_number = rand();
+	std::string tmppath = fmt::format("{}_{}.tmp", realpath, random_number);
 
 	try
 	{
 		io::FileStream file {tmppath, io::FileStreamMode::kWrite};
-		io::BufferedOutputStream<io::FileStream> bos {std::move(file)};
 
-		io::write(static_cast<uint32_t>(0x52494E47), bos, io::Endian::kBE); // "RING"
-		io::write(static_cast<uint32_t>(0x5052464C), bos, io::Endian::kBE); // "PRFL"
-		io::write(static_cast<uint8_t>(0), bos); // reserved1
-		io::write(static_cast<uint8_t>(0), bos); // reserved2
-		io::write(static_cast<uint8_t>(0), bos); // reserved3
-		io::write(static_cast<uint8_t>(0), bos); // reserved4
-		io::write_exact(bos, tcb::as_bytes(tcb::make_span(ubjson)));
-		bos.flush();
-		file = bos.stream();
+		io::write(static_cast<uint32_t>(0x52494E47), file, io::Endian::kBE); // "RING"
+		io::write(static_cast<uint32_t>(0x5052464C), file, io::Endian::kBE); // "PRFL"
+		io::write(static_cast<uint8_t>(0), file); // reserved1
+		io::write(static_cast<uint8_t>(0), file); // reserved2
+		io::write(static_cast<uint8_t>(0), file); // reserved3
+		io::write(static_cast<uint8_t>(0), file); // reserved4
+		io::write_exact(file, tcb::as_bytes(tcb::make_span(ubjson)));
 		file.close();
 
 		fs::rename(tmppath, realpath);
+	}
+	catch (const std::exception& ex)
+	{
+		I_Error("Couldn't save profiles. Are you out of Disk space / playing in a protected folder?\n\nException: %s", ex.what());
 	}
 	catch (...)
 	{
@@ -398,9 +404,14 @@ void PR_LoadProfiles(void)
 		json parsed = json::from_ubjson(remainder_as_u8);
 		js = parsed.template get<ProfilesJson>();
 	}
+	catch (const std::exception& ex)
+	{
+		I_Error("Profiles file is corrupt.\n\nException: %s", ex.what());
+		return;
+	}
 	catch (...)
 	{
-		I_Error("Profiles file is corrupt");
+		I_Error("Profiles file is corrupt.");
 		return;
 	}
 
@@ -465,6 +476,7 @@ void PR_LoadProfiles(void)
 		newprof->kickstartaccel = jsprof.preferences.kickstartaccel;
 		newprof->autoroulette = jsprof.preferences.autoroulette;
 		newprof->litesteer = jsprof.preferences.litesteer;
+		newprof->autoring = jsprof.preferences.autoring;
 		newprof->rumble = jsprof.preferences.rumble;
 		newprof->fov = jsprof.preferences.fov;
 
@@ -510,6 +522,15 @@ void PR_LoadProfiles(void)
 			converted = true;
 		}
 
+		if (jsprof.version < 3)
+		{
+			// Version 2 -> 3:
+			// - Auto Roulette is turned off again so people have to see the warning message
+			newprof->autoroulette = false;
+
+			converted = true;
+		}
+
 		if (converted)
 		{
 			CONS_Printf("Profile '%s' was converted from version %d to version %d\n",
@@ -537,6 +558,7 @@ static void PR_ApplyProfile_Settings(profile_t *p, UINT8 playernum)
 	CV_StealthSetValue(&cv_kickstartaccel[playernum], p->kickstartaccel);
 	CV_StealthSetValue(&cv_autoroulette[playernum], p->autoroulette);
 	CV_StealthSetValue(&cv_litesteer[playernum], p->litesteer);
+	CV_StealthSetValue(&cv_autoring[playernum], p->autoring);
 	CV_StealthSetValue(&cv_rumble[playernum], p->rumble);
 	CV_StealthSetValue(&cv_fov[playernum], p->fov);
 

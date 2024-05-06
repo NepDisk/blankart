@@ -34,6 +34,7 @@
 #include "doomtype.h"
 #include "m_fixed.h" // FRACUNIT
 #include "r_skins.h" // DEFAULTSKIN
+#include "v_video.h"
 
 // There is a memset in one of consvar_t's constructors. It
 // SHOULD be safe if there is no polymorphism, but just
@@ -318,6 +319,7 @@ void Captioning_OnChange(void);
 consvar_t cv_closedcaptioning = Player("closedcaptioning", "Off").on_off().onchange(Captioning_OnChange);
 
 consvar_t cv_continuousmusic = Player("continuousmusic", "On").on_off();
+consvar_t cv_streamersafemusic = Player("streamersafemusic", "Off").on_off();
 consvar_t cv_controlperkey = Player("controlperkey", "One").values({{1, "One"}, {2, "Several"}});
 
 // actual general (maximum) sound & music volume, saved into the config
@@ -378,6 +380,7 @@ consvar_t cv_fullscreen = Player("fullscreen", "Yes").yes_no().onchange(SCR_Chan
 void Highreshudscale_OnChange(void);
 consvar_t cv_highreshudscale   = Player("highreshudscale",   "1").floating_point().min_max(9*FRACUNIT/10, 11*FRACUNIT/10).onchange(Highreshudscale_OnChange);
 
+
 // Sound system toggles, saved into the config
 void GameDigiMusic_OnChange(void);
 void GameSounds_OnChange(void);
@@ -403,7 +406,6 @@ consvar_t cv_menuframeskip = Player("menuframeskip", "Off").values({
 	{144, "MAX"},
 	{0, "Off"},
 });
-consvar_t cv_mindelay = Player("mindelay", "2").min_max(0, 30);
 consvar_t cv_movebob = Player("movebob", "1.0").floating_point().min_max(0, 4*FRACUNIT);
 consvar_t cv_netstat = Player("netstat", "Off").on_off().dont_save(); // show bandwidth statistics
 consvar_t cv_netticbuffer = Player("netticbuffer", "1").min_max(0, 3);
@@ -411,6 +413,11 @@ consvar_t cv_netticbuffer = Player("netticbuffer", "1").min_max(0, 3);
 // number of channels available
 void SetChannelsNum(void);
 consvar_t cv_numChannels = Player("snd_channels", "64").values(CV_Unsigned).onchange(SetChannelsNum);
+
+extern CV_PossibleValue_t soundmixingbuffersize_cons_t[];
+consvar_t cv_soundmixingbuffersize = Player("snd_mixingbuffersize", "2048")
+	.values(soundmixingbuffersize_cons_t)
+	.onchange_noinit([]() { COM_ImmedExecute("restartaudio"); });
 
 extern CV_PossibleValue_t perfstats_cons_t[];
 consvar_t cv_perfstats = Player("perfstats", "Off").dont_save().values(perfstats_cons_t);
@@ -550,11 +557,14 @@ consvar_t cv_pause = NetVar("pausepermission", "Server Admins").values({{0, "Ser
 consvar_t cv_pingmeasurement = Server("pingmeasurement", "Frames").values({{0, "Frames"}, {1, "Milliseconds"}});
 consvar_t cv_playbackspeed = Server("playbackspeed", "1").min_max(1, 10).dont_save();
 
+static constexpr const char* kNetDemoRecordDefault =
 #ifdef DEVELOP
-	consvar_t cv_recordmultiplayerdemos = Server("netdemo_record", "Auto Save").values({{2, "Auto Save"}});
+	"Auto Save";
 #else
-	consvar_t cv_recordmultiplayerdemos = Server("netdemo_record", "Manual Save").values({{0, "Disabled"}, {1, "Manual Save"}, {2, "Auto Save"}});
+	"Manual Save";
 #endif
+
+consvar_t cv_recordmultiplayerdemos = Server("netdemo_record", kNetDemoRecordDefault).values({{0, "Disabled"}, {1, "Manual Save"}, {2, "Auto Save"}});
 
 consvar_t cv_reducevfx = Server("reducevfx", "No").yes_no();
 consvar_t cv_screenshake = Server("screenshake", "Full").values({{0, "Off"}, {1, "Half"}, {2, "Full"}});
@@ -853,6 +863,7 @@ consvar_t cv_ng_rivaldraft = UnsavedNetVar("ng_rivaldraft", "On").on_off();
 //
 
 consvar_t cv_4thgear = OnlineCheat("4thgear", "Off").values(CV_OnOff).flags(CV_NOSHOWHELP).description("Surpassing your limits!");
+consvar_t cv_levelskull = OnlineCheat("levelskull", "Off").values(CV_OnOff).flags(CV_NOSHOWHELP).description("What Storm Rig looked like 2 months before 2.0");
 
 consvar_t cv_barriertime = OnlineCheat("barriertime", "30").values(CV_Natural).description("How long it takes for the Barrier to shrink in Battle Overtime");
 consvar_t cv_battlespawn = OnlineCheat("battlespawn", "0").values(CV_Unsigned).description("Spawn every player at the same spawnpoint in Battle (0 = random spawns)");
@@ -899,7 +910,7 @@ extern CV_PossibleValue_t numlaps_cons_t[];
 void NumLaps_OnChange(void);
 consvar_t cv_numlaps = OnlineCheat("numlaps", "Map default").values(numlaps_cons_t).onchange(NumLaps_OnChange).description("Race maps always have the same number of laps");
 
-consvar_t cv_restrictskinchange = OnlineCheat("restrictskinchange", "No").yes_no().description("Don't let players change their skin in the middle of gameplay");
+consvar_t cv_restrictskinchange = OnlineCheat("restrictskinchange", "Yes").yes_no().description("Don't let players change their skin in the middle of gameplay");
 consvar_t cv_spbtest = OnlineCheat("spbtest", "Off").on_off().description("SPB can never target a player");
 consvar_t cv_showgremlins = OnlineCheat("showgremlins", "No").yes_no().description("Show line collision errors");
 consvar_t cv_timescale = OnlineCheat(cvlist_timer)("timescale", "1.0").floating_point().min_max(FRACUNIT/20, 20*FRACUNIT).description("Overclock or slow down the game");
@@ -1003,7 +1014,7 @@ consvar_t cv_dummyextraspassword = MenuDummy("dummyextraspassword", "");
 
 extern CV_PossibleValue_t gpdifficulty_cons_t[];
 void Dummygpdifficulty_OnChange(void);
-consvar_t cv_dummygpdifficulty = MenuDummy("dummygpdifficulty", "Normal").values(gpdifficulty_cons_t).onchange(Dummygpdifficulty_OnChange);
+consvar_t cv_dummygpdifficulty = MenuDummy("dummygpdifficulty", "Intense").values(gpdifficulty_cons_t).onchange(Dummygpdifficulty_OnChange);
 consvar_t cv_dummygpencore = MenuDummy("dummygpencore", "Off").on_off();
 
 consvar_t cv_dummyip = MenuDummy("dummyip", "");
@@ -1033,8 +1044,9 @@ void Dummymenuplayer_OnChange(void);
 consvar_t cv_dummymenuplayer = MenuDummy("dummymenuplayer", "P1").onchange(Dummymenuplayer_OnChange).values({{0, "NOPE"}, {1, "P1"}, {2, "P2"}, {3, "P3"}, {4, "P4"}});
 
 consvar_t cv_dummyprofileautoroulette = MenuDummy("dummyprofileautoroulette", "Off").on_off();
-consvar_t cv_dummyprofilefov = MenuDummy("dummyprofilefov", "100").min_max(70, 140);
+consvar_t cv_dummyprofilefov = MenuDummy("dummyprofilefov", "100").min_max(70, 110);
 consvar_t cv_dummyprofilelitesteer = MenuDummy("dummyprofilelitesteer", "Off").on_off();
+consvar_t cv_dummyprofileautoring = MenuDummy("dummyprofileautoring", "Off").on_off();
 consvar_t cv_dummyprofilekickstart = MenuDummy("dummyprofilekickstart", "Off").on_off();
 consvar_t cv_dummyprofilename = MenuDummy("dummyprofilename", "");
 consvar_t cv_dummyprofileplayername = MenuDummy("dummyprofileplayername", "");
@@ -1147,6 +1159,13 @@ consvar_t cv_litesteer[MAXSPLITSCREENPLAYERS] = {
 	Player("litesteer4", "Off").on_off().onchange(weaponPrefChange4),
 };
 
+consvar_t cv_autoring[MAXSPLITSCREENPLAYERS] = {
+	Player("autoring", "Off").on_off().onchange(weaponPrefChange),
+	Player("autoring2", "Off").on_off().onchange(weaponPrefChange2),
+	Player("autoring3", "Off").on_off().onchange(weaponPrefChange3),
+	Player("autoring4", "Off").on_off().onchange(weaponPrefChange4),
+};
+
 consvar_t cv_cam_dist[MAXSPLITSCREENPLAYERS] = {
 	Player("cam_dist", "190").floating_point(),
 	Player("cam2_dist", "190").floating_point(),
@@ -1235,10 +1254,10 @@ consvar_t cv_followercolor[MAXSPLITSCREENPLAYERS] = {
 
 void Fov_OnChange(void);
 consvar_t cv_fov[MAXSPLITSCREENPLAYERS] = {
-	Player("fov", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange),
-	Player("fov2", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange),
-	Player("fov3", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange),
-	Player("fov4", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange),
+	Player("fov", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange).dont_save(),
+	Player("fov2", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange).dont_save(),
+	Player("fov3", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange).dont_save(),
+	Player("fov4", "100").floating_point().min_max(60*FRACUNIT, 179*FRACUNIT).onchange(Fov_OnChange).dont_save(),
 };
 
 consvar_t cv_freecam_speed = Player("freecam_speed", "1").min_max(-64, 10).dont_save();
@@ -1261,6 +1280,8 @@ consvar_t cv_kickstartaccel[MAXSPLITSCREENPLAYERS] = {
 	Player("kickstartaccel3", "Off").on_off().onchange(weaponPrefChange3),
 	Player("kickstartaccel4", "Off").on_off().onchange(weaponPrefChange4)
 };
+
+consvar_t cv_mindelay = Player("mindelay", "2").min_max(0, 15).onchange(weaponPrefChange);
 
 extern CV_PossibleValue_t Color_cons_t[];
 void Color1_OnChange(void);
@@ -1414,13 +1435,11 @@ consvar_t cv_mute = UnsavedNetVar("mute", "Off").on_off().onchange(Mute_OnChange
 
 	extern CV_PossibleValue_t glshaders_cons_t[];
 	consvar_t cv_glallowshaders = OpenGL("gr_allowclientshaders", "On").on_off().network().dont_save();
-	void CV_glshaders_OnChange(void);
-	consvar_t cv_glshaders = OpenGL("gr_shaders", "On").values(glshaders_cons_t).onchange(CV_glshaders_OnChange);
-
-	extern CV_PossibleValue_t glpalettedepth_cons_t[];
+	consvar_t cv_glshaders = OpenGL("gr_shaders", "On").values(glshaders_cons_t);
 	void CV_glpaletterendering_OnChange(void);
 	consvar_t cv_glpaletterendering = OpenGL("gr_paletterendering", "On").on_off().onchange(CV_glpaletterendering_OnChange);
 	void CV_glpalettedepth_OnChange(void);
+	extern CV_PossibleValue_t glpalettedepth_cons_t[];
 	consvar_t cv_glpalettedepth = OpenGL("gr_palettedepth", "16 bits").values(glpalettedepth_cons_t).onchange(CV_glpalettedepth_OnChange);
 
 	extern CV_PossibleValue_t glanisotropicmode_cons_t[];
@@ -1442,8 +1461,7 @@ consvar_t cv_mute = UnsavedNetVar("mute", "Off").on_off().onchange(Mute_OnChange
 
 #ifdef BAD_MODEL_OPTIONS
 	consvar_t cv_glmodelinterpolation = OpenGL("gr_modelinterpolation", "Sometimes").values({{0, "Off"}, {1, "Sometimes"}, {2, "Always"}});
-	void CV_glmodellighting_OnChange(void);
-	consvar_t cv_glmodellighting = OpenGL("gr_modellighting", "Off").on_off().onchange(CV_glmodellighting_OnChange);
+	consvar_t cv_glmodellighting = OpenGL("gr_modellighting", "Off").on_off();
 #endif
 
 	consvar_t cv_glmodels = OpenGL("gr_models", "On").on_off();
