@@ -837,6 +837,11 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		// darkness
 		WRITEUINT32(save->p, players[i].darkness_start);
 		WRITEUINT32(save->p, players[i].darkness_end);
+
+		//Pogo
+		WRITEUINT32(save->p, players[i].pogoSpringJumped);
+		WRITEFIXED(save->p, players[i].pogoMaxSpeed);
+		WRITEFIXED(save->p, players[i].pogoMinSpeed);
 	}
 
 	TracyCZoneEnd(__zone);
@@ -1455,6 +1460,10 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		// darkness
 		players[i].darkness_start = READUINT32(save->p);
 		players[i].darkness_end = READUINT32(save->p);
+
+		players[i].pogoSpringJumped = READUINT32(save->p);
+		players[i].pogoMaxSpeed = READFIXED(save->p);
+		players[i].pogoMinSpeed = READFIXED(save->p);
 
 		//players[i].viewheight = P_GetPlayerViewHeight(players[i]); // scale cannot be factored in at this point
 	}
