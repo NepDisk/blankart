@@ -17,6 +17,8 @@
 #include "../byteptr.h"
 #include "n_func.h"
 #include "../k_respawn.h"
+#include "n_cvar.h"
+#include "../k_objects.h"
 
 // Old update Player angle taken from old kart commits
 void N_UpdatePlayerAngle(player_t *player)
@@ -75,7 +77,7 @@ INT16 N_GetKartDriftValue(player_t *player, fixed_t countersteer)
 		basedrift += (basedrift / greasetics) * player->tiregrease;
 	}
 
-	if (player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER))
+	if (player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER) && cv_ng_underwaterhandling.value)
 	{
 		countersteer = FixedMul(countersteer, 3*FRACUNIT/2);
 	}
@@ -106,10 +108,34 @@ INT16 N_GetKartTurnValue(player_t *player, INT16 turnvalue)
 		return 0;
 	}
 
-	if (player->trickpanel != 0)
+	if (player->respawn.state == RESPAWNST_MOVE)
 	{
+		// No turning during respawn
 		return 0;
 	}
+
+	// Staff ghosts - direction-only trickpanel behavior
+	if (G_CompatLevel(0x000A) || K_PlayerUsesBotMovement(player))
+	{
+		if (player->trickpanel == TRICKSTATE_READY || player->trickpanel == TRICKSTATE_FORWARD)
+		{
+			// Forward trick or rising from trickpanel
+			return 0;
+		}
+	}
+
+	if (player->justDI > 0)
+	{
+		// No turning until you let go after DI-ing.
+		return 0;
+	}
+
+	if (Obj_PlayerRingShooterFreeze(player) == true)
+	{
+		// No turning while using Ring Shooter
+		return 0;
+	}
+
 
 	currentSpeed = R_PointToDist2(0, 0, player->mo->momx, player->mo->momy);
 
@@ -156,13 +182,32 @@ INT16 N_GetKartTurnValue(player_t *player, INT16 turnvalue)
 		turnfixed = FixedMul(turnfixed, FRACUNIT + player->handleboost);
 	}
 
-	if (player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER))
+	if (player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER) && cv_ng_underwaterhandling.value)
 	{
 		turnfixed = FixedMul(turnfixed, 3*FRACUNIT/2);
 	}
 
 	// Weight has a small effect on turning
 	turnfixed = FixedMul(turnfixed, weightadjust);
+
+	// Side trick
+	if (player->trickpanel == TRICKSTATE_LEFT || player->trickpanel == TRICKSTATE_RIGHT)
+	{
+		turnfixed /= 2;
+	}
+
+	// 2.2 - Presteering allowed in trickpanels
+	if (!G_CompatLevel(0x000A) && !K_PlayerUsesBotMovement(player))
+	{
+		if (player->trickpanel == TRICKSTATE_READY || player->trickpanel == TRICKSTATE_FORWARD)
+		{
+			// Forward trick or rising from trickpanel
+			turnfixed /= 2;
+			if (player->tricklock)
+				turnfixed /= (player->tricklock/2 + 1);
+		}
+	}
+
 
 	return (turnfixed / FRACUNIT);
 }

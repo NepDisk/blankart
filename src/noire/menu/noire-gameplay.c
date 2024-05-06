@@ -138,8 +138,8 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Stairjank", "Should karts be affected by steps & bumpy roads, only roads or nothing?",
 		NULL, {.cvar = &cv_ng_stairjank}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Old Turn Code", "Use turning code from indev v2 commit with a older version of the steering fix applied",
-		NULL, {.cvar = &cv_ng_oldturncode}, 0, 0},
+	{IT_STRING | IT_CVAR, "Turn Control Style", "Choose how turning will work. V2 Indev, tweaked vanilla or vanilla",
+		NULL, {.cvar = &cv_ng_turnstyle}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Underwater Handling Adjust", "Should the turning of karts be affected when underwater?",
 		NULL, {.cvar = &cv_ng_underwaterhandling}, 0, 0},
