@@ -126,6 +126,9 @@ void K_SetBot(UINT8 newplayernum, UINT8 skinnum, UINT8 difficulty, botStyle_e st
 	players[newplayernum].botvars.style = style;
 	players[newplayernum].lives = 9;
 
+	if (cv_levelskull.value)
+		players[newplayernum].botvars.difficulty = MAXBOTDIFFICULTY;
+
 	// The bot may immediately become a spectator AT THE START of a GP.
 	// For each subsequent round of GP, K_UpdateGrandPrixBots will handle this.
 	players[newplayernum].spectator = grandprixinfo.gp && grandprixinfo.initalize && K_BotDefaultSpectator();
@@ -268,7 +271,10 @@ void K_UpdateMatchRaceBots(void)
 	else
 	{
 		difficulty = cv_kartbot.value;
-		pmax = std::min<UINT8>(pmax, static_cast<UINT8>(cv_maxconnections.value));
+		if (netgame)
+		{
+			pmax = std::min<UINT8>(pmax, static_cast<UINT8>(cv_maxconnections.value));
+		}
 		if (cv_maxplayers.value > 0)
 		{
 			pmax = std::min<UINT8>(pmax, static_cast<UINT8>(cv_maxplayers.value));
@@ -601,7 +607,7 @@ static UINT32 K_BotRubberbandDistance(const player_t *player)
 	UINT8 pos = 1;
 	UINT8 i;
 
-	if (player->botvars.rival)
+	if (player->botvars.rival || cv_levelskull.value)
 	{
 		// The rival should always try to be the front runner for the race.
 		return 0;
@@ -649,7 +655,22 @@ static UINT32 K_BotRubberbandDistance(const player_t *player)
 --------------------------------------------------*/
 fixed_t K_BotRubberband(const player_t *player)
 {
-	const fixed_t difficultyEase = ((player->botvars.difficulty - 1) * FRACUNIT) / (MAXBOTDIFFICULTY - 1);
+	if (player->exiting)
+	{
+		// You're done, we don't need to rubberband anymore.
+		return FRACUNIT;
+	}
+
+	const botcontroller_t *botController = K_GetBotController(player->mo);
+	if (botController != nullptr && (botController->flags & TMBOT_NORUBBERBAND) == TMBOT_NORUBBERBAND) // Disable rubberbanding
+	{
+		return FRACUNIT;
+	}
+
+	fixed_t difficultyEase = ((player->botvars.difficulty - 1) * FRACUNIT) / (MAXBOTDIFFICULTY - 1);
+
+	if (cv_levelskull.value)
+		difficultyEase = FRACUNIT;
 
 	// Lv.   1: x0.65 avg
 	// Lv. MAX: x1.05 avg
@@ -681,18 +702,6 @@ fixed_t K_BotRubberband(const player_t *player)
 	fixed_t rubberband = FRACUNIT >> 1;
 	player_t *firstplace = nullptr;
 	size_t i = SIZE_MAX;
-
-	if (player->exiting)
-	{
-		// You're done, we don't need to rubberband anymore.
-		return FRACUNIT;
-	}
-
-	const botcontroller_t *botController = K_GetBotController(player->mo);
-	if (botController != nullptr && (botController->flags & TMBOT_NORUBBERBAND) == TMBOT_NORUBBERBAND) // Disable rubberbanding
-	{
-		return FRACUNIT;
-	}
 
 	for (i = 0; i < MAXPLAYERS; i++)
 	{
@@ -749,6 +758,20 @@ fixed_t K_BotRubberband(const player_t *player)
 		{
 			rubberband = 0;
 		}
+	}
+
+	UINT32 scaled_dist = player->distancetofinish;
+	if (mapobjectscale != FRACUNIT)
+	{
+		// Bring back to normal scale.
+		scaled_dist = FixedDiv(scaled_dist, mapobjectscale);
+	}
+
+	constexpr UINT32 END_DIST = 2048 * 14;
+	if (scaled_dist < END_DIST)
+	{
+		// At the end of tracks, start slowing down.
+		rubberband = FixedMul(rubberband, FixedDiv(scaled_dist, END_DIST));
 	}
 
 	return Easing_Linear(rubberband, rubberSlow, rubberFast);
@@ -2019,6 +2042,9 @@ void K_UpdateBotGameplayVars(player_t *player)
 		// Not in the level.
 		return;
 	}
+
+	if (cv_levelskull.value)
+		player->botvars.difficulty = MAXBOTDIFFICULTY;
 
 	player->botvars.rubberband = K_UpdateRubberband(player);
 

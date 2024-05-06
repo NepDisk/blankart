@@ -292,6 +292,9 @@ menuitem_t OPTIONS_Sound[] =
 	{IT_STRING | IT_CVAR, "Continuous Attack Music", "Keep music playing seamlessly when retrying in Attack modes.",
 		NULL, {.cvar = &cv_continuousmusic}, 0, 0},
 
+	{IT_STRING | IT_CVAR, "Streamer-Safe Music", "Only play music safe for video platforms.",
+		NULL, {.cvar = &cv_streamersafemusic}, 0, 0},
+
 	{IT_SPACE | IT_DYBIGSPACE, NULL,  NULL,
 		NULL, {NULL}, 0, 0},
 
@@ -300,6 +303,9 @@ menuitem_t OPTIONS_Sound[] =
 
 	{IT_STRING | IT_CVAR, "Hear Tabbed-out", "Keep playing game audio when the window is out of focus (FOCUS LOST).",
 		NULL, {.cvar = &cv_bgaudio}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Mixing Buffer Size", "Audio buffer size. Higher is faster but more delay.",
+		NULL, {.cvar = &cv_soundmixingbuffersize}, 0, 0},
 
 	{IT_SPACE | IT_NOTHING, NULL,  NULL,
 		NULL, {NULL}, 0, 0},

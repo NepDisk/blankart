@@ -132,16 +132,23 @@ INT16 N_GetKartTurnValue(player_t *player, INT16 turnvalue)
 
 	if (player->drift != 0 && P_IsObjectOnGround(player->mo))
 	{
-		fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN*FRACUNIT);
-
-		// If we're drifting we have a completely different turning value
-
 		if (player->pflags & PF_DRIFTEND)
 		{
-			countersteer = FRACUNIT;
+			// Sal: K_GetKartDriftValue is short-circuited to give a weird additive magic number,
+			// instead of an entirely replaced turn value. This gaslit me years ago when I was doing a
+			// code readability pass, where I missed that fact because it also returned early.
+			turnfixed += N_GetKartDriftValue(player, FRACUNIT) * FRACUNIT;
+			return (turnfixed / FRACUNIT);
+
+		}
+		else
+		{
+			// If we're drifting we have a completely different turning value
+			fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN * FRACUNIT);
+			return N_GetKartDriftValue(player, countersteer);
+
 		}
 
-		return N_GetKartDriftValue(player, countersteer);
 	}
 
 	if (player->handleboost > 0)

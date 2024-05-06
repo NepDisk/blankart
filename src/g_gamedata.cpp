@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstddef>
+#include <exception>
 #include <filesystem>
 
 #include <fmt/format.h>
@@ -286,7 +287,8 @@ void srb2::save_ng_gamedata()
 
 	std::string gamedataname_s {gamedatafilename};
 	fs::path savepath {fmt::format("{}/{}", srb2home, gamedataname_s)};
-	fs::path tmpsavepath {fmt::format("{}/{}.tmp", srb2home, gamedataname_s)};
+	int random_number = rand();
+	fs::path tmpsavepath {fmt::format("{}/{}_{}.tmp", srb2home, gamedataname_s, random_number)};
 
 	json ngdata_json = ng;
 
@@ -294,20 +296,17 @@ void srb2::save_ng_gamedata()
 	{
 		std::string tmpsavepathstring = tmpsavepath.string();
 		srb2::io::FileStream file {tmpsavepathstring, srb2::io::FileStreamMode::kWrite};
-		srb2::io::BufferedOutputStream<srb2::io::FileStream> bos {std::move(file)};
 
 		// The header is necessary to validate during loading.
-		srb2::io::write(static_cast<uint32_t>(GD_VERSION_MAJOR), bos); // major
-		srb2::io::write(static_cast<uint8_t>(GD_VERSION_MINOR), bos); // minor/flags
-		srb2::io::write(static_cast<uint8_t>(gamedata->evercrashed), bos); // dirty (crash recovery)
+		srb2::io::write(static_cast<uint32_t>(GD_VERSION_MAJOR), file); // major
+		srb2::io::write(static_cast<uint8_t>(GD_VERSION_MINOR), file); // minor/flags
+		srb2::io::write(static_cast<uint8_t>(gamedata->evercrashed), file); // dirty (crash recovery)
 
 		std::vector<uint8_t> ubjson = json::to_ubjson(ng);
-		srb2::io::write_exact(bos, tcb::as_bytes(tcb::make_span(ubjson)));
-		bos.flush();
-		file = bos.stream();
+		srb2::io::write_exact(file, tcb::as_bytes(tcb::make_span(ubjson)));
 		file.close();
 	}
-	catch (const srb2::io::FileStreamException& ex)
+	catch (const std::exception& ex)
 	{
 		CONS_Alert(CONS_ERROR, "NG Gamedata save failed: %s\n", ex.what());
 	}
@@ -434,6 +433,13 @@ void srb2::load_ng_gamedata()
 		json parsed = json::from_ubjson(remainder_as_u8);
 		js = parsed.template get<GamedataJson>();
 	}
+	catch (const std::exception& ex)
+	{
+		const char* gdfolder = G_GameDataFolder();
+		const char* what = ex.what();
+		I_Error("Game data is corrupt.\nDelete %s (maybe in %s) and try again.\n\nException: %s", gamedatafilename, gdfolder, what);
+		return;
+	}
 	catch (...)
 	{
 		const char* gdfolder = G_GameDataFolder();
@@ -487,7 +493,12 @@ void srb2::load_ng_gamedata()
 	gamedata->tutorialdone = js.milestones.tutorialdone;
 	gamedata->gonerlevel = js.milestones.gonerlevel;
 	gamedata->thisprisoneggpickup = js.prisons.thisprisoneggpickup;
+
 	gamedata->prisoneggstothispickup = js.prisons.prisoneggstothispickup;
+	if (gamedata->prisoneggstothispickup > GDINIT_PRISONSTOPRIZE)
+	{
+		gamedata->prisoneggstothispickup = GDINIT_PRISONSTOPRIZE;
+	}
 
 	size_t emblems_size = js.emblems.size();
 	for (size_t i = 0; i < std::min((size_t)MAXEMBLEMS, emblems_size); i++)

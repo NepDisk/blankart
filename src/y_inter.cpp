@@ -716,14 +716,14 @@ void Y_PlayerStandingsDrawer(y_data_t *standings, INT32 xoffset)
 						kp_cpu
 					);*/
 				}
-				else if (pnum != serverplayer || !server_lagless)
+				else
 				{
 					HU_drawPing(
 						(x2 - 2) * FRACUNIT, (y-2) * FRACUNIT,
 						playerpingtable[pnum],
+						playerdelaytable[pnum],
 						playerpacketlosstable[pnum],
 						0,
-						false,
 						(datarightofcolumn ? 1 : -1)
 					);
 				}
@@ -952,7 +952,7 @@ void Y_RoundQueueDrawer(y_data_t *standings, INT32 offset, boolean doanimations,
 		SINT8 deferxoffs = 0;
 
 		const INT32 desiredx2 = (290 + bufferspace);
-		spacetospecial = std::max(desiredx2 - widthofroundqueue - (24 - bufferspace), 16);
+		spacetospecial = std::max<INT32>(desiredx2 - widthofroundqueue - (24 - bufferspace), 16);
 
 		if (roundqueue.position == roundqueue.size)
 		{
@@ -2234,7 +2234,7 @@ void Y_StartIntermission(void)
 	else
 	{
 		// Minimum two seconds for match results, then two second slideover approx halfway through
-		sorttic = std::max((timer/2) - 2*TICRATE, 2*TICRATE);
+		sorttic = std::max<INT32>((timer/2) - 2*TICRATE, 2*TICRATE);
 	}
 
 	// TODO: code's a mess, I'm just making it extra clear

@@ -268,6 +268,7 @@ INT32 itemtime = 8*TICRATE;
 INT32 bubbletime = TICRATE/2;
 INT32 comebacktime = 3*TICRATE;
 INT32 bumptime = 6;
+INT32 ebraketime = TICRATE;
 INT32 greasetics = 3*TICRATE;
 INT32 wipeoutslowtime = 20;
 INT32 wantedreduce = 5*TICRATE;
@@ -1816,14 +1817,20 @@ void G_Ticker(boolean run)
 			{
 				if (playeringame[i])
 				{
-					if (players[i].bot == true && grandprixinfo.gp == true && grandprixinfo.masterbots == false)
+					if (players[i].bot == true
+						&& grandprixinfo.gp == true
+						&& grandprixinfo.masterbots == false)
 					{
-						UINT8 bot_level_decrease = 2;
+						UINT8 bot_level_decrease = 3;
 
 						if (grandprixinfo.gamespeed == KARTSPEED_EASY)
-							bot_level_decrease = 3;
+						{
+							bot_level_decrease++;
+						}
 						else if (grandprixinfo.gamespeed == KARTSPEED_HARD)
-							bot_level_decrease = 1;
+						{
+							bot_level_decrease--;
+						}
 
 						if (players[i].botvars.difficulty <= bot_level_decrease)
 						{
@@ -2254,7 +2261,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	totalring = players[player].totalring;
 	xtralife = players[player].xtralife;
 
-	pflags = (players[player].pflags & (PF_WANTSTOJOIN|PF_KICKSTARTACCEL|PF_SHRINKME|PF_SHRINKACTIVE|PF_AUTOROULETTE|PF_ANALOGSTICK));
+	pflags = (players[player].pflags & (PF_WANTSTOJOIN|PF_KICKSTARTACCEL|PF_SHRINKME|PF_SHRINKACTIVE|PF_AUTOROULETTE|PF_ANALOGSTICK|PF_AUTORING));
 
 	// SRB2kart
 	memcpy(&itemRoulette, &players[player].itemRoulette, sizeof (itemRoulette));
@@ -2301,7 +2308,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	}
 	else
 	{
-		rings = 5;
+		rings = 10;
 	}
 
 	saveroundconditions = false;
@@ -4141,7 +4148,23 @@ void G_GetNextMap(void)
 		return;
 	}
 
-	deferencoremode = (cv_kartencore.value == 1);
+	// tee up an Encore status (overridden by roundqueue, if applicable)
+	if (grandprixinfo.gp)
+	{
+		// Inherit from GP
+		deferencoremode = grandprixinfo.encore;
+	}
+	else if (K_CanChangeRules(true))
+	{
+		// Use cvar
+		deferencoremode = (cv_kartencore.value == 1);
+	}
+	else
+	{
+		// Inherit from current state
+		deferencoremode = encoremode;
+	}
+
 	forceresetplayers = forcespecialstage = false;
 
 	// go to next level
@@ -4989,7 +5012,7 @@ void G_DirtyGameData(void)
 // Can be called by the startup code or the menu task.
 //
 
-#define SAV_VERSIONMINOR 5
+#define SAV_VERSIONMINOR 6
 
 void G_LoadGame(void)
 {
