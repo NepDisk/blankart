@@ -14624,7 +14624,7 @@ boolean K_PlayerCanUseItem(player_t *player)
 
 //}
 
-void inline K_PlayerResetPogo(player_t* player) {
+inline void K_PlayerResetPogo(player_t* player) {
 	player->pogoSpringJumped = false;
 	player->pogoMaxSpeed = 0;
 	player->pogoMinSpeed = 0;
