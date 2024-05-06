@@ -31,7 +31,8 @@ void Obj_InstaWhipThink (mobj_t *whip)
 
 		// Follow player
 		whip->flags &= ~(MF_NOCLIPTHING);
-		P_SetScale(whip, whip->target->scale);
+		if (mo->scale != whip->scale)
+			P_InstaScale(whip, mo->scale); 
 		P_MoveOrigin(whip, mo->x, mo->y, mo->z + mo->height/2);
 		whip->flags |= MF_NOCLIPTHING;
 
@@ -67,6 +68,7 @@ void Obj_SpawnInstaWhipRecharge(player_t *player, angle_t angleOffset)
 	x->renderflags |= RF_SLOPESPLAT | RF_NOSPLATBILLBOARD;
 
 	P_SetTarget(&recharge_target(x), player->mo);
+	P_InstaScale(x, x->target->scale<<1); // <<1 == * 2
 	recharge_offset(x) = angleOffset;
 }
 
@@ -81,7 +83,9 @@ void Obj_InstaWhipRechargeThink(mobj_t *x)
 	}
 
 	P_MoveOrigin(x, target->x, target->y, target->z + (target->height / 2));
-	P_InstaScale(x, 2 * target->scale);
+	// <<1 == * 2, in case this does happen during multiple frames.
+	if (target->scale<<1 != x->scale)
+		P_InstaScale(x, target->scale<<1);
 	x->angle = target->angle + recharge_offset(x);
 
 	// Flickers every other frame
@@ -107,5 +111,6 @@ void Obj_InstaWhipRejectThink(mobj_t *x)
 
 	x->angle = x->target->angle;
 	P_MoveOrigin(x, target->x, target->y, target->z);
-	P_InstaScale(x, target->scale);
+	if (target->scale != x->scale)
+		P_InstaScale(x, target->scale);
 }
