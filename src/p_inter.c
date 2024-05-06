@@ -12,12 +12,14 @@
 /// \file  p_inter.c
 /// \brief Handling interactions (i.e., collisions)
 
+#include "d_netcmd.h"
 #include "doomdef.h"
 #include "i_system.h"
 #include "am_map.h"
 #include "g_game.h"
 #include "m_random.h"
 #include "p_local.h"
+#include "p_mobj.h"
 #include "s_sound.h"
 #include "r_main.h"
 #include "st_stuff.h"
@@ -1097,6 +1099,23 @@ void P_TouchCheatcheck(mobj_t *post, player_t *player, boolean snaptopost)
 		return;
 	}
 
+	// Going backwards triggers sound and increases antigrief
+	if ((post->health >= ((numcheatchecks/2) + player->cheatchecknum)) && numbosswaypoints > 0)
+	{
+		if (!player->checkskip)
+		{
+			S_StartSound(toucher, sfx_lose);
+
+			if (netgame	&& cv_antigrief.value)
+			{
+					player->griefValue += TICRATE;
+			}
+		}
+
+		player->checkskip = 3;
+		return;
+	}
+
 	// With the parameter + angle setup, we can go up to 1365 star posts. Who needs that many?
 	if (post->health > 1365)
 	{
@@ -1117,14 +1136,6 @@ void P_TouchCheatcheck(mobj_t *post, player_t *player, boolean snaptopost)
 		player->respawn.flip = ((post->flags2 & MF2_OBJECTFLIP) || (post->spawnpoint->options & MTF_OBJECTFLIP)) ? true : false;	// store flipping
 		player->respawn.manual = true;
 
-		// going backwards triggers sound
-		if ( player->cheatchecknum > post->health)
-		{
-			if (!player->checkskip)
-				S_StartSound(toucher, sfx_lose);
-			player->checkskip = 3;
-			return;
-		}
 	}
 
 

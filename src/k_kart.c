@@ -29,6 +29,7 @@
 #include "m_random.h"
 #include "noire/n_func.h"
 #include "p_local.h"
+#include "p_mobj.h"
 #include "p_slopes.h"
 #include "p_setup.h"
 #include "r_draw.h"
@@ -8828,6 +8829,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (player->ringdelay)
 		player->ringdelay--;
+
+	if (player->checkskip && numbosswaypoints> 0)
+		player->checkskip--;
 
 	if (P_PlayerInPain(player))
 	{
