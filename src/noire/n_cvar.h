@@ -36,6 +36,7 @@ extern consvar_t cv_ng_stumble;
 extern consvar_t cv_ng_hitlag;
 extern consvar_t cv_ng_mapanger;
 extern consvar_t cv_ng_disabletripwires;
+extern consvar_t cv_ng_nophysicsflag;
 
 //Instawhip
 extern consvar_t cv_ng_instawhip;

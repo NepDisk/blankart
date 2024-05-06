@@ -826,6 +826,7 @@ consvar_t cv_ng_stumble = UnsavedNetVar("ng_stumble", "On").on_off();
 consvar_t cv_ng_hitlag = UnsavedNetVar("ng_hitlag", "On").on_off();
 consvar_t cv_ng_mapanger = UnsavedNetVar("ng_mapanger", "Default (2)").min_max(0, INT32_MAX, {{-1, "Disabled"}, {2, "Default (2)"}});
 consvar_t cv_ng_disabletripwires = UnsavedNetVar("ng_disabletripwires", "Off").on_off().onchange(NG_Tripwire_OnChange);
+consvar_t cv_ng_nophysicsflag = UnsavedNetVar("ng_nophysicsflag", "Off").on_off();
 
 //Instawhip
 consvar_t cv_ng_instawhip = UnsavedNetVar("ng_instawhip", "On").on_off();
