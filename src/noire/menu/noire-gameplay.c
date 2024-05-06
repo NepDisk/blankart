@@ -147,6 +147,8 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Underwater Handling Adjust", "Should the turning of karts be affected when underwater?",
 		NULL, {.cvar = &cv_ng_underwaterhandling}, 0, 0},
 
+	{IT_STRING | IT_CVAR, "No Physics Flag SLope Launch", "Should the no Physics slope flag be respected for slope launch?",
+		NULL, {.cvar = &cv_ng_nophysicsflag}, 0, 0},
 
 	///////////
 	// RIVALS

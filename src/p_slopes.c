@@ -26,6 +26,9 @@
 #include "r_fps.h"
 #include "k_kart.h" // K_PlayerEBrake
 
+// Noire:
+#include "noire/n_cvar.h"
+
 pslope_t *slopelist = NULL;
 UINT16 slopecount = 0;
 
@@ -977,7 +980,14 @@ boolean P_CanApplySlopeLaunch(mobj_t *mo, pslope_t *slope)
 		return false;
 	}
 
-	// No physics slopes are fine to launch off of.
+	// No physics slopes are fine to launch off of. NOIRE: No, just no. Allow this to disabled via cvar
+
+	if((mo->standingslope->flags & SL_NOPHYSICS) && cv_ng_nophysicsflag.value)
+	{
+		//Don't do slope launch pls thx.
+		return false;
+	}
+
 
 	if (slope->normal.x == 0 && slope->normal.y == 0)
 	{
@@ -996,6 +1006,9 @@ boolean P_CanApplySlopeLaunch(mobj_t *mo, pslope_t *slope)
 void P_QuantizeMomentumToSlope(vector3_t *momentum, pslope_t *slope)
 {
 	vector3_t axis; // Fuck you, C90.
+
+	if ((slope->flags & SL_NOPHYSICS) && cv_ng_nophysicsflag.value)
+		return; // No physics, no quantizing.
 
 	axis.x = -slope->d.y;
 	axis.y = slope->d.x;
