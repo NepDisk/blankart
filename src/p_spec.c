@@ -4744,7 +4744,7 @@ DoneSection2:
 			break;
 
 		case 7: // SRB2kart 190117 - Oil Slick (deprecated)
-			if (roversector || isTouching)
+			if (roversector || P_MobjReadyToTrigger(player->mo, sector))
 			{
 				if (player)
 					P_DamageMobj(player->mo, NULL, NULL, 1, DMG_NORMAL);
