@@ -160,24 +160,27 @@ menuitem_t OPTIONS_NoireGameplay[] =
 		NULL, {.cvar = &cv_ng_nophysicsflag}, 0, 0},
 
 	///////////
-	// RIVALS
+	// Bots
 	///////////
-	{IT_HEADER, "Rivals...", NULL,
+	{IT_HEADER, "Bots...", NULL,
 		NULL, {NULL}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Bot Rubberband Boost", "Should be allowed to use rubberband boost?",
+		NULL, {.cvar = &cv_ng_botrubberbandboost}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Rivals", "Should there be rivals?",
 		NULL, {.cvar = &cv_ng_rivals}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Top Speed", "Adjust rival's top speed (10 for non-rivals)",
+	{IT_STRING | IT_CVAR, "Rival Top Speed", "Adjust rival's top speed (10 for non-rivals)",
 		NULL, {.cvar = &cv_ng_rivaltopspeed}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Ring Power", "Adjust rival's ring power (10 for non-rivals)",
+	{IT_STRING | IT_CVAR, "Rival Ring Power", "Adjust rival's ring power (10 for non-rivals)",
 		NULL, {.cvar = &cv_ng_rivalringpower}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Frantic Items", "Should rival use frantic items?",
+	{IT_STRING | IT_CVAR, "Rival Frantic Items", "Should rival use frantic items?",
 		NULL, {.cvar = &cv_ng_rivalfrantic}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "2x Draft Power", "Should rival pull ahead at double speed?",
+	{IT_STRING | IT_CVAR, "Rival 2x Draft Power", "Should rival pull ahead at double speed?",
 		NULL, {.cvar = &cv_ng_rivaldraft}, 0, 0},
 };
 

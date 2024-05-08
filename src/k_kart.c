@@ -3604,7 +3604,7 @@ static void K_GetKartBoostPower(player_t *player)
 	}
 
 	// This should always remain the last boost stack before tethering
-	if (player->botvars.rubberband > FRACUNIT && K_PlayerUsesBotMovement(player) == true)
+	if (player->botvars.rubberband > FRACUNIT && K_PlayerUsesBotMovement(player) == true && cv_ng_botrubberbandboost.value)
 	{
 		ADDBOOST(player->botvars.rubberband - FRACUNIT, 0, 0);
 	}

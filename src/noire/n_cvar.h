@@ -61,7 +61,8 @@ extern consvar_t cv_ng_stairjank;
 extern consvar_t cv_ng_turnstyle;
 extern consvar_t cv_ng_underwaterhandling;
 
-//Rivals
+//Bots
+extern consvar_t cv_ng_botrubberbandboost;
 extern consvar_t cv_ng_rivals;
 extern consvar_t cv_ng_rivaltopspeed;
 extern consvar_t cv_ng_rivalringpower;

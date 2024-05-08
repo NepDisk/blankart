@@ -859,7 +859,8 @@ consvar_t cv_ng_turnstyle = UnsavedNetVar("ng_turnstyle", "Vanilla").values({
 });
 consvar_t cv_ng_underwaterhandling = UnsavedNetVar("ng_underwaterhandling", "On").on_off();
 
-//Rivals
+//Bots
+consvar_t cv_ng_botrubberbandboost = UnsavedNetVar("ng_botrubberbandboost", "On").on_off();
 consvar_t cv_ng_rivals = UnsavedNetVar("ng_rivals", "On").on_off();
 consvar_t cv_ng_rivaltopspeed = UnsavedNetVar("ng_rivaltopspeed", "11").min_max(1, 100);
 consvar_t cv_ng_rivalringpower = UnsavedNetVar("ng_rivalringpower", "20").min_max(0, 100);
