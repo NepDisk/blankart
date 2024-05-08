@@ -471,7 +471,9 @@ fixed_t P_FloorzAtPos(fixed_t x, fixed_t y, fixed_t z, fixed_t height);
 fixed_t P_CeilingzAtPos(fixed_t x, fixed_t y, fixed_t z, fixed_t height);
 BlockItReturn_t PIT_PushableMoved(mobj_t *thing);
 
+
 void P_DoSpringEx(mobj_t *object, fixed_t scaleVal, fixed_t vertispeed, fixed_t horizspeed, angle_t finalAngle, UINT16 starcolor);
+void P_DoSpringExMaxMin(mobj_t* object,fixed_t scaleVal,fixed_t vertispeed,fixed_t horizspeed,angle_t finalAngle,UINT16 starcolor, fixed_t maxSpeed, fixed_t minSpeed, UINT8 pogoOptions); //NOIRE Springs
 boolean P_DoSpring(mobj_t *spring, mobj_t *object);
 
 fixed_t P_GetFOFTopZAt (ffloor_t *rover, fixed_t x, fixed_t y);

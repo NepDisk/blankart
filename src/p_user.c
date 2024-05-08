@@ -432,7 +432,8 @@ void P_ResetPlayer(player_t *player)
 	player->fastfall = 0;
 	player->turbine = 0;
 	Obj_EndBungee(player);
-
+	K_PlayerResetPogo(player); //NOIRE: Reset pogo status, as this method is called in some places its important and should be done.
+							   //But This method also gets called K_HandleLapIncrement, so make sure that just by passing the finish line pogo stuff doesn't break...
 	if (player->mo != NULL && P_MobjWasRemoved(player->mo) == false)
 	{
 		P_ResetPitchRoll(player->mo);
@@ -2018,7 +2019,7 @@ static void P_3dMovement(player_t *player)
 	//}
 
 	// Do not let the player control movement if not onground.
-	onground = P_IsObjectOnGround(player->mo);
+	onground = P_IsObjectOnGround(player->mo) || player->pogoSpringJumped; //NOIRE: Readd the extra condition that Kart had for springs
 
 	K_AdjustPlayerFriction(player);
 
@@ -2548,7 +2549,10 @@ void P_MovePlayer(player_t *player)
 		{
 			K_KartMoveAnimation(player);
 
-			player->drawangle = player->mo->angle;
+			if (player->pogoSpringJumped) // NOIRE Springs: Replicate pogo spring shit
+				player->drawangle += ANGLE_22h;
+			else // Else vanilla behavior
+				player->drawangle = player->mo->angle;
 
 			if (player->aizdriftturn)
 			{

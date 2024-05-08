@@ -607,11 +607,18 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			angle = slope->xydirection;
 		}
 
-		P_DoSpringEx(player->mo, mapobjectscale,
-				FixedMul(terrain->springStrength, co),
-				FixedMul(terrain->springStrength, si),
-				angle, terrain->springStarColor);
-
+		P_DoSpringExMaxMin(
+			player->mo,
+			mapobjectscale,
+			FixedMul(terrain->springStrength, co),
+			FixedMul(terrain->springStrength, si),
+			angle,
+			terrain->springStarColor,
+			terrain->springMaxSpeed,
+			terrain->springMinSpeed,
+			terrain->springDoKartPogo
+		);
+		
 		sector->soundorg.z = player->mo->z;
 		S_StartSound(&sector->soundorg, sfx_s3kb1);
 	}
@@ -1573,6 +1580,9 @@ static void K_TerrainDefaults(terrain_t *terrain)
 	terrain->speedPad = 0;
 	terrain->speedPadAngle = 0;
 	terrain->springStrength = 0;
+	terrain->springMinSpeed = 0;
+	terrain->springMaxSpeed = 0;
+	terrain->springDoKartPogo = 0;
 	terrain->springStarColor = SKINCOLOR_NONE;
 	terrain->flags = TRF_REMAP;
 }
@@ -1692,6 +1702,18 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 			terrain->springStrength =
 				FLOAT_TO_FIXED(15.625 * pow(1.6, fval));
 		}
+	}
+	else if (stricmp(param, "springDoKartPogo") == 0) //NOIRE: Add new terrain properties for springs...
+	{
+		terrain->springDoKartPogo = (UINT8)get_number(val);
+	}
+	else if (stricmp(param, "springMinSpeed") == 0)
+	{
+		terrain->springMinSpeed = get_number(val);
+	}
+	else if (stricmp(param, "springMaxSpeed") == 0)
+	{
+		terrain->springMaxSpeed = get_number(val);
 	}
 	else if (stricmp(param, "springStarColor") == 0)
 	{
@@ -2056,7 +2078,9 @@ static boolean K_TERRAINLumpParser(char *data, size_t size)
 					}
 					else
 					{
-						CONS_Alert(CONS_ERROR, "No terrain for floor definition.\n");
+						CONS_Alert(CONS_ERROR, "No terrain '%s' for floor definition. Pos and size: %d, %d.\n", tkn, pos, size);
+						// NOIRE: Help the user figure out a possible problem for this because this is fucking STUPID
+						CONS_Printf("This problem might be due to the order in which the terrain was assigned to textures, are they in the same order as the terrain was defined in?\n"); 
 						valid = false;
 					}
 				}

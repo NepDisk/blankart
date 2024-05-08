@@ -39,7 +39,7 @@ extern consvar_t cv_ng_tumble;
 extern consvar_t cv_ng_stumble;
 extern consvar_t cv_ng_hitlag;
 extern consvar_t cv_ng_mapanger;
-extern consvar_t cv_ng_disabletripwires;
+extern consvar_t cv_ng_tripwireactive;
 extern consvar_t cv_ng_nophysicsflag;
 
 //Instawhip
@@ -59,6 +59,7 @@ extern consvar_t cv_ng_butteredslopes;
 extern consvar_t cv_ng_slopeclimb;
 extern consvar_t cv_ng_stairjank;
 extern consvar_t cv_ng_turnstyle;
+extern consvar_t cv_ng_springpanelsdokartpogo; //Quite long...
 extern consvar_t cv_ng_underwaterhandling;
 
 //Bots
@@ -73,6 +74,7 @@ void NG_Rings_OnChange(void);
 void NG_MapRings_OnChange(void);
 void NG_Capsules_OnChange(void);
 void NG_Tripwire_OnChange(void);
+void NG_SpringPanelDoKartPogo_OnChange(void);
 
 #ifdef __cplusplus
 } // extern "C"

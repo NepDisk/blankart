@@ -829,7 +829,7 @@ consvar_t cv_ng_tumble = UnsavedNetVar("ng_tumble", "On").on_off();
 consvar_t cv_ng_stumble = UnsavedNetVar("ng_stumble", "On").on_off();
 consvar_t cv_ng_hitlag = UnsavedNetVar("ng_hitlag", "On").on_off();
 consvar_t cv_ng_mapanger = UnsavedNetVar("ng_mapanger", "Default (2)").min_max(0, INT32_MAX, {{-1, "Disabled"}, {2, "Default (2)"}});
-consvar_t cv_ng_disabletripwires = UnsavedNetVar("ng_disabletripwires", "Off").on_off().onchange(NG_Tripwire_OnChange);
+consvar_t cv_ng_tripwireactive = UnsavedNetVar("ng_tripwireactive", "On").on_off().onchange(NG_Tripwire_OnChange);
 consvar_t cv_ng_nophysicsflag = UnsavedNetVar("ng_nophysicsflag", "Off").on_off();
 
 //Instawhip
@@ -845,6 +845,7 @@ consvar_t cv_ng_spindashcharge = UnsavedNetVar("ng_spindashcharge", "0").min_max
 consvar_t cv_ng_spindashoverheat = UnsavedNetVar("ng_spindashoverheat", "On").on_off();
 
 //Driving
+void NG_SpringPanelDoKartPogo_OnChange(void);
 consvar_t cv_ng_butteredslopes = UnsavedNetVar("ng_slopephysics", "On").on_off();
 consvar_t cv_ng_slopeclimb = UnsavedNetVar("ng_slopeclimb", "On").on_off();
 consvar_t cv_ng_stairjank = UnsavedNetVar("ng_stairjank", "All").values({
@@ -857,6 +858,7 @@ consvar_t cv_ng_turnstyle = UnsavedNetVar("ng_turnstyle", "Vanilla").values({
 	{1, "Tweaked"},
 	{2, "Vanilla"},
 });
+consvar_t cv_ng_springpanelsdokartpogo = UnsavedNetVar("ng_springpanelsdopogo", "Off").on_off().onchange(NG_SpringPanelDoKartPogo_OnChange);
 consvar_t cv_ng_underwaterhandling = UnsavedNetVar("ng_underwaterhandling", "On").on_off();
 
 //Bots

@@ -279,6 +279,8 @@ boolean K_ThunderDome(void);
 
 boolean K_PlayerCanUseItem(player_t *player);
 
+void K_PlayerResetPogo(player_t* player); // For NOIRE Spring pogo stuff...
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

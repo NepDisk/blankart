@@ -96,8 +96,8 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Map Anger", "Amount of times a map has to be ignored by everyone to vote itself.",
 		NULL, {.cvar = &cv_ng_mapanger}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Disable Tripwires", "Should terrain recognized as tripwires exist?",
-		NULL, {.cvar = &cv_ng_disabletripwires}, 0, 0},
+	{IT_STRING | IT_CVAR, "Tripwires", "Whenever terrain recognized as tripwires should exist.",
+		NULL, {.cvar = &cv_ng_tripwireactive}, 0, 0},
 
 	///////////
 	// INSTAWHIP
@@ -153,6 +153,9 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Turn Control Style", "Choose how turning will work. V2 Indev, tweaked vanilla or vanilla",
 		NULL, {.cvar = &cv_ng_turnstyle}, 0, 0},
 
+	{IT_STRING | IT_CVAR, "Spring Kart Pogojump", "Whenever standard spring panels give you air control like in Kart.",
+		NULL, {.cvar = &cv_ng_springpanelsdokartpogo}, 0, 0},
+
 	{IT_STRING | IT_CVAR, "Underwater Handling Adjust", "Should the turning of karts be affected when underwater?",
 		NULL, {.cvar = &cv_ng_underwaterhandling}, 0, 0},
 
@@ -205,7 +208,6 @@ void NG_Rings_OnChange(void)
 				OPTIONS_NoireGameplay[i].status = IT_STRING | IT_CVAR;
 			}
 		}
-
 	}
 	else
 	{
@@ -219,7 +221,6 @@ void NG_Rings_OnChange(void)
 			CV_Set(&cv_ng_mapringboxes, "Off");
 			CV_Set(&cv_ng_ringboxtransform, "Off");
 
-
 			// 3 - 10
 			for (int i = 2; i < 10; i++)
 			{
@@ -227,8 +228,6 @@ void NG_Rings_OnChange(void)
 
 			}
 		}
-
-
 	}
 }
 
@@ -280,6 +279,23 @@ void NG_Tripwire_OnChange(void)
 			NULL
 		);
 		messageHasBeenDelivered = true; //Through patches of violet
+	}
+}
+
+void NG_SpringPanelDoKartPogo_OnChange(void)
+{
+	static boolean displayedWarning = false;
+	if (!displayedWarning && menuactive)
+	{
+		M_StartMessage(
+			"Spring Panel Pogo Toggling",
+			M_GetText("This will let players do Kart Pogo jumps off every spring panel AND spring objects that are flat.\nThis might break some maps and diagonal / sloped spring panels won\'t be affected.\n\nToggle at your own discretion!"),
+			NULL,
+			MM_NOTHING,
+			NULL,
+			NULL
+		);
+		displayedWarning = true;
 	}
 }
 
