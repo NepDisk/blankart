@@ -61,6 +61,18 @@ menuitem_t OPTIONS_NoireGameplay[] =
 		NULL, {.cvar = &cv_ng_capsules}, 0, 0},
 
 	///////////
+	// ITEMS
+	///////////
+	{IT_HEADER, "Items...", NULL,
+		NULL, {NULL}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Old Orbinaut Behavior", "Should Orbinaut work how they did in SRB2Kart?",
+		NULL, {.cvar = &cv_ng_oldorbinaut}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Old Jawz Behavior", "Should Jawz work how they did in SRB2Kart?",
+		NULL, {.cvar = &cv_ng_oldjawz}, 0, 0},
+
+	///////////
 	// MECHANICS
 	///////////
 	{IT_HEADER, "Mechanics...", NULL,

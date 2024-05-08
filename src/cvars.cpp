@@ -813,6 +813,10 @@ consvar_t cv_ng_ringboxtransform = UnsavedNetVar("ng_ringboxtransform", "On").on
 void NG_Capsules_OnChange(void);
 consvar_t cv_ng_capsules = UnsavedNetVar("ng_capsules", "On").on_off().onchange(NG_Capsules_OnChange);
 
+//Items
+consvar_t cv_ng_oldorbinaut = UnsavedNetVar("ng_oldorbinaut", "Off").on_off();
+consvar_t cv_ng_oldjawz = UnsavedNetVar("ng_oldjawz", "Off").on_off();
+
 //Mechanics
 void NG_Tripwire_OnChange(void);
 consvar_t cv_ng_fastfallbounce = UnsavedNetVar("ng_fastfallbounce", "On").values({

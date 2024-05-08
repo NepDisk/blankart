@@ -28,6 +28,10 @@ extern consvar_t cv_ng_ringboxtransform;
 //Collectables
 extern consvar_t cv_ng_capsules;
 
+//Items
+extern consvar_t cv_ng_oldorbinaut;
+extern consvar_t cv_ng_oldjawz;
+
 //Mechanics
 extern consvar_t cv_ng_fastfallbounce;
 extern consvar_t cv_ng_draft;
