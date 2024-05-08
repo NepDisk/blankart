@@ -65,8 +65,9 @@
 #include "m_easing.h"
 #include "k_endcam.h"
 
-//Noire
+// Noire
 #include "noire/n_cvar.h"
+#include "noire/n_object.h"
 
 // SOME IMPORTANT VARIABLES DEFINED IN DOOMDEF.H:
 // gamespeed is cc (0 for easy, 1 for normal, 2 for hard)
@@ -3603,7 +3604,7 @@ static void K_GetKartBoostPower(player_t *player)
 	}
 
 	// This should always remain the last boost stack before tethering
-	if (player->botvars.rubberband > FRACUNIT && K_PlayerUsesBotMovement(player) == true)
+	if (player->botvars.rubberband > FRACUNIT && K_PlayerUsesBotMovement(player) == true && cv_ng_botrubberbandboost.value)
 	{
 		ADDBOOST(player->botvars.rubberband - FRACUNIT, 0, 0);
 	}
@@ -5453,10 +5454,17 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 	switch (type)
 	{
 		case MT_ORBINAUT:
-			Obj_OrbinautThrown(th, finalspeed, dir);
+
+			if (!cv_ng_oldorbinaut.value)
+				Obj_OrbinautThrown(th, finalspeed, dir);
+			else
+				Obj_OrbinautOldThrown(th, finalspeed, dir);
 			break;
 		case MT_JAWZ:
-			Obj_JawzThrown(th, finalspeed, dir);
+			if (!cv_ng_oldjawz.value)
+				Obj_JawzThrown(th, finalspeed, dir);
+			else
+				Obj_JawzOldThrown(th, finalspeed, dir);
 			break;
 		case MT_SPB:
 			Obj_SPBThrown(th, finalspeed);
@@ -9825,7 +9833,7 @@ void K_KartPlayerAfterThink(player_t *player)
 			}
 		}
 
-		if (player->throwdir == -1)
+		if (player->throwdir == -1 && !cv_ng_oldjawz.value)
 		{
 			// Backwards Jawz targets yourself.
 			targ = player->mo;

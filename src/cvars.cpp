@@ -813,6 +813,10 @@ consvar_t cv_ng_ringboxtransform = UnsavedNetVar("ng_ringboxtransform", "On").on
 void NG_Capsules_OnChange(void);
 consvar_t cv_ng_capsules = UnsavedNetVar("ng_capsules", "On").on_off().onchange(NG_Capsules_OnChange);
 
+//Items
+consvar_t cv_ng_oldorbinaut = UnsavedNetVar("ng_oldorbinaut", "Off").on_off();
+consvar_t cv_ng_oldjawz = UnsavedNetVar("ng_oldjawz", "Off").on_off();
+
 //Mechanics
 void NG_Tripwire_OnChange(void);
 consvar_t cv_ng_fastfallbounce = UnsavedNetVar("ng_fastfallbounce", "On").values({
@@ -857,7 +861,8 @@ consvar_t cv_ng_turnstyle = UnsavedNetVar("ng_turnstyle", "Vanilla").values({
 consvar_t cv_ng_springpanelsdokartpogo = UnsavedNetVar("ng_springpanelsdopogo", "Off").on_off().onchange(NG_SpringPanelDoKartPogo_OnChange);
 consvar_t cv_ng_underwaterhandling = UnsavedNetVar("ng_underwaterhandling", "On").on_off();
 
-//Rivals
+//Bots
+consvar_t cv_ng_botrubberbandboost = UnsavedNetVar("ng_botrubberbandboost", "On").on_off();
 consvar_t cv_ng_rivals = UnsavedNetVar("ng_rivals", "On").on_off();
 consvar_t cv_ng_rivaltopspeed = UnsavedNetVar("ng_rivaltopspeed", "11").min_max(1, 100);
 consvar_t cv_ng_rivalringpower = UnsavedNetVar("ng_rivalringpower", "20").min_max(0, 100);
