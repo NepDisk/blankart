@@ -3295,10 +3295,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 						K_StumblePlayer(player);
 					else
 					{
-						if (!player->spinouttimer)
-						{
- ;							K_SpinPlayer(player, inflictor, source, KSPIN_SPINOUT);
-						}
+ ;						P_DamageMobj(player->mo, inflictor, source, 1, DMG_NORMAL);
 					}
 					ringburst = 0;
 					break;
@@ -3307,10 +3304,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 						K_TumblePlayer(player, inflictor, source, hitFromInvinc);
 					else
 					{
-						if (!player->spinouttimer)
-						{
-							K_SpinPlayer(player, inflictor, source, KSPIN_SPINOUT);
-						}
+						P_DamageMobj(player->mo, inflictor, source, 1, DMG_NORMAL);
 					}
 					ringburst = 10;
 					break;
