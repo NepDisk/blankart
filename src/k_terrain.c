@@ -624,7 +624,7 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 	}
 
 	// Bumpy floor
-	if (terrain->flags & TRF_STAIRJANK && player->speed != 0)
+	if (terrain->flags & TRF_STAIRJANK && player->speed != 0 && cv_ng_stairjank.value > 0) //NOIRE: Only apply bumpy floor stairjank if the cvar is 1 or 2
 	{
 		/* use a shorter sound if not two tics have passed
 		 * since the last step */
@@ -641,11 +641,7 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			P_SetTarget(&spark->owner, mo);
 			spark->renderflags |= RF_REDUCEVFX;
 		}
-
-		if (cv_ng_stairjank.value > 0) //Only apply bumpy floor stairjank if the cvar is 1 or 2
-		{
-			player->stairjank = 17;
-		}
+		player->stairjank = 17;
 	}
 
 	// (Offroad is handled elsewhere!)
