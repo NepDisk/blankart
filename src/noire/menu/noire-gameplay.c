@@ -15,73 +15,101 @@
 
 // Noire
 #include "../n_cvar.h"
+#include "../n_menu.h"
 
+///////////
+// MAIN MENU
+///////////
 menuitem_t OPTIONS_NoireGameplay[] =
 {
-	///////////
-	// RINGS
-	///////////
-	{IT_HEADER, "Rings...", NULL,
+	{IT_STRING | IT_SUBMENU, "Ring Options...", "Adjust how rings work, or disable them entirely.",
+		NULL, {.submenu = &OPTIONS_NoireGameplayRingsDef}, 0, 0},
+
+	{IT_STRING | IT_SUBMENU, "Item Options...", "Adjust the behavior of certain items.",
+		NULL, {.submenu = &OPTIONS_NoireGameplayItemsDef}, 0, 0},
+
+	{IT_NOTHING|IT_SPACE, NULL, NULL,
 		NULL, {NULL}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Rings", "Use these for a burst of speed.",
+	{IT_STRING | IT_SUBMENU, "Mechanics Options...", "Adjust the overall racing experience.",
+		NULL, {.submenu = &OPTIONS_NoireGameplayMechanicsDef}, 0, 0},
+
+	{IT_STRING | IT_SUBMENU, "Driving Options...", "Adjust the feel and physics of driving.",
+		NULL, {.submenu = &OPTIONS_NoireGameplayDrivingDef}, 0, 0},
+
+	{IT_NOTHING|IT_SPACE, NULL, NULL,
+		NULL, {NULL}, 0, 0},
+
+	{IT_STRING | IT_SUBMENU, "Bot Options...", "Adjust the aggressiveness of CPUs.",
+		NULL, {.submenu = &OPTIONS_NoireGameplayBotsDef}, 0, 0},
+};
+
+///////////
+// RINGS
+///////////
+menuitem_t OPTIONS_NoireGameplayRings[] =
+{
+	{IT_STRING | IT_CVAR, "Rings", "Enable or disable all ring functionality.",
 		NULL, {.cvar = &cv_ng_rings}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Ring Cap", "Adjust maximum ring count (minimum is maximum negated)",
+	{IT_STRING | IT_CVAR, "Ring Cap", "Maximum amount of rings that can be held. (Minimum is maximum negated)",
 		NULL, {.cvar = &cv_ng_ringcap}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Spill Cap", "Adjust maximum ring loss upon taking damage.",
+	{IT_STRING | IT_CVAR, "Spill Cap", "Maximum amount of rings that can be lost upon taking damage.",
 		NULL, {.cvar = &cv_ng_spillcap}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Ring Debt", "Should Rings go under 0?",
+	{IT_STRING | IT_CVAR, "Ring Debt", "Should rings go under 0?",
 		NULL, {.cvar = &cv_ng_ringdebt}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Ringsting", "Should having no Rings hurt?",
+	{IT_STRING | IT_CVAR, "Ringsting", "Should getting bumped while having no rings hurt?",
 		NULL, {.cvar = &cv_ng_ringsting}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Ring Deathmark", "Mark player for death when rings are equal to or below this value.",
-		NULL, {.cvar = &cv_ng_ringsmarkedfordeath}, 0, 0},
+	{IT_STRING | IT_CVAR, "Ring Deathmark", "Racer dies upon taking damage if ring count is equal to or below this value.",
+		NULL, {.cvar = &cv_ng_ringdeathmark}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Map Rings", "Should maps have Rings?",
+	{IT_STRING | IT_CVAR, "Spawn Rings", "Should maps have rings?",
 		NULL, {.cvar = &cv_ng_maprings}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Map Ringboxes", "Should maps have Ringboxes?",
+	{IT_STRING | IT_CVAR, "Spawn Ring Boxes", "Should maps have ring boxes?",
 		NULL, {.cvar = &cv_ng_mapringboxes}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Ringbox Transformation", "Should Itemboxes become Ringboxes?",
+	{IT_STRING | IT_CVAR, "Ring Box Transformation", "Should item boxes become ring boxes?",
 		NULL, {.cvar = &cv_ng_ringboxtransform}, 0, 0},
+};
 
-	///////////
-	// COLLECTABLES
-	///////////
-	{IT_HEADER, "Collectables...", NULL,
-		NULL, {NULL}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Capsules", "Should Capsules spawn in-game?",
+///////////
+// ITEMS
+///////////
+menuitem_t OPTIONS_NoireGameplayItems[] =
+{
+	{IT_STRING | IT_CVAR, "Capsules", "Should capsules spawn in-game?",
 		NULL, {.cvar = &cv_ng_capsules}, 0, 0},
 
-	///////////
-	// ITEMS
-	///////////
-	{IT_HEADER, "Items...", NULL,
-		NULL, {NULL}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Old Orbinaut Behavior", "Should Orbinaut work how they did in SRB2Kart?",
+	{IT_STRING | IT_CVAR, "Old Orbinaut Behavior", "Should Orbinaut work like how they did in SRB2Kart?",
 		NULL, {.cvar = &cv_ng_oldorbinaut}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Old Jawz Behavior", "Should Jawz work how they did in SRB2Kart?",
+	{IT_STRING | IT_CVAR, "Old Jawz Behavior", "Should Jawz work like how they did in SRB2Kart?",
 		NULL, {.cvar = &cv_ng_oldjawz}, 0, 0},
+};
 
-	///////////
-	// MECHANICS
-	///////////
-	{IT_HEADER, "Mechanics...", NULL,
+///////////
+// MECHANICS
+///////////
+menuitem_t OPTIONS_NoireGameplayMechanics[] =
+{
+	{IT_STRING | IT_SUBMENU, "Insta-Whip Options...", "Adjust the functionality of the insta-whip.",
+		NULL, {.submenu = &OPTIONS_NoireGameplayInstawhipDef}, 0, 0},
+
+	{IT_STRING | IT_SUBMENU, "Spindash Options...", "Adjust the functionality of the spindash.",
+		NULL, {.submenu = &OPTIONS_NoireGameplaySpindashDef}, 0, 0},
+
+	{IT_NOTHING|IT_SPACE, NULL, NULL,
 		NULL, {NULL}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Fast Fall Bounce", "Should Fast Fall bounce?",
+	{IT_STRING | IT_CVAR, "Fast Fall Bounce", "Should you bounce upon landing from a fast fall?",
 		NULL, {.cvar = &cv_ng_fastfallbounce}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Draft/Tether", "Should players ahead pull?",
+	{IT_STRING | IT_CVAR, "Draft/Tether", "Should you pull forward while trailing another racer?",
 		NULL, {.cvar = &cv_ng_draft}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Tumble", "Should you tumble?",
@@ -96,51 +124,51 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Map Anger", "Amount of times a map has to be ignored by everyone to vote itself.",
 		NULL, {.cvar = &cv_ng_mapanger}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Tripwires", "Whenever terrain recognized as tripwires should exist.",
-		NULL, {.cvar = &cv_ng_tripwireactive}, 0, 0},
+	{IT_STRING | IT_CVAR, "Tripwires", "Should terrain recognized as tripwires exist?",
+		NULL, {.cvar = &cv_ng_tripwires}, 0, 0},
+};
 
-	///////////
-	// INSTAWHIP
-	///////////
-	{IT_HEADER, "Instawhip...", NULL,
-		NULL, {NULL}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Instawhip", "Should you be allowed to instawhip?",
+///////////
+// INSTAWHIP
+///////////
+menuitem_t OPTIONS_NoireGameplayInstawhip[] =
+{
+	{IT_STRING | IT_CVAR, "Insta-Whip", "Should you be allowed to insta-whip?",
 		NULL, {.cvar = &cv_ng_instawhip}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Charge Time", "Adjust how long instawhip charges for (in hundredths of a second)",
+	{IT_STRING | IT_CVAR, "Charge Time", "How long insta-whip charges for, in hundredths of a second.",
 		NULL, {.cvar = &cv_ng_instawhipcharge}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Lockout", "Adjust wait time before using instawhip again (in hundredths of a second)",
+	{IT_STRING | IT_CVAR, "Lockout", "Wait time before insta-whip can be used again, in hundredths of a second.",
 		NULL, {.cvar = &cv_ng_instawhiplockout}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Drain Rings", "Should holding instawhip drain rings?",
+	{IT_STRING | IT_CVAR, "Drain Rings", "Should holding an insta-whip drain rings?",
 		NULL, {.cvar = &cv_ng_instawhipdrain}, 0, 0},
+};
 
-	///////////
-	// SPINDASH
-	///////////
-	{IT_HEADER, "Spindash...", NULL,
-		NULL, {NULL}, 0, 0},
-
+///////////
+// SPINDASH
+///////////
+menuitem_t OPTIONS_NoireGameplaySpindash[] =
+{
 	{IT_STRING | IT_CVAR, "Spindash", "Should you be allowed to spindash?",
 		NULL, {.cvar = &cv_ng_spindash}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Threshold", "Adjust how low your speed must get to begin charging a spindash.",
+	{IT_STRING | IT_CVAR, "Threshold", "How low your speed must get to begin charging a spindash.",
 		NULL, {.cvar = &cv_ng_spindashthreshold}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Charge Time", "Adjust time before maximum spindash thrust (in tics; 0 is default behavior)",
+	{IT_STRING | IT_CVAR, "Charge Time", "Time before maximum spindash thrust, in tics. (0 is default behavior)",
 		NULL, {.cvar = &cv_ng_spindashcharge}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Overheat", "Whenever charging a spindash too much hurts players.",
+	{IT_STRING | IT_CVAR, "Overheat", "Should waiting too long after fully charging a spindash hurt you?",
 		NULL, {.cvar = &cv_ng_spindashoverheat}, 0, 0},
+};
 
-	///////////
-	// DRIVING
-	///////////
-	{IT_HEADER, "Driving...", NULL,
-		NULL, {NULL}, 0, 0},
-
+///////////
+// DRIVING
+///////////
+menuitem_t OPTIONS_NoireGameplayDriving[] =
+{
 	{IT_STRING | IT_CVAR, "Slope Physics", "Should there be slope physics?",
 		NULL, {.cvar = &cv_ng_butteredslopes}, 0, 0},
 
@@ -150,146 +178,142 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_CVAR, "Stairjank", "Should karts be affected by steps & bumpy roads, only roads or nothing?",
 		NULL, {.cvar = &cv_ng_stairjank}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Turn Control Style", "Choose how turning will work. V2 Indev, tweaked vanilla or vanilla",
+	{IT_STRING | IT_CVAR, "Turn Control Style", "How turning your kart should feel.",
 		NULL, {.cvar = &cv_ng_turnstyle}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Spring Kart Pogojump", "Whenever standard spring panels give you air control like in Kart.",
-		NULL, {.cvar = &cv_ng_springpanelsdokartpogo}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Underwater Handling Adjust", "Should the turning of karts be affected when underwater?",
 		NULL, {.cvar = &cv_ng_underwaterhandling}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "No Physics Flag SLope Launch", "Should the no Physics slope flag be respected for slope launch?",
+	{IT_STRING | IT_CVAR, "No Physics Flag SLope Launch", "Should the No Physics slope flag be respected for slope launch?",
 		NULL, {.cvar = &cv_ng_nophysicsflag}, 0, 0},
 
-	///////////
-	// Bots
-	///////////
-	{IT_HEADER, "Bots...", NULL,
+	{IT_STRING | IT_CVAR, "Old Pogo Override", "Should vertical spring objects/panels act like SRB2Kart pogo springs?",
+		NULL, {.cvar = &cv_ng_oldpogooverride}, 0, 0},
+};
+
+///////////
+// BOTS
+///////////
+menuitem_t OPTIONS_NoireGameplayBots[] =
+{
+	{IT_STRING | IT_SUBMENU, "Rival Options...", "Adjust the rival's cheats.",
+		NULL, {.submenu = &OPTIONS_NoireGameplayRivalsDef}, 0, 0},
+
+	{IT_NOTHING|IT_SPACE, NULL, NULL,
 		NULL, {NULL}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Bot Rubberband Boost", "Should be allowed to use rubberband boost?",
+	{IT_STRING | IT_CVAR, "Bot Rubberband Boost", "Should bots be allowed to use rubberband boost?",
 		NULL, {.cvar = &cv_ng_botrubberbandboost}, 0, 0},
+};
 
+///////////
+// RIVALS
+///////////
+menuitem_t OPTIONS_NoireGameplayRivals[] =
+{
 	{IT_STRING | IT_CVAR, "Rivals", "Should there be rivals?",
 		NULL, {.cvar = &cv_ng_rivals}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Rival Top Speed", "Adjust rival's top speed (10 for non-rivals)",
+	{IT_STRING | IT_CVAR, "Top Speed", "The rival's top speed. (10 is equivalent to non-rivals)",
 		NULL, {.cvar = &cv_ng_rivaltopspeed}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Rival Ring Power", "Adjust rival's ring power (10 for non-rivals)",
+	{IT_STRING | IT_CVAR, "Ring Power", "The rival's ring power. (10 is equivalent to non-rivals)",
 		NULL, {.cvar = &cv_ng_rivalringpower}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Rival Frantic Items", "Should rival use frantic items?",
+	{IT_STRING | IT_CVAR, "Frantic Items", "Should the rival use frantic items?",
 		NULL, {.cvar = &cv_ng_rivalfrantic}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Rival 2x Draft Power", "Should rival pull ahead at double speed?",
+	{IT_STRING | IT_CVAR, "2x Draft Power", "Should the rival pull ahead at double speed?",
 		NULL, {.cvar = &cv_ng_rivaldraft}, 0, 0},
 };
 
+void NG_Generic_OnChange(void)
+{
+	static boolean messageHasBeenDelivered = false;
+	if (gamestate == GS_LEVEL && !messageHasBeenDelivered && menuactive)
+	{
+		M_StartMessage(
+			"WARNING!",
+			M_GetText("The map must be reset for your changes to apply."),
+			NULL,
+			MM_NOTHING,
+			NULL,
+			NULL
+		);
+		messageHasBeenDelivered = true; //Through patches of violet
+	}
+}
+
 void NG_Rings_OnChange(void)
 {
+	if (con_startup) return;
+
 	if(cv_ng_rings.value)
 	{
-		if (!con_startup)
+		CV_SetValue(&cv_ng_ringcap, 20);
+		CV_SetValue(&cv_ng_spillcap, 20);
+		CV_Set(&cv_ng_ringdebt, "On");
+		CV_Set(&cv_ng_ringsting, "On");
+		CV_Set(&cv_ng_ringdeathmark, "-20");
+		CV_Set(&cv_ng_maprings, "On");
+		CV_Set(&cv_ng_mapringboxes, "On");
+		CV_Set(&cv_ng_ringboxtransform, "On");
+
+		for (int i = 1; i < OPTIONS_NoireGameplayRingsDef.numitems; i++)
 		{
-			CV_SetValue(&cv_ng_ringcap, 20);
-			CV_SetValue(&cv_ng_spillcap, 20);
-			CV_Set(&cv_ng_ringdebt, "On");
-			CV_Set(&cv_ng_ringsting, "On");
-			CV_Set(&cv_ng_maprings, "On");
-			CV_Set(&cv_ng_mapringboxes, "On");
-			CV_Set(&cv_ng_ringboxtransform, "On");
-
-
-			// 3 - 10
-			for (int i = 2; i < 10; i++)
-			{
-				OPTIONS_NoireGameplay[i].status = IT_STRING | IT_CVAR;
-			}
+			OPTIONS_NoireGameplayRings[i].status = IT_STRING | IT_CVAR;
 		}
 	}
 	else
 	{
-		if (!con_startup)
+		CV_SetValue(&cv_ng_ringcap, 0);
+		CV_SetValue(&cv_ng_spillcap, 0);
+		CV_Set(&cv_ng_ringdebt, "Off");
+		CV_Set(&cv_ng_ringsting, "Off");
+		CV_Set(&cv_ng_ringdeathmark, "-20");
+		CV_Set(&cv_ng_maprings, "Off");
+		CV_Set(&cv_ng_mapringboxes, "Off");
+		CV_Set(&cv_ng_ringboxtransform, "Off");
+
+		for (int i = 1; i < OPTIONS_NoireGameplayRingsDef.numitems; i++)
 		{
-			CV_SetValue(&cv_ng_ringcap, 0);
-			CV_SetValue(&cv_ng_spillcap, 0);
-			CV_Set(&cv_ng_ringdebt, "Off");
-			CV_Set(&cv_ng_ringsting, "Off");
-			CV_Set(&cv_ng_maprings, "Off");
-			CV_Set(&cv_ng_mapringboxes, "Off");
-			CV_Set(&cv_ng_ringboxtransform, "Off");
-
-			// 3 - 10
-			for (int i = 2; i < 10; i++)
-			{
-				OPTIONS_NoireGameplay[i].status = IT_GRAYEDOUT;
-
-			}
+			OPTIONS_NoireGameplayRings[i].status = IT_GRAYEDOUT;
 		}
 	}
 }
 
-void NG_MapRings_OnChange(void)
+void NG_Instawhip_OnChange(void)
 {
-	static boolean messageHasBeenDelivered = false;
-	if (gamestate == GS_LEVEL && !messageHasBeenDelivered && menuactive)
+	if (con_startup) return;
+
+	for (int i = 1; i < OPTIONS_NoireGameplayInstawhipDef.numitems; i++)
 	{
-		M_StartMessage(
-			"Map Rings Toggling",
-			M_GetText("Changing this value requires a map reset for the new option to apply."),
-			NULL,
-			MM_NOTHING,
-			NULL,
-			NULL
-		);
-		messageHasBeenDelivered = true; //Through patches of violet
+		OPTIONS_NoireGameplayInstawhip[i].status = cv_ng_instawhip.value
+			? (IT_STRING | IT_CVAR)
+			: IT_GRAYEDOUT;
 	}
 }
 
-void NG_Capsules_OnChange(void)
+void NG_Spindash_OnChange(void)
 {
-	static boolean messageHasBeenDelivered = false;
-	if (gamestate == GS_LEVEL && !messageHasBeenDelivered && menuactive)
+	if (con_startup) return;
+
+	for (int i = 1; i < OPTIONS_NoireGameplaySpindashDef.numitems; i++)
 	{
-		M_StartMessage(
-			"Capsule Toggling",
-			M_GetText("Changing this value requires a map reset for the new option to apply."),
-			NULL,
-			MM_NOTHING,
-			NULL,
-			NULL
-		);
-		messageHasBeenDelivered = true; //Through patches of violet
+		OPTIONS_NoireGameplaySpindash[i].status = cv_ng_spindash.value
+			? (IT_STRING | IT_CVAR)
+			: IT_GRAYEDOUT;
 	}
 }
 
-void NG_Tripwire_OnChange(void)
-{
-	static boolean messageHasBeenDelivered = false;
-	if (gamestate == GS_LEVEL && !messageHasBeenDelivered && menuactive)
-	{
-		M_StartMessage(
-			"Tripwire Toggling",
-			M_GetText("Changing this value requires a map reset for the new option to apply."),
-			NULL,
-			MM_NOTHING,
-			NULL,
-			NULL
-		);
-		messageHasBeenDelivered = true; //Through patches of violet
-	}
-}
-
-void NG_SpringPanelDoKartPogo_OnChange(void)
+void NG_OldPogoOverride_OnChange(void)
 {
 	static boolean displayedWarning = false;
 	if (!displayedWarning && menuactive)
 	{
 		M_StartMessage(
-			"Spring Panel Pogo Toggling",
-			M_GetText("This will let players do Kart Pogo jumps off every spring panel AND spring objects that are flat.\nThis might break some maps and diagonal / sloped spring panels won\'t be affected.\n\nToggle at your own discretion!"),
+			"WARNING!",
+			M_GetText("This toggle is just for fun. Some maps may break and diagonal/sloped spring panels won\'t be affected.\n\nEnable at your own risk!"),
 			NULL,
 			MM_NOTHING,
 			NULL,
@@ -299,11 +323,167 @@ void NG_SpringPanelDoKartPogo_OnChange(void)
 	}
 }
 
+void NG_Rivals_OnChange(void)
+{
+	if (con_startup) return;
+
+	for (int i = 1; i < OPTIONS_NoireGameplayRivalsDef.numitems; i++)
+	{
+		OPTIONS_NoireGameplayRivals[i].status = cv_ng_rivals.value
+			? (IT_STRING | IT_CVAR)
+			: IT_GRAYEDOUT;
+	}
+}
+
 menu_t OPTIONS_NoireGameplayDef = {
 	sizeof (OPTIONS_NoireGameplay) / sizeof (menuitem_t),
 	&OPTIONS_GameplayDef,
 	0,
 	OPTIONS_NoireGameplay,
+	48, 80,
+	SKINCOLOR_BLACK, 0,
+	MBF_DRAWBGWHILEPLAYING,
+	NULL,
+	2, 5,
+	M_DrawGenericOptions,
+	M_DrawOptionsCogs,
+	M_OptionsTick,
+	NULL,
+	NULL,
+	NULL,
+};
+
+menu_t OPTIONS_NoireGameplayRingsDef = {
+	sizeof (OPTIONS_NoireGameplayRings) / sizeof (menuitem_t),
+	&OPTIONS_NoireGameplayDef,
+	0,
+	OPTIONS_NoireGameplayRings,
+	48, 80,
+	SKINCOLOR_BLACK, 0,
+	MBF_DRAWBGWHILEPLAYING,
+	NULL,
+	2, 5,
+	M_DrawGenericOptions,
+	M_DrawOptionsCogs,
+	M_OptionsTick,
+	NULL,
+	NULL,
+	NULL,
+};
+
+menu_t OPTIONS_NoireGameplayItemsDef = {
+	sizeof (OPTIONS_NoireGameplayItems) / sizeof (menuitem_t),
+	&OPTIONS_NoireGameplayDef,
+	0,
+	OPTIONS_NoireGameplayItems,
+	48, 80,
+	SKINCOLOR_BLACK, 0,
+	MBF_DRAWBGWHILEPLAYING,
+	NULL,
+	2, 5,
+	M_DrawGenericOptions,
+	M_DrawOptionsCogs,
+	M_OptionsTick,
+	NULL,
+	NULL,
+	NULL,
+};
+
+menu_t OPTIONS_NoireGameplayMechanicsDef = {
+	sizeof (OPTIONS_NoireGameplayMechanics) / sizeof (menuitem_t),
+	&OPTIONS_NoireGameplayDef,
+	0,
+	OPTIONS_NoireGameplayMechanics,
+	48, 80,
+	SKINCOLOR_BLACK, 0,
+	MBF_DRAWBGWHILEPLAYING,
+	NULL,
+	2, 5,
+	M_DrawGenericOptions,
+	M_DrawOptionsCogs,
+	M_OptionsTick,
+	NULL,
+	NULL,
+	NULL,
+};
+
+menu_t OPTIONS_NoireGameplayInstawhipDef = {
+	sizeof (OPTIONS_NoireGameplayInstawhip) / sizeof (menuitem_t),
+	&OPTIONS_NoireGameplayMechanicsDef,
+	0,
+	OPTIONS_NoireGameplayInstawhip,
+	48, 80,
+	SKINCOLOR_BLACK, 0,
+	MBF_DRAWBGWHILEPLAYING,
+	NULL,
+	2, 5,
+	M_DrawGenericOptions,
+	M_DrawOptionsCogs,
+	M_OptionsTick,
+	NULL,
+	NULL,
+	NULL,
+};
+
+menu_t OPTIONS_NoireGameplaySpindashDef = {
+	sizeof (OPTIONS_NoireGameplaySpindash) / sizeof (menuitem_t),
+	&OPTIONS_NoireGameplayMechanicsDef,
+	0,
+	OPTIONS_NoireGameplaySpindash,
+	48, 80,
+	SKINCOLOR_BLACK, 0,
+	MBF_DRAWBGWHILEPLAYING,
+	NULL,
+	2, 5,
+	M_DrawGenericOptions,
+	M_DrawOptionsCogs,
+	M_OptionsTick,
+	NULL,
+	NULL,
+	NULL,
+};
+
+menu_t OPTIONS_NoireGameplayDrivingDef = {
+	sizeof (OPTIONS_NoireGameplayDriving) / sizeof (menuitem_t),
+	&OPTIONS_NoireGameplayDef,
+	0,
+	OPTIONS_NoireGameplayDriving,
+	48, 80,
+	SKINCOLOR_BLACK, 0,
+	MBF_DRAWBGWHILEPLAYING,
+	NULL,
+	2, 5,
+	M_DrawGenericOptions,
+	M_DrawOptionsCogs,
+	M_OptionsTick,
+	NULL,
+	NULL,
+	NULL,
+};
+
+menu_t OPTIONS_NoireGameplayBotsDef = {
+	sizeof (OPTIONS_NoireGameplayBots) / sizeof (menuitem_t),
+	&OPTIONS_NoireGameplayDef,
+	0,
+	OPTIONS_NoireGameplayBots,
+	48, 80,
+	SKINCOLOR_BLACK, 0,
+	MBF_DRAWBGWHILEPLAYING,
+	NULL,
+	2, 5,
+	M_DrawGenericOptions,
+	M_DrawOptionsCogs,
+	M_OptionsTick,
+	NULL,
+	NULL,
+	NULL,
+};
+
+menu_t OPTIONS_NoireGameplayRivalsDef = {
+	sizeof (OPTIONS_NoireGameplayRivals) / sizeof (menuitem_t),
+	&OPTIONS_NoireGameplayBotsDef,
+	0,
+	OPTIONS_NoireGameplayRivals,
 	48, 80,
 	SKINCOLOR_BLACK, 0,
 	MBF_DRAWBGWHILEPLAYING,

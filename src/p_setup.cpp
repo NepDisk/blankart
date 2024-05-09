@@ -3373,7 +3373,7 @@ static boolean P_CheckLineSideTripWire(line_t *ld, int p)
 		n = ld->sidenum[!p];
 
 		// NOIRE: Tripwire toggle
-		if (!cv_ng_tripwireactive.value)
+		if (!cv_ng_tripwires.value)
 		{
 			//Nuke the first side
 			sda->midtexture = 0xffff;

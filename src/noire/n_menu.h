@@ -14,8 +14,24 @@
 extern "C" {
 #endif
 
-extern menuitem_t OPTIONS_NoireGameplay;
+extern menuitem_t OPTIONS_NoireGameplay[];
+extern menuitem_t OPTIONS_NoireGameplayRings[];
+extern menuitem_t OPTIONS_NoireGameplayItems[];
+extern menuitem_t OPTIONS_NoireGameplayMechanics[];
+extern menuitem_t OPTIONS_NoireGameplayInstawhip[];
+extern menuitem_t OPTIONS_NoireGameplaySpindash[];
+extern menuitem_t OPTIONS_NoireGameplayDriving[];
+extern menuitem_t OPTIONS_NoireGameplayBots[];
+extern menuitem_t OPTIONS_NoireGameplayRivals[];
 extern menu_t OPTIONS_NoireGameplayDef;
+extern menu_t OPTIONS_NoireGameplayRingsDef;
+extern menu_t OPTIONS_NoireGameplayItemsDef;
+extern menu_t OPTIONS_NoireGameplayMechanicsDef;
+extern menu_t OPTIONS_NoireGameplayInstawhipDef;
+extern menu_t OPTIONS_NoireGameplaySpindashDef;
+extern menu_t OPTIONS_NoireGameplayDrivingDef;
+extern menu_t OPTIONS_NoireGameplayBotsDef;
+extern menu_t OPTIONS_NoireGameplayRivalsDef;
 
 #ifdef __cplusplus
 } // extern "C"

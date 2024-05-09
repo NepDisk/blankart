@@ -266,7 +266,7 @@ static boolean P_SpecialIsLinedefCrossType(line_t *ld)
 // object = object being sprung
 // scaleVal = number to multiply horizspeed and vertispeed by. Normally, it's the map object scale. By default, it gives the same calculation as Kart's pogo springs (scaleVal + (scaleVal - object->scale)
 // vertispeed = vertical speed to be applied to the object's momz. If this does not exist, finalAngle will be modified to reflect against the surface of the spring.
-// horizspeed = horizontal speed to be applied to the object. If the object's speed exceeds this even after multiplication operations, the object's speed will be applied instead. 
+// horizspeed = horizontal speed to be applied to the object. If the object's speed exceeds this even after multiplication operations, the object's speed will be applied instead.
 // finalAngle = angle to thrust towards.
 // starcolor = color of the star particle effect.
 // maxSpeed = Maximum horizontal speed to be applied. Set to zero to don't use.
@@ -342,8 +342,8 @@ P_DoSpringExMaxMin
 		finalSpeed = max(objectSpeed, finalSpeed);
 
 		// NOIRE: Use minSpeed and maxSpeed params.
-		if (minSpeed != 0) { 
-			finalSpeed = max(finalSpeed, minSpeed); 
+		if (minSpeed != 0) {
+			finalSpeed = max(finalSpeed, minSpeed);
 		}
 		if (maxSpeed != 0) {
 			finalSpeed = min(finalSpeed, maxSpeed);
@@ -370,7 +370,7 @@ P_DoSpringExMaxMin
 		// CONS_Printf("\x88PLAYER\x80's pogoMaxSpeed and pogoMinSpeed: \x88%d\x80, \x88%d\x80, \x85SPRING\x80's
 		// maxSpeed and minSpeed: \x85%d\x80, \x85%d\x80\n", object->player->pogoMaxSpeed, object->player->pogoMinSpeed,
 		// maxSpeed, minSpeed);
-		if ((!horizspeed && cv_ng_springpanelsdokartpogo.value) || pogoOptions > 0)
+		if ((!horizspeed && cv_ng_oldpogooverride.value) || pogoOptions > 0)
 		{
 			object->player->pogoSpringJumped = true;
 			object->player->pogoMaxSpeed = maxSpeed;
@@ -1478,7 +1478,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 				{
 					return BMIT_ABORT;
 				}
-					
+
 			return BMIT_CONTINUE;
 		}
 	}
