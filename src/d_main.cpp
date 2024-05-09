@@ -102,6 +102,10 @@
 
 #include "lua_profile.h"
 
+// Noire
+#include "noire/n_wad.h"
+
+
 extern "C" consvar_t cv_lua_profile, cv_menuframeskip;
 
 /* Manually defined asset hashes
@@ -1347,9 +1351,12 @@ static boolean AddIWAD(void)
 	}
 }
 
+boolean found_noire_pk3;
+
 static void IdentifyVersion(void)
 {
 	const char *srb2waddir = NULL;
+	found_noire_pk3 = false;
 
 #if (defined (__unix__) && !defined (MSDOS)) || defined (UNIXCOMMON) || defined (HAVE_SDL)
 	// change to the directory where 'bios.pk3' is found
@@ -1396,6 +1403,25 @@ static void IdentifyVersion(void)
 #ifdef USE_PATCH_FILE
 	D_AddFile(startupiwads, va(pandf,srb2waddir,"patch.pk3"));
 #endif
+
+	// completely optional
+	if (FIL_ReadFileOK(va(pandf,srb2waddir,"noire.pk3"))) {
+		D_AddFile(startuppwads, va(pandf,srb2waddir,"noire.pk3"));
+		found_noire_pk3 = true;
+	}
+
+	/* This is an example of how you would to check if needed lumps from an optional pk3 exists before using it
+	 * in W_CheckMultipleLumps put the name of the lumps you want to check for and then terminate it with null
+	 * Create a boolean with its default value false underneath found_noire_pk3 = false
+	 * set it to true inside the statement you created with W_CheckMultipleLumps
+	 * then extern it in d_main.h for outside access.
+	if (W_CheckMultipleLumps("EXAMPLELUMP", "EXAMPLELUMP2", NULL))
+	{
+		thingtoactivate = true;
+		//run other code
+	}
+	*/
+
 
 #define MUSICTEST(str) \
 	{\
@@ -1738,6 +1764,9 @@ void D_SRB2Main(void)
 #endif
 
 #endif //ifndef DEVELOP
+
+	if (found_noire_pk3)
+		mainwads++;
 
 	// Load credits_def lump
 	F_LoadCreditsDefinitions();
