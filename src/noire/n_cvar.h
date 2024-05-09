@@ -20,7 +20,7 @@ extern consvar_t cv_ng_ringcap;
 extern consvar_t cv_ng_spillcap;
 extern consvar_t cv_ng_ringdebt;
 extern consvar_t cv_ng_ringsting;
-extern consvar_t cv_ng_ringsmarkedfordeath;
+extern consvar_t cv_ng_ringdeathmark;
 extern consvar_t cv_ng_maprings;
 extern consvar_t cv_ng_mapringboxes;
 extern consvar_t cv_ng_ringboxtransform;
@@ -39,7 +39,7 @@ extern consvar_t cv_ng_tumble;
 extern consvar_t cv_ng_stumble;
 extern consvar_t cv_ng_hitlag;
 extern consvar_t cv_ng_mapanger;
-extern consvar_t cv_ng_tripwireactive;
+extern consvar_t cv_ng_tripwires;
 extern consvar_t cv_ng_nophysicsflag;
 
 //Instawhip
@@ -59,7 +59,7 @@ extern consvar_t cv_ng_butteredslopes;
 extern consvar_t cv_ng_slopeclimb;
 extern consvar_t cv_ng_stairjank;
 extern consvar_t cv_ng_turnstyle;
-extern consvar_t cv_ng_springpanelsdokartpogo; //Quite long...
+extern consvar_t cv_ng_oldpogooverride;
 extern consvar_t cv_ng_underwaterhandling;
 
 //Bots
@@ -70,11 +70,12 @@ extern consvar_t cv_ng_rivalringpower;
 extern consvar_t cv_ng_rivalfrantic;
 extern consvar_t cv_ng_rivaldraft;
 
+void NG_Generic_OnChange(void);
 void NG_Rings_OnChange(void);
-void NG_MapRings_OnChange(void);
-void NG_Capsules_OnChange(void);
-void NG_Tripwire_OnChange(void);
-void NG_SpringPanelDoKartPogo_OnChange(void);
+void NG_Instawhip_OnChange(void);
+void NG_Spindash_OnChange(void);
+void NG_OldPogoOverride_OnChange(void);
+void NG_Rivals_OnChange(void);
 
 #ifdef __cplusplus
 } // extern "C"

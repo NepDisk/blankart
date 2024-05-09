@@ -3261,7 +3261,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				}
 			}
 
-			if (player->rings <= cv_ng_ringsmarkedfordeath.value)
+			if (player->rings <= cv_ng_ringdeathmark.value)
 			{
 				player->markedfordeath = true;
 				damagetype = DMG_TUMBLE;
