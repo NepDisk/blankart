@@ -34,7 +34,7 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_SUBMENU, "Mechanics Options...", "Adjust the overall racing experience.",
 		NULL, {.submenu = &OPTIONS_NoireGameplayMechanicsDef}, 0, 0},
 
-	{IT_STRING | IT_SUBMENU, "Driving Options...", "Adjust the feel and physics of driving.",
+	{IT_STRING | IT_SUBMENU, "Driving Options...", "Adjust the behavior and physics of driving.",
 		NULL, {.submenu = &OPTIONS_NoireGameplayDrivingDef}, 0, 0},
 
 	{IT_NOTHING|IT_SPACE, NULL, NULL,
@@ -58,7 +58,7 @@ menuitem_t OPTIONS_NoireGameplayRings[] =
 	{IT_STRING | IT_CVAR, "Spill Cap", "Maximum amount of rings that can be lost upon taking damage.",
 		NULL, {.cvar = &cv_ng_spillcap}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Ring Debt", "Should rings go under 0?",
+	{IT_STRING | IT_CVAR, "Ring Debt", "Let ring count go into negatives.",
 		NULL, {.cvar = &cv_ng_ringdebt}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Ringsting", "Should getting bumped while having no rings hurt?",
@@ -67,13 +67,13 @@ menuitem_t OPTIONS_NoireGameplayRings[] =
 	{IT_STRING | IT_CVAR, "Ring Deathmark", "Racer dies upon taking damage if ring count is equal to or below this value.",
 		NULL, {.cvar = &cv_ng_ringdeathmark}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Spawn Rings", "Should maps have rings?",
+	{IT_STRING | IT_CVAR, "Spawn Rings", "Will rings appear in tracks.",
 		NULL, {.cvar = &cv_ng_maprings}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Spawn Ring Boxes", "Should maps have ring boxes?",
+	{IT_STRING | IT_CVAR, "Spawn Ring Boxes", "Enable or disable Ring Boxes appearance in tracks.",
 		NULL, {.cvar = &cv_ng_mapringboxes}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Ring Box Transformation", "Should item boxes become ring boxes?",
+	{IT_STRING | IT_CVAR, "Ring Box Transformation", "After picking up Item Boxes, can they turn into Ring Boxes?",
 		NULL, {.cvar = &cv_ng_ringboxtransform}, 0, 0},
 };
 
@@ -82,13 +82,13 @@ menuitem_t OPTIONS_NoireGameplayRings[] =
 ///////////
 menuitem_t OPTIONS_NoireGameplayItems[] =
 {
-	{IT_STRING | IT_CVAR, "Capsules", "Should capsules spawn in-game?",
+	{IT_STRING | IT_CVAR, "Capsules", "Enable or disable Item Capsules appearance in tracks.",
 		NULL, {.cvar = &cv_ng_capsules}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Old Orbinaut Behavior", "Should Orbinaut work like how they did in SRB2Kart?",
+	{IT_STRING | IT_CVAR, "Orbinaut Behavior", "Toggle between Ring Racers or Kart's Orbinaut behavior.",
 		NULL, {.cvar = &cv_ng_oldorbinaut}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Old Jawz Behavior", "Should Jawz work like how they did in SRB2Kart?",
+	{IT_STRING | IT_CVAR, "Jawz Behavior", "Toggle between Ring Racers or Kart's Jawz behavior.",
 		NULL, {.cvar = &cv_ng_oldjawz}, 0, 0},
 };
 
@@ -106,25 +106,25 @@ menuitem_t OPTIONS_NoireGameplayMechanics[] =
 	{IT_NOTHING|IT_SPACE, NULL, NULL,
 		NULL, {NULL}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Fast Fall Bounce", "Should you bounce upon landing from a fast fall?",
+	{IT_STRING | IT_CVAR, "Fast Fall Bounce", "Enable or disable the short bounce upon landing after fast-falling.",
 		NULL, {.cvar = &cv_ng_fastfallbounce}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Draft/Tether", "Should you pull forward while trailing another racer?",
+	{IT_STRING | IT_CVAR, "Draft/Tether", "Enable or disable the 'tether' between racers, pulling racers behind.",
 		NULL, {.cvar = &cv_ng_draft}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Tumble", "Should you tumble?",
+	{IT_STRING | IT_CVAR, "Tumble", "Enable or disable tumbling.",
 		NULL, {.cvar = &cv_ng_tumble}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Stumble", "Should you stumble?",
+	{IT_STRING | IT_CVAR, "Stumble", "Enable or disable stumble, a weaker form of tumble where racers just get pushed away.",
 		NULL, {.cvar = &cv_ng_stumble}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Hitlag", "Should there be hitlag?",
+	{IT_STRING | IT_CVAR, "Hitlag", "Enable or disable hitlag.",
 		NULL, {.cvar = &cv_ng_hitlag}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Map Anger", "Amount of times a map has to be ignored by everyone to vote itself.",
 		NULL, {.cvar = &cv_ng_mapanger}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Tripwires", "Should terrain recognized as tripwires exist?",
+	{IT_STRING | IT_CVAR, "Tripwires", "Enable or disable terrain recognized as tripwire.",
 		NULL, {.cvar = &cv_ng_tripwires}, 0, 0},
 };
 
@@ -133,7 +133,7 @@ menuitem_t OPTIONS_NoireGameplayMechanics[] =
 ///////////
 menuitem_t OPTIONS_NoireGameplayInstawhip[] =
 {
-	{IT_STRING | IT_CVAR, "Insta-Whip", "Should you be allowed to insta-whip?",
+	{IT_STRING | IT_CVAR, "Insta-Whip", "Toggle racers' ability to insta-whip.",
 		NULL, {.cvar = &cv_ng_instawhip}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Charge Time", "How long insta-whip charges for, in hundredths of a second.",
@@ -151,16 +151,16 @@ menuitem_t OPTIONS_NoireGameplayInstawhip[] =
 ///////////
 menuitem_t OPTIONS_NoireGameplaySpindash[] =
 {
-	{IT_STRING | IT_CVAR, "Spindash", "Should you be allowed to spindash?",
+	{IT_STRING | IT_CVAR, "Spindash", "Toggle racers' ability to spindash.",
 		NULL, {.cvar = &cv_ng_spindash}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Threshold", "How low your speed must get to begin charging a spindash.",
 		NULL, {.cvar = &cv_ng_spindashthreshold}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Charge Time", "Time before maximum spindash thrust, in tics. (0 is default behavior)",
+	{IT_STRING | IT_CVAR, "Charge Time", "Time before maximum spindash thrust, in tics. ",
 		NULL, {.cvar = &cv_ng_spindashcharge}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Overheat", "Should waiting too long after fully charging a spindash hurt you?",
+	{IT_STRING | IT_CVAR, "Overheat", "Enable or disable overcharging spindash hurting racers.",
 		NULL, {.cvar = &cv_ng_spindashoverheat}, 0, 0},
 };
 
@@ -169,25 +169,25 @@ menuitem_t OPTIONS_NoireGameplaySpindash[] =
 ///////////
 menuitem_t OPTIONS_NoireGameplayDriving[] =
 {
-	{IT_STRING | IT_CVAR, "Slope Physics", "Should there be slope physics?",
+	{IT_STRING | IT_CVAR, "Slope Physics", "Enable or disable slope physics.",
 		NULL, {.cvar = &cv_ng_butteredslopes}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Slope Resistance", "Should slopes be hard to climb?",
+	{IT_STRING | IT_CVAR, "Slope Resistance", "Enable or disable harder slope climbing.",
 		NULL, {.cvar = &cv_ng_slopeclimb}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Stairjank", "Should karts be affected by steps & bumpy roads, only roads or nothing?",
+	{IT_STRING | IT_CVAR, "Stairjank", "Toggle 'steps & bumpy roads' or 'only roads' affecting karts' turning, or disable it.",
 		NULL, {.cvar = &cv_ng_stairjank}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Turn Control Style", "How turning your kart should feel.",
+	{IT_STRING | IT_CVAR, "Turn Control Style", "How kart's turning should behave.",
 		NULL, {.cvar = &cv_ng_turnstyle}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Underwater Handling Adjust", "Should the turning of karts be affected when underwater?",
+	{IT_STRING | IT_CVAR, "Underwater Handling Adjust", "Toggle kart's different turning when underwater.",
 		NULL, {.cvar = &cv_ng_underwaterhandling}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "No Physics Flag SLope Launch", "Should the No Physics slope flag be respected for slope launch?",
+	{IT_STRING | IT_CVAR, "No Physics Flag SLope Launch", "Consider the 'No Physics' flag on slopes, launching racers or not.",
 		NULL, {.cvar = &cv_ng_nophysicsflag}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Old Pogo Override", "Should vertical spring objects/panels act like SRB2Kart pogo springs?",
+	{IT_STRING | IT_CVAR, "Old Pogo Override", "Should flat spring objects/panels act like SRB2Kart pogo springs?",
 		NULL, {.cvar = &cv_ng_oldpogooverride}, 0, 0},
 };
 
@@ -211,7 +211,7 @@ menuitem_t OPTIONS_NoireGameplayBots[] =
 ///////////
 menuitem_t OPTIONS_NoireGameplayRivals[] =
 {
-	{IT_STRING | IT_CVAR, "Rivals", "Should there be rivals?",
+	{IT_STRING | IT_CVAR, "Rivals", "Enable or disable rivals.",
 		NULL, {.cvar = &cv_ng_rivals}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Top Speed", "The rival's top speed. (10 is equivalent to non-rivals)",
@@ -220,7 +220,7 @@ menuitem_t OPTIONS_NoireGameplayRivals[] =
 	{IT_STRING | IT_CVAR, "Ring Power", "The rival's ring power. (10 is equivalent to non-rivals)",
 		NULL, {.cvar = &cv_ng_rivalringpower}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Frantic Items", "Should the rival use frantic items?",
+	{IT_STRING | IT_CVAR, "Frantic Items", "Enable or disable the rival's frantic items.",
 		NULL, {.cvar = &cv_ng_rivalfrantic}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "2x Draft Power", "Should the rival pull ahead at double speed?",
