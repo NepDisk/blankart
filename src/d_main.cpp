@@ -1785,17 +1785,6 @@ void D_SRB2Main(void)
 
 	CON_SetLoadingProgress(LOADED_IWAD);
 
-	CONS_Printf("W_InitMultipleFiles(): Adding external PWADs.\n");
-	W_InitMultipleFiles(startuppwads, true);
-	D_CleanFile(startuppwads);
-
-	//
-	// search for pwad maps
-	//
-	P_InitMapData();
-
-	CON_SetLoadingProgress(LOADED_PWAD);
-
 	M_PasswordInit();
 
 	//---------------------------------------------------- READY SCREEN
@@ -1836,6 +1825,17 @@ void D_SRB2Main(void)
 	S_RegisterSoundStuff();
 
 	I_RegisterSysCommands();
+	
+	CONS_Printf("W_InitMultipleFiles(): Adding external PWADs.\n");
+	W_InitMultipleFiles(startuppwads, true);
+	D_CleanFile(startuppwads);
+
+	//
+	// search for pwad maps
+	//
+	P_InitMapData();
+
+	CON_SetLoadingProgress(LOADED_PWAD);
 
 	M_Init();
 
