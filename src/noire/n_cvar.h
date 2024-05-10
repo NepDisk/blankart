@@ -14,6 +14,13 @@
 extern "C" {
 #endif
 
+
+//Player
+extern consvar_t cv_colorizedhud;
+extern consvar_t cv_colorizeditembox;
+extern consvar_t cv_darkitembox;
+extern consvar_t cv_colorizedhudcolor;
+
 //Rings
 extern consvar_t cv_ng_rings;
 extern consvar_t cv_ng_ringcap;
@@ -76,6 +83,7 @@ void NG_Instawhip_OnChange(void);
 void NG_Spindash_OnChange(void);
 void NG_OldPogoOverride_OnChange(void);
 void NG_Rivals_OnChange(void);
+void ColorHUD_OnChange(void);
 
 #ifdef __cplusplus
 } // extern "C"

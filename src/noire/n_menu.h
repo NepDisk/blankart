@@ -10,6 +10,15 @@
 #ifndef __N_MENU__
 #define __N_MENU__
 
+#include "../k_menu.h"
+#include "../m_cond.h"
+#include "../command.h"
+#include "../console.h"
+#include "../g_state.h" //For the tripwire toggle
+
+// Noire
+#include "n_cvar.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,6 +41,9 @@ extern menu_t OPTIONS_NoireGameplaySpindashDef;
 extern menu_t OPTIONS_NoireGameplayDrivingDef;
 extern menu_t OPTIONS_NoireGameplayBotsDef;
 extern menu_t OPTIONS_NoireGameplayRivalsDef;
+
+extern menuitem_t OPTIONS_Noire[];
+extern menu_t OPTIONS_NoireDef;
 
 #ifdef __cplusplus
 } // extern "C"

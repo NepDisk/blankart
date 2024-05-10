@@ -22,6 +22,9 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
+// Noire
+#include "noire/n_hud.h"
+
 using srb2::Draw;
 using Chain = Draw::Chain;
 
@@ -245,11 +248,13 @@ void Chain::sticker(patch_t* end_graphic, UINT8 color) const
 		fill(x, width);
 	}
 
-	V_DrawScaledPatch(x + width, y, flags, end_graphic);
+	UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
+	V_DrawMappedPatch(x + width, y, flags, end_graphic,colormap);
 
 	if (align_ == Align::kCenter)
 	{
-		V_DrawScaledPatch(x, y, flags ^ V_FLIP, end_graphic);
+			UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
+			V_DrawMappedPatch(x, y, flags ^ V_FLIP, end_graphic, colormap);
 	}
 }
 

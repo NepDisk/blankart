@@ -7,14 +7,6 @@
 // See the 'LICENSE' file for more details.
 //-----------------------------------------------------------------------------
 
-#include "../../k_menu.h"
-#include "../../m_cond.h"
-#include "../../command.h"
-#include "../../console.h"
-#include "../../g_state.h" //For the tripwire toggle
-
-// Noire
-#include "../n_cvar.h"
 #include "../n_menu.h"
 
 ///////////

@@ -5,3 +5,4 @@ target_sources(SRB2SDL2 PRIVATE
 
 add_subdirectory(menu)
 add_subdirectory(objects)
+add_subdirectory(hud)

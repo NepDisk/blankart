@@ -105,7 +105,6 @@
 // Noire
 #include "noire/n_wad.h"
 
-
 extern "C" consvar_t cv_lua_profile, cv_menuframeskip;
 
 /* Manually defined asset hashes
@@ -1353,6 +1352,8 @@ static boolean AddIWAD(void)
 
 boolean found_noire_pk3;
 
+boolean clr_hud = false;
+
 static void IdentifyVersion(void)
 {
 	const char *srb2waddir = NULL;
@@ -1409,19 +1410,6 @@ static void IdentifyVersion(void)
 		D_AddFile(startupiwads, va(pandf,srb2waddir,"noire.pk3"));
 		found_noire_pk3 = true;
 	}
-
-	/* This is an example of how you would to check if needed lumps from an optional pk3 exists before using it
-	 * in W_CheckMultipleLumps put the name of the lumps you want to check for and then terminate it with null
-	 * Create a boolean with its default value false underneath found_noire_pk3 = false
-	 * set it to true inside the statement you created with W_CheckMultipleLumps
-	 * then extern it in d_main.h for outside access.
-	if (W_CheckMultipleLumps("EXAMPLELUMP", "EXAMPLELUMP2", NULL))
-	{
-		thingtoactivate = true;
-		//run other code
-	}
-	*/
-
 
 #define MUSICTEST(str) \
 	{\
@@ -1767,6 +1755,29 @@ void D_SRB2Main(void)
 
 	if (found_noire_pk3)
 		mainwads++;
+
+	/* This is an example of how you would to check if needed lumps from an optional pk3 exists before using it
+	 * in W_CheckMultipleLumps put the name of the lumps you want to check for and then terminate it with null
+	 * Create a boolean with its default value false underneath boolean found_noire_pk3;
+	 * set it to true inside the statement you created with W_CheckMultipleLumps
+	 * then extern it in d_main.h for outside access.
+	if (W_CheckMultipleLumps("EXAMPLELUMP", "EXAMPLELUMP2", NULL))
+	{
+		thingtoactivate = true;
+		//run other code
+	}
+	*/
+
+	if (W_CheckMultipleLumps("ISPYBCD", "ISPYBC", "K_ISBCD", "K_ISBC", "K_ISMULC",
+	"K_ITBCD", "K_ITBC", "K_ITMULC", "K_RBBC", "K_RECUES",
+	"K_SBBC", "K_SCBALN", "K_SCBALW", "K_SCBSMT", "K_SCCAPN",
+	"K_SCCAPW", "K_SCIKE2", "K_SCIKEN", "K_SCKAR1", "K_SCKAR2",
+	"K_SCKARM", "K_SCLAPN", "K_SCLAPS", "K_SCLAPW", "K_SCTIME",
+	"K_SCTIMW", "K_SCTOUT", "K_SCBSMC", "K_SPDMBC", "RNCBACKA",
+	"RNCBACKB", "SMRNGBCA", "SMRNGBCB", "K_COOLC1", "K_COOLC2", NULL))
+	{
+		clr_hud = true;
+	}
 
 	// Load credits_def lump
 	F_LoadCreditsDefinitions();

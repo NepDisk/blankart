@@ -18,6 +18,9 @@
 #include "../k_follower.h"
 #include "../s_sound.h"
 
+// Noire
+#include "../noire/n_menu.h"
+
 // options menu --  see mopt_e
 menuitem_t OPTIONS_Main[] =
 {
@@ -47,6 +50,9 @@ menuitem_t OPTIONS_Main[] =
 	{IT_STRING | IT_CALL, "Tricks & Secrets", "Those who bother reading a game manual always get the edge over those who don't!",
 		NULL, {.routine = M_Manual}, 0, 0},
 #endif
+
+	{IT_STRING | IT_SUBMENU, "Noire Options", "Tweak options not related to gameplay for noire client.",
+		NULL, {.submenu = &OPTIONS_NoireDef}, 0, 0},
 };
 
 // For options menu, the 'extra1' field will determine the background colour to use for... the background! (What a concept!)

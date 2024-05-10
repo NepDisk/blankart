@@ -57,6 +57,7 @@
 
 // Noire
 #include "noire/n_cvar.h"
+#include "noire/n_hud.h"
 
 //{ 	Patch Definitions
 static patch_t *kp_nodraw;
@@ -138,10 +139,10 @@ static patch_t *kp_wantedsplit;
 static patch_t *kp_wantedreticle;
 static patch_t *kp_minimapdot;
 
-static patch_t *kp_itembg[6];
-static patch_t *kp_ringbg[4];
+patch_t *kp_itembg[6];
+patch_t *kp_ringbg[4];
 static patch_t *kp_itemtimer[2];
-static patch_t *kp_itemmulsticker[2];
+patch_t *kp_itemmulsticker[2];
 static patch_t *kp_itemx;
 
 static patch_t *kp_sadface[3];
@@ -917,6 +918,9 @@ void K_LoadKartHUDGraphics(void)
 	K_LoadButtonGraphics(kp_button_right, 'L');
 	K_LoadButtonGraphics(kp_button_left, 'M');
 	K_LoadButtonGraphics(kp_button_dpad, 'T');
+
+	// Noire Colorized Hud
+	N_LoadColorizedHud();
 }
 
 // For the item toggle menu
@@ -1382,14 +1386,14 @@ static void K_drawKartItem(void)
 	const UINT8 offset = ((r_splitscreen > 1) ? 1 : 0);
 	patch_t *localpatch[3] = { kp_nodraw, kp_nodraw, kp_nodraw };
 	UINT8 localamt[3] = {0, 0, 0};
-	patch_t *localbg = ((offset) ? kp_itembg[2] : kp_itembg[0]);
+	patch_t *localbg = ((offset) ? K_getItemBoxPatch(2,0) : K_getItemBoxPatch(0,0));
 	patch_t *localinv = ((offset) ? kp_invincibility[((leveltime % (6*3)) / 3) + 7] : kp_invincibility[(leveltime % (7*3)) / 3]);
 	INT32 fx = 0, fy = 0, fflags = 0;	// final coords for hud and flags...
 	const INT32 numberdisplaymin = ((!offset && stplyr->itemtype == KITEM_ORBINAUT) ? 5 : 2);
 	INT32 itembar = 0;
 	INT32 maxl = 0; // itembar's normal highest value
 	const INT32 barlength = (offset ? 12 : 26);
-	skincolornum_t localcolor[3] = { static_cast<skincolornum_t>(stplyr->skincolor) };
+	skincolornum_t localcolor[3] = { static_cast<skincolornum_t>(K_GetHudColor()) };
 	SINT8 colormode[3] = { TC_RAINBOW };
 	boolean flipamount = false;	// Used for 3P/4P splitscreen to flip item amount stuff
 
@@ -1508,7 +1512,7 @@ static void K_drawKartItem(void)
 			{
 				case KITEM_INVINCIBILITY:
 					localpatch[1] = localinv;
-					localbg = kp_itembg[offset+1];
+					localbg = K_getItemBoxPatch(offset,1);
 					break;
 
 				case KITEM_ORBINAUT:
@@ -1519,7 +1523,7 @@ static void K_drawKartItem(void)
 				case KITEM_LIGHTNINGSHIELD:
 				case KITEM_BUBBLESHIELD:
 				case KITEM_FLAMESHIELD:
-					localbg = kp_itembg[offset+1];
+					localbg = K_getItemBoxPatch(offset,1);
 					/*FALLTHRU*/
 
 				default:
@@ -1594,7 +1598,8 @@ static void K_drawKartItem(void)
 		fy -= 5;
 	}
 
-	V_DrawScaledPatch(fx, fy, V_HUDTRANS|V_SLIDEIN|fflags, localbg);
+	UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
+	V_DrawMappedPatch(fx, fy, V_HUDTRANS|V_SLIDEIN|fflags, localbg, (K_UseColorHud()) ? colormap : NULL);
 
 	// Need to draw these in a particular order, for sorting.
 	V_SetClipRect(
@@ -1644,12 +1649,11 @@ static void K_drawKartItem(void)
 
 		if (fakeitemamount >= numberdisplaymin && stplyr->itemRoulette.active == false)
 		{
-			// Then, the numbers:
-			V_DrawScaledPatch(
+			UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
+			V_DrawMappedPatch(
 				fx + (flipamount ? 48 : 0), fy,
 				V_HUDTRANS|V_SLIDEIN|fflags|(flipamount ? V_FLIP : 0),
-				kp_itemmulsticker[offset]
-			); // flip this graphic for p2 and p4 in split and shift it.
+				K_getItemMulPatch(offset),  (K_UseColorHud()) ? colormap : NULL); // flip this graphic for p2 and p4 in split and shift it.
 
 			V_DrawFixedPatch(
 				fx<<FRACBITS, (fy<<FRACBITS) + rouletteOffset,
@@ -1763,7 +1767,7 @@ static void K_drawKartSlotMachine(void)
 	const UINT8 offset = ((r_splitscreen > 1) ? 1 : 0);
 
 	patch_t *localpatch[3] = { kp_nodraw, kp_nodraw, kp_nodraw };
-	patch_t *localbg = offset ? kp_ringbg[1] : kp_ringbg[0];
+	patch_t *localbg = offset ? K_getSlotMachinePatch(1) : K_getSlotMachinePatch(0);
 
 	// == SHITGARBAGE UNLIMITED 2: RISE OF MY ASS ==
 	// FIVE LAYERS OF BULLSHIT PER-PIXEL SHOVING BECAUSE THE PATCHES HAVE DIFFERENT OFFSETS
@@ -1775,7 +1779,7 @@ static void K_drawKartSlotMachine(void)
 	INT32 vstretch = 0;
 	INT32 hstretch = 3;
 	INT32 splitbsx = 0, splitbsy = 0;
-	skincolornum_t localcolor[3] = { static_cast<skincolornum_t>(stplyr->skincolor) };
+	skincolornum_t localcolor[3] = { static_cast<skincolornum_t>(K_GetHudColor()) };
 	SINT8 colormode[3] = { TC_RAINBOW };
 
 	fixed_t rouletteOffset = 0;
@@ -1868,7 +1872,8 @@ static void K_drawKartSlotMachine(void)
 		fy -= 5;
 	}
 
-	V_DrawScaledPatch(fx, fy, V_HUDTRANS|V_SLIDEIN|fflags, localbg);
+	UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
+	V_DrawMappedPatch(fx, fy, V_HUDTRANS|V_SLIDEIN|fflags, localbg, (K_UseColorHud()) ? colormap : NULL);
 
 	V_SetClipRect(
 		((fx + rouletteCrop.x + boxoffx + splitbsx) << FRACBITS), ((fy + rouletteCrop.y + boxoffy - vstretch + splitbsy) << FRACBITS),
@@ -1960,7 +1965,13 @@ void K_drawKartTimestamp(tic_t drawtime, INT32 TX, INT32 TY, INT32 splitflags, U
 
 	drawtime = K_TranslateTimer(drawtime, mode, &jitter);
 
-	V_DrawScaledPatch(TX, TY, splitflags, ((mode == 2) ? kp_lapstickerwide : kp_timestickerwide));
+	if (K_UseColorHud())
+	{
+		UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
+		V_DrawMappedPatch(TX, TY, splitflags, ((mode == 2) ? kc_lapstickerwide : kc_timestickerwide), colormap);
+	}
+	else
+		V_DrawScaledPatch(TX, TY, splitflags, ((mode == 2) ? kp_lapstickerwide : kp_timestickerwide));
 
 	TX += 33;
 
@@ -2071,7 +2082,7 @@ void K_drawKartTimestamp(tic_t drawtime, INT32 TX, INT32 TY, INT32 splitflags, U
 
 	if (modeattacking & ATTACKING_SPB && stplyr->SPBdistance > 0)
 	{
-		UINT8 *colormap = R_GetTranslationColormap(stplyr->skin, static_cast<skincolornum_t>(stplyr->skincolor), GTC_CACHE);
+		UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
 		INT32 ybar = 180;
 		INT32 widthbar = 120, xbar = 160 - widthbar/2, currentx;
 		INT32 barflags = V_SNAPTOBOTTOM|V_SLIDEIN;
@@ -2929,7 +2940,8 @@ static void K_drawKartLaps(void)
 		}
 
 		// Laps
-		V_DrawScaledPatch(fx-2 + (flipflag ? (SHORT(kp_ringstickersplit[1]->width) - 3) : 0), fy, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[0]);
+		UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
+		V_DrawMappedPatch(fx-2 + (flipflag ? (SHORT((K_UseColorHud()) ? kc_ringstickersplit[1]->width : kp_ringstickersplit[1]->width) - 3) : 0), fy, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[0], (K_UseColorHud()) ? colormap : NULL);
 
 		V_DrawScaledPatch(fx, fy, V_HUDTRANS|V_SLIDEIN|splitflags, kp_splitlapflag);
 		V_DrawScaledPatch(fx+22, fy, V_HUDTRANS|V_SLIDEIN|splitflags, frameslash);
@@ -2957,8 +2969,8 @@ static void K_drawKartLaps(void)
 	}
 	else
 	{
-		// Laps
-		V_DrawScaledPatch(LAPS_X, LAPS_Y, V_HUDTRANS|V_SLIDEIN|splitflags, kp_lapsticker);
+		UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
+		V_DrawMappedPatch(LAPS_X, LAPS_Y, V_HUDTRANS|V_SLIDEIN|splitflags, (K_UseColorHud()) ? kc_lapsticker : kp_lapsticker ,  (K_UseColorHud()) ? colormap : NULL);
 		V_DrawTimerString(LAPS_X+33, LAPS_Y+3, V_HUDTRANS|V_SLIDEIN|splitflags, va("%d/%d", std::min(stplyr->laps, numlaps), numlaps));
 	}
 }
@@ -3100,7 +3112,7 @@ static void K_drawRingCounter(boolean gametypeinfoshown)
 		// Lives
 		if (uselives)
 		{
-			UINT8 *colormap = R_GetTranslationColormap(stplyr->skin, static_cast<skincolornum_t>(stplyr->skincolor), GTC_CACHE);
+			UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
 			V_DrawMappedPatch(fr+21, fy-3, V_HUDTRANS|V_SLIDEIN|splitflags, faceprefix[stplyr->skin][FACE_MINIMAP], colormap);
 			if (stplyr->lives >= 0)
 				K_DrawLivesDigits(fr+34, fy, 4, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font);
@@ -3172,7 +3184,7 @@ static void K_drawRingCounter(boolean gametypeinfoshown)
 		// Lives
 		if (uselives)
 		{
-			UINT8 *colormap = R_GetTranslationColormap(stplyr->skin, static_cast<skincolornum_t>(stplyr->skincolor), GTC_CACHE);
+			UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
 			V_DrawMappedPatch(LAPS_X+rco+46, fy-5, V_HUDTRANS|V_SLIDEIN|splitflags, faceprefix[stplyr->skin][FACE_RANK], colormap);
 			SINT8 livescount = 0;
 			if (stplyr->lives > 0)
@@ -3385,6 +3397,7 @@ static void K_drawBlueSphereMeter(boolean gametypeinfoshown)
 	INT32 splitflags = V_HUDTRANS|V_SLIDEIN|V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_SPLITSCREEN;
 	INT32 flipflag = 0;
 	INT32 xstep = 15;
+	UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
 
 	// pain and suffering defined below
 	if (r_splitscreen < 2)	// don't change shit for THIS splitscreen.
@@ -3417,7 +3430,7 @@ static void K_drawBlueSphereMeter(boolean gametypeinfoshown)
 			fy += 9;
 		}
 
-		V_DrawScaledPatch(fx, fy, splitflags|flipflag, kp_spheresticker);
+		V_DrawMappedPatch(fx, fy, splitflags|flipflag, (K_UseColorHud()) ? kc_spheresticker : kp_spheresticker, (K_UseColorHud()) ? colormap : NULL);
 	}
 	else
 	{
@@ -3446,7 +3459,7 @@ static void K_drawBlueSphereMeter(boolean gametypeinfoshown)
 			fy -= 16;
 		}
 
-		V_DrawScaledPatch(fx, fy, splitflags|flipflag, kp_splitspheresticker);
+		V_DrawMappedPatch(fx, fy, splitflags|flipflag, (K_UseColorHud()) ? kc_splitspheresticker : kp_splitspheresticker, (K_UseColorHud()) ? colormap : NULL);
 	}
 
 	if (r_splitscreen < 2)
@@ -3496,7 +3509,7 @@ static void K_drawBlueSphereMeter(boolean gametypeinfoshown)
 
 static void K_drawKartBumpersOrKarma(void)
 {
-	UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(stplyr->skincolor), GTC_CACHE);
+	UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
 	INT32 splitflags = V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_SPLITSCREEN;
 
 	if (r_splitscreen > 1)
@@ -3600,9 +3613,9 @@ static void K_drawKartBumpersOrKarma(void)
 		if (battleprisons)
 		{
 			if (numtargets > 9 && maptargets > 9)
-				V_DrawMappedPatch(LAPS_X, fy, V_HUDTRANS|V_SLIDEIN|splitflags, kp_capsulestickerwide, NULL);
+				V_DrawMappedPatch(LAPS_X, fy, V_HUDTRANS|V_SLIDEIN|splitflags, (K_UseColorHud()) ? kp_capsulestickerwide : kp_capsulestickerwide, (K_UseColorHud()) ? colormap : NULL);
 			else
-				V_DrawMappedPatch(LAPS_X, fy, V_HUDTRANS|V_SLIDEIN|splitflags, kp_capsulesticker, NULL);
+				V_DrawMappedPatch(LAPS_X, fy, V_HUDTRANS|V_SLIDEIN|splitflags, (K_UseColorHud()) ? kc_capsulesticker : kp_capsulesticker, (K_UseColorHud()) ? colormap: NULL);
 			V_DrawTimerString(LAPS_X+47, fy+3, V_HUDTRANS|V_SLIDEIN|splitflags, va("%d/%d", numtargets, maptargets));
 		}
 		else
@@ -5423,7 +5436,7 @@ static void K_drawLapStartAnim(void)
 
 	const tic_t leveltimeOld = leveltime - 1;
 
-	UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(stplyr->skincolor), GTC_CACHE);
+	UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
 
 	fixed_t interpx, interpy, newval, oldval;
 
@@ -6497,16 +6510,17 @@ void K_DrawSticker(INT32 x, INT32 y, INT32 width, INT32 flags, boolean isSmall)
 
 	if (isSmall == true)
 	{
-		stickerEnd = static_cast<patch_t*>(W_CachePatchName("K_STIKE2", PU_CACHE));
+		stickerEnd = static_cast<patch_t*>(W_CachePatchName((K_UseColorHud()) ? "K_SCIKE2" : "K_STIKE2", PU_CACHE));
 		height = 6;
 	}
 	else
 	{
-		stickerEnd = static_cast<patch_t*>(W_CachePatchName("K_STIKEN", PU_CACHE));
+		stickerEnd = static_cast<patch_t*>(W_CachePatchName((K_UseColorHud()) ? "K_SCIKEN" :"K_STIKEN", PU_CACHE));
 		height = 11;
 	}
 
-	V_DrawFixedPatch(x*FRACUNIT, y*FRACUNIT, FRACUNIT, flags, stickerEnd, NULL);
-	V_DrawFill(x, y, width, height, 24|flags);
-	V_DrawFixedPatch((x + width)*FRACUNIT, y*FRACUNIT, FRACUNIT, flags|V_FLIP, stickerEnd, NULL);
+		UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
+		V_DrawFixedPatch(x*FRACUNIT, y*FRACUNIT, FRACUNIT, flags, stickerEnd, (K_UseColorHud()) ? colormap : NULL);
+		V_DrawFill(x, y, width, height, (K_UseColorHud()) ? skincolors[K_GetHudColor()].ramp[7]|flags : 24|flags);
+		V_DrawFixedPatch((x + width)*FRACUNIT, y*FRACUNIT, FRACUNIT, flags|V_FLIP, stickerEnd, (K_UseColorHud()) ? colormap : NULL);
 }

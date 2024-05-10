@@ -63,6 +63,12 @@ void D_StartTitle(void);
 void D_SetDeferredStartTitle(boolean deferred);
 boolean D_IsDeferredStartTitle(void);
 
+//
+// Externed values
+//
+
+extern boolean clr_hud;
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

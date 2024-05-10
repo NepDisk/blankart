@@ -24,6 +24,8 @@
 #include "typedef.h"
 #include "v_video.h"
 
+// Noire
+#include "noire/n_hud.h"
 namespace srb2
 {
 
@@ -194,8 +196,8 @@ public:
 		void small_button(Button type, std::optional<bool> press = {}) const { button_(type, 1, press); }
 
 		void sticker(patch_t* end_graphic, UINT8 color) const;
-		void sticker() const { sticker(Draw::cache_patch("K_STIKEN"), 24); }
-		void small_sticker() const { sticker(Draw::cache_patch("K_STIKE2"), 24); }
+		void sticker() const { sticker(Draw::cache_patch((K_UseColorHud()) ? "K_SCIKEN" : "K_STIKEN"), (K_UseColorHud()) ? skincolors[K_GetHudColor()].ramp[7] : 24); }
+		void small_sticker() const { sticker(Draw::cache_patch((K_UseColorHud()) ? "K_SCIKE2" : "K_STIKE2"), (K_UseColorHud()) ? skincolors[K_GetHudColor()].ramp[7] : 24); }
 
 	private:
 		constexpr Chain() {}

@@ -58,6 +58,9 @@
 #include "doomstat.h" // MAXMUSNAMES
 #include "discord.h"
 
+// Noire
+#include "noire/n_hud.h"
+
 // Loops through every constant and operation in word and performs its calculations, returning the final value.
 fixed_t get_number(const char *word)
 {
@@ -336,6 +339,7 @@ void readfreeslots(MYFILE *f)
 						strcpy(FREE_SKINCOLORS[i],word);
 						skincolors[i].cache_spraycan = UINT16_MAX;
 						numskincolors++;
+						N_ReloadHUDColorCvar();
 						break;
 					}
 				if (i == NUMCOLORFREESLOTS)

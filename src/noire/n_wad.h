@@ -1,7 +1,7 @@
 // RINGRACERS-NOIRE
 //-----------------------------------------------------------------------------
 // Copyright (C) 2024 by NepDisk
-// Copyright (C) 2020 by Kart Krew
+// Copyright (C) 2024 by hayaUnderscore
 //
 // This program is free software distributed under the
 // terms of the GNU General Public License, version 2.
