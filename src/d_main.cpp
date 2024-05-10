@@ -1406,7 +1406,7 @@ static void IdentifyVersion(void)
 
 	// completely optional
 	if (FIL_ReadFileOK(va(pandf,srb2waddir,"noire.pk3"))) {
-		D_AddFile(startuppwads, va(pandf,srb2waddir,"noire.pk3"));
+		D_AddFile(startupiwads, va(pandf,srb2waddir,"noire.pk3"));
 		found_noire_pk3 = true;
 	}
 
