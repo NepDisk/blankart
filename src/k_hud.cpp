@@ -5545,14 +5545,15 @@ static void K_drawTrickCool(void)
 {
 
 	tic_t timer = TICRATE - stplyr->karthud[khud_trickcool];
+	UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
 
 	if (timer <= 6)
 	{
-		V_DrawStretchyFixedPatch(TCOOL_X<<FRACBITS, TCOOL_Y<<FRACBITS, stretch[timer-1][0], stretch[timer-1][1], V_HUDTRANS|V_SPLITSCREEN, kp_trickcool[splitscreen ? 1 : 0], NULL);
+		V_DrawStretchyFixedPatch(TCOOL_X<<FRACBITS, TCOOL_Y<<FRACBITS, stretch[timer-1][0], stretch[timer-1][1], V_HUDTRANS|V_SPLITSCREEN, (K_UseColorHud()) ? kc_trickcool[splitscreen ? 1 : 0] : kp_trickcool[splitscreen ? 1 : 0], (K_UseColorHud()) ? colormap : NULL );
 	}
 	else if (leveltime & 1)
 	{
-		V_DrawFixedPatch(TCOOL_X<<FRACBITS, (TCOOL_Y<<FRACBITS) - (timer-10)*FRACUNIT/2, FRACUNIT, V_HUDTRANS|V_SPLITSCREEN, kp_trickcool[splitscreen ? 1 : 0], NULL);
+		V_DrawFixedPatch(TCOOL_X<<FRACBITS, (TCOOL_Y<<FRACBITS) - (timer-10)*FRACUNIT/2, FRACUNIT, V_HUDTRANS|V_SPLITSCREEN, (K_UseColorHud()) ? kc_trickcool[splitscreen ? 1 : 0] : kp_trickcool[splitscreen ? 1 : 0], (K_UseColorHud()) ? colormap : NULL );
 	}
 }
 
