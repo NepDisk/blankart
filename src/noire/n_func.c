@@ -7,17 +7,6 @@
 // See the 'LICENSE' file for more details.
 //-----------------------------------------------------------------------------
 
-#include "../byteptr.h"
-#include "../d_player.h"
-#include "../doomdef.h"
-#include "../g_game.h"
-#include "../k_kart.h"
-#include "../k_respawn.h"
-#include "../p_local.h"
-#include "../r_main.h"
-#include "../s_sound.h" //S_StartSound
-#include "../k_objects.h"
-
 #include "n_func.h"
 #include "n_cvar.h"
 
