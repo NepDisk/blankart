@@ -53,7 +53,7 @@ void N_UpdatePlayerAngle(player_t* player)
 
 // countersteer is how strong the controls are telling us we are turning
 // turndir is the direction the controls are telling us to turn, -1 if turning right and 1 if turning left
-INT16 N_GetKartDriftValue(player_t* player, fixed_t countersteer)
+INT16 N_GetKartDriftValue(const player_t* player, fixed_t countersteer)
 {
 	INT16 basedrift, driftadjust;
 	fixed_t driftweight = player->kartweight * 14; // 12
