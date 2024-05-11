@@ -11102,7 +11102,7 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 			break;
 		case MT_BOSS3WAYPOINT:
 			// Remove before release
-			CONS_Alert(CONS_WARNING, "Boss waypoints are deprecated. Did you forget to remove the old checkpoints, too?\n");
+			//CONS_Alert(CONS_WARNING, "Boss waypoints are deprecated. Did you forget to remove the old checkpoints, too?\n");
 			break;
 		case MT_RANDOMITEM:
 		case MT_SPHEREBOX:
@@ -13313,6 +13313,13 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj)
 		mobj->health = mthing->thing_args[0] + 1;
 		if (!P_MapAlreadyHasCheatcheck(mobj))
 			numcheatchecks++;
+		break;
+	case MT_BOSS3WAYPOINT:
+		mobj->health = mthing->angle;
+		mobj->movecount = mthing->extrainfo;
+		P_SetTarget(&mobj->tracer, waypointcap);
+		P_SetTarget(&waypointcap, mobj);
+		numbosswaypoints++;
 		break;
 	case MT_SPIKE:
 		// Pop up spikes!

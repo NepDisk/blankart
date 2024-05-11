@@ -1966,7 +1966,7 @@ static void K_HandleLapIncrement(player_t *player)
 			return;
 		}
 
-		if ((player->cheatchecknum == numcheatchecks) || (player->laps == 0))
+		if (((numbosswaypoints > 0) ? (player->cheatchecknum >= (numcheatchecks - (numcheatchecks/2))) : (player->cheatchecknum == numcheatchecks)) || (player->laps == 0))
 		{
 			size_t i = 0;
 			UINT8 nump = 0;
@@ -5409,6 +5409,30 @@ static void P_EvaluateOldSectorSpecial(player_t *player, sector_t *sector, secto
 				P_ProcessEggCapsule(player, sector);
 			break;
 	}
+
+	switch (GETSECSPECIAL(sector->special, 4))
+	{
+		case 1: // cheatcheck Activator
+			mobj_t *post = P_GetObjectTypeInSectorNum(MT_CHEATCHECK, sector - sectors);
+			if (!post)
+				break;
+			P_TouchSpecialThing(post, player->mo, false);
+			break;
+
+		case 10: // Finish Line
+
+			if ((gametyperules & GTR_CIRCUIT) && (player->exiting == 0) && !(player->pflags & PF_HITFINISHLINE))
+			{
+					K_HandleLapIncrement(player);
+
+					//ACS_RunLapScript(mo, line);
+					//K_HandleLapIncrement(player);
+					player->pflags |= PF_HITFINISHLINE;
+			}
+
+
+	}
+
 }
 
 /** Applies a sector special to a player.
@@ -6924,7 +6948,8 @@ void P_SpawnSpecials(boolean fromnetsave)
 			case 10: // Circuit finish line
 				if (udmf)
 					break;
-				CONS_Alert(CONS_WARNING, M_GetText("Deprecated finish line sector type detected. Please use the linedef type instead.\n"));
+					//NOIRE: This is annoying on binary maps using the old system please shut up
+					//CONS_Alert(CONS_WARNING, M_GetText("Deprecated finish line sector type detected. Please use the linedef type instead.\n"));
 				break;
 		}
 	}

@@ -20,6 +20,10 @@ INT16 N_GetKartTurnValue(player_t *player, INT16 turnvalue);
 INT16 N_GetKartDriftValue(player_t *player, fixed_t countersteer);
 void N_DoPogoSpring(mobj_t* mo, fixed_t vertispeed, UINT8 sound);
 
+
+void K_KartLegacyUpdatePosition(player_t *player);
+mobj_t *P_GetObjectTypeInSectorNum(mobjtype_t type, size_t s);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
