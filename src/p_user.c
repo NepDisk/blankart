@@ -744,6 +744,9 @@ void P_InvincGrowMusic(void)
 	INT32 grow = 0;
 
 	UINT8 i;
+	
+	if (!cv_specialmusic.value)
+		return;
 
 	for (i = 0; i <= r_splitscreen; ++i)
 	{
