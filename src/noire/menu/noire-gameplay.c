@@ -118,6 +118,9 @@ menuitem_t OPTIONS_NoireGameplayMechanics[] =
 
 	{IT_STRING | IT_CVAR, "Tripwires", "Enable or disable terrain recognized as tripwire.",
 		NULL, {.cvar = &cv_ng_tripwires}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Lives", "Enable or disable the lives system in supported gamemodes.",
+		NULL, {.cvar = &cv_ng_lives}, 0, 0},
 };
 
 ///////////

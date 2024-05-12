@@ -3478,6 +3478,9 @@ void G_AddTOL(UINT32 newtol, const char *tolname)
 //
 boolean G_GametypeUsesLives(void)
 {
+	if (!cv_ng_lives.value)
+		return false;
+
 	if (modeattacking) // NOT in Record Attack
 		return false;
 

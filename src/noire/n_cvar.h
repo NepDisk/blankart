@@ -47,7 +47,8 @@ extern consvar_t cv_ng_stumble;
 extern consvar_t cv_ng_hitlag;
 extern consvar_t cv_ng_mapanger;
 extern consvar_t cv_ng_tripwires;
-extern consvar_t cv_ng_nophysicsflag;
+extern consvar_t cv_ng_lives;
+
 
 //Instawhip
 extern consvar_t cv_ng_instawhip;
@@ -68,6 +69,7 @@ extern consvar_t cv_ng_stairjank;
 extern consvar_t cv_ng_turnstyle;
 extern consvar_t cv_ng_oldpogooverride;
 extern consvar_t cv_ng_underwaterhandling;
+extern consvar_t cv_ng_nophysicsflag;
 
 //Bots
 extern consvar_t cv_ng_botrubberbandboost;
