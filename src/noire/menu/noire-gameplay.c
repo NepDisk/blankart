@@ -298,7 +298,7 @@ void NG_Lives_OnChange(void)
 
 	for (int i = 1; i < OPTIONS_NoireGameplayLivesDef.numitems; i++)
 	{
-		OPTIONS_NoireGameplayLives[i].status = cv_ng_Lives.value
+		OPTIONS_NoireGameplayLives[i].status = cv_ng_lives.value
 			? (IT_STRING | IT_CVAR)
 			: IT_GRAYEDOUT;
 	}
