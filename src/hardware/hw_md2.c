@@ -1278,9 +1278,14 @@ static UINT8 HWR_GetModelSprite2(md2_t *md2, skin_t *skin, UINT8 spr2, player_t 
 static void adjustTextureCoords(model_t *model, patch_t *patch)
 {
 	int i;
-	GLPatch_t *gpatch = ((GLPatch_t *)patch->hardware);
-	
-	if (!model||!patch||!gpatch)
+	GLPatch_t *gpatch; 
+
+	if (!model || !patch)
+		return;
+
+	gpatch = ((GLPatch_t *)patch->hardware);
+
+	if (!gpatch)
 		return;
 
 	for (i = 0; i < model->numMeshes; i++)
