@@ -359,6 +359,9 @@ consvar_t cv_drawdist_precip = Player("drawdist_precip", "Normal").values({
 });
 
 consvar_t cv_drawinput = Player("drawinput", "Off").on_off();
+
+consvar_t cv_holdscorebutt = Player("holdscoreboardbutton", "Off").on_off();
+
 consvar_t cv_ffloorclip = Player("ffloorclip", "On").on_off();
 
 consvar_t cv_fpscap = Player("fpscap", "Match refresh rate").values({

@@ -956,17 +956,27 @@ void HU_Ticker(void)
 	hu_tick &= 7; // currently only to blink chat input cursor
 
 	// Rankings
-	if (G_PlayerInputDown(0, gc_rankings, 0))
+	if (!cv_holdscorebutt.value)
 	{
-		if (!hu_holdscores)
+		if (G_PlayerInputDown(0, gc_rankings, 0))
 		{
-			hu_showscores ^= true;
+			if (!hu_holdscores)
+			{
+				hu_showscores ^= true;
+			}
+			hu_holdscores = true;
 		}
-		hu_holdscores = true;
+		else
+		{
+			hu_holdscores = false;
+		}
 	}
-	else
+	else // im a lazy ass
 	{
-		hu_holdscores = false;
+		if (G_PlayerInputDown(0, gc_rankings, 0))
+			hu_showscores = !chat_on;
+		else
+			hu_showscores = false;
 	}
 
 	hu_keystrokes = false;
