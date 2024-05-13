@@ -71,25 +71,29 @@ menuitem_t OPTIONS_VideoAdvanced[] =
 	{IT_STRING | IT_CVAR, "3D Models", "Use 3D models instead of sprites when applicable.",
 		NULL, {.cvar = &cv_glmodels}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Shaders", "Use GLSL Shaders. Turning them off increases performance at the expanse of visual quality.",
+	{IT_STRING | IT_CVAR, "Shaders", "Use GLSL Shaders. Turning off increases performance at the expanse of visual quality.",
 		NULL, {.cvar = &cv_glshaders}, 0, 0},
 
-	{IT_SPACE | IT_NOTHING, NULL,  NULL,
-		NULL, {NULL}, 0, 0},
+	{IT_STRING | IT_CVAR, "Palette Rendering", "Emulates the look of the software renderer in OpenGL.",
+		NULL, {.cvar = &cv_glpaletterendering}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Palette Rendering Depth", "16bit looks like software in game while 24bit looks like screenshots.",
+		NULL, {.cvar = &cv_glpalettedepth}, 0, 0},
+
+	//{IT_SPACE | IT_NOTHING, NULL,  NULL,
+	//	NULL, {NULL}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Texture Quality", "Texture depth. Higher values are recommended.",
 		NULL, {.cvar = &cv_scr_depth}, 0, 0},
 
-	/*
 	{IT_STRING | IT_CVAR, "Texture Filter", "Texture Filter. Nearest is recommended.",
 		NULL, {.cvar = &cv_glfiltermode}, 0, 0},
-	*/
 
 	{IT_STRING | IT_CVAR, "Anisotropic", "Lower values will improve performance at a minor quality loss.",
 		NULL, {.cvar = &cv_glanisotropicmode}, 0, 0},
 
-	{IT_SPACE | IT_NOTHING, NULL,  NULL,
-		NULL, {NULL}, 0, 0},
+	//{IT_SPACE | IT_NOTHING, NULL,  NULL,
+	//	NULL, {NULL}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Sprite Billboarding", "Adjusts sprites when viewed from above or below to not make them appear flat.",
 		NULL, {.cvar = &cv_glspritebillboarding}, 0, 0},

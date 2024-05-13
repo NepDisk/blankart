@@ -956,17 +956,27 @@ void HU_Ticker(void)
 	hu_tick &= 7; // currently only to blink chat input cursor
 
 	// Rankings
-	if (G_PlayerInputDown(0, gc_rankings, 0))
+	if (!cv_holdscorebutt.value)
 	{
-		if (!hu_holdscores)
+		if (G_PlayerInputDown(0, gc_rankings, 0))
 		{
-			hu_showscores ^= true;
+			if (!hu_holdscores)
+			{
+				hu_showscores ^= true;
+			}
+			hu_holdscores = true;
 		}
-		hu_holdscores = true;
+		else
+		{
+			hu_holdscores = false;
+		}
 	}
-	else
+	else // im a lazy ass
 	{
-		hu_holdscores = false;
+		if (G_PlayerInputDown(0, gc_rankings, 0))
+			hu_showscores = !chat_on;
+		else
+			hu_showscores = false;
 	}
 
 	hu_keystrokes = false;
@@ -1185,8 +1195,8 @@ boolean HU_Responder(event_t *ev)
 
 		// Ignore non-keyboard keys, except when the talk key is bound
 		if (ev->data1 >= NUMKEYS
-		/*&& (ev->data1 != gamecontrol[0][gc_talkkey][0]
-		&& ev->data1 != gamecontrol[0][gc_talkkey][1])*/)
+		&& (ev->data1 != gamecontrol[0][gc_talk][0]
+		&& ev->data1 != gamecontrol[0][gc_talk][1]))
 			return false;
 
 		c = CON_ShiftChar(c);
@@ -1226,9 +1236,9 @@ boolean HU_Responder(event_t *ev)
 			I_UpdateMouseGrab();
 		}
 		else if (c == KEY_ESCAPE
-			/*|| ((c == gamecontrol[0][gc_talkkey][0] || c == gamecontrol[0][gc_talkkey][1]
-			|| c == gamecontrol[0][gc_teamkey][0] || c == gamecontrol[0][gc_teamkey][1])
-			&& c >= NUMKEYS)*/) // If it's not a keyboard key, then the chat button is used as a toggle.
+			|| ((c == gamecontrol[0][gc_talk][0] || c == gamecontrol[0][gc_talk][1]
+			|| c == gamecontrol[0][gc_teamtalk][0] || c == gamecontrol[0][gc_teamtalk][1])
+			&& c >= NUMKEYS)) // If it's not a keyboard key, then the chat button is used as a toggle.
 		{
 			chat_on = false;
 			c_input = 0; // reset input cursor

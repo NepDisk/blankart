@@ -730,35 +730,43 @@ void R_RenderMaskedSegRange(drawseg_t *drawseg, INT32 x1, INT32 x2)
 }
 
 template <typename T>
-static constexpr T saturating_add(T x, T y) noexcept
+static inline constexpr T saturating_add(T x, T y) noexcept
 {
-	INT64 z;
-	z = static_cast<INT64>(x) + static_cast<INT64>(y);
-	if (z > static_cast<INT64>(std::numeric_limits<T>::max()))
-	{
-		z = static_cast<INT64>(std::numeric_limits<T>::max());
-	}
-	else if (z < static_cast<INT64>(std::numeric_limits<T>::min()))
-	{
-		z = static_cast<INT64>(std::numeric_limits<T>::min());
-	}
-	return static_cast<T>(z);
+    using UnsignedT = std::make_unsigned_t<T>;
+    constexpr size_t TBits = sizeof(T) * 8;
+    constexpr size_t UBits = sizeof(UnsignedT) * 8;
+    
+    UnsignedT ux = static_cast<UnsignedT>(x);
+    UnsignedT uy = static_cast<UnsignedT>(y);
+    UnsignedT ures = ux + uy;
+    
+    if constexpr (TBits < UBits) {
+        if (ures < ux || ures < uy) {
+            return std::numeric_limits<T>::max();
+        }
+    }
+    return static_cast<T>(ures);
 }
 
 template <typename T>
-static constexpr T saturating_mul(T x, T y) noexcept
+static inline constexpr T saturating_mul(T x, T y) noexcept
 {
-	INT64 z;
-	z = static_cast<INT64>(x) * static_cast<INT64>(y);
-	if (z > static_cast<INT64>(std::numeric_limits<T>::max()))
-	{
-		z = static_cast<INT64>(std::numeric_limits<T>::max());
-	}
-	else if (z < static_cast<INT64>(std::numeric_limits<T>::min()))
-	{
-		z = static_cast<INT64>(std::numeric_limits<T>::min());
-	}
-	return static_cast<T>(z);
+    using UnsignedT = std::make_unsigned_t<T>;
+    constexpr size_t TBits = sizeof(T) * 8;
+    constexpr size_t UBits = sizeof(UnsignedT) * 8;
+    
+    UnsignedT ux = static_cast<UnsignedT>(x);
+    UnsignedT uy = static_cast<UnsignedT>(y);
+    UnsignedT ures = ux * uy;
+    
+    if constexpr (TBits < UBits) {
+        ures >>= TBits;
+        if ((ux | uy) & (UnsignedT(1) << (TBits - 1))) {
+            ures |= ~UnsignedT(0) << (UBits - TBits);
+        }
+    }
+    
+    return static_cast<T>(ures);
 }
 
 // Loop through R_DrawMaskedColumn calls

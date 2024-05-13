@@ -106,6 +106,8 @@ extern consvar_t cv_shittysigns;
 extern consvar_t cv_tastelesstaunts;
 extern consvar_t cv_4thgear;
 
+extern consvar_t cv_holdscorebutt; //idk where to throw this *shrugs*
+
 typedef enum {
 	CV_CAPSULETEST_OFF,
 	CV_CAPSULETEST_MULTIPLAYER,

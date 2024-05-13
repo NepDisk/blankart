@@ -1,3 +1,4 @@
+
 // DR. ROBOTNIK'S RING RACERS
 //-----------------------------------------------------------------------------
 // Copyright (C) 2024 by James Robert Roman
@@ -513,6 +514,10 @@ consvar_t cv_colorizeditembox = Player("colorizeditembox", "On").on_off();
 consvar_t cv_darkitembox = Player("darkitembox", "On").on_off();
 
 consvar_t cv_colorizedhudcolor = Player("colorizedhudcolor", "Skin Color").values(HudColor_cons_t);
+
+consvar_t cv_specialmusic = Player("specialmusic", "On").on_off();
+
+consvar_t cv_holdscorebutt = Player("holdscoreboardbutton", "On").on_off();
 
 //
 // Server local, also available on dedicated servers.

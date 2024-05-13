@@ -131,7 +131,6 @@ extern consvar_t cv_chasecam[MAXSPLITSCREENPLAYERS];
 
 extern consvar_t cv_shadow;
 extern consvar_t cv_ffloorclip;
-extern consvar_t cv_spriteclip;
 extern consvar_t cv_drawdist, cv_drawdist_precip;
 extern consvar_t cv_fov[MAXSPLITSCREENPLAYERS];
 extern consvar_t cv_skybox;

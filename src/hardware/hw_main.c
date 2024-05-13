@@ -431,6 +431,12 @@ static void HWR_RenderPlane(subsector_t *subsector, extrasubsector_t *xsub, bool
 	if (!xsub->planepoly)
 		return;
 
+	pv  = xsub->planepoly->pts;
+	nrPlaneVerts = xsub->planepoly->numpts;
+
+	if (nrPlaneVerts < 3)   //not even a triangle ?
+		return;
+
 	// Get the slope pointer to simplify future code
 	if (FOFsector)
 	{
@@ -452,12 +458,6 @@ static void HWR_RenderPlane(subsector_t *subsector, extrasubsector_t *xsub, bool
 		fixedheight = P_GetSlopeZAt(slope, viewx, viewy);
 
 	height = FIXED_TO_FLOAT(fixedheight);
-
-	pv  = xsub->planepoly->pts;
-	nrPlaneVerts = xsub->planepoly->numpts;
-
-	if (nrPlaneVerts < 3)   //not even a triangle ?
-		return;
 
 	// Allocate plane-vertex buffer if we need to
 	if (!planeVerts || nrPlaneVerts > numAllocedPlaneVerts)

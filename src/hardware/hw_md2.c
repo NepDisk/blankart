@@ -499,7 +499,7 @@ void HWR_InitModels(void)
 	size_t i;
 	INT32 s;
 	FILE *f;
-	char name[24], filename[32];
+	char name[26], filename[32];
 	float scale, offset;
 	size_t prefixlen;
 
@@ -599,7 +599,7 @@ modelfound:
 void HWR_AddPlayerModel(INT32 skin) // For skins that were added after startup
 {
 	FILE *f;
-	char name[24], filename[32];
+	char name[26], filename[32];
 	float scale, offset;
 	size_t prefixlen;
 
@@ -658,7 +658,7 @@ void HWR_AddSpriteModel(size_t spritenum) // For sprites that were added after s
 	// name[24] is used to check for names in the models.dat file that match with sprites or player skins
 	// sprite names are always 4 characters long, and names is for player skins can be up to 19 characters long
 	// PLAYERMODELPREFIX is 6 characters long
-	char name[24], filename[32];
+	char name[26], filename[32];
 	float scale, offset;
 
 	if (nomd2s)
@@ -1278,7 +1278,15 @@ static UINT8 HWR_GetModelSprite2(md2_t *md2, skin_t *skin, UINT8 spr2, player_t 
 static void adjustTextureCoords(model_t *model, patch_t *patch)
 {
 	int i;
-	GLPatch_t *gpatch = ((GLPatch_t *)patch->hardware);
+	GLPatch_t *gpatch; 
+
+	if (!model || !patch)
+		return;
+
+	gpatch = ((GLPatch_t *)patch->hardware);
+
+	if (!gpatch)
+		return;
 
 	for (i = 0; i < model->numMeshes; i++)
 	{
@@ -1295,6 +1303,9 @@ static void adjustTextureCoords(model_t *model, patch_t *patch)
 			numVertices = mesh->numTriangles * 3;
 		else
 			numVertices = mesh->numVertices;
+		
+		if (numVertices == 0)
+			return;
 
 		// if originaluvs points to uvs, we need to allocate new memory for adjusted uvs
 		// the old uvs are kept around for use in possible readjustments
