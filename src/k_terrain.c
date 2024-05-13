@@ -597,7 +597,7 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			}
 		}
 
-		if (slope)
+		if (slope && !terrain->springDoKartPogo)
 		{
 			const angle_t fa = (slope->zangle >> ANGLETOFINESHIFT);
 
