@@ -32,7 +32,7 @@ menuitem_t OPTIONS_Noire[] =
 	{IT_STRING | IT_CVAR, "Special Music", "Enable / Disable special music",
 		NULL, {.cvar = &cv_specialmusic}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Score Menu Hold", "Require holding to skip score menu open",
+	{IT_STRING | IT_CVAR, "Score Menu Hold", "Require holding to keep score menu open",
 		NULL, {.cvar = &cv_holdscorebutt}, 0, 0},
 
 
