@@ -84,6 +84,7 @@ void NG_Generic_OnChange(void);
 void NG_Rings_OnChange(void);
 void NG_Instawhip_OnChange(void);
 void NG_Spindash_OnChange(void);
+void NG_Lives_OnChange(void);
 void NG_OldPogoOverride_OnChange(void);
 void NG_Rivals_OnChange(void);
 void ColorHUD_OnChange(void);
