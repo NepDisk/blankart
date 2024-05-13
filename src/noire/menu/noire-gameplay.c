@@ -296,7 +296,7 @@ void NG_Lives_OnChange(void)
 {
 	if (con_startup) return;
 
-	if(cv_ng_Lives.value)
+	if(cv_ng_lives.value)
 	{
 		CV_Set(&cv_ng_continuesrank, "On");
 
