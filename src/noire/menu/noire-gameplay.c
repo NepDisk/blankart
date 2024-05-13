@@ -230,9 +230,6 @@ menuitem_t OPTIONS_NoireGameplayLives[] =
 	{IT_STRING | IT_CVAR, "Lives", "Enable or disable the lives system in supported gamemodes.",
 		NULL, {.cvar = &cv_ng_lives}, 0, 0},
 
-	{IT_NOTHING|IT_SPACE, NULL, NULL,
-		NULL, NULL, 0, 0},
-
 	{IT_STRING | IT_CVAR, "Continues Affecting Rank", "Should lives/retries effect the end rank of a GP?",
 		NULL, {.cvar = &cv_ng_continuesrank}, 0, 0},
 };
