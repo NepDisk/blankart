@@ -27,6 +27,9 @@
 #include "k_race.h"
 #include "command.h"
 
+//Noire
+#include "noire/n_cvar.h"
+
 // I was ALMOST tempted to start tearing apart all
 // of the map loading code and turning it into C++
 // and making it properly split between read-only
@@ -632,7 +635,12 @@ gp_rank_e K_CalculateGPGrade(gpRank_t *rankData)
 		rankData->scoreRings += (rankData->rings * RANK_WEIGHT_RINGS) / rankData->totalRings;
 	}
 
+	if ((!cv_ng_lives.value) || (!cv_ng_continuesrank.value))
+	{
+		rankData->scoreContinues += 50;
+	} else {
 	rankData->scoreContinues -= (rankData->continuesUsed - RANK_CONTINUE_PENALTY_START) * continuesPenalty;
+	}
 
 	rankData->scoreTotal = 
 		rankData->scorePosition +
