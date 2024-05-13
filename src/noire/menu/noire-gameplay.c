@@ -296,23 +296,11 @@ void NG_Lives_OnChange(void)
 {
 	if (con_startup) return;
 
-	if(cv_ng_lives.value)
+	for (int i = 1; i < OPTIONS_NoireGameplayLivesDef.numitems; i++)
 	{
-		CV_Set(&cv_ng_continuesrank, "On");
-
-		for (int i = 1; i < OPTIONS_NoireGameplayLivesDef.numitems; i++)
-		{
-			OPTIONS_NoireGameplayLives[i].status = IT_STRING | IT_CVAR;
-		}
-	}
-	else
-	{
-		CV_Set(&cv_ng_continuesrank, "Off");
-
-		for (int i = 1; i < OPTIONS_NoireGameplayLivesDef.numitems; i++)
-		{
-			OPTIONS_NoireGameplayLives[i].status = IT_GRAYEDOUT;
-		}
+		OPTIONS_NoireGameplayLives[i].status = cv_ng_Lives.value
+			? (IT_STRING | IT_CVAR)
+			: IT_GRAYEDOUT;
 	}
 }
 
