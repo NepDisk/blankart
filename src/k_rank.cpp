@@ -635,7 +635,7 @@ gp_rank_e K_CalculateGPGrade(gpRank_t *rankData)
 		rankData->scoreRings += (rankData->rings * RANK_WEIGHT_RINGS) / rankData->totalRings;
 	}
 
-	if ((!cv_ng_lives.value) && !G_GametypeUsesLives())
+	if ((!cv_ng_lives.value) || (!cv_ng_continuesrank.value))
 	{
 		rankData->scoreContinues += 50;
 	} else {
