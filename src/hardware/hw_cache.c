@@ -599,6 +599,7 @@ void HWR_MakePatch (const patch_t *patch, GLPatch_t *grPatch, GLMipmap_t *grMipm
 	if (makebitmap)
 	{
 		MakeBlock(grMipmap);
+
 		HWR_DrawPatchInCache(grMipmap,
 			grMipmap->width, grMipmap->height,
 			patch->width, patch->height,
@@ -1499,8 +1500,8 @@ static void HWR_SetPaletteLookup(RGBA_t *palette)
 	int r, g, b;
 	UINT8 *lut = Z_Malloc(
 		HWR_PALETTE_LUT_SIZE*HWR_PALETTE_LUT_SIZE*HWR_PALETTE_LUT_SIZE*sizeof(UINT8),
-						  PU_STATIC, NULL);
-	#define STEP_SIZE (256/HWR_PALETTE_LUT_SIZE)
+		PU_STATIC, NULL);
+#define STEP_SIZE (256/HWR_PALETTE_LUT_SIZE)
 	for (b = 0; b < HWR_PALETTE_LUT_SIZE; b++)
 	{
 		for (g = 0; g < HWR_PALETTE_LUT_SIZE; g++)
@@ -1508,11 +1509,11 @@ static void HWR_SetPaletteLookup(RGBA_t *palette)
 			for (r = 0; r < HWR_PALETTE_LUT_SIZE; r++)
 			{
 				lut[b*HWR_PALETTE_LUT_SIZE*HWR_PALETTE_LUT_SIZE+g*HWR_PALETTE_LUT_SIZE+r] =
-				NearestPaletteColor(r*STEP_SIZE, g*STEP_SIZE, b*STEP_SIZE, palette);
+					NearestPaletteColor(r*STEP_SIZE, g*STEP_SIZE, b*STEP_SIZE, palette);
 			}
 		}
 	}
-	#undef STEP_SIZE
+#undef STEP_SIZE
 	HWD.pfnSetPaletteLookup(lut);
 	Z_Free(lut);
 }
@@ -1604,8 +1605,8 @@ UINT32 HWR_GetLightTableID(extracolormap_t *colormap)
 
 		if (default_colormap)
 			colormap_pointer = colormaps; // don't actually use the data from the "default colormap"
-			else
-				colormap_pointer = colormap->colormap;
+		else
+			colormap_pointer = colormap->colormap;
 		colormap->gl_lighttable_id = HWR_CreateLightTable(colormap_pointer);
 	}
 
