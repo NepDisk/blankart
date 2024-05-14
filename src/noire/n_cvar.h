@@ -10,6 +10,8 @@
 #ifndef __N_CVAR__
 #define __N_CVAR__
 
+#include "../command.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
