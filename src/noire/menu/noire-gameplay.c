@@ -182,8 +182,8 @@ menuitem_t OPTIONS_NoireGameplayDriving[] =
 	{IT_STRING | IT_CVAR, "No Physics Flag SLope Launch", "Consider the 'No Physics' flag on slopes, launching racers or not.",
 		NULL, {.cvar = &cv_ng_nophysicsflag}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Old Pogo Override", "Should flat spring objects/panels act like SRB2Kart pogo springs?",
-		NULL, {.cvar = &cv_ng_oldpogooverride}, 0, 0},
+	/*{IT_STRING | IT_CVAR, "Old Pogo Override", "Should flat spring objects/panels act like SRB2Kart pogo springs?",
+		NULL, {.cvar = &cv_ng_oldpogooverride}, 0, 0},*/ // TODO: Fix this, its currently broken but the pogo springs terrain is fine?
 };
 
 ///////////
