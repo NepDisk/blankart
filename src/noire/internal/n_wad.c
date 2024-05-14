@@ -8,7 +8,7 @@
 // See the 'LICENSE' file for more details.
 //-----------------------------------------------------------------------------
 
-#include "n_wad.h"
+#include "../n_wad.h"
 
 UINT8 W_CheckMultipleLumps(const char* lump, ...)
 {

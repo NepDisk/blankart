@@ -20,7 +20,6 @@
 #include "d_event.h"
 #include "d_net.h"
 #include "g_game.h"
-#include "noire/n_func.h"
 #include "p_local.h"
 #include "r_fps.h"
 #include "r_main.h"
@@ -77,7 +76,7 @@
 
 // Noire
 #include "noire/n_cvar.h"
-#include "noire/n_func.h"
+#include "noire/n_control.h"
 
 #ifdef HWRENDER
 #include "hardware/hw_light.h"

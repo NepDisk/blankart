@@ -48,7 +48,7 @@
 
 // Noire
 #include "noire/n_cvar.h"
-#include "noire/n_func.h"
+#include "noire/n_legacycheckpoint.h"
 
 tm_t g_tm = {0};
 
