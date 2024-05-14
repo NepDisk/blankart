@@ -8,8 +8,8 @@
 // See the 'LICENSE' file for more details.
 //-----------------------------------------------------------------------------
 
-#ifndef __N_CHECK__
-#define __N_CHECK__
+#ifndef __N_BOOST__
+#define __N_BOOST__
 
 #include "../d_player.h"
 #include "../doomdef.h"
