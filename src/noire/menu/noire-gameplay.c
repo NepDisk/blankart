@@ -199,6 +199,9 @@ menuitem_t OPTIONS_NoireGameplayBots[] =
 
 	{IT_STRING | IT_CVAR, "Bot Rubberband Boost", "Should bots be allowed to use rubberband boost?",
 		NULL, {.cvar = &cv_ng_botrubberbandboost}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Use character rivals", "Should the preset 'rivals' of each character be spawned?",
+		NULL, {.cvar = &cv_ng_charsetrivals}, 0, 0},
 };
 
 ///////////

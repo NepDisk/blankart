@@ -889,6 +889,7 @@ consvar_t cv_ng_nophysicsflag = UnsavedNetVar("ng_nophysicsflag", "Off").on_off(
 
 //Bots
 consvar_t cv_ng_botrubberbandboost = UnsavedNetVar("ng_botrubberbandboost", "On").on_off();
+consvar_t cv_ng_charsetrivals = UnsavedNetVar("ng_ng_charsetrivals", "On").on_off();
 
 //Rivals
 void NG_Rivals_OnChange(void);
