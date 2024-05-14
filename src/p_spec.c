@@ -5413,12 +5413,13 @@ static void P_EvaluateOldSectorSpecial(player_t *player, sector_t *sector, secto
 	switch (GETSECSPECIAL(sector->special, 4))
 	{
 		case 1: // cheatcheck Activator
+		{
 			mobj_t *post = P_GetObjectTypeInSectorNum(MT_CHEATCHECK, sector - sectors);
 			if (!post)
 				break;
 			P_TouchSpecialThing(post, player->mo, false);
 			break;
-
+		}
 		case 10: // Finish Line
 
 			if ((gametyperules & GTR_CIRCUIT) && (player->exiting == 0) && !(player->pflags & PF_HITFINISHLINE))
