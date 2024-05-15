@@ -16,6 +16,7 @@
 #include "d_main.h"
 #include "g_game.h"
 #include "g_input.h"
+#include "noire/n_soc.h"
 #include "p_local.h"
 #include "z_zone.h"
 #include "s_sound.h"
@@ -57,6 +58,9 @@
 #ifdef PARANOIA
 #include "deh_tables.h" // MOBJTYPE_LIST
 #endif
+
+// Noire
+#include "noire/n_cvar.h"
 
 tic_t leveltime;
 boolean thinkersCompleted;
@@ -1172,7 +1176,7 @@ void P_Ticker(boolean run)
 				}
 
 				// POSITION!! music
-				if (modeattacking == ATTACKING_NONE || !P_UseContinuousLevelMusic())
+				if ((!N_UseLegacyStart() && modeattacking == ATTACKING_NONE) || !P_UseContinuousLevelMusic())
 				{
 					P_StartPositionMusic(true); // exact times only
 				}

@@ -52,6 +52,7 @@ extern consvar_t cv_ng_tripwires;
 extern consvar_t cv_ng_lives;
 extern consvar_t cv_ng_continuesrank;
 extern consvar_t cv_ng_dospecialstage;
+extern consvar_t cv_ng_forcenoposition;
 
 
 //Instawhip
@@ -92,6 +93,7 @@ void NG_Lives_OnChange(void);
 void NG_OldPogoOverride_OnChange(void);
 void NG_Rivals_OnChange(void);
 void ColorHUD_OnChange(void);
+void NG_ForceNoPosition_OnChange(void);
 
 #ifdef __cplusplus
 } // extern "C"

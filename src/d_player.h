@@ -792,6 +792,8 @@ struct player_t
 	UINT8 numsneakers;		// Number of stacked sneaker effects
 	UINT8 floorboost;		// (0 to 3) - Prevents Sneaker sounds for a brief duration when triggered by a floor panel
 
+	UINT8 boostcharge; // Noire: No position boostcharge
+
 	INT16 growshrinktimer;		// > 0 = Big, < 0 = small
 	UINT16 rocketsneakertimer;	// Rocket Sneaker duration timer
 	UINT16 invincibilitytimer;	// Invincibility timer

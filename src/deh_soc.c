@@ -1357,6 +1357,13 @@ void readlevelheader(MYFILE *f, char * name)
 				mapheaderinfo[num]->numlaps = (UINT8)i;
 			else if (fastcmp(word, "LAPSPERSECTION"))
 				mapheaderinfo[num]->lapspersection = max((UINT8)i, 1u);
+			else if (fastcmp(word, "LEGACYSTART"))
+			{
+				if (i || word2[0] == 'T' || word2[0] == 'Y')
+					mapheaderinfo[num]->legacystart = true;
+				else
+					mapheaderinfo[num]->legacystart = false;
+			}
 			else if (fastcmp(word, "SKYBOXSCALE"))
 				mapheaderinfo[num]->skybox_scalex = mapheaderinfo[num]->skybox_scaley = mapheaderinfo[num]->skybox_scalez = (INT16)i;
 			else if (fastcmp(word, "SKYBOXSCALEX"))

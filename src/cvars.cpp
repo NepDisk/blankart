@@ -848,6 +848,8 @@ consvar_t cv_ng_stumble = UnsavedNetVar("ng_stumble", "On").on_off();
 consvar_t cv_ng_hitlag = UnsavedNetVar("ng_hitlag", "On").on_off();
 consvar_t cv_ng_mapanger = UnsavedNetVar("ng_mapanger", "Default (2)").min_max(0, INT32_MAX, {{-1, "Disabled"}, {2, "Default (2)"}});
 consvar_t cv_ng_tripwires = UnsavedNetVar("ng_tripwires", "On").on_off().onchange(NG_Generic_OnChange);
+void NG_ForceNoPosition_OnChange(void);
+consvar_t cv_ng_forcenoposition = UnsavedNetVar("ng_forcenoposition", "Off").on_off().onchange(NG_ForceNoPosition_OnChange);
 consvar_t cv_ng_dospecialstage = UnsavedNetVar("ng_dospecialstage", "On").on_off();
 
 //Lives

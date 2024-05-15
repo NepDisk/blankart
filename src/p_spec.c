@@ -19,6 +19,7 @@
 #include "dehacked.h"
 #include "doomdef.h"
 #include "g_game.h"
+#include "noire/n_cvar.h"
 #include "p_local.h"
 #include "p_setup.h" // levelflats for flat animation
 #include "r_data.h"
@@ -55,6 +56,9 @@
 
 // Not sure if this is necessary, but it was in w_wad.c, so I'm putting it here too -Shadow Hog
 #include <errno.h>
+
+// Noire
+#include "noire/n_soc.h"
 
 mobj_t *skyboxviewpnts[16]; // array of MT_SKYBOX viewpoint mobjs
 mobj_t *skyboxcenterpnts[16]; // array of MT_SKYBOX centerpoint mobjs
@@ -1933,7 +1937,7 @@ static void K_HandleLapIncrement(player_t *player)
 	{
 		if (K_IgnoreFinishLine(player))
 			return;
-		if (!G_TimeAttackStart() && leveltime < starttime && !(gametyperules & GTR_ROLLINGSTART))
+		if (!G_TimeAttackStart() && leveltime < starttime && !(gametyperules & GTR_ROLLINGSTART) && !N_UseLegacyStart())
 		{
 			// freeze 'em until fault penalty is over
 			player->mo->hitlag = starttime - leveltime + TICRATE*3;

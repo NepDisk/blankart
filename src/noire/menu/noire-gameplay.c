@@ -122,6 +122,9 @@ menuitem_t OPTIONS_NoireGameplayMechanics[] =
 	{IT_STRING | IT_CVAR, "Tripwires", "Enable or disable terrain recognized as tripwire.",
 		NULL, {.cvar = &cv_ng_tripwires}, 0, 0},
 
+	{IT_STRING | IT_CVAR, "Force Disable Position", "Force disable Position on all maps regardless of SOC",
+		NULL, {.cvar = &cv_ng_forcenoposition}, 0, 0},
+
 	{IT_STRING | IT_CVAR, "Special Stages", "Enable or disable special stages in Intense or higher GPs.",
 		NULL, {.cvar = &cv_ng_dospecialstage}, 0, 0},
 };
@@ -339,6 +342,23 @@ void NG_OldPogoOverride_OnChange(void)
 		M_StartMessage(
 			"WARNING!",
 			M_GetText("This toggle is just for fun. Some maps may break and diagonal/sloped spring panels won\'t be affected.\n\nEnable at your own risk!"),
+			NULL,
+			MM_NOTHING,
+			NULL,
+			NULL
+		);
+		displayedWarning = true;
+	}
+}
+
+void NG_ForceNoPosition_OnChange(void)
+{
+	static boolean displayedWarning = false;
+	if (!displayedWarning && menuactive)
+	{
+		M_StartMessage(
+			"WARNING!",
+			M_GetText("It is recommended to use SOC value\n\"LegacyStart = True\" instead of this convar.\nSome maps may break.\n\nEnable at your own risk!"),
 			NULL,
 			MM_NOTHING,
 			NULL,

@@ -72,6 +72,7 @@
 #include "noire/n_cvar.h"
 #include "noire/n_object.h"
 #include "noire/n_boosts.h"
+#include "noire/n_soc.h"
 
 // SOME IMPORTANT VARIABLES DEFINED IN DOOMDEF.H:
 // gamespeed is cc (0 for easy, 1 for normal, 2 for hard)
@@ -271,7 +272,9 @@ void K_TimerInit(void)
 			else
 			{
 				numbulbs = 5;
-				rainbowstartavailable = true;
+
+				if (!N_UseLegacyStart())
+					rainbowstartavailable = true;
 
 				// 1v1 activates DUEL rules!
 				inDuel = (numPlayers == 2);
@@ -285,10 +288,16 @@ void K_TimerInit(void)
 		}
 
 		starttime = introtime;
-		if (!(gametyperules & GTR_NOPOSITION))
+		if (!(gametyperules & GTR_NOPOSITION) && !N_UseLegacyStart())
 		{
 			// Start countdown time + buffer time
 			starttime += ((3*TICRATE) + ((2*TICRATE) + (numbulbs * bulbtime)));
+		}
+		else if (N_UseLegacyStart())
+		{
+			numbulbs = 0;
+			starttime = 6*TICRATE + (3*TICRATE/4);
+
 		}
 	}
 
@@ -9675,6 +9684,10 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		// S_StartSound(NULL, sfx_s26d);
 		P_DamageMobj(player->mo, NULL, NULL, 1, DMG_INSTAKILL);
 	}
+
+	if (N_UseLegacyStart())
+		N_LegacyStart(player);
+
 }
 
 void K_KartResetPlayerColor(player_t *player)

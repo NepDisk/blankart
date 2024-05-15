@@ -41,6 +41,10 @@
 #include "k_bot.h"
 #include "k_hud.h"
 
+// Noire
+#include "noire/n_cvar.h"
+#include "noire/n_soc.h"
+
 line_t *finishBeamLine = NULL;
 
 static mobj_t *beamPoints[2];
@@ -424,7 +428,7 @@ static void K_DrawFinishLineBeamForLine(fixed_t offset, angle_t aiming, line_t *
 
 void K_RunFinishLineBeam(void)
 {
-	if ((gametyperules & GTR_ROLLINGSTART) || !(leveltime < starttime || rainbowstartavailable == true))
+	if ((gametyperules & GTR_ROLLINGSTART) || !(leveltime < starttime || rainbowstartavailable == true) || N_UseLegacyStart())
 	{
 		return;
 	}

@@ -522,6 +522,7 @@ struct mapheader_t
 	UINT32 typeoflevel;					///< Combination of typeoflevel flags.
 	UINT8 numlaps;						///< Number of laps in circuit mode, unless overridden.
 	UINT8 lapspersection;				///< Number of laps per section in hybrid section-circuit maps.
+	boolean legacystart;				///< Should map use SRB2Kart style race start
 	fixed_t gravity;					///< Map-wide gravity.
 	char relevantskin[SKINNAMESIZE+1];	///< Skin to use for tutorial (if not provided, uses Eggman.)
 

@@ -448,6 +448,8 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->numsneakers);
 	else if (fastcmp(field,"floorboost"))
 		lua_pushinteger(L, plr->floorboost);
+	else if (fastcmp(field,"boostcharge"))
+		lua_pushinteger(L, plr->boostcharge);
 	else if (fastcmp(field,"growshrinktimer"))
 		lua_pushinteger(L, plr->growshrinktimer);
 	else if (fastcmp(field,"rocketsneakertimer"))
@@ -1011,6 +1013,8 @@ static int player_set(lua_State *L)
 	else if (fastcmp(field,"numsneakers"))
 		plr->numsneakers = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"floorboost"))
+		plr->boostcharge = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"boostcharge"))
 		plr->floorboost = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"growshrinktimer"))
 		plr->growshrinktimer = luaL_checkinteger(L, 3);

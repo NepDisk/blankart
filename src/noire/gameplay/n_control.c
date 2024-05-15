@@ -392,3 +392,83 @@ void N_PogoSidemove(player_t *player)
 	}
 
 }
+
+void N_LegacyStart(player_t *player)
+{
+
+	if (leveltime <= starttime)
+		player->nocontrol = 1;
+
+	// Start charging once you're given the opportunity.
+	if (leveltime >= starttime-(2*TICRATE) && leveltime <= starttime)
+	{
+		if (player->cmd.buttons & BT_ACCELERATE)
+		{
+			if (player->boostcharge == 0)
+				player->boostcharge = player->cmd.latency;
+
+			player->boostcharge++;
+		}
+		else
+			player->boostcharge = 0;
+	}
+
+	// Increase your size while charging your engine.
+	if (leveltime < starttime+10)
+	{
+		player->mo->scalespeed = mapobjectscale/12;
+		player->mo->destscale = mapobjectscale + (FixedMul(mapobjectscale, player->boostcharge*131));
+		if ((player->pflags & PF_SHRINKME) && !modeattacking && !player->bot)
+			player->mo->destscale = (6*player->mo->destscale)/8;
+	}
+
+	// Determine the outcome of your charge.
+	if (leveltime > starttime && player->boostcharge)
+	{
+		// Not even trying?
+		if (player->boostcharge < 35)
+		{
+			if (player->boostcharge > 17)
+				S_StartSound(player->mo, sfx_cdfm00); // chosen instead of a conventional skid because it's more engine-like
+		}
+		// Get an instant boost!
+		else if (player->boostcharge <= 50)
+		{
+			player->dropdashboost = (50-player->boostcharge)+20;
+
+			if (player->boostcharge <= 36)
+			{
+				player->startboost = 0;
+				K_DoSneaker(player, 0);
+				player->sneakertimer = 70; // PERFECT BOOST!!
+
+				if (!player->floorboost || player->floorboost == 3) // Let everyone hear this one
+					S_StartSound(player->mo, sfx_s25f);
+			}
+			else
+			{
+				K_SpawnDashDustRelease(player); // already handled for perfect boosts by K_DoSneaker
+				if ((!player->floorboost || player->floorboost == 3) && P_IsPartyPlayer(player))
+				{
+					if (player->boostcharge <= 40)
+						S_StartSound(player->mo, sfx_cdfm01); // You were almost there!
+					else
+						S_StartSound(player->mo, sfx_s23c); // Nope, better luck next time.
+				}
+			}
+		}
+		// You overcharged your engine? Those things are expensive!!!
+		else if (player->boostcharge > 50)
+		{
+			player->spinouttimer = 40;
+			player->nocontrol = 40;
+			//S_StartSound(player->mo, sfx_kc34);
+			S_StartSound(player->mo, sfx_s3k83);
+			//player->pflags |= PF_SKIDDOWN; // cheeky pflag reuse
+		}
+
+		player->boostcharge = 0;
+	}
+
+}
+
