@@ -216,8 +216,16 @@ void K_InitGrandPrixBots(void)
 			for (j = 0; j < numplayers; j++)
 			{
 				player_t *p = &players[competitors[j]];
-				const char *rivalname = skins[p->skin].rivals[i];
-				INT32 rivalnum = R_SkinAvailable(rivalname);
+
+				INT32 rivalnum;
+				if (!cv_ng_charsetrivals.value)
+				{
+					const char *rivalname = " ";
+					rivalnum = R_SkinAvailable(rivalname);
+				} else {
+					const char *rivalname = skins[p->skin].rivals[i];
+					rivalnum = R_SkinAvailable(rivalname);
+				}
 
 				// Intentionally referenced before (currently dummied out) unlock check. Such a tease!
 				if (rivalnum != -1 && grabskins[(UINT8)rivalnum] != MAXSKINS)

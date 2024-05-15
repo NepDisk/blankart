@@ -121,6 +121,9 @@ menuitem_t OPTIONS_NoireGameplayMechanics[] =
 
 	{IT_STRING | IT_CVAR, "Tripwires", "Enable or disable terrain recognized as tripwire.",
 		NULL, {.cvar = &cv_ng_tripwires}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Special Stages", "Enable or disable special stages in Intense or higher GPs.",
+		NULL, {.cvar = &cv_ng_dospecialstage}, 0, 0},
 };
 
 ///////////
@@ -199,6 +202,9 @@ menuitem_t OPTIONS_NoireGameplayBots[] =
 
 	{IT_STRING | IT_CVAR, "Bot Rubberband Boost", "Should bots be allowed to use rubberband boost?",
 		NULL, {.cvar = &cv_ng_botrubberbandboost}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Use character rivals", "Should the preset 'rivals' of each character be spawned?",
+		NULL, {.cvar = &cv_ng_charsetrivals}, 0, 0},
 };
 
 ///////////

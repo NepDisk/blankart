@@ -848,6 +848,7 @@ consvar_t cv_ng_stumble = UnsavedNetVar("ng_stumble", "On").on_off();
 consvar_t cv_ng_hitlag = UnsavedNetVar("ng_hitlag", "On").on_off();
 consvar_t cv_ng_mapanger = UnsavedNetVar("ng_mapanger", "Default (2)").min_max(0, INT32_MAX, {{-1, "Disabled"}, {2, "Default (2)"}});
 consvar_t cv_ng_tripwires = UnsavedNetVar("ng_tripwires", "On").on_off().onchange(NG_Generic_OnChange);
+consvar_t cv_ng_dospecialstage = UnsavedNetVar("ng_dospecialstage", "On").on_off();
 
 //Lives
 void NG_Lives_OnChange(void);
@@ -889,6 +890,7 @@ consvar_t cv_ng_nophysicsflag = UnsavedNetVar("ng_nophysicsflag", "Off").on_off(
 
 //Bots
 consvar_t cv_ng_botrubberbandboost = UnsavedNetVar("ng_botrubberbandboost", "On").on_off();
+consvar_t cv_ng_charsetrivals = UnsavedNetVar("ng_charsetrivals", "On").on_off();
 
 //Rivals
 void NG_Rivals_OnChange(void);

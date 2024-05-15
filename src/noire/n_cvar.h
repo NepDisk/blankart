@@ -51,6 +51,7 @@ extern consvar_t cv_ng_mapanger;
 extern consvar_t cv_ng_tripwires;
 extern consvar_t cv_ng_lives;
 extern consvar_t cv_ng_continuesrank;
+extern consvar_t cv_ng_dospecialstage;
 
 
 //Instawhip
@@ -81,6 +82,7 @@ extern consvar_t cv_ng_rivaltopspeed;
 extern consvar_t cv_ng_rivalringpower;
 extern consvar_t cv_ng_rivalfrantic;
 extern consvar_t cv_ng_rivaldraft;
+extern consvar_t cv_ng_charsetrivals;
 
 void NG_Generic_OnChange(void);
 void NG_Rings_OnChange(void);
