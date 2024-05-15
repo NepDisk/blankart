@@ -49,6 +49,7 @@ extern consvar_t cv_ng_mapanger;
 extern consvar_t cv_ng_tripwires;
 extern consvar_t cv_ng_lives;
 extern consvar_t cv_ng_continuesrank;
+extern consvar_t cv_ng_dospecialstage;
 
 
 //Instawhip

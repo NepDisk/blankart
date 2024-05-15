@@ -4080,56 +4080,59 @@ void G_GPCupIntoRoundQueue(cupheader_t *cup, UINT8 setgametype, boolean setencor
 		// ~toast 010324
 		cupheader_t *emeraldcup = NULL;
 
-		if (gamedata->sealedswaps[GDMAX_SEALEDSWAPS-1] != NULL // all found
-		|| cup->id >= basenumkartcupheaders // custom content
-		|| M_SecretUnlocked(SECRET_SPECIALATTACK, false)) // true order
+		if (cv_ng_dospecialstage.value)
 		{
-			// Standard order.
-			emeraldcup = cup;
-		}
-		else
-		{
-			// Determine order from sealedswaps.
-			for (i = 0; (i < GDMAX_SEALEDSWAPS && gamedata->sealedswaps[i]); i++)
+			if (gamedata->sealedswaps[GDMAX_SEALEDSWAPS-1] != NULL // all found
+			|| cup->id >= basenumkartcupheaders // custom content
+			|| M_SecretUnlocked(SECRET_SPECIALATTACK, false)) // true order
 			{
-				if (gamedata->sealedswaps[i] != grandprixinfo.cup)
-					continue;
-
-				// Repeat visit, grab the same ID.
-				break;
+				// Standard order.
+				emeraldcup = cup;
 			}
-
-			// If there's pending stars, get them from the associated cup order.
-			if (i < GDMAX_SEALEDSWAPS)
+			else
 			{
-				emeraldcup = kartcupheaders;
-				while (emeraldcup)
+				// Determine order from sealedswaps.
+				for (i = 0; (i < GDMAX_SEALEDSWAPS && gamedata->sealedswaps[i]); i++)
 				{
-					if (emeraldcup->id >= basenumkartcupheaders)
+					if (gamedata->sealedswaps[i] != grandprixinfo.cup)
+						continue;
+
+					// Repeat visit, grab the same ID.
+					break;
+				}
+
+				// If there's pending stars, get them from the associated cup order.
+				if (i < GDMAX_SEALEDSWAPS)
+				{
+					emeraldcup = kartcupheaders;
+					while (emeraldcup)
 					{
-						emeraldcup = NULL;
-						break;
+						if (emeraldcup->id >= basenumkartcupheaders)
+						{
+							emeraldcup = NULL;
+							break;
+						}
+
+						if (emeraldcup->emeraldnum == i+1)
+							break;
+
+						emeraldcup = emeraldcup->next;
 					}
-
-					if (emeraldcup->emeraldnum == i+1)
-						break;
-
-					emeraldcup = emeraldcup->next;
 				}
 			}
-		}
 
-		if (emeraldcup)
-		{
-			cupLevelNum = emeraldcup->cachedlevels[CUPCACHE_SPECIAL];
-			if (cupLevelNum < nummapheaders)
+			if (emeraldcup)
 			{
-				G_MapIntoRoundQueue(
-					cupLevelNum,
-					G_GuessGametypeByTOL(mapheaderinfo[cupLevelNum]->typeoflevel),
-					setencore, // if this isn't correct, Got_Mapcmd will fix it
-					true // Rank-restricted!
-				);
+				cupLevelNum = emeraldcup->cachedlevels[CUPCACHE_SPECIAL];
+				if (cupLevelNum < nummapheaders)
+				{
+					G_MapIntoRoundQueue(
+						cupLevelNum,
+						G_GuessGametypeByTOL(mapheaderinfo[cupLevelNum]->typeoflevel),
+						setencore, // if this isn't correct, Got_Mapcmd will fix it
+						true // Rank-restricted!
+					);
+				}
 			}
 		}
 	}
