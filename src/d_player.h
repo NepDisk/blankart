@@ -119,9 +119,6 @@ typedef enum
 	PF_AIRFAILSAFE		= 1<<22, // Whenever or not try the air boost
 	PF_TRICKDELAY		= 1<<23, // Prevent tricks until control stick is neutral
 
-	PF_TUMBLELASTBOUNCE	= 1<<24, // One more time for the funny
-	PF_TUMBLESOUND		= 1<<25, // Don't play more than once
-
 	PF_HITFINISHLINE	= 1<<26, // Already hit the finish line this tic
 	PF_WRONGWAY			= 1<<27, // Moving the wrong way with respect to waypoints?
 
@@ -335,9 +332,6 @@ typedef enum
 #define TRICKMOMZRAMP (30)
 #define TRICKLAG (9)
 #define TRICKDELAY (TICRATE/4)
-
-#define TUMBLEBOUNCES 3
-#define TUMBLEGRAVITY (4*FRACUNIT)
 
 #define TRIPWIRETIME (15)
 
@@ -695,12 +689,9 @@ struct player_t
 	UINT16 spinouttimer;	// Spin-out from a banana peel or oil slick (was "pw_bananacam")
 	UINT8 spinouttype;		// Determines the mode of spinout/wipeout, see kartspinoutflags_t
 	UINT8 instashield;		// Instashield no-damage animation timer
-	INT32 nullHitlag;		// Numbers of tics of hitlag that will ultimately be ignored by subtracting from hitlag
 	UINT8 wipeoutslow;		// Timer before you slowdown when getting wiped out
 	UINT8 justbumped;		// Prevent players from endlessly bumping into each other
 	UINT8 noEbrakeMagnet;	// Briefly disable 2.2 responsive ebrake if you're bumped by another player.
-	UINT8 tumbleBounces;
-	UINT16 tumbleHeight;	// In *mobjscaled* fracunits, or mfu, not raw fu
 	UINT8 justDI;			// Turn-lockout timer to briefly prevent unintended turning after DI, resets when actionable or no input
 	boolean flipDI;			// Bananas flip the DI direction. Was a bug, but it made bananas much more interesting.
 
@@ -721,7 +712,6 @@ struct player_t
 
 	fixed_t offroad;		// In Super Mario Kart, going offroad has lee-way of about 1 second before you start losing speed
 
-	UINT16 tiregrease;		// Reduced friction timer after hitting a spring
 	UINT16 springstars;		// Spawn stars around a player when they hit a spring
 	UINT16 springcolor;		// Color of spring stars
 	UINT8 dashpadcooldown;	// Separate the vanilla SA-style dash pads from using flashing
@@ -964,7 +954,6 @@ struct player_t
 	UINT8 kickstartaccel;
 	boolean autoring;	// did we autoring this tic?
 
-	UINT8 stairjank;
 	UINT8 topdriftheld;
 	UINT8 topinfirst;
 
@@ -997,7 +986,6 @@ struct player_t
 
 	fixed_t topAccel; // Reduced on straight wall collisions to give players extra recovery time
 
-	mobj_t *stumbleIndicator;
 	mobj_t *wavedashIndicator;
 	mobj_t *trickIndicator;
 	mobj_t *whip;
@@ -1006,10 +994,6 @@ struct player_t
 
 	SINT8 pitblame; // Index of last player that hit you, resets after being in control for a bit. If you deathpit, credit the old attacker!
 
-	UINT8 instaWhipCharge;
-	UINT8 defenseLockout; // Committed to universal attack/defense, make 'em vulnerable! No whip/guard.
-	UINT8 instaWhipChargeLockout; // Input safety
-	boolean oldGuard;
 	UINT8 powerupVFXTimer; // Battle powerup feedback
 
 	UINT8 preventfailsafe; // Set when taking damage to prevent cheesing eggboxes

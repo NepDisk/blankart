@@ -165,7 +165,6 @@ void Obj_OrbinautThink(mobj_t *th)
 boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 {
 	boolean damageitem = false;
-	boolean tumbleitem = false;
 	boolean sprung = false;
 
 	if (t1->health <= 0 || t2->health <= 0)
@@ -190,14 +189,9 @@ boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 		return true;
 	}
 
-	if (t1->type == MT_GARDENTOP)
-	{
-		tumbleitem = true;
-	}
-
 	if (t2->player)
 	{
-		if ((t2->player->flashing > 0 && t2->hitlag == 0)
+		if ((t2->player->flashing > 0)
 			&& !(t1->type == MT_ORBINAUT || t1->type == MT_JAWZ || t1->type == MT_GACHABOM))
 			return true;
 
@@ -215,17 +209,15 @@ boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 			if ((t1->type == MT_ORBINAUT_SHIELD || t1->type == MT_JAWZ_SHIELD)
 				&& !t2->player->invincibilitytimer && !K_IsBigger(t2, t1)) // UGH. Stumble ignores invinc. Fix this damage type someday.
 			{
-				// Same hack as Instawhip!
 				// If you do this a third time, please make it a part of the damage system.
 				//                                    ^ remove all of P_DamageMobj and start over
 				P_PlayRinglossSound(t2);
 				P_PlayerRingBurst(t2->player, 5);
-				P_DamageMobj(t2, t1, t1->target, 1, DMG_WOMBO | DMG_WHUMBLE);
+				P_DamageMobj(t2, t1, t1->target, 1, DMG_WOMBO | DMG_NORMAL);
 			}
 			else
 			{
-				P_DamageMobj(t2, t1, t1->target, 1, DMG_WOMBO |
-					(tumbleitem ? DMG_TUMBLE : DMG_WIPEOUT));
+				P_DamageMobj(t2, t1, t1->target, 1, DMG_WOMBO | DMG_WIPEOUT);
 			}
 			K_KartBouncing(t2, t1);
 			S_StartSound(t2, sfx_s3k7b);

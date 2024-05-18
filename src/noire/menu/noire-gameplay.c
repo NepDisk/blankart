@@ -89,8 +89,6 @@ menuitem_t OPTIONS_NoireGameplayItems[] =
 ///////////
 menuitem_t OPTIONS_NoireGameplayMechanics[] =
 {
-	{IT_STRING | IT_SUBMENU, "Insta-Whip Options...", "Adjust the functionality of the insta-whip.",
-		NULL, {.submenu = &OPTIONS_NoireGameplayInstawhipDef}, 0, 0},
 
 	{IT_STRING | IT_SUBMENU, "Spindash Options...", "Adjust the functionality of the spindash.",
 		NULL, {.submenu = &OPTIONS_NoireGameplaySpindashDef}, 0, 0},
@@ -107,15 +105,6 @@ menuitem_t OPTIONS_NoireGameplayMechanics[] =
 	{IT_STRING | IT_CVAR, "Draft/Tether", "Enable or disable the 'tether' between racers, pulling racers behind.",
 		NULL, {.cvar = &cv_ng_draft}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Tumble", "Enable or disable tumbling.",
-		NULL, {.cvar = &cv_ng_tumble}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Stumble", "Enable or disable stumble, a weaker form of tumble where racers just get pushed away.",
-		NULL, {.cvar = &cv_ng_stumble}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Hitlag", "Enable or disable hitlag.",
-		NULL, {.cvar = &cv_ng_hitlag}, 0, 0},
-
 	{IT_STRING | IT_CVAR, "Map Anger", "Amount of times a map has to be ignored by everyone to vote itself.",
 		NULL, {.cvar = &cv_ng_mapanger}, 0, 0},
 
@@ -127,24 +116,6 @@ menuitem_t OPTIONS_NoireGameplayMechanics[] =
 
 	{IT_STRING | IT_CVAR, "Special Stages", "Enable or disable special stages in Intense or higher GPs.",
 		NULL, {.cvar = &cv_ng_dospecialstage}, 0, 0},
-};
-
-///////////
-// INSTAWHIP
-///////////
-menuitem_t OPTIONS_NoireGameplayInstawhip[] =
-{
-	{IT_STRING | IT_CVAR, "Insta-Whip", "Toggle racers' ability to insta-whip.",
-		NULL, {.cvar = &cv_ng_instawhip}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Charge Time", "How long insta-whip charges for, in hundredths of a second.",
-		NULL, {.cvar = &cv_ng_instawhipcharge}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Lockout", "Wait time before insta-whip can be used again, in hundredths of a second.",
-		NULL, {.cvar = &cv_ng_instawhiplockout}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Drain Rings", "Should holding an insta-whip drain rings?",
-		NULL, {.cvar = &cv_ng_instawhipdrain}, 0, 0},
 };
 
 ///////////
@@ -170,15 +141,6 @@ menuitem_t OPTIONS_NoireGameplaySpindash[] =
 ///////////
 menuitem_t OPTIONS_NoireGameplayDriving[] =
 {
-	{IT_STRING | IT_CVAR, "Slope Physics", "Enable or disable slope physics.",
-		NULL, {.cvar = &cv_ng_butteredslopes}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Slope Resistance", "Enable or disable harder slope climbing.",
-		NULL, {.cvar = &cv_ng_slopeclimb}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Stairjank", "Toggle 'steps & bumpy roads' or 'only roads' affecting karts' turning, or disable it.",
-		NULL, {.cvar = &cv_ng_stairjank}, 0, 0},
-
 	{IT_STRING | IT_CVAR, "Turn Control Style", "How kart's turning should behave.",
 		NULL, {.cvar = &cv_ng_turnstyle}, 0, 0},
 
@@ -310,18 +272,6 @@ void NG_Lives_OnChange(void)
 	}
 }
 
-void NG_Instawhip_OnChange(void)
-{
-	if (con_startup) return;
-
-	for (int i = 1; i < OPTIONS_NoireGameplayInstawhipDef.numitems; i++)
-	{
-		OPTIONS_NoireGameplayInstawhip[i].status = cv_ng_instawhip.value
-			? (IT_STRING | IT_CVAR)
-			: IT_GRAYEDOUT;
-	}
-}
-
 void NG_Spindash_OnChange(void)
 {
 	if (con_startup) return;
@@ -439,24 +389,6 @@ menu_t OPTIONS_NoireGameplayMechanicsDef = {
 	&OPTIONS_NoireGameplayDef,
 	0,
 	OPTIONS_NoireGameplayMechanics,
-	48, 80,
-	SKINCOLOR_BLACK, 0,
-	MBF_DRAWBGWHILEPLAYING,
-	NULL,
-	2, 5,
-	M_DrawGenericOptions,
-	M_DrawOptionsCogs,
-	M_OptionsTick,
-	NULL,
-	NULL,
-	NULL,
-};
-
-menu_t OPTIONS_NoireGameplayInstawhipDef = {
-	sizeof (OPTIONS_NoireGameplayInstawhip) / sizeof (menuitem_t),
-	&OPTIONS_NoireGameplayMechanicsDef,
-	0,
-	OPTIONS_NoireGameplayInstawhip,
 	48, 80,
 	SKINCOLOR_BLACK, 0,
 	MBF_DRAWBGWHILEPLAYING,

@@ -50,7 +50,6 @@
 
 // SRB2kart
 #include "k_color.h"
-#include "k_hitlag.h" // HITLAGJITTERS
 #include "r_fps.h"
 
 #define MINZ (FRACUNIT*4)
@@ -811,13 +810,6 @@ void R_DrawFlippedMaskedColumn(drawcolumndata_t* dc, column_t *column, column_t 
 	dc->texturemid = basetexturemid;
 }
 
-static boolean hitlag_is_flashing(mobj_t *thing)
-{
-	return
-		(thing->hitlag > 0) &&
-		(thing->eflags & (MFE_DAMAGEHITLAG));
-}
-
 static boolean baddie_is_flashing(mobj_t *thing)
 {
 	return
@@ -830,7 +822,6 @@ boolean R_ThingIsFlashing(mobj_t *thing)
 {
 	return
 		(thing->frame & FF_INVERT) ||
-		hitlag_is_flashing(thing) ||
 		baddie_is_flashing(thing);
 }
 
@@ -859,9 +850,6 @@ UINT8 *R_GetSpriteTranslation(vissprite_t *vis)
 
 	if (R_ThingIsFlashing(vis->mobj))
 	{
-		if (skinnum != (size_t)TC_BLINK)
-			skinnum = TC_HITLAG;
-
 		return R_GetTranslationColormap(skinnum, static_cast<skincolornum_t>(0), GTC_CACHE);
 	}
 
@@ -1794,21 +1782,6 @@ static void R_ProjectSprite(mobj_t *thing)
 
 	this_scale = interp.scale;
 
-	// hitlag vibrating (todo: interp somehow?)
-	if (thing->hitlag > 0 && (thing->eflags & MFE_DAMAGEHITLAG))
-	{
-		fixed_t mul = thing->hitlag * HITLAGJITTERS;
-
-		if (leveltime & 1)
-		{
-			mul = -mul;
-		}
-
-		interp.x += FixedMul(thing->momx, mul);
-		interp.y += FixedMul(thing->momy, mul);
-		interp.z += FixedMul(thing->momz, mul);
-	}
-
 	// sprite offset
 	interp.x += thing->sprxoff;
 	interp.y += thing->spryoff;
@@ -2170,21 +2143,6 @@ static void R_ProjectSprite(mobj_t *thing)
 		else
 		{
 			R_InterpolateMobjState(thing, FRACUNIT, &tracer_interp);
-		}
-
-		// hitlag vibrating (todo: interp somehow?)
-		if (thing->hitlag > 0 && (thing->eflags & MFE_DAMAGEHITLAG))
-		{
-			fixed_t mul = thing->hitlag * (FRACUNIT / 10);
-
-			if (leveltime & 1)
-			{
-				mul = -mul;
-			}
-
-			tracer_interp.x += FixedMul(thing->momx, mul);
-			tracer_interp.y += FixedMul(thing->momy, mul);
-			tracer_interp.z += FixedMul(thing->momz, mul);
 		}
 
 		// sprite offset

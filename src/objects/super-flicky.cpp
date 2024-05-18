@@ -584,14 +584,13 @@ struct Flicky : mobj_t
 		if (P_DamageMobj(mobj, this, source(), 1, DMG_NORMAL))
 		{
 			P_InstaThrust(mobj, K_MomentumAngleReal(this), std::max(FixedHypot(momx, momy), kMinKnockback * mapobjectscale));
-			K_StumblePlayer(mobj->player);
 
 			mobj->player->spinouttimer = 1; // need invulnerability for one tic
 
 			P_SetTarget(&mobj->player->flickyAttacker, this);
 
 			controller()->mode(Controller::Mode::kAttached);
-			controller()->intangible(leveltime + mobj->hitlag + kDamageCooldown);
+			controller()->intangible(leveltime + kDamageCooldown);
 		}
 
 		S_StartSound(this, sfx_supflk);

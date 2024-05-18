@@ -38,7 +38,6 @@
 #include "i_system.h" // I_GetPreciseTime, I_GetPrecisePrecision
 #include "hu_stuff.h" // for the cecho
 #include "k_powerup.h"
-#include "k_hitlag.h"
 
 #include "lua_script.h"
 #include "lua_libs.h"
@@ -3164,34 +3163,6 @@ static int lib_kSpinPlayer(lua_State *L)
 	return 0;
 }
 
-static int lib_kTumblePlayer(lua_State *L)
-{
-	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
-	mobj_t *inflictor = NULL;
-	mobj_t *source = NULL;
-	boolean soften = false;
-	NOHUD
-	if (!player)
-		return LUA_ErrInvalid(L, "player_t");
-	if (!lua_isnone(L, 2) && lua_isuserdata(L, 2))
-		inflictor = *((mobj_t **)luaL_checkudata(L, 2, META_MOBJ));
-	if (!lua_isnone(L, 3) && lua_isuserdata(L, 3))
-		source = *((mobj_t **)luaL_checkudata(L, 3, META_MOBJ));
-	soften = lua_optboolean(L, 4);
-	K_TumblePlayer(player, inflictor, source, soften);
-	return 0;
-}
-
-static int lib_kStumblePlayer(lua_State *L)
-{
-	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
-	NOHUD
-	if (!player)
-		return LUA_ErrInvalid(L, "player_t");
-	K_StumblePlayer(player);
-	return 0;
-}
-
 static int lib_kExplodePlayer(lua_State *L)
 {
 	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
@@ -3469,19 +3440,6 @@ static int lib_kGetCollideAngle(lua_State *L)
 	lua_pushinteger(L, K_GetCollideAngle(t1, t2));
 	return 1;
 }
-
-static int lib_kAddHitLag(lua_State *L)
-{
-	mobj_t *mo = *((mobj_t **)luaL_checkudata(L, 1, META_MOBJ));
-	tic_t tics = (tic_t)luaL_checkinteger(L, 2);
-	boolean fromdamage = lua_opttrueboolean(L, 3);
-	NOHUD
-	if (!mo)
-		return LUA_ErrInvalid(L, "mobj_t");
-	K_AddHitLag(mo, tics, fromdamage);
-	return 0;
-}
-
 
 static int lib_kPowerUpRemaining(lua_State *L)
 {
@@ -3831,8 +3789,6 @@ static luaL_Reg lib[] = {
 	{"K_DoInstashield",lib_kDoInstashield},
 	{"K_SpawnBattlePoints",lib_kSpawnBattlePoints},
 	{"K_SpinPlayer",lib_kSpinPlayer},
-	{"K_TumblePlayer",lib_kTumblePlayer},
-	{"K_StumblePlayer",lib_kStumblePlayer},
 	{"K_ExplodePlayer",lib_kExplodePlayer},
 	{"K_TakeBumpersFromPlayer",lib_kTakeBumpersFromPlayer},
 	{"K_SpawnMineExplosion",lib_kSpawnMineExplosion},
@@ -3859,7 +3815,6 @@ static luaL_Reg lib[] = {
 	{"K_GetItemPatch",lib_kGetItemPatch},
 
 	{"K_GetCollideAngle",lib_kGetCollideAngle},
-	{"K_AddHitLag",lib_kAddHitLag},
 
 	// k_powerup
 	{"K_PowerUpRemaining",lib_kPowerUpRemaining},

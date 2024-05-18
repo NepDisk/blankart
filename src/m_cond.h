@@ -34,7 +34,6 @@ typedef enum
 	UC_PLAYTIME,		// PLAYTIME [tics]
 	UC_ROUNDSPLAYED,	// ROUNDSPLAYED [x played]
 	UC_TOTALRINGS,		// TOTALRINGS [x collected]
-	UC_TOTALTUMBLETIME,	// TOTALTUMBLETIME [tics]
 
 	UC_GAMECLEAR,		// GAMECLEAR <x times>
 	UC_OVERALLTIME,		// OVERALLTIME [time to beat, tics]
@@ -372,7 +371,6 @@ struct gamedata_t
 	UINT32 totaltimestaringatstatistics;
 	UINT32 roundsplayed[GDGT_MAX];
 	UINT32 totalrings;
-	UINT32 totaltumbletime;
 
 	// CHAO KEYS AND THEIR GENERATION
 	UINT32 pendingkeyrounds;

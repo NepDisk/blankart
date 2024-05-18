@@ -85,9 +85,6 @@ void P_ExitPlayerOrbit(player_t *player)
 				pitch + ANGLE_180, s->yaw);
 	}
 
-	// tiregrease gives less friction, extends momentum
-	K_SetTireGrease(player, 3*TICRATE);
-
 	P_HaltPlayerOrbit(player);
 }
 
@@ -185,9 +182,7 @@ boolean P_PlayerOrbit(player_t *player)
 	if (player->speed < player->mo->scale)
 	{
 		P_HaltPlayerOrbit(player);
-		player->markedfordeath = true;
 		K_PlayPainSound(player->mo, NULL);
-		K_StumblePlayer(player);
 
 		return false;
 	}

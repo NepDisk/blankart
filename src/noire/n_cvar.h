@@ -44,22 +44,12 @@ extern consvar_t cv_ng_oldjawz;
 //Mechanics
 extern consvar_t cv_ng_fastfallbounce;
 extern consvar_t cv_ng_draft;
-extern consvar_t cv_ng_tumble;
-extern consvar_t cv_ng_stumble;
-extern consvar_t cv_ng_hitlag;
 extern consvar_t cv_ng_mapanger;
 extern consvar_t cv_ng_tripwires;
 extern consvar_t cv_ng_lives;
 extern consvar_t cv_ng_continuesrank;
 extern consvar_t cv_ng_dospecialstage;
 extern consvar_t cv_ng_forcenoposition;
-
-
-//Instawhip
-extern consvar_t cv_ng_instawhip;
-extern consvar_t cv_ng_instawhipcharge;
-extern consvar_t cv_ng_instawhiplockout;
-extern consvar_t cv_ng_instawhipdrain;
 
 //Spindash
 extern consvar_t cv_ng_spindash;
@@ -68,9 +58,6 @@ extern consvar_t cv_ng_spindashcharge;
 extern consvar_t cv_ng_spindashoverheat;
 
 //Driving
-extern consvar_t cv_ng_butteredslopes;
-extern consvar_t cv_ng_slopeclimb;
-extern consvar_t cv_ng_stairjank;
 extern consvar_t cv_ng_turnstyle;
 extern consvar_t cv_ng_oldpogooverride;
 extern consvar_t cv_ng_underwaterhandling;
@@ -87,7 +74,6 @@ extern consvar_t cv_ng_charsetrivals;
 
 void NG_Generic_OnChange(void);
 void NG_Rings_OnChange(void);
-void NG_Instawhip_OnChange(void);
 void NG_Spindash_OnChange(void);
 void NG_Lives_OnChange(void);
 void NG_OldPogoOverride_OnChange(void);

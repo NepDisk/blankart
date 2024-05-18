@@ -50,7 +50,6 @@
 #include "k_bot.h"
 #include "k_rank.h"
 #include "g_party.h"
-#include "k_hitlag.h"
 #include "g_input.h"
 #include "k_dialogue.h"
 #include "f_finale.h"
@@ -5274,23 +5273,6 @@ static void K_drawKartFirstPerson(void)
 		// yes, the following is correct. no, you do not need to swap the x and y.
 		fixed_t xoffs = -P_ReturnThrustY(stplyr->mo, ang, (BASEVIDWIDTH<<(FRACBITS-2))/2);
 		fixed_t yoffs = -P_ReturnThrustX(stplyr->mo, ang, 4*FRACUNIT);
-
-		// hitlag vibrating
-		if (stplyr->mo->hitlag > 0 && (stplyr->mo->eflags & MFE_DAMAGEHITLAG))
-		{
-			fixed_t mul = stplyr->mo->hitlag * HITLAGJITTERS;
-			if (r_splitscreen && mul > FRACUNIT)
-				mul = FRACUNIT;
-
-			if (leveltime & 1)
-			{
-				mul = -mul;
-			}
-
-			xoffs = FixedMul(xoffs, mul);
-			yoffs = FixedMul(yoffs, mul);
-
-		}
 
 		if ((yoffs += 4*FRACUNIT) < 0)
 			yoffs = 0;

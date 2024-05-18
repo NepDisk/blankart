@@ -59,12 +59,6 @@ static angle_t R_PlayerSpriteRotation(player_t *player, player_t *viewPlayer)
 			FixedMul(sliptideLift, FINECOSINE(angleDelta >> ANGLETOFINESHIFT));
 	}
 
-	if (player->stairjank)
-	{
-		rollAngle += K_StairJankFlip(ANGLE_11hh / 2 /
-				(17 / player->stairjank));
-	}
-
 	if (top)
 	{
 		/* FIXME: why does it not look right at more acute

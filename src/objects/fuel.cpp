@@ -96,20 +96,6 @@ struct FuelCanister : Mobj
 			return x;
 		}
 
-		void touch(Mobj* toucher)
-		{
-			if (!P_DamageMobj(toucher, this, this, 1, DMG_NORMAL))
-			{
-				auto& hitlag = toucher->mobj_t::hitlag;
-
-				// Hitlag = remaining duration of explosion
-				if (hitlag >= 0 && hitlag + 0u < remaining())
-				{
-					hitlag = remaining();
-				}
-			}
-		}
-
 		bool think() { return Broly::think(); }
 	};
 
@@ -224,11 +210,6 @@ boolean Obj_FuelCanisterThink(mobj_t *mo)
 void Obj_FuelCanisterTouch(mobj_t *special, mobj_t *toucher)
 {
 	static_cast<FuelCanister*>(special)->touch(static_cast<Mobj*>(toucher));
-}
-
-void Obj_FuelCanisterExplosionTouch(mobj_t *special, mobj_t *toucher)
-{
-	static_cast<FuelCanister::Explosion*>(special)->touch(static_cast<Mobj*>(toucher));
 }
 
 boolean Obj_FuelCanisterExplosionThink(mobj_t *mo)

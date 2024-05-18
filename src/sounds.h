@@ -1284,18 +1284,12 @@ typedef enum
 	sfx_clawk1,
 	sfx_clawk2,
 
-	sfx_wchrg1,
-	sfx_wchrg2,
-
 	sfx_horn00,
 	sfx_melody,
 	sfx_cdsprk,
 	sfx_monch,
 	sfx_etexpl,
 	sfx_d4getm,
-
-	sfx_iwhp,
-	sfx_gbrk,
 
 	sfx_supflk,
 	sfx_fbost1,

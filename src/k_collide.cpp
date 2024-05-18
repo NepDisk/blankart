@@ -25,7 +25,6 @@
 #include "k_roulette.h"
 #include "k_podium.h"
 #include "k_powerup.h"
-#include "k_hitlag.h"
 #include "m_random.h"
 #include "k_hud.h" // K_AddMessage
 #include "m_easing.h"
@@ -76,7 +75,7 @@ boolean K_BananaBallhogCollide(mobj_t *t1, mobj_t *t2)
 
 	if (t2->player)
 	{
-		if (t2->player->flashing > 0 && t2->hitlag == 0)
+		if (t2->player->flashing > 0)
 			return true;
 
 		// Banana snipe!
@@ -219,7 +218,6 @@ boolean K_EggItemCollide(mobj_t *t1, mobj_t *t2)
 static mobj_t *grenade;
 static fixed_t explodedist;
 static boolean explodespin;
-static INT32 minehitlag;
 
 static inline boolean PIT_SSMineChecks(mobj_t *thing)
 {
@@ -294,9 +292,6 @@ void K_DoMineSearch(mobj_t *actor, fixed_t size)
 
 static inline BlockItReturn_t PIT_SSMineExplode(mobj_t *thing)
 {
-	const INT32 oldhitlag = thing->hitlag;
-	INT32 lagadded;
-
 	if (grenade == NULL || P_MobjWasRemoved(grenade))
 		return BMIT_ABORT; // There's the possibility these can chain react onto themselves after they've already died if there are enough all in one spot
 
@@ -317,13 +312,6 @@ static inline BlockItReturn_t PIT_SSMineExplode(mobj_t *thing)
 
 	P_DamageMobj(thing, grenade, grenade->target, 1, (explodespin ? DMG_NORMAL : DMG_EXPLODE));
 
-	lagadded = (thing->hitlag - oldhitlag);
-
-	if (lagadded > minehitlag)
-	{
-		minehitlag = lagadded;
-	}
-
 	return BMIT_CONTINUE;
 }
 
@@ -334,7 +322,6 @@ tic_t K_MineExplodeAttack(mobj_t *actor, fixed_t size, boolean spin)
 	explodespin = spin;
 	explodedist = FixedMul(size, actor->scale);
 	grenade = actor;
-	minehitlag = 0;
 
 	// Use blockmap to check for nearby shootables
 	yh = (unsigned)(actor->y + explodedist - bmaporgy)>>MAPBLOCKSHIFT;
@@ -351,20 +338,6 @@ tic_t K_MineExplodeAttack(mobj_t *actor, fixed_t size, boolean spin)
 	// Set this flag to ensure that the inital action won't be triggered twice.
 	actor->flags2 |= MF2_DEBRIS;
 
-	if (minehitlag == 0)
-	{
-		minehitlag = actor->hitlag;
-	}
-
-	// Set this flag to ensure the hitbox timer doesn't get extended with every player hit
-	actor->flags |= MF_NOHITLAGFORME;
-	actor->hitlag = 0; // same deal
-
-	if (!spin)
-	{
-		return minehitlag;
-	}
-
 	return 0;
 }
 
@@ -378,7 +351,7 @@ boolean K_MineCollide(mobj_t *t1, mobj_t *t2)
 
 	if (t2->player)
 	{
-		if (t2->player->flashing > 0 && t2->hitlag == 0)
+		if (t2->player->flashing > 0)
 			return true;
 
 		// Bomb punting
@@ -429,7 +402,6 @@ boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 
 	if (t2->player)
 	{
-		const INT32 oldhitlag = t2->hitlag;
 
 		if (t2->player->flashing)
 			return true;
@@ -452,15 +424,13 @@ boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 		{
 			// Melt item
 			S_StartSound(t2, sfx_s3k43);
-			K_SetHitLagForObjects(t2, t1, t1->target, 3, false);
 		}
 		else
 		{
 			// Player Damage
-			P_DamageMobj(t2, t1, t1->target, 1, DMG_TUMBLE);
+			P_DamageMobj(t2, t1, t1->target, 1, DMG_WIPEOUT);
 		}
 
-		t1->reactiontime = (t2->hitlag - oldhitlag);
 		P_KillMobj(t1, t2, t2, DMG_NORMAL);
 	}
 	else if (t2->type == MT_BANANA || t2->type == MT_BANANA_SHIELD
@@ -490,7 +460,6 @@ boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 			P_SetObjectMomZ(t2, 24*FRACUNIT, false);
 			P_InstaThrust(t2, bounceangle, 16*FRACUNIT);
 
-			t1->reactiontime = t2->hitlag;
 		}
 		P_KillMobj(t1, t2, t2, DMG_NORMAL);
 	}
@@ -508,10 +477,6 @@ boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 		if (P_MobjWasRemoved(t2))
 		{
 			t2 = NULL; // handles the arguments to P_KillMobj
-		}
-		else
-		{
-			t1->reactiontime = t2->hitlag;
 		}
 
 		P_KillMobj(t1, t2, t2, DMG_NORMAL);
@@ -574,25 +539,13 @@ boolean K_DropTargetCollide(mobj_t *t1, mobj_t *t2)
 			bumppower = FRACUNIT/2;
 	}
 
-	if (t2->type == MT_INSTAWHIP)
-		bumppower = 0;
-
 	{
 		angle_t t2angle = R_PointToAngle2(t2->momx, t2->momy, 0, 0);
 		angle_t t2deflect;
 		fixed_t t1speed, t2speed;
 
-		if (t2->type == MT_INSTAWHIP && t2->target && !P_MobjWasRemoved(t2->target))
-		{
-			t2angle = R_PointToAngle2(t2->target->momx, t2->target->momy, 0, 0);
-			t2speed = FixedHypot(t2->target->momx, t2->target->momy);
-			P_InstaThrust(t1, ANGLE_180 + R_PointToAngle2(t1->x, t1->y, t2->x, t2->y), 100*t2->target->scale + t2speed);
-		}
-		else
-		{
-			K_KartBouncing(t1, t2);
-			t2speed = FixedHypot(t2->momx, t2->momy);
-		}
+		K_KartBouncing(t1, t2);
+		t2speed = FixedHypot(t2->momx, t2->momy);
 
 		t1speed = FixedHypot(t1->momx, t1->momy);
 
@@ -624,14 +577,7 @@ boolean K_DropTargetCollide(mobj_t *t1, mobj_t *t2)
 		t1->momy = (t1->momy + t2->momy)/2;
 		t1->momz = (t1->momz + t2->momz)/2;
 
-		K_AddHitLag(t1->target, 6, false);
 	}
-
-	K_AddHitLag(t1, 6, true);
-	K_AddHitLag(t2, 6, false);
-
-	if (t2->type == MT_INSTAWHIP && t2->target && !P_MobjWasRemoved(t2->target))
-		K_AddHitLag(t2->target, 6, false);
 
 	{
 		mobj_t *ghost = P_SpawnGhostMobj(t1);
@@ -808,11 +754,6 @@ boolean K_BubbleShieldReflect(mobj_t *t1, mobj_t *t2)
 
 	if (t2->target != owner || !t2->threshold || t2->type == MT_DROPTARGET)
 	{
-		if (t1->player && K_PlayerGuard(t1->player))
-		{
-			K_KartSolidBounce(t1, t2);
-			K_DoPowerClash(t1, t2);
-		}
 		if (!t2->momx && !t2->momy)
 		{
 			t2->momz += (24*t2->scale) * P_MobjFlip(t2);
@@ -874,176 +815,6 @@ boolean K_BubbleShieldCollide(mobj_t *t1, mobj_t *t2)
 	return true;
 }
 
-boolean K_InstaWhipCollide(mobj_t *shield, mobj_t *victim)
-{
-	int victimHitlag = 10;
-	int attackerHitlag = 4;
-
-	// EV1 is used to indicate that we should no longer hit monitors.
-	// EV2 indicates we should no longer hit anything.
-	if (shield->extravalue2)
-		return false;
-
-	mobj_t *attacker = shield->target;
-
-	if (!attacker || P_MobjWasRemoved(attacker) || !attacker->player)
-		return false; // How did we even get here?
-
-	player_t *attackerPlayer = attacker->player;
-
-	if (victim->player)
-	{
-		player_t *victimPlayer = victim->player;
-
-		if (victim == attacker)
-			return false;
-
-		// If both players have a whip, hits are order-of-execution dependent and that sucks.
-		// Player expectation is a clash here.
-		if (victimPlayer->whip && !P_MobjWasRemoved(victimPlayer->whip))
-		{
-			if (victim->hitlag != 0)
-				return false;
-
-			victimPlayer->whip->extravalue2 = 1;
-			shield->extravalue2 = 1;
-
-			K_DoPowerClash(victim, attacker);
-
-			victim->renderflags &= ~RF_DONTDRAW;
-			attacker->renderflags &= ~RF_DONTDRAW;
-
-			angle_t thrangle = R_PointToAngle2(attacker->x, attacker->y, victim->x, victim->y);
-			P_Thrust(victim, thrangle, mapobjectscale*28);
-			P_Thrust(attacker, ANGLE_180 + thrangle, mapobjectscale*28);
-
-			return false;
-		}
-
-		if (P_PlayerInPain(victimPlayer) ? victim->hitlag == 0 : victimPlayer->flashing == 0)
-		{
-			// Instawhip _always_ loses to guard.
-			if (K_PlayerGuard(victimPlayer))
-			//if (true)
-			{
-				victimHitlag = 3*victimHitlag;
-
-				if (P_PlayerInPain(attackerPlayer))
-					return false; // never punish shield more than once
-
-				angle_t thrangle = R_PointToAngle2(victim->x, victim->y, shield->x, shield->y);
-				attacker->momx = attacker->momy = 0;
-				P_Thrust(attacker, thrangle, mapobjectscale*7);
-
-				// target is inflictor: hack to let invincible players lose to guard
-				P_DamageMobj(attacker, attacker, victim, 1, DMG_TUMBLE);
-
-				// A little extra juice, so successful reads are usually positive or zero on spheres.
-				victimPlayer->spheres = std::min(victimPlayer->spheres + 10, 40);
-
-				shield->renderflags &= ~RF_DONTDRAW;
-				shield->flags |= MF_NOCLIPTHING;
-
-				// Attacker should be free to all reasonable followups.
-				attacker->renderflags &= ~RF_DONTDRAW;
-				attackerPlayer->spindashboost = 0;
-				attackerPlayer->sneakertimer = 0;
-				attackerPlayer->instaWhipCharge = 0;
-				attackerPlayer->flashing = 0;
-
-				K_AddMessageForPlayer(victimPlayer, "Whip Reflected!", false, false);
-				K_AddMessageForPlayer(attackerPlayer, "COUNTERED!!", false, false);
-
-				// Localized broly for a local event.
-				if (mobj_t *broly = Obj_SpawnBrolyKi(victim, victimHitlag/2))
-				{
-					broly->extravalue2 = 16*mapobjectscale;
-				}
-
-				P_PlayVictorySound(victim);
-
-				P_DamageMobj(attacker, attacker, victim, 1, DMG_TUMBLE);
-
-				S_StartSound(victim, sfx_mbv92);
-				K_AddHitLag(attacker, victimHitlag, true);
-				K_AddHitLag(victim, attackerHitlag, false);
-
-				K_DoPowerClash(shield, victim); // REJECTED
-
-				shield->extravalue2 = 1;
-
-				return true;
-			}
-
-			// if you're here, you're getting hit
-			// Damage is a bit hacky, we want only a small loss-of-control
-			// while still behaving as if it's a "real" hit.
-			P_PlayRinglossSound(victim);
-			P_PlayerRingBurst(victimPlayer, 5);
-			P_DamageMobj(victim, shield, attacker, 1, DMG_WHUMBLE);
-
-			K_DropPowerUps(victimPlayer);
-
-			angle_t thrangle = ANGLE_180 + R_PointToAngle2(victim->x, victim->y, shield->x, shield->y);
-			P_Thrust(victim, thrangle, mapobjectscale*40);
-
-			K_AddHitLag(victim, victimHitlag, true);
-			K_AddHitLag(attacker, attackerHitlag, false);
-			shield->hitlag = attacker->hitlag;
-
-			if (attackerPlayer->roundconditions.whip_hyuu == false
-				&& attackerPlayer->hyudorotimer > 0)
-			{
-				attackerPlayer->roundconditions.whip_hyuu = true;
-				attackerPlayer->roundconditions.checkthisframe = true;
-			}
-
-			return true;
-		}
-		return false;
-	}
-	else if (victim->type == MT_SUPER_FLICKY)
-	{
-		if (Obj_IsSuperFlickyWhippable(victim, attacker))
-		{
-			K_AddHitLag(victim, victimHitlag, true);
-			K_AddHitLag(attacker, attackerHitlag, false);
-			shield->hitlag = attacker->hitlag;
-
-			Obj_WhipSuperFlicky(victim);
-			return true;
-		}
-		return false;
-	}
-	else if (victim->type == MT_DROPTARGET || victim->type == MT_DROPTARGET_SHIELD)
-	{
-		K_DropTargetCollide(victim, shield);
-		return true;
-	}
-	else
-	{
-		if (victim->flags & MF_SHOOTABLE)
-		{
-			// Monitor hack. We can hit monitors once per instawhip, no multihit shredding!
-			// Damage values in Obj_MonitorGetDamage.
-			// Apply to UFO also -- steelt 29062023
-			if (victim->type == MT_MONITOR || victim->type == MT_BATTLEUFO || victim->type == MT_BALLSWITCH_BALL)
-			{
-				if (shield->extravalue1 == 1)
-					return false;
-				shield->extravalue1 = 1;
-			}
-
-			if (P_DamageMobj(victim, shield, attacker, 1, DMG_NORMAL))
-			{
-				K_AddHitLag(attacker, attackerHitlag, false);
-				shield->hitlag = attacker->hitlag;
-			}
-		}
-		return false;
-	}
-}
-
 boolean K_KitchenSinkCollide(mobj_t *t1, mobj_t *t2)
 {
 	if (((t1->target == t2) || (!(t2->flags & (MF_ENEMY|MF_BOSS)) && (t1->target == t2->target))) && (t1->threshold > 0 || (t2->type != MT_PLAYER && t2->threshold > 0)))
@@ -1051,8 +822,6 @@ boolean K_KitchenSinkCollide(mobj_t *t1, mobj_t *t2)
 
 	if (t2->player)
 	{
-		if (t2->player->flashing > 0 && t2->hitlag == 0)
-			return true;
 
 		S_StartSound(NULL, sfx_bsnipe); // let all players hear it.
 
@@ -1141,17 +910,6 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		};
 	};
 
-	// Cause tumble on invincibility
-	auto shouldTumble = [](mobj_t *t1, mobj_t *t2)
-	{
-		return (t1->player->invincibilitytimer > 0);
-	};
-
-	if (forEither(shouldTumble, doDamage(DMG_TUMBLE)))
-	{
-		return true;
-	}
-
 	// Flame Shield dash damage
 	// Bubble Shield blowup damage
 	auto shouldWipeout = [](mobj_t *t1, mobj_t *t2)
@@ -1182,22 +940,6 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		}
 	}
 
-	// Cause stumble on scale difference
-	auto shouldStumble = [](mobj_t *t1, mobj_t *t2)
-	{
-		return K_IsBigger(t1, t2);
-	};
-
-	auto doStumble = [](mobj_t *t1, mobj_t *t2)
-	{
-		K_StumblePlayer(t2->player);
-	};
-
-	if (forEither(shouldStumble, doStumble))
-	{
-		return true;
-	}
-
 	if (cv_ng_ringsting.value)
 	{
 		// Ring sting, this is a bit more unique
@@ -1220,18 +962,6 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 
 			return stung;
 		};
-
-
-		// No damage hitlag for stinging.
-		auto removeDamageHitlag = [](mobj_t *t1, mobj_t *t2)
-		{
-			t1->eflags &= ~MFE_DAMAGEHITLAG;
-		};
-
-		if (forEither(doSting, removeDamageHitlag))
-		{
-			return true;
-		}
 
 	}
 

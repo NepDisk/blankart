@@ -187,7 +187,6 @@ struct Particle : Mobj
 
 		auto squash = [&](int tics)
 		{
-			hitlag(tics);
 			spritescale({2*FRACUNIT, FRACUNIT/2}); // squish
 		};
 
@@ -271,12 +270,8 @@ struct Kart : Mobj
 
 		kart->state(S_INVISIBLE);
 		kart->timer(kVibrateTimer);
-		kart->exact_hitlag(15, true);
 		kart->player(target);
 
-		Obj_SpawnCustomBrolyKi(target, kart->hitlag() - 2, 32 * mapobjectscale, 0);
-
-		target->exact_hitlag(kart->hitlag() + 1, true);
 		target->frame |= FF_SEMIBRIGHT;
 		target->lightlevel = 128;
 	}
@@ -438,7 +433,6 @@ private:
 		if (timer())
 		{
 			// Vibration on the death sprite eases downward
-			p->exact_hitlag(Easing_InCubic(timer() * FRACUNIT / kVibrateTimer, 2, 90), true);
 		}
 		else
 		{
@@ -468,7 +462,6 @@ private:
 				P_RandomRange(PR_EXPLOSION, -48, 48) * target->scale,
 				MT_THOK
 			);
-			x->hitlag = 0;
 			P_InstaScale(x, 3 * x->scale / 2);
 			P_InstaThrust(x, ang, spd);
 			x->momz = P_RandomRange(PR_EXPLOSION, -4, 4) * mapobjectscale;
@@ -480,7 +473,6 @@ private:
 		for (UINT8 i = 0; i < 2; i++)
 		{
 			mobj_t *blast = P_SpawnMobjFromMobj(target, 0, 0, target->info->height >> 1, MT_BATTLEBUMPER_BLAST);
-			blast->hitlag = 0;
 			blast->angle = ang + i*ANGLE_90;
 			P_SetScale(blast, 2*blast->scale/3);
 			blast->destscale = 6*blast->scale;

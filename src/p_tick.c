@@ -114,12 +114,6 @@ boolean P_MobjIsFrozen(mobj_t *mobj)
 		return true;
 	}
 
-	if ((mobj->eflags & MFE_PAUSED) == MFE_PAUSED)
-	{
-		// hitlag
-		return true;
-	}
-
 	// manual
 	return mobj->frozen;
 }
@@ -741,15 +735,11 @@ static inline void P_DeviceRumbleTick(void)
 
 		if (player->mo != NULL && !player->exiting)
 		{
-			if ((player->mo->eflags & MFE_DAMAGEHITLAG) && player->mo->hitlag)
-			{
-				low = high = 65536 / 2;
-			}
-			else if (player->sneakertimer > (sneakertime-(TICRATE/2)))
+			if (player->sneakertimer > (sneakertime-(TICRATE/2)))
 			{
 				low = high = 65536 / (3+player->numsneakers);
 			}
-			else if (((player->boostpower < FRACUNIT) || (player->stairjank > 8))
+			else if (((player->boostpower < FRACUNIT))
 				&& P_IsObjectOnGround(player->mo) && player->speed != 0)
 			{
 				low = high = 65536 / 32;

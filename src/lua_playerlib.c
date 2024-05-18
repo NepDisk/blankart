@@ -244,18 +244,12 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->spinouttimer);
 	else if (fastcmp(field,"instashield"))
 		lua_pushinteger(L, plr->instashield);
-	else if (fastcmp(field,"nullhitlag"))
-		lua_pushinteger(L, plr->nullHitlag);
 	else if (fastcmp(field,"wipeoutslow"))
 		lua_pushinteger(L, plr->wipeoutslow);
 	else if (fastcmp(field,"justbumped"))
 		lua_pushinteger(L, plr->justbumped);
 	else if (fastcmp(field,"noebrakemagnet"))
 		lua_pushinteger(L, plr->noEbrakeMagnet);
-	else if (fastcmp(field,"tumblebounces"))
-		lua_pushinteger(L, plr->tumbleBounces);
-	else if (fastcmp(field,"tumbleheight"))
-		lua_pushinteger(L, plr->tumbleHeight);
 	else if (fastcmp(field,"justdi"))
 		lua_pushinteger(L, plr->justDI);
 	else if (fastcmp(field,"flipdi"))
@@ -304,8 +298,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->aizdriftturn);
 	else if (fastcmp(field,"offroad"))
 		lua_pushinteger(L, plr->offroad);
-	else if (fastcmp(field,"tiregrease"))
-		lua_pushinteger(L, plr->tiregrease);
 	else if (fastcmp(field,"springstars"))
 		lua_pushinteger(L, plr->springstars);
 	else if (fastcmp(field,"springcolor"))
@@ -376,14 +368,8 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->ignoreAirtimeLeniency);
 	else if (fastcmp(field,"topaccel"))
 		lua_pushinteger(L, plr->topAccel);
-	else if (fastcmp(field,"instawhipcharge"))
-		lua_pushinteger(L, plr->instaWhipCharge);
 	else if (fastcmp(field,"pitblame"))
 		lua_pushinteger(L, plr->pitblame);
-	else if (fastcmp(field,"defenselockout"))
-		lua_pushinteger(L, plr->defenseLockout);
-	else if (fastcmp(field,"oldguard"))
-		lua_pushinteger(L, plr->oldGuard);
 	else if (fastcmp(field,"preventfailsafe"))
 		lua_pushinteger(L, plr->preventfailsafe);
 	else if (fastcmp(field,"tripwireunstuck"))
@@ -812,18 +798,12 @@ static int player_set(lua_State *L)
 		plr->spinouttimer = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"instashield"))
 		plr->instashield = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"nullhitlag"))
-		plr->nullHitlag = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"wipeoutslow"))
 		plr->wipeoutslow = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"justbumped"))
 		plr->justbumped = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"noebrakemagnet"))
 		plr->noEbrakeMagnet = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"tumblebounces"))
-		plr->tumbleBounces = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"tumbleheight"))
-		plr->tumbleHeight = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"justdi"))
 		plr->justDI = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"flipdi"))
@@ -870,8 +850,6 @@ static int player_set(lua_State *L)
 		plr->aizdriftturn = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"offroad"))
 		plr->offroad = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"tiregrease"))
-		plr->tiregrease = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"springstars"))
 		plr->springstars = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"springcolor"))
@@ -942,14 +920,8 @@ static int player_set(lua_State *L)
 		plr->ignoreAirtimeLeniency = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"topaccel"))
 		plr->topAccel = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"instawhipcharge"))
-		plr->instaWhipCharge = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"pitblame"))
 		plr->pitblame = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"defenselockout"))
-		plr->defenseLockout = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"oldguard"))
-		plr->oldGuard = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"preventfailsafe"))
 		plr->preventfailsafe = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"tripwireunstuck"))

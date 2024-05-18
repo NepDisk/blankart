@@ -1053,10 +1053,6 @@ void P_SlopeLaunch(mobj_t *mo)
 	mo->standingslope = NULL;
 	mo->terrain = NULL;
 
-	if (mo->player)
-	{
-		mo->player->stairjank = 0; // fuck you
-	}
 }
 
 //

@@ -679,13 +679,6 @@ static void SPBChase(mobj_t *spb, mobj_t *bestMobj)
 		return;
 	}
 
-	if (chase->hitlag > 0)
-	{
-		// If the player is frozen, the SPB should be too.
-		spb->hitlag = max(spb->hitlag, chase->hitlag);
-		return;
-	}
-
 	// Increment chase time
 	spb_chasetime(spb)++;
 

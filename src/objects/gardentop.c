@@ -376,25 +376,10 @@ tilt (mobj_t *top)
 		top->spritexoffset = 0;
 	}
 
-	/* Go ABSOLUTELY NUTS if the player is tumbling... */
-	if (player && player->tumbleBounces > 0)
-	{
-		const fixed_t yofs = 48 * FRACUNIT;
-		const fixed_t ofs3d = 24 * top->scale;
 
-		/* spriteyoffset scales, e.g. with K_Squish */
-		top->spriteyoffset = FixedDiv(
-				goofy_shake(yofs), top->spriteyscale);
-
-		top->sprxoff = goofy_shake(ofs3d);
-		top->spryoff = goofy_shake(ofs3d);
-	}
-	else
-	{
 		top->spriteyoffset = 0;
 		top->sprxoff = 0;
 		top->spryoff = 0;
-	}
 }
 
 static void

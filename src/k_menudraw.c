@@ -1804,8 +1804,6 @@ static void M_DrawCharSelectCircle(setup_player_t *p, INT16 x, INT16 y)
 		if (p->rotate)
 		{
 			SINT8 rotate = p->rotate;
-			if ((p->hitlag == true) && (setup_animcounter & 1))
-				rotate = -rotate;
 			ang = (signed)(ang + ((angamt / CSROTATETICS) * rotate));
 		}
 
@@ -2737,7 +2735,7 @@ void M_DrawRaceDifficulty(void)
 				const char *pat = i == drace_mritems && cv_thunderdome.value ? "RBOXTOGG" : it->patch;
 
 				V_DrawMappedPatch(cx, cy, 0, W_CachePatchName(pat, PU_CACHE),
-					flicker ? R_GetTranslationColormap(TC_HITLAG, 0, GTC_MENUCACHE) : NULL);
+					/*flicker ? R_GetTranslationColormap(TC_HITLAG, 0, GTC_MENUCACHE) :*/ NULL);
 
 				if (it->itemaction.cvar && !it->itemaction.cvar->value)
 				{
@@ -8598,13 +8596,6 @@ static void M_DrawStatsTimeTracked(void)
 		{
 			DISPLAYAMODE(" (SPB Attack)", gamedata->spbattackingtotaltime);
 		}
-	}
-
-	if (gamedata->totaltumbletime)
-	{
-		y += 2;
-
-		DISPLAYAMODE("Tumbling through the air", gamedata->totaltumbletime);
 	}
 
 	y += 2;

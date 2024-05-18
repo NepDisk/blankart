@@ -335,10 +335,6 @@ private:
 			// vibes-based.
 			constexpr int kIntroDelay = 8;
 
-			if (leveltime < kIntroDelay)
-			{
-				p->hitlag = kIntroDelay;
-			}
 		}
 		else
 		{

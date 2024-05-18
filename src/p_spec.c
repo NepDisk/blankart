@@ -1940,7 +1940,6 @@ static void K_HandleLapIncrement(player_t *player)
 		if (!G_TimeAttackStart() && leveltime < starttime && !(gametyperules & GTR_ROLLINGSTART) && !N_UseLegacyStart())
 		{
 			// freeze 'em until fault penalty is over
-			player->mo->hitlag = starttime - leveltime + TICRATE*3;
 			P_ResetPlayer(player);
 			player->pflags |= PF_VOID;
 			player->mo->renderflags |= RF_DONTDRAW;
@@ -2045,7 +2044,7 @@ static void K_HandleLapIncrement(player_t *player)
 				Music_Stop("position");
 			}
 
-			if (rainbowstartavailable == true && player->mo->hitlag == 0)
+			if (rainbowstartavailable == true)
 			{
 				S_StartSound(player->mo, sfx_s23c);
 				player->startboost = 125;
@@ -5360,10 +5359,6 @@ static void P_EvaluateDamageType(player_t *player, sector_t *sector, boolean isT
 			break;
 		case SD_INSTAKILL:
 			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_INSTAKILL);
-			break;
-		case SD_STUMBLE:
-			if (isTouching)
-				P_DamageMobj(player->mo, NULL, NULL, 1, DMG_STUMBLE);
 			break;
 		default:
 			break;
@@ -9582,12 +9577,6 @@ void P_DoQuakeOffset(UINT8 view, mappoint_t *viewPos, mappoint_t *offset)
 			addZ += ir;
 		}
 
-		// Add stair jank effects.
-		if (viewer->stairjank > 0)
-		{
-			ir = FixedMul((viewer->stairjank * FRACUNIT * 5) / 17, mapobjectscale);
-			addZ += ir;
-		}
 	}
 
 	fixed_t maxShake = FixedMul(cv_cam_height[view].value, mapobjectscale) * 3 / 4;

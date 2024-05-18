@@ -14,10 +14,8 @@
 #include "../info.h"
 #include "../p_local.h"
 #include "../r_main.h"
-#include "../k_hitlag.h"
 
 #define ball_pad(o) ((o)->target)
-#define ball_instawhipped(o) ((o)->extravalue1) // see instawhip collide
 
 #define ball_cooldown(o) ((o)->cvmem)
 
@@ -113,8 +111,6 @@ struct BallSwitch_Ball : mobj_t
 			P_RemoveMobj(this);
 			return;
 		}
-
-		ball_instawhipped(this) = 0;
 
 		if (DeferActivation() == true)
 		{
@@ -215,7 +211,6 @@ struct BallSwitch_Ball : mobj_t
 	void Hit(mobj_t *inflictor, mobj_t *source)
 	{
 		Push(inflictor, 64 << FRACBITS, 1 << FRACBITS);
-		K_SetHitLagForObjects(this, inflictor, source, 4, true);
 
 		if (Active() == false)
 		{

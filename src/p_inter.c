@@ -44,7 +44,6 @@
 #include "k_objects.h"
 #include "k_roulette.h"
 #include "k_boss.h"
-#include "k_hitlag.h"
 #include "acs/interface.h"
 #include "k_powerup.h"
 #include "k_collide.h"
@@ -134,9 +133,6 @@ boolean P_CanPickupItem(player_t *player, UINT8 weapon)
 	// 1: Random Item / Capsule
 	// 2: Eggbox
 	// 3: Paperitem
-
-	if (weapon != 2 && player->instaWhipCharge)
-		return false;
 
 	if (weapon)
 	{
@@ -483,8 +479,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				case KITEM_SUPERRING:
 					if (player->pflags & PF_RINGLOCK) // no cheaty rings
 						return;
-					if (player->instaWhipCharge)
-						return;
 					break;
 				default:
 					if (!P_CanPickupItem(player, 1))
@@ -552,9 +546,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			if (special->threshold > 0)
 				return;
 
-			if (toucher->hitlag > 0)
-				return;
-
 			// Emerald will now orbit the player
 
 			{
@@ -589,15 +580,9 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			// only attempt to damage the player if they're not invincible
 			if (!(player->invincibilitytimer > 0
 				|| K_IsBigger(toucher, special) == true
-				|| K_PlayerGuard(player) == true
 				|| player->hyudorotimer > 0))
 			{
-				if (P_DamageMobj(toucher, special, special, 1, DMG_STUMBLE))
-				{
-					P_SetMobjState(special, special->info->painstate);
-					special->eflags |= MFE_DAMAGEHITLAG;
-					return;
-				}
+
 			}
 			// if we didn't damage the player, just explode
 			P_SetMobjState(special, special->info->painstate);
@@ -621,8 +606,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				P_SetObjectMomZ(firework, P_RandomRange(PR_ITEM_DEBRIS, 1,8)*special->scale, false);
 				firework->color = toucher->color;
 			}*/
-
-			K_SetHitLagForObjects(special, toucher, toucher, 2, true);
 
 			break;
 
@@ -669,10 +652,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 
 			// No picking up rings while SPB is targetting you
 			if (player->pflags & PF_RINGLOCK)
-				return;
-
-			// Prepping instawhip? Don't ruin it by collecting rings
-			if (player->instaWhipCharge)
 				return;
 
 			// Don't immediately pick up spilled rings
@@ -869,7 +848,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 					return;
 				}
 
-				if (special->hitlag || special->scale < mapobjectscale/2)
+				if (special->scale < mapobjectscale/2)
 				{
 					// Don't get during the initial activation
 					return;
@@ -1041,12 +1020,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			break;
 		}
 
-		case MT_BETA_PARTICLE_EXPLOSION:
-		{
-			Obj_FuelCanisterExplosionTouch(special, toucher);
-			return;
-		}
-
 		case MT_AZROCKS:
 		case MT_EMROCKS:
 		{
@@ -1197,9 +1170,6 @@ static void P_AddBrokenPrison(mobj_t *target, mobj_t *inflictor, mobj_t *source)
 		case MT_BANANA:
 			targetdamaging = UFOD_BANANA;
 			break;
-		case MT_INSTAWHIP:
-			targetdamaging = UFOD_WHIP;
-			break;
 		// This is only accessible for MT_CDUFO's touch!
 		case MT_PLAYER:
 			targetdamaging = UFOD_BOOST;
@@ -1305,7 +1275,6 @@ static void P_AddBrokenPrison(mobj_t *target, mobj_t *inflictor, mobj_t *source)
 
 			if (secretpickup)
 			{
-				secretpickup->hitlag = target->hitlag;
 
 				secretpickup->z -= secretpickup->height/2;
 
@@ -1345,7 +1314,7 @@ static void P_AddBrokenPrison(mobj_t *target, mobj_t *inflictor, mobj_t *source)
 
 				// Darken the level for roughly how long it takes until the last sound effect stops playing.
 				g_darkness.start = leveltime;
-				g_darkness.end = leveltime + target->hitlag + TICRATE + DARKNESS_FADE_TIME;
+				g_darkness.end = leveltime + TICRATE + DARKNESS_FADE_TIME;
 			}
 		}
 	}
@@ -1751,8 +1720,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 
 	P_ActivateThingSpecial(target, source);
 
-	//K_SetHitLagForObjects(target, inflictor, source, MAXHITLAGTICS, true);
-
 	// SRB2kart
 	// I wish I knew a better way to do this
 	if (!P_MobjWasRemoved(target->target) && target->target->player && !P_MobjWasRemoved(target->target->player->mo))
@@ -1933,8 +1900,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 				// On -20 ring deaths, you're guaranteed to be hitting the ground from Tumble,
 				// so make sure that this draws at the correct angle.
 				target->rollangle = 0;
-
-				target->player->instaWhipCharge = 0;
 
 				fixed_t inflictorSpeed = 0;
 				if (!P_MobjWasRemoved(inflictor))
@@ -2137,9 +2102,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 					cur->tics = TICRATE;
 					cur->frame &= ~FF_ANIMATE; // Stop animating the propellers
 
-					cur->hitlag = target->hitlag;
-					cur->eflags |= MFE_DAMAGEHITLAG;
-
 					cur = cur->hnext;
 				}
 
@@ -2169,8 +2131,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 						// We check again if the list is invalid
 						if (P_MobjWasRemoved(cur))
 							break;
-
-						cur->hitlag = target->hitlag;
 
 						cur->destscale /= 2;
 						P_SetScale(cur, cur->destscale/TICRATE);
@@ -2477,7 +2437,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 	}
 	else if (target->type == MT_BLENDEYE_GENERATOR && !P_MobjWasRemoved(inflictor))
 	{
-		mobj_t *refobj = (inflictor->type == MT_INSTAWHIP) ? source : inflictor;
+		mobj_t *refobj = inflictor;
 		angle_t impactangle = R_PointToAngle2(target->x, target->y, refobj->x - refobj->momx, refobj->y - refobj->momy) - (target->angle + ANGLE_90);
 
 		if (P_MobjWasRemoved(target->tracer) == false)
@@ -2658,7 +2618,6 @@ static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source,
 	}
 
 	K_DropEmeraldsFromPlayer(player, player->emeralds);
-	//K_SetHitLagForObjects(player->mo, inflictor, source, MAXHITLAGTICS, true);
 
 	player->carry = CR_NONE;
 
@@ -2675,7 +2634,6 @@ static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source,
 		P_SetTarget(&field, NULL); \
 	}
 
-	PlayerPointerRemove(player->stumbleIndicator);
 	PlayerPointerRemove(player->wavedashIndicator);
 	PlayerPointerRemove(player->trickIndicator);
 
@@ -2699,30 +2657,6 @@ static void AddTimesHit(player_t *player)
 	if (player->timeshit < oldtimeshit)
 	{
 		player->timeshit = oldtimeshit;
-	}
-}
-
-static void AddNullHitlag(player_t *player, tic_t oldHitlag)
-{
-	if (player == NULL)
-	{
-		return;
-	}
-
-	// Hitlag from what would normally be damage but the
-	// player was invulnerable.
-	//
-	// If we're constantly getting hit the same number of
-	// times, we're probably standing on a damage floor.
-	//
-	// Checking if we're hit more than before ensures that:
-	//
-	// 1) repeating damage doesn't count
-	// 2) new damage sources still count
-
-	if (player->timeshit <= player->timeshitprev || player->hyudorotimer > 0)
-	{
-		player->nullHitlag += (player->mo->hitlag - oldHitlag);
 	}
 }
 
@@ -2872,7 +2806,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 			return Obj_TryCrateDamage(target, inflictor);
 
 		case MT_KART_LEFTOVER:
-			// intangible (do not let instawhip shred damage)
 			if (Obj_DestroyKart(target))
 				return false;
 
@@ -3006,7 +2939,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 		else
 		{
 			UINT8 type = (damagetype & DMG_TYPEMASK);
-			const boolean hardhit = (type == DMG_EXPLODE || type == DMG_KARMA || type == DMG_TUMBLE); // This damage type can do evil stuff like ALWAYS combo
+			const boolean hardhit = (type == DMG_EXPLODE || type == DMG_KARMA); // This damage type can do evil stuff like ALWAYS combo
 			INT16 ringburst = 5;
 
 			// Check if the player is allowed to be damaged!
@@ -3037,20 +2970,9 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				{
 					sfx = sfx_grownd;
 				}
-				else if (K_PlayerGuard(player))
-				{
-					sfx = sfx_s3k3a;
-					clash = true;
-				}
 				else if (player->hyudorotimer > 0)
 					;
 				else
-				{
-					invincible = false;
-				}
-
-				// Hack for instawhip-guard counter, lets invincible players lose to guard
-				if (inflictor == target)
 				{
 					invincible = false;
 				}
@@ -3063,34 +2985,14 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 					return false;
 				}
 
-				if (invincible && type != DMG_STUMBLE && type != DMG_WHUMBLE)
+				if (invincible)
 				{
-					const INT32 oldHitlag = target->hitlag;
-					const INT32 oldHitlagInflictor = inflictor ? inflictor->hitlag : 0;
 
 					// Damage during hitlag should be a no-op
 					// for invincibility states because there
 					// are no flashing tics. If the damage is
 					// from a constant source, a deadlock
 					// would occur.
-
-					if (target->eflags & MFE_PAUSED)
-					{
-						player->timeshit--; // doesn't count
-
-						if (playerInflictor)
-						{
-							playerInflictor->timeshit--;
-						}
-
-						return false;
-					}
-
-					laglength = max(laglength / 2, 1);
-					K_SetHitLagForObjects(target, inflictor, source, laglength, false);
-
-					AddNullHitlag(player, oldHitlag);
-					AddNullHitlag(playerInflictor, oldHitlagInflictor);
 
 					if (player->timeshit > player->timeshitprev)
 					{
@@ -3121,38 +3023,17 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 
 				{
 					// Check if we should allow wombo combos (hard hits by default, inverted by the presence of DMG_WOMBO).
-					boolean allowcombo = ((hardhit || (type == DMG_STUMBLE || type == DMG_WHUMBLE)) == !(damagetype & DMG_WOMBO));
+					boolean allowcombo = hardhit == !(damagetype & DMG_WOMBO);
 
-					// Tumble/stumble is a special case.
-					if (type == DMG_TUMBLE)
-					{
-						// don't allow constant combo
-						if (player->tumbleBounces == 1 && (P_MobjFlip(target)*target->momz > 0))
-							allowcombo = false;
-					}
-					else if (type == DMG_STUMBLE || type == DMG_WHUMBLE)
-					{
-						// don't allow constant combo
-						if (player->tumbleBounces == TUMBLEBOUNCES-1 && (P_MobjFlip(target)*target->momz > 0))
-						{
-							if (type == DMG_STUMBLE)
-								return false; // No-sell strings of stumble
-
-							allowcombo = false;
-						}
-					}
-
-					if (allowcombo == false && (target->eflags & MFE_PAUSED))
+					if (allowcombo == false)
 					{
 						return false;
 					}
 
 					// DMG_EXPLODE excluded from flashtic checks to prevent dodging eggbox/SPB with weak spinout
-					if ((target->hitlag == 0 || allowcombo == false) &&
+					if ((allowcombo == false) &&
 						player->flashing > 0 &&
 						type != DMG_EXPLODE &&
-						type != DMG_STUMBLE &&
-						type != DMG_WHUMBLE &&
 						P_FlashingException(player, inflictor) == false)
 					{
 						// Post-hit invincibility
@@ -3161,7 +3042,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 					}
 					else if (target->flags2 & MF2_ALREADYHIT) // do not deal extra damage in the same tic
 					{
-						K_SetHitLagForObjects(target, inflictor, source, laglength, true);
 						return false;
 					}
 				}
@@ -3184,7 +3064,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 			boolean hitFromInvinc = false;
 
 			// Sting and stumble shouldn't be rewarding Battle hits.
-			if (type == DMG_STING || type == DMG_STUMBLE)
+			if (type == DMG_STING)
 			{
 				damage = 0;
 			}
@@ -3293,24 +3173,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				}
 			}
 
-			if (player->rings <= cv_ng_ringdeathmark.value)
-			{
-				player->markedfordeath = true;
-				damagetype = DMG_TUMBLE;
-				type = DMG_TUMBLE;
-				P_StartQuakeFromMobj(5, 44 * player->mo->scale, 2560 * player->mo->scale, player->mo);
-				//P_KillPlayer(player, inflictor, source, damagetype);
-			}
-
-			// Death save! On your last hit, no matter what, demote to weakest damage type for one last escape chance.
-			if (player->mo->health == 2 && damage && gametyperules & GTR_BUMPERS)
-			{
-				K_AddMessageForPlayer(player, "\x8DLast Chance!", false, false);
-				S_StartSound(target, sfx_gshc7);
-				player->flashing = TICRATE;
-				type = DMG_STUMBLE;
-			}
-
 			switch (type)
 			{
 				case DMG_STING:
@@ -3320,25 +3182,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 						K_KartPainEnergyFling(player);
 					}
 					ringburst = 0;
-					break;
-				case DMG_STUMBLE:
-				case DMG_WHUMBLE:
-					if (cv_ng_stumble.value)
-						K_StumblePlayer(player);
-					else
-					{
- ;						P_DamageMobj(player->mo, inflictor, source, 1, DMG_NORMAL);
-					}
-					ringburst = 0;
-					break;
-				case DMG_TUMBLE:
-					if(cv_ng_tumble.value)
-						K_TumblePlayer(player, inflictor, source, hitFromInvinc);
-					else
-					{
-						P_DamageMobj(player->mo, inflictor, source, 1, DMG_NORMAL);
-					}
-					ringburst = 10;
 					break;
 				case DMG_EXPLODE:
 				case DMG_KARMA:
@@ -3361,8 +3204,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				ringburst = 0;
 			}
 
-			if (type != DMG_STUMBLE && type != DMG_WHUMBLE)
-			{
+
 				if (type != DMG_STING)
 					player->flashing = K_GetKartFlashing(player);
 
@@ -3372,11 +3214,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				player->instashield = 15;
 
 				K_PlayPainSound(target, source);
-			}
-			else if (inflictor && inflictor->type == MT_INSTAWHIP)
-			{
-				K_PopPlayerShield(player);
-			}
 
 			if (gametyperules & GTR_BUMPERS)
 				player->spheres = min(player->spheres + 10, 40);
@@ -3430,10 +3267,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				case MT_BANANA:
 					targetdamaging = UFOD_BANANA;
 					break;
-				case MT_INSTAWHIP:
-					inflictor->extravalue2 = 1; // Disable whip collision
-					targetdamaging = UFOD_WHIP;
-					break;
 				case MT_PLAYER:
 					targetdamaging = UFOD_BOOST;
 					break;
@@ -3461,14 +3294,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 	if (source && source->player && target)
 		G_GhostAddHit((INT32) (source->player - players), target);
 
-	// Insta-Whip (DMG_WHUMBLE): do not reduce hitlag because
-	// this can leave room for double-damage.
-	if ((damagetype & DMG_TYPEMASK) != DMG_WHUMBLE && (gametyperules & GTR_BUMPERS) && !battleprisons)
-		laglength /= 2;
-
-	if (!(target->player && (damagetype & DMG_DEATHMASK)))
-		K_SetHitLagForObjects(target, inflictor, source, laglength, true);
-
 	target->flags2 |= MF2_ALREADYHIT;
 
 	if (target->health <= 0)
@@ -3476,8 +3301,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 		P_KillMobj(target, inflictor, source, damagetype);
 		return true;
 	}
-
-	//K_SetHitLagForObjects(target, inflictor, source, laglength, true);
 
 	if (!player)
 	{

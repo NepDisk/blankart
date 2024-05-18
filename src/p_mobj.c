@@ -1185,11 +1185,6 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 			gravityadd = (5*gravityadd)/2;
 		}
 
-		if (mo->player->tumbleBounces > 0)
-		{
-			gravityadd = FixedMul(TUMBLEGRAVITY, gravityadd);
-		}
-
 		if (mo->player->carry == CR_DASHRING && Obj_DashRingPlayerHasNoGravity(mo->player))
 		{
 			gravityadd = 0;
@@ -2821,7 +2816,7 @@ void P_PlayerZMovement(mobj_t *mo)
 		K_UpdateMobjTerrain(mo, (mo->eflags & MFE_VERTICALFLIP ? g_tm.ceilingpic : g_tm.floorpic));
 
 		// Get up if you fell.
-		if (mo->player->panim == PA_HURT && mo->player->spinouttimer == 0 && mo->player->tumbleBounces == 0)
+		if (mo->player->panim == PA_HURT && mo->player->spinouttimer == 0)
 		{
 			P_SetPlayerMobjState(mo, S_KART_STILL);
 		}
@@ -3990,9 +3985,6 @@ static void P_PlayerMobjThinker(mobj_t *mobj)
 	I_Assert(!P_MobjWasRemoved(mobj));
 
 	P_MobjCheckWater(mobj);
-
-	if (cv_ng_butteredslopes.value)
-		P_ButteredSlope(mobj);
 
 	// momentum movement
 	mobj->eflags &= ~MFE_JUSTSTEPPEDDOWN;
@@ -5444,9 +5436,6 @@ void P_RunOverlays(void)
 			mo->roll = mo->target->roll;
 		}
 
-		mo->hitlag = mo->target->hitlag;
-		mo->eflags = (mo->eflags & ~MFE_DAMAGEHITLAG) | (mo->target->eflags & MFE_DAMAGEHITLAG);
-
 		if ((mo->flags & MF_DONTENCOREMAP) != (mo->target->flags & MF_DONTENCOREMAP))
 			mo->flags ^= MF_DONTENCOREMAP;
 
@@ -5846,8 +5835,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 		}
 
 		P_AddOverlay(mobj);
-		if (mobj->target->hitlag) // move to the correct position, update to the correct properties, but DON'T STATE-ANIMATE
-			return;
 		switch (mobj->target->type)
 		{
 			case MT_FLOATINGITEM:
@@ -6412,14 +6399,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 		break;
 	case MT_DROPTARGET_MORPH:
 		if (Obj_DropTargetMorphThink(mobj) == false)
-		{
-			return;
-		}
-		break;
-	case MT_INSTAWHIP_RECHARGE:
-		Obj_InstaWhipRechargeThink(mobj);
-
-		if (P_MobjWasRemoved(mobj))
 		{
 			return;
 		}
@@ -7888,21 +7867,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 	case MT_BRAKEDUST:
 		//mobj->renderflags ^= RF_DONTDRAW;
 		break;
-	case MT_JANKSPARK:
-		if (!mobj->target)
-		{
-			P_RemoveMobj(mobj);
-			return false;
-		}
-		if (mobj->fuse == 1 && mobj->target->player &&
-				mobj->target->player->stairjank >= 8)
-		{
-			mobj->fuse = 9;
-		}
-		P_MoveOrigin(mobj, mobj->target->x,
-				mobj->target->y, mobj->target->z);
-		mobj->angle = mobj->target->angle + mobj->cusval;
-		break;
 	case MT_PLAYERRETICULE:
 		if (!mobj->target || !mobj->target->health)
 		{
@@ -8034,59 +7998,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			else
 				mobj->angle = mobj->target->angle + ANGLE_45;
 		}
-		break;
-	case MT_TIREGREASE:
-		if (!mobj->target || P_MobjWasRemoved(mobj->target) || !mobj->target->player
-			|| !mobj->target->player->tiregrease)
-		{
-			P_RemoveMobj(mobj);
-			return false;
-		}
-
-		K_MatchGenericExtraFlags(mobj, mobj->target);
-
-		{
-			const angle_t off = FixedAngle(40*FRACUNIT);
-			angle_t ang = K_MomentumAngle(mobj->target);
-			fixed_t z;
-			UINT8 trans = (mobj->target->player->tiregrease * (NUMTRANSMAPS+1)) / greasetics;
-
-			if (trans > NUMTRANSMAPS)
-				trans = NUMTRANSMAPS;
-
-			trans = NUMTRANSMAPS - trans;
-
-			z = mobj->target->z;
-			if (mobj->eflags & MFE_VERTICALFLIP)
-				z += mobj->target->height;
-
-			if (mobj->extravalue1)
-				ang = (signed)(ang - off);
-			else
-				ang = (signed)(ang + off);
-
-			P_MoveOrigin(mobj,
-				mobj->target->x - FixedMul(mobj->target->radius, FINECOSINE(ang >> ANGLETOFINESHIFT)),
-				mobj->target->y - FixedMul(mobj->target->radius, FINESINE(ang >> ANGLETOFINESHIFT)),
-				z);
-			mobj->angle = ang;
-
-			if (!P_IsObjectOnGround(mobj->target))
-				mobj->renderflags |= RF_DONTDRAW;
-
-			if (leveltime & 1)
-				mobj->renderflags |= RF_DONTDRAW;
-
-			if (trans >= NUMTRANSMAPS)
-				mobj->renderflags |= RF_DONTDRAW;
-			else if (trans == 0)
-				mobj->renderflags = (mobj->renderflags & ~RF_TRANSMASK);
-			else
-				mobj->renderflags = (mobj->renderflags & ~RF_TRANSMASK)|(trans << RF_TRANSSHIFT);
-		}
-
-		P_SetTarget(&mobj->owner, mobj->target);
-		mobj->renderflags |= RF_REDUCEVFX;
 		break;
 	case MT_MAGICIANBOX:
 	{
@@ -8578,31 +8489,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		Obj_GardenTopThink(mobj);
 		break;
 	}
-	case MT_INSTAWHIP:
-	{
-		Obj_InstaWhipThink(mobj);
-		break;
-	}
-	case MT_INSTAWHIP_REJECT:
-	{
-		Obj_InstaWhipRejectThink(mobj);
-
-		if (P_MobjWasRemoved(mobj))
-		{
-			return false;
-		}
-		break;
-	}
-	case MT_BLOCKRING:
-	{
-		Obj_BlockRingThink(mobj);
-		break;
-	}
-	case MT_BLOCKBODY:
-	{
-		Obj_BlockBodyThink(mobj);
-		break;
-	}
 	case MT_CHARGEAURA:
 	{
 		Obj_ChargeAuraThink(mobj);
@@ -8621,11 +8507,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 	case MT_CHARGEEXTRA:
 	{
 		Obj_ChargeExtraThink(mobj);
-		break;
-	}
-	case MT_GUARDBREAK:
-	{
-		Obj_GuardBreakThink(mobj);
 		break;
 	}
 	case MT_GARDENTOPSPARK:
@@ -10132,58 +10013,7 @@ void P_MobjThinker(mobj_t *mobj)
 
 	mobj->flags2 &= ~(MF2_ALREADYHIT);
 
-	// Don't run any thinker code while in hitlag
-	mobj->eflags &= ~(MFE_PAUSED);
-	if ((mobj->player ? mobj->hitlag - mobj->player->nullHitlag : mobj->hitlag) > 0)
-	{
-		mobj->eflags |= MFE_PAUSED;
-		mobj->hitlag--;
-
-		if (mobj->player != NULL && mobj->player->faultflash > 0)
-		{
-			ClearFakePlayerSkin(mobj->player);
-			if (mobj->player->faultflash & 1)
-				mobj->renderflags |= RF_DONTDRAW;
-			else
-				mobj->renderflags &= ~RF_DONTDRAW;
-
-			mobj->player->faultflash--;
-		}
-
-		if (mobj->type == MT_DROPTARGET && mobj->reactiontime > 0 && mobj->hitlag == 2)
-		{
-			mobj->spritexscale = FRACUNIT;
-			mobj->spriteyscale = 5*FRACUNIT;
-		}
-
-		if (mobj->player != NULL && mobj->hitlag == 0 && (mobj->eflags & MFE_DAMAGEHITLAG))
-		{
-			if (mobj->player->ringburst > 0)
-			{
-				// Delayed ring loss
-				P_PlayRinglossSound(mobj);
-				P_PlayerRingBurst(mobj->player, mobj->player->ringburst);
-				mobj->player->ringburst = 0;
-			}
-
-			K_HandleDirectionalInfluence(mobj->player);
-		}
-
-		// Hitlag VFX "stagger" behavior.
-		// Oni likes the look better if all sparks visibly hold on their 1st frame,
-		// but if we ever reverse course, this is here.
-		/*
-		if (mobj->type == MT_HITLAG && mobj->hitlag == 0)
-			mobj->renderflags &= ~RF_DONTDRAW;
-		*/
-	}
-
-	if (P_MobjIsFrozen(mobj))
-	{
-		return;
-	}
-
-	mobj->eflags &= ~(MFE_PUSHED|MFE_SPRUNG|MFE_JUSTBOUNCEDWALL|MFE_DAMAGEHITLAG|MFE_SLOPELAUNCHED);
+	mobj->eflags &= ~(MFE_PUSHED|MFE_SPRUNG|MFE_JUSTBOUNCEDWALL|MFE_SLOPELAUNCHED);
 
 	// sal: what the hell? is there any reason this isn't done, like, literally ANYWHERE else?
 	P_SetTarget(&g_tm.floorthing, NULL);
@@ -10859,7 +10689,6 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 
 	mobj->colorized = false;
 
-	mobj->hitlag = 0;
 	mobj->waterskip = 0;
 
 	// Set shadowscale here, before spawn hook so that Lua can change it
@@ -12131,7 +11960,6 @@ void P_SpawnPlayer(INT32 playernum)
 
 	p->griefValue = 0;
 
-	K_InitStumbleIndicator(p);
 	K_InitWavedashIndicator(p);
 	K_InitTrickIndicator(p);
 
@@ -12139,26 +11967,6 @@ void P_SpawnPlayer(INT32 playernum)
 	{
 		mobj->health = K_BumpersToHealth(K_StartingBumperCount());
 		K_SpawnPlayerBattleBumpers(p);
-	}
-
-	// Block visuals
-	// (These objects track whether a player is block-eligible on their own, no worries)
-	if (!p->spectator)
-	{
-		mobj_t *ring = P_SpawnMobj(p->mo->x, p->mo->y, p->mo->z, MT_BLOCKRING);
-		P_SetTarget(&ring->target, p->mo);
-		P_SetScale(ring, p->mo->scale);
-		K_MatchGenericExtraFlags(ring, p->mo);
-		ring->renderflags &= ~RF_DONTDRAW;
-
-		mobj_t *body = P_SpawnMobj(p->mo->x, p->mo->y, p->mo->z, MT_BLOCKBODY);
-		P_SetTarget(&body->target, p->mo);
-		P_SetScale(body, p->mo->scale);
-		K_MatchGenericExtraFlags(body, p->mo);
-		body->renderflags |= RF_DONTDRAW;
-
-		if (K_PlayerGuard(p))
-			S_StartSound(body, sfx_s1af);
 	}
 
 	UINT8 pcount = 0;
@@ -14892,8 +14700,6 @@ mobj_t *P_SpawnMobjFromMobjUnscaled(mobj_t *mobj, fixed_t xofs, fixed_t yofs, fi
 	newmobj = P_SpawnMobj(mobj->x + xofs, mobj->y + yofs, mobj->z + zofs, type);
 	if (!newmobj)
 		return NULL;
-
-	newmobj->hitlag = mobj->hitlag;
 
 	newmobj->destscale = P_ScaleFromMap(mobj->destscale, newmobj->destscale);
 	P_SetScale(newmobj, P_ScaleFromMap(mobj->scale, newmobj->scale));

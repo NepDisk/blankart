@@ -47,7 +47,6 @@
 #include "hw_md2.h"
 
 // SRB2Kart
-#include "../k_hitlag.h" // HITLAGJITTERS
 #include "../r_fps.h"
 #include "../r_plane.h" // R_FlatDimensionsFromLumpSize
 
@@ -3131,21 +3130,6 @@ static void HWR_DrawDropShadow(mobj_t *thing, fixed_t scale)
 		R_InterpolateMobjState(thing, FRACUNIT, &interp);
 	}
 
-	// hitlag vibrating (todo: interp somehow?)
-	if (thing->hitlag > 0 && (thing->eflags & MFE_DAMAGEHITLAG))
-	{
-		fixed_t mul = thing->hitlag * HITLAGJITTERS;
-
-		if (leveltime & 1)
-		{
-			mul = -mul;
-		}
-
-		interp.x += FixedMul(thing->momx, mul);
-		interp.y += FixedMul(thing->momy, mul);
-		interp.z += FixedMul(thing->momz, mul);
-	}
-
 	// sprite offset
 	interp.x += thing->sprxoff;
 	interp.y += thing->spryoff;
@@ -4700,21 +4684,6 @@ static void HWR_ProjectSprite(mobj_t *thing)
 
 	dispoffset = thing->dispoffset;
 
-	// hitlag vibrating (todo: interp somehow?)
-	if (thing->hitlag > 0 && (thing->eflags & MFE_DAMAGEHITLAG))
-	{
-		fixed_t mul = thing->hitlag * HITLAGJITTERS;
-
-		if (leveltime & 1)
-		{
-			mul = -mul;
-		}
-
-		interp.x += FixedMul(thing->momx, mul);
-		interp.y += FixedMul(thing->momy, mul);
-		interp.z += FixedMul(thing->momz, mul);
-	}
-
 	// sprite offset
 	interp.x += thing->sprxoff;
 	interp.y += thing->spryoff;
@@ -5099,11 +5068,6 @@ static void HWR_ProjectSprite(mobj_t *thing)
 	if (skinnum >= 0 && !R_CanShowSkinInDemo(skinnum))
 	{
 		vis->colormap = R_GetTranslationColormap(TC_BLINK, thing->color, GTC_CACHE);
-	}
-	//Hurdler: 25/04/2000: now support colormap in hardware mode
-	else if (R_ThingIsFlashing(vis->mobj))
-	{
-		vis->colormap = R_GetTranslationColormap(TC_HITLAG, 0, GTC_CACHE);
 	}
 	else if (thing->color)
 	{

@@ -21,7 +21,6 @@
 #include "../r_main.h"
 #include "../s_sound.h"
 #include "../g_game.h"
-#include "../k_hitlag.h"
 #include "../p_slopes.h"
 
 enum {
@@ -567,8 +566,6 @@ hyudoro_patrol_hit_player
 	// NO ITEM?
 	if (!player->itemamount)
 		return false;
-
-	K_AddHitLag(toucher, TICRATE/2, false);
 
 	hyudoro_mode(hyu) = HYU_RETURN;
 

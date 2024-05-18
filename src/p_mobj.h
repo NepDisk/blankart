@@ -166,8 +166,8 @@ typedef enum
 	MF_PICKUPFROMBELOW  = 1<<29,
 	// Disable momentum-based squash and stretch.
 	MF_NOSQUISH         = 1<<30,
-	// Disable hitlag for this object
-	MF_NOHITLAGFORME    = (INT32)(1U<<31),
+	// was hitlagdisabled forme
+	//freeslot    = (INT32)(1U<<31),
 	// no more free slots, gotta get rid of more crusty base SRB2 flags
 } mobjflag_t;
 
@@ -256,12 +256,12 @@ typedef enum
 	MFE_TRACERANGLE       = 1<<11,
 	// SRB2Kart: The mobj just hit & bounced off a wall, this is cleared on next frame
 	MFE_JUSTBOUNCEDWALL   = 1<<12,
-	// SRB2Kart: In damage hitlag (displays different visual efx)
-	MFE_DAMAGEHITLAG      = 1<<13,
+	// wasmfedamagehitlag
+	//freeslot     = 1<<13,
 	// Slope physics sent you airborne
 	MFE_SLOPELAUNCHED     = 1<<14,
-	// Thinker is paused due to hitlag
-	MFE_PAUSED            = 1<<15,
+	// wasmfrpaused
+	//freeslot            = 1<<15,
 } mobjeflag_t;
 
 //
@@ -424,7 +424,6 @@ struct mobj_t
 	terrain_t *terrain; // Terrain definition of the floor this object last hit. NULL when in the air.
 	mobj_t *terrainOverlay; // Overlay sprite object for terrain
 
-	INT32 hitlag; // Sal-style hit lag, straight from Captain Fetch's jowls
 	UINT8 waterskip; // Water skipping counter
 
 	INT32 dispoffset;

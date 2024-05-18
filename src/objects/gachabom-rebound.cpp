@@ -78,7 +78,7 @@ bool award_target(mobj_t* mobj)
 		return true;
 	}
 
-	if ((player->itemtype == KITEM_GACHABOM || player->itemtype == KITEM_NONE) && !player->itemRoulette.active && !player->instaWhipCharge)
+	if ((player->itemtype == KITEM_GACHABOM || player->itemtype == KITEM_NONE) && !player->itemRoulette.active)
 	{
 		rebound_timer(mobj)--;
 

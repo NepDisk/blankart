@@ -125,7 +125,6 @@ struct skinrecord_t
 	UINT32 rounds;
 	UINT32 timeplayed;
 	UINT32 modetimeplayed[GDGT_MAX];
-	UINT32 tumbletime;
 };
 
 struct unloaded_skin_t

@@ -211,7 +211,6 @@ struct Box : AnyBox
 			return false;
 		}
 
-		inflictor->hitlag(3);
 		fuse = 10;
 
 		// scrunch crate sides

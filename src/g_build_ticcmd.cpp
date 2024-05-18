@@ -182,11 +182,6 @@ class TiccmdBuilder
 			return;
 		}
 
-		if (player()->mo != NULL && !P_MobjWasRemoved(player()->mo) && player()->mo->hitlag > 0)
-		{
-			return;
-		}
-
 		if (player()->mo != NULL && P_MobjIsFrozen(player()->mo))
 		{
 			return;

@@ -961,7 +961,6 @@ static void M_HandleCharRotate(setup_player_t *p, UINT8 num)
 	{
 		p->clonenum = 0;
 		p->rotate = CSROTATETICS;
-		p->hitlag = true;
 		S_StartSound(NULL, sfx_s3k7b); //sfx_s3kc3s
 		M_SetMenuDelay(num);
 	}
@@ -1005,7 +1004,6 @@ static void M_HandleColorRotate(setup_player_t *p, UINT8 num)
 		{
 			p->color = SKINCOLOR_NONE;
 			p->rotate = CSROTATETICS;
-			p->hitlag = true;
 			S_StartSound(NULL, sfx_s3k7b); //sfx_s3kc3s
 			M_SetMenuDelay(num);
 		}
@@ -1118,7 +1116,6 @@ static void M_HandleFollowerCategoryRotate(setup_player_t *p, UINT8 num)
 			: -1;
 
 		p->rotate = CSROTATETICS;
-		p->hitlag = true;
 		S_StartSound(NULL, sfx_s3k7b); //sfx_s3kc3s
 		M_SetMenuDelay(num);
 	}
@@ -1196,7 +1193,6 @@ static void M_HandleFollowerRotate(setup_player_t *p, UINT8 num)
 		p->mdepth = CSSTEP_FOLLOWERCATEGORY;
 		p->followercategory = -1;
 		p->rotate = CSROTATETICS;
-		p->hitlag = true;
 		S_StartSound(NULL, sfx_s3k7b); //sfx_s3kc3s
 		M_SetMenuDelay(num);
 	}
@@ -1243,7 +1239,6 @@ static void M_HandleFollowerColorRotate(setup_player_t *p, UINT8 num)
 		else
 			p->followercolor = SKINCOLOR_NONE;
 		p->rotate = CSROTATETICS;
-		p->hitlag = true;
 		S_StartSound(NULL, sfx_s3k7b); //sfx_s3kc3s
 		M_SetMenuDelay(num);
 	}
@@ -1412,8 +1407,6 @@ void M_CharacterSelectTick(void)
 			setup_player[i].rotate--;
 		else if (setup_player[i].rotate < 0)
 			setup_player[i].rotate++;
-		else
-			setup_player[i].hitlag = false;
 
 		if (i >= setup_numplayers)
 			continue;

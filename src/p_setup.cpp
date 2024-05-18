@@ -1819,8 +1819,6 @@ static void ParseTextmapSectorParameter(UINT32 i, const char *param, const char 
 			sectors[i].damagetype = SD_DEATHPIT;
 		if (fastcmp(val, "Instakill"))
 			sectors[i].damagetype = SD_INSTAKILL;
-		if (fastcmp(val, "Stumble"))
-			sectors[i].damagetype = SD_STUMBLE;
 	}
 	else if (fastcmp(param, "action"))
 		sectors[i].action = atol(val);
@@ -3000,9 +2998,6 @@ static void P_WriteTextmap(void)
 					break;
 				case SD_INSTAKILL:
 					fprintf(f, "damagetype = \"Instakill\";\n");
-					break;
-				case SD_STUMBLE:
-					fprintf(f, "damagetype = \"Stumble\";\n");
 					break;
 				default:
 					break;
@@ -6600,9 +6595,6 @@ static void P_ConvertBinarySectorTypes(void)
 				break;
 			//case 9: -- Ring Drainer (Floor Touch)
 			//case 10: -- Ring Drainer (No Floor Touch)
-			case 11: // Stumble
-				sectors[i].damagetype = SD_STUMBLE;
-				break;
 			case 12: //Wall sector
 				sectors[i].specialflags = static_cast<sectorspecialflags_t>(sectors[i].specialflags | SSF_NOSTEPUP);
 				break;

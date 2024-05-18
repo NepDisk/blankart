@@ -172,7 +172,6 @@ void Obj_AdventureAirBoosterHitboxTouch(mobj_t *hitbox, player_t *player)
 	player->turbine = 0;
 	player->flashing = 0;
 	player->fastfall = 0;
-	K_TumbleInterrupt(player);
 
 	S_StartSound(mo, booster->info->seesound);
 

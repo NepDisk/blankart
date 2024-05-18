@@ -568,25 +568,6 @@ void Obj_SSBumperTouchSpecial(mobj_t* special, mobj_t* toucher)
 	toucher->momy = FixedMul(FixedMul(str, FSIN(hang)), abs(FCOS(vang)));
 	toucher->momz = FixedMul(str, FSIN(vang));
 
-	if (toucher->player)
-	{
-		if (toucher->player->tiregrease == 0)
-		{
-			for (i = 0; i < 2; i++)
-			{
-				mobj_t *grease = P_SpawnMobjFromMobj(toucher, 0, 0, 0, MT_TIREGREASE);
-				P_SetTarget(&grease->target, toucher);
-				grease->angle = toucher->angle;
-				grease->extravalue1 = i;
-			}
-		}
-
-		if (toucher->player->tiregrease < 2*TICRATE) // greasetics
-		{
-			toucher->player->tiregrease = 2*TICRATE;
-		}
-	}
-
 	if (special->state != &states[special->info->seestate])
 	{
 		S_StartSound(special, special->info->deathsound);

@@ -2414,7 +2414,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 
 		// These are mostly subservient to the player, and may not clean themselves up.
 		PlayerPointerRemove(players[player].followmobj);
-		PlayerPointerRemove(players[player].stumbleIndicator);
 		PlayerPointerRemove(players[player].wavedashIndicator);
 		PlayerPointerRemove(players[player].trickIndicator);
 

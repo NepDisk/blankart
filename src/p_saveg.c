@@ -81,7 +81,7 @@ typedef enum
 	SKYBOXVIEW = 0x0008,
 	SKYBOXCENTER = 0x0010,
 	HOVERHYUDORO = 0x0020,
-	STUMBLE = 0x0040,
+	// = 0x0040,
 	WAVEDASH = 0x0080,
 	RINGSHOOTER = 0x0100,
 	WHIP = 0x0200,
@@ -326,9 +326,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		if (players[i].hoverhyudoro)
 			flags |= HOVERHYUDORO;
 
-		if (players[i].stumbleIndicator)
-			flags |= STUMBLE;
-
 		if (players[i].wavedashIndicator)
 			flags |= WAVEDASH;
 
@@ -369,9 +366,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 
 		if (flags & HOVERHYUDORO)
 			WRITEUINT32(save->p, players[i].hoverhyudoro->mobjnum);
-
-		if (flags & STUMBLE)
-			WRITEUINT32(save->p, players[i].stumbleIndicator->mobjnum);
 
 		if (flags & WAVEDASH)
 			WRITEUINT32(save->p, players[i].wavedashIndicator->mobjnum);
@@ -434,12 +428,9 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT16(save->p, players[i].spinouttimer);
 		WRITEUINT8(save->p, players[i].spinouttype);
 		WRITEUINT8(save->p, players[i].instashield);
-		WRITEINT32(save->p, players[i].nullHitlag);
 		WRITEUINT8(save->p, players[i].wipeoutslow);
 		WRITEUINT8(save->p, players[i].justbumped);
 		WRITEUINT8(save->p, players[i].noEbrakeMagnet);
-		WRITEUINT8(save->p, players[i].tumbleBounces);
-		WRITEUINT16(save->p, players[i].tumbleHeight);
 
 		WRITEUINT8(save->p, players[i].justDI);
 		WRITEUINT8(save->p, players[i].flipDI);
@@ -461,7 +452,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 
 		WRITEFIXED(save->p, players[i].offroad);
 
-		WRITEUINT16(save->p, players[i].tiregrease);
 		WRITEUINT16(save->p, players[i].springstars);
 		WRITEUINT16(save->p, players[i].springcolor);
 		WRITEUINT8(save->p, players[i].dashpadcooldown);
@@ -573,7 +563,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].kickstartaccel);
 		WRITEUINT8(save->p, players[i].autoring);
 
-		WRITEUINT8(save->p, players[i].stairjank);
 		WRITEUINT8(save->p, players[i].topdriftheld);
 		WRITEUINT8(save->p, players[i].topinfirst);
 
@@ -605,9 +594,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 
 		WRITESINT8(save->p, players[i].pitblame);
 
-		WRITEUINT8(save->p, players[i].instaWhipCharge);
-		WRITEUINT8(save->p, players[i].defenseLockout);
-		WRITEUINT8(save->p, players[i].oldGuard);
 		WRITEUINT8(save->p, players[i].powerupVFXTimer);
 
 		WRITEUINT8(save->p, players[i].preventfailsafe);
@@ -982,9 +968,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		if (flags & HOVERHYUDORO)
 			players[i].hoverhyudoro = (mobj_t *)(size_t)READUINT32(save->p);
 
-		if (flags & STUMBLE)
-			players[i].stumbleIndicator = (mobj_t *)(size_t)READUINT32(save->p);
-
 		if (flags & WAVEDASH)
 			players[i].wavedashIndicator = (mobj_t *)(size_t)READUINT32(save->p);
 
@@ -1047,12 +1030,9 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].spinouttimer = READUINT16(save->p);
 		players[i].spinouttype = READUINT8(save->p);
 		players[i].instashield = READUINT8(save->p);
-		players[i].nullHitlag = READINT32(save->p);
 		players[i].wipeoutslow = READUINT8(save->p);
 		players[i].justbumped = READUINT8(save->p);
 		players[i].noEbrakeMagnet = READUINT8(save->p);
-		players[i].tumbleBounces = READUINT8(save->p);
-		players[i].tumbleHeight = READUINT16(save->p);
 
 		players[i].justDI = READUINT8(save->p);
 		players[i].flipDI = (boolean)READUINT8(save->p);
@@ -1074,7 +1054,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 
 		players[i].offroad = READFIXED(save->p);
 
-		players[i].tiregrease = READUINT16(save->p);
 		players[i].springstars = READUINT16(save->p);
 		players[i].springcolor = READUINT16(save->p);
 		players[i].dashpadcooldown = READUINT8(save->p);
@@ -1186,7 +1165,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].kickstartaccel = READUINT8(save->p);
 		players[i].autoring = READUINT8(save->p);
 
-		players[i].stairjank = READUINT8(save->p);
 		players[i].topdriftheld = READUINT8(save->p);
 		players[i].topinfirst = READUINT8(save->p);
 
@@ -1218,9 +1196,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 
 		players[i].pitblame = READSINT8(save->p);
 
-		players[i].instaWhipCharge = READUINT8(save->p);
-		players[i].defenseLockout = READUINT8(save->p);
-		players[i].oldGuard = READUINT8(save->p);
 		players[i].powerupVFXTimer = READUINT8(save->p);
 
 		players[i].preventfailsafe = READUINT8(save->p);
@@ -2883,7 +2858,7 @@ typedef enum
 	MD2_SPECIAL      = 1<<21,
 	MD2_FLOORSPRITESLOPE = 1<<22,
 	MD2_DISPOFFSET   = 1<<23,
-	MD2_HITLAG       = 1<<24,
+	//MD2_HITLAG       = 1<<24,
 	MD2_WAYPOINTCAP  = 1<<25,
 	MD2_KITEMCAP     = 1<<26,
 	MD2_ITNEXT       = 1<<27,
@@ -3200,8 +3175,6 @@ static void SaveMobjThinker(savebuffer_t *save, const thinker_t *th, const UINT8
 		|| (slope->normal.z != FRACUNIT))
 			diff2 |= MD2_FLOORSPRITESLOPE;
 	}
-	if (mobj->hitlag)
-		diff2 |= MD2_HITLAG;
 	if (mobj->waterskip)
 		diff2 |= MD2_WATERSKIP;
 	if (mobj->dispoffset)
@@ -3478,10 +3451,6 @@ static void SaveMobjThinker(savebuffer_t *save, const thinker_t *th, const UINT8
 		WRITEFIXED(save->p, slope->normal.x);
 		WRITEFIXED(save->p, slope->normal.y);
 		WRITEFIXED(save->p, slope->normal.z);
-	}
-	if (diff2 & MD2_HITLAG)
-	{
-		WRITEINT32(save->p, mobj->hitlag);
 	}
 	if (diff2 & MD2_WATERSKIP)
 	{
@@ -4764,10 +4733,6 @@ static thinker_t* LoadMobjThinker(savebuffer_t *save, actionf_p1 thinker)
 
 		P_UpdateSlopeLightOffset(slope);
 	}
-	if (diff2 & MD2_HITLAG)
-	{
-		mobj->hitlag = READINT32(save->p);
-	}
 	if (diff2 & MD2_WATERSKIP)
 	{
 		mobj->waterskip = READUINT8(save->p);
@@ -5954,11 +5919,6 @@ static void P_RelinkPointers(void)
 		{
 			if (!RelinkMobj(&players[i].hoverhyudoro))
 				CONS_Debug(DBG_GAMELOGIC, "hoverhyudoro not found on player %d\n", i);
-		}
-		if (players[i].stumbleIndicator)
-		{
-			if (!RelinkMobj(&players[i].stumbleIndicator))
-				CONS_Debug(DBG_GAMELOGIC, "stumbleIndicator not found on player %d\n", i);
 		}
 		if (players[i].wavedashIndicator)
 		{

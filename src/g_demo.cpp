@@ -1745,8 +1745,6 @@ void G_PreviewRewind(tic_t previewtime)
 		players[i].mo->sprite2 = info->playerinfo[i].mobj.sprite2;
 		players[i].mo->frame = info->playerinfo[i].mobj.frame;
 
-		players[i].mo->hitlag = info->playerinfo[i].mobj.hitlag;
-
 		players[i].realtime = info->playerinfo[i].player.realtime;
 		// Genuinely CANNOT be fucked. I can redo lua and I can redo netsaves but I draw the line at this abysmal hack.
 		/*for (j = 0; j < NUMKARTSTUFF; j++)

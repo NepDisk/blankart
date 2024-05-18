@@ -26,7 +26,6 @@
 #include "../k_waypoint.h"
 #include "../k_specialstage.h"
 #include "../r_skins.h"
-#include "../k_hitlag.h"
 #include "../acs/interface.h"
 #include "../hu_stuff.h"
 #include "../k_grandprix.h"
@@ -656,8 +655,6 @@ spawn_shard
 
 	th -= P_RandomKey(PR_ITEM_DEBRIS, ANGLE_45) - ANGLE_22h;
 
-	p->hitlag = 0;
-
 	P_Thrust(p, th, 6 * p->scale);
 	p->momz = P_RandomRange(PR_ITEM_DEBRIS, 3, 10) * p->scale;
 
@@ -689,25 +686,6 @@ spawn_debris (mobj_t *part)
 		spawn_shard(part, S_MONITOR_BIG_SHARD);
 		spawn_shard(part, S_MONITOR_SMALL_SHARD);
 		spawn_shard(part, S_MONITOR_TWINKLE);
-	}
-}
-
-static void UFOCopyHitlagToPieces(mobj_t *ufo)
-{
-	mobj_t *piece = NULL;
-
-	piece = ufo_pieces(ufo);
-	while (UFOPieceValid(piece) == true)
-	{
-		piece->hitlag = ufo->hitlag;
-		piece->eflags = (piece->eflags & ~MFE_DAMAGEHITLAG) | (ufo->eflags & MFE_DAMAGEHITLAG);
-
-		if (ufo_piece_type(piece) == UFO_PIECE_TYPE_GLASS)
-		{
-			spawn_debris (piece);
-		}
-
-		piece = ufo_piece_next(piece);
 	}
 }
 
@@ -784,13 +762,6 @@ static UINT8 GetUFODamage(mobj_t *inflictor, UINT8 damageType)
 			{
 				targetdamaging = UFOD_ORBINAUT;
 				ret = 10;
-				break;
-			}
-			case MT_INSTAWHIP:
-			{
-				targetdamaging = UFOD_WHIP;
-				ret = 10;
-				inflictor->extravalue2 = 1; // Disable whip collision
 				break;
 			}
 			case MT_JAWZ:
@@ -891,7 +862,6 @@ static UINT8 GetUFODamage(mobj_t *inflictor, UINT8 damageType)
 			return 20;
 		}
 		case DMG_EXPLODE:
-		case DMG_TUMBLE:
 		{
 			return 30;
 		}
@@ -941,9 +911,6 @@ boolean Obj_SpecialUFODamage(mobj_t *ufo, mobj_t *inflictor, mobj_t *source, UIN
 		grandprixinfo.specialDamage += damage;
 	}
 
-	K_SetHitLagForObjects(ufo, inflictor, source, (damage / 3) + 2, true);
-	UFOCopyHitlagToPieces(ufo);
-
 	if (ufo->health == 1)
 	{
 		// Destroy the UFO parts, and make the emerald collectible!
@@ -957,7 +924,6 @@ boolean Obj_SpecialUFODamage(mobj_t *ufo, mobj_t *inflictor, mobj_t *source, UIN
 		ACS_RunCatcherScript(source);
 
 		S_StopSound(ufo);
-		S_StartSound(ufo, sfx_gbrk);
 		S_StartSound(ufo, sfx_clawk2);
 		P_StartQuake(30, 96 * ufo->scale, 0, NULL);
 
@@ -1040,12 +1006,6 @@ void Obj_PlayerUFOCollide(mobj_t *ufo, mobj_t *other)
 		const angle_t moveAngle = K_MomentumAngle(ufo);
 		const angle_t clipAngle = R_PointToAngle2(ufo->x, ufo->y, other->x, other->y);
 
-		if (AngleDelta(moveAngle, clipAngle) < ANG60)
-		{
-			// in front
-			K_StumblePlayer(other->player);
-		}
-
 		K_KartBouncing(other, ufo);
 	}
 }
@@ -1063,11 +1023,6 @@ boolean Obj_UFOEmeraldCollect(mobj_t *ufo, mobj_t *toucher)
 	}
 
 	if (ufo_collectdelay(ufo) > 0)
-	{
-		return false;
-	}
-
-	if (toucher->hitlag > 0)
 	{
 		return false;
 	}

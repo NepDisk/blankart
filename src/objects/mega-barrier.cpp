@@ -99,15 +99,7 @@ struct Barrier : Mobj
 		angle += kSpinSpeed;
 		eflags = (eflags & ~MFE_VERTICALFLIP) | (source->eflags & MFE_VERTICALFLIP);
 
-        if (K_PlayerGuard(player()))
-		{
-			renderflags &= ~RF_DONTDRAW;
-			renderflags ^= RF_ADD | RF_TRANS90;
-		}
-		else
-		{
-			renderflags |= RF_DONTDRAW;
-		}
+		renderflags |= RF_DONTDRAW;
 
 		return true;
 	}

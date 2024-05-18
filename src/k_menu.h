@@ -820,7 +820,6 @@ struct setup_player_t
 	UINT8 delay;
 	UINT16 color;
 	UINT8 mdepth;
-	boolean hitlag;
 	boolean showextra;
 
 	// Hack, save player 1's original device even if they init charsel with keyboard.

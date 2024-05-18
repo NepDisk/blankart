@@ -47,7 +47,6 @@
 
 // SRB2Kart
 #include "../k_color.h"
-#include "../k_hitlag.h" // HITLAGJITTERS
 #include "../r_fps.h"
 
 #ifdef HAVE_PNG
@@ -840,12 +839,7 @@ static void HWR_CreateBlendedTexture(patch_t *gpatch, patch_t *blendgpatch, GLMi
 
 	while (size--)
 	{
-		if (skinnum == TC_HITLAG)
-		{
-			cur->s.red = cur->s.green = cur->s.blue = K_HitlagColorValue(*image);
-			cur->s.alpha = image->s.alpha;
-		}
-		else if (skinnum == TC_BOSS)
+		if (skinnum == TC_BOSS)
 		{
 			// Turn everything below a certain threshold white
 			if ((image->s.red == image->s.green) && (image->s.green == image->s.blue) && image->s.blue < 127)
@@ -1414,21 +1408,6 @@ boolean HWR_DrawModel(gl_vissprite_t *spr)
 			R_InterpolateMobjState(spr->mobj, FRACUNIT, &interp);
 		}
 
-		// hitlag vibrating
-		if (spr->mobj->hitlag > 0 && (spr->mobj->eflags & MFE_DAMAGEHITLAG))
-		{
-			fixed_t mul = spr->mobj->hitlag * HITLAGJITTERS;
-
-			if (leveltime & 1)
-			{
-				mul = -mul;
-			}
-
-			interp.x += FixedMul(spr->mobj->momx, mul);
-			interp.y += FixedMul(spr->mobj->momy, mul);
-			interp.z += FixedMul(spr->mobj->momz, mul);
-		}
-
 		// sprite offset
 		interp.x += spr->mobj->sprxoff;
 		interp.y += spr->mobj->spryoff;
@@ -1547,10 +1526,6 @@ boolean HWR_DrawModel(gl_vissprite_t *spr)
 			if (skinnum >= 0 && !R_CanShowSkinInDemo(skinnum))
 			{
 				skinnum = TC_BLINK;
-			}
-			else if (R_ThingIsFlashing(spr->mobj))
-			{
-				skinnum = TC_HITLAG;
 			}
 			else if (spr->mobj->color && spr->mobj->colorized)
 			{

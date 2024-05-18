@@ -526,12 +526,10 @@ struct BasicFF_t
 #define DMG_NORMAL  0x00
 #define DMG_WIPEOUT 0x01 // Normal, but with extra flashy effects
 #define DMG_EXPLODE 0x02
-#define DMG_TUMBLE  0x03
+#define DMG_SQUISH  0x03
 #define DMG_STING   0x04
 #define DMG_KARMA   0x05 // Karma Bomb explosion -- works like DMG_EXPLODE, but steals half of their bumpers & deletes the rest
 #define DMG_VOLTAGE 0x06
-#define DMG_STUMBLE 0x07 // Does not award points in Battle
-#define DMG_WHUMBLE 0x08 // <-- But this one DOES!
 //// Death types - cannot be combined with damage types
 #define DMG_INSTAKILL  0x80
 #define DMG_DEATHPIT   0x81

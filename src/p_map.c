@@ -363,7 +363,6 @@ P_DoSpringExMaxMin
 
 	if (object->player)
 	{
-		K_TumbleInterrupt(object->player);
 		P_ResetPlayer(object->player);
 
 		// NOIRE: Set pogoSpring stuff... We do this AFTER Interrupting tumble and RESETTING the player, which also resets POGO STATUS.
@@ -386,8 +385,6 @@ P_DoSpringExMaxMin
 
 		object->player->springstars = max(abs(vertispeed), horizspeed) / FRACUNIT / 2;
 		object->player->springcolor = starcolor;
-
-		K_SetTireGrease(object->player, max(object->player->tiregrease, greasetics));
 	}
 }
 
@@ -521,9 +518,6 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 			{
 				raisestate = spring->info->seestate;
 
-				object->player->tumbleBounces = 1;
-				object->player->pflags &= ~PF_TUMBLESOUND;
-				object->player->tumbleHeight = 50;
 				P_SetPlayerMobjState(object->player->mo, S_KART_SPINOUT);
 
 				// FIXME: try to compensate tumbling gravity
@@ -624,10 +618,6 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 	// Ignore spectators
 	if ((g_tm.thing->player && g_tm.thing->player->spectator)
 	|| (thing->player && thing->player->spectator))
-		return BMIT_CONTINUE;
-
-	// Ignore the collision if BOTH things are in hitlag.
-	if (P_MobjIsFrozen(thing) && P_MobjIsFrozen(g_tm.thing))
 		return BMIT_CONTINUE;
 
 	if ((thing->flags & MF_NOCLIPTHING) || !(thing->flags & (MF_SOLID|MF_SPECIAL|MF_PAIN|MF_SHOOTABLE|MF_SPRING)))
@@ -823,16 +813,6 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 		if (g_tm.thing->type == MT_FLINGRING)
 			Obj_DLZRingVaccumCollide(g_tm.thing, thing);
 
-		return BMIT_CONTINUE;
-	}
-
-	if (g_tm.thing->type == MT_INSTAWHIP)
-	{
-		if (g_tm.thing->z > thing->z + thing->height)
-			return BMIT_CONTINUE; // overhead
-		if (g_tm.thing->z + g_tm.thing->height < thing->z)
-			return BMIT_CONTINUE; // underneath
-		K_InstaWhipCollide(g_tm.thing, thing);
 		return BMIT_CONTINUE;
 	}
 
@@ -1052,7 +1032,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 	if (g_tm.thing->type == MT_RANDOMITEM)
 		return BMIT_CONTINUE;
 
-	if (g_tm.thing->type != MT_PLAYER && thing->player && K_PlayerGuard(thing->player) && K_BubbleShieldCanReflect(thing, g_tm.thing))
+	if (g_tm.thing->type != MT_PLAYER && thing->player && K_BubbleShieldCanReflect(thing, g_tm.thing))
 	{
 		// see if it went over / under
 		if (g_tm.thing->z > thing->z + thing->height)
@@ -1062,7 +1042,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 
 		return K_BubbleShieldReflect(thing, g_tm.thing) ? BMIT_CONTINUE : BMIT_ABORT;
 	}
-	else if (thing->type != MT_PLAYER && g_tm.thing->player && K_PlayerGuard(g_tm.thing->player) && K_BubbleShieldCanReflect(g_tm.thing, thing))
+	else if (thing->type != MT_PLAYER && g_tm.thing->player && K_BubbleShieldCanReflect(g_tm.thing, thing))
 	{
 		// see if it went over / under
 		if (g_tm.thing->z > thing->z + thing->height)
@@ -1405,29 +1385,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 
 		if (thing->flags & MF_SHOOTABLE)
 		{
-			if (P_MobjFlip(thing) == P_MobjFlip(g_tm.thing))
-			{
-				if (P_DamageMobj(thing, g_tm.thing, g_tm.thing, 1, DMG_TUMBLE))
-				{
-					// FIXME: None of this is correct for wall spikes,
-					// but I don't feel like testing that right now.
-
-					// Increase vertical momentum for a strong effect
-					thing->momz += (g_tm.thing->height / 2) * P_MobjFlip(g_tm.thing);
-
-					// Teleport on top of the spikes
-					P_MoveOrigin(
-						thing,
-						thing->x,
-						thing->y,
-						g_tm.thing->z + (P_MobjFlip(thing) > 0 ? g_tm.thing->height : -thing->height)
-					);
-				}
-			}
-			else
-			{
 				P_DamageMobj(thing, g_tm.thing, g_tm.thing, 1, DMG_NORMAL);
-			}
 		}
 		return BMIT_CONTINUE;
 	}
@@ -1440,21 +1398,9 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 		if (g_tm.thing->z + g_tm.thing->height < thing->z)
 			return BMIT_CONTINUE; // underneath
 
-		if (g_tm.thing->player && g_tm.thing->player && g_tm.thing->player->tumbleBounces > 0)
-		{
-			return BMIT_CONTINUE;
-		}
 
-		if (!P_IsObjectOnGround(g_tm.thing) && g_tm.thing->momz * P_MobjFlip(g_tm.thing) < 0) // fell into it
-		{
-			P_DamageMobj(g_tm.thing, thing, thing, 1, DMG_TUMBLE);
-			return BMIT_CONTINUE;
-		}
-		else
-		{
-			// Do not return because solidity code comes below.
-			P_DamageMobj(g_tm.thing, thing, thing, 1, DMG_NORMAL);
-		}
+		// Do not return because solidity code comes below.
+		P_DamageMobj(g_tm.thing, thing, thing, 1, DMG_NORMAL);
 	}
 
 	if (thing->flags & MF_PUSHABLE)
@@ -1534,16 +1480,6 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 				{
 					K_EggmanTransfer(g_tm.thing->player, thing->player);
 				}
-			}
-
-			// The bump has to happen last
-			if (P_IsObjectOnGround(thing) && g_tm.thing->momz < 0 && g_tm.thing->player->trickpanel)
-			{
-				P_DamageMobj(thing, g_tm.thing, g_tm.thing, 1, DMG_TUMBLE);
-			}
-			else if (P_IsObjectOnGround(g_tm.thing) && thing->momz < 0 && thing->player->trickpanel)
-			{
-				P_DamageMobj(g_tm.thing, thing, thing, 1, DMG_TUMBLE);
 			}
 
 			if (K_KartBouncing(g_tm.thing, thing) == true)
@@ -2867,14 +2803,12 @@ increment_move
 		fixed_t x,
 		fixed_t y,
 		boolean allowdropoff,
-		fixed_t * return_stairjank,
 		TryMoveResult_t * result)
 {
 	fixed_t tryx = thing->x;
 	fixed_t tryy = thing->y;
 	fixed_t radius = thing->radius;
 	fixed_t thingtop;
-	fixed_t stairjank = 0;
 	g_tm.floatok = false;
 
 	// reset this to 0 at the start of each trymove call as it's only used here
@@ -2972,8 +2906,6 @@ increment_move
 				{
 					if (g_tm.floorstep <= maxstep)
 					{
-						if (!flipped)
-							stairjank = g_tm.floorstep;
 
 						thing->z = thing->floorz = g_tm.floorz;
 						thing->floorrover = g_tm.floorrover;
@@ -2988,8 +2920,6 @@ increment_move
 				{
 					if (g_tm.ceilingstep <= maxstep)
 					{
-						if (flipped)
-							stairjank = g_tm.ceilingstep;
 
 						thing->z = ( thing->ceilingz = g_tm.ceilingz ) - thing->height;
 						thing->ceilingrover = g_tm.ceilingrover;
@@ -3009,8 +2939,6 @@ increment_move
 
 					if (thingtop == thing->ceilingz && g_tm.ceilingz > thingtop && g_tm.ceilingz - thingtop <= maxstep)
 					{
-						if (flipped)
-							stairjank = (g_tm.ceilingz - thingtop);
 
 						thing->z = (thing->ceilingz = g_tm.ceilingz) - thing->height;
 						thing->ceilingrover = g_tm.ceilingrover;
@@ -3019,9 +2947,6 @@ increment_move
 					}
 					else if (thing->z == thing->floorz && g_tm.floorz < thing->z && thing->z - g_tm.floorz <= maxstep)
 					{
-						if (!flipped)
-							stairjank = (thing->z - g_tm.floorz);
-
 						thing->z = thing->floorz = g_tm.floorz;
 						thing->floorrover = g_tm.floorrover;
 						thing->eflags |= MFE_JUSTSTEPPEDDOWN;
@@ -3043,11 +2968,6 @@ increment_move
 		}
 	} while (tryx != x || tryy != y);
 
-	if (return_stairjank)
-	{
-		*return_stairjank = cv_ng_stairjank.value == 2 ? stairjank : 0; //NOIRE: All stairjank here is due to stepups or stepsdown, do not return the data if the cvar isn't set to accept it.
-	}
-
 	return true;
 }
 
@@ -3063,7 +2983,7 @@ boolean P_CheckMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff, T
 	hack->radius = thing->radius;
 	hack->height = thing->height;
 
-	moveok = increment_move(hack, x, y, allowdropoff, NULL, result);
+	moveok = increment_move(hack, x, y, allowdropoff, result);
 	P_RemoveMobj(hack);
 
 	return moveok;
@@ -3078,12 +2998,11 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff, Try
 	fixed_t oldx = thing->x;
 	fixed_t oldy = thing->y;
 	fixed_t startingonground = P_IsObjectOnGround(thing);
-	fixed_t stairjank = 0;
 	pslope_t *oldslope = thing->standingslope;
 	sector_t *oldsector = thing->subsector->sector;
 
 	// Is the move OK?
-	if (increment_move(thing, x, y, allowdropoff, &stairjank, result) == false)
+	if (increment_move(thing, x, y, allowdropoff, result) == false)
 	{
 		if (result != NULL)
 		{
@@ -3179,34 +3098,6 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff, Try
 		thing->terrain = NULL;
 	}
 
-	if (thing->player && K_IsRidingFloatingTop(thing->player))
-	{
-		stairjank = false;
-	}
-
-	/* FIXME: slope step down (even up) has some false
-		positives, so just ignore them entirely. */
-	if (stairjank && !oldslope && !thing->standingslope &&
-			thing->player && !thing->player->spectator)
-	{
-		/* use a shorter sound if not two tics have passed
-		 * since the last step */
-		S_ReducedVFXSound(thing, thing->player->stairjank
-				>= 16 ?  sfx_s23b : sfx_s268, NULL);
-
-		if (!thing->player->stairjank)
-		{
-			mobj_t * spark = P_SpawnMobjFromMobj(thing,
-					0, 0, 0, MT_JANKSPARK);
-			spark->fuse = 9;
-			spark->cusval = K_StairJankFlip(ANGLE_90);
-			P_SetTarget(&spark->target, thing);
-			P_SetTarget(&spark->owner, thing);
-			spark->renderflags |= RF_REDUCEVFX;
-		}
-		// Noire: This whole block of code is exact to the one in k_terrain.c for bumpy floor... but if we have stairjank here it should be due to stepups and stepdowns in increment_move, NOT sector flags.
-		thing->player->stairjank = 17; // In other words, the k_terrain.c code is mimicking this code, not the other way around.
-	}
 
 	thing->x = x;
 	thing->y = y;
@@ -4179,10 +4070,7 @@ static void P_BouncePlayerMove(mobj_t *mo, TryMoveResult_t *result)
 	// Combo avoidance!
 	if (mo->player && P_PlayerInPain(mo->player) && gametyperules & GTR_BUMPERS && mo->health == 1)
 	{
-		K_StumblePlayer(mo->player);
 		K_BumperInflate(mo->player);
-		mo->player->tumbleBounces = TUMBLEBOUNCES;
-		mo->hitlag = max(mo->hitlag, 6);
 	}
 
 	mo->momx = tmxmove;

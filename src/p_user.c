@@ -408,7 +408,7 @@ UINT8 P_FindHighestLap(void)
 //
 boolean P_PlayerInPain(const player_t *player)
 {
-	if (player->spinouttimer || (player->tumbleBounces > 0) || (player->pflags & PF_FAULT) || player->icecube.frozen)
+	if (player->spinouttimer || (player->pflags & PF_FAULT) || player->icecube.frozen)
 		return true;
 
 	return false;
@@ -1458,11 +1458,6 @@ boolean P_PlayerHitFloor(player_t *player, boolean fromAir, angle_t oldPitch, an
 				air = true;
 			}
 
-			if (K_CheckStumble(player, oldPitch, oldRoll, air) == true)
-			{
-				return false;
-			}
-
 			if (air == false && K_FastFallBounce(player) == true)
 			{
 				return false;
@@ -1889,24 +1884,6 @@ static inline boolean P_IsMomentumAngleLocked(player_t *player)
 	// animation should continue for a bit after the physics
 	// stop.
 
-	if (player->stairjank > 8)
-	{
-		const angle_t th = K_MomentumAngle(player->mo);
-		const angle_t d = AngleDelta(th, player->mo->angle);
-
-		// A larger difference between momentum and facing
-		// angles awards back control.
-		//  <45 deg: 3/4 tics
-		//  >45 deg: 2/4 tics
-		//  >90 deg: 1/4 tics
-		// >135 deg: 0/4 tics
-
-		if ((leveltime & 3) > (d / ANGLE_45))
-		{
-			return true;
-		}
-	}
-
 	if (K_IsRidingFloatingTop(player))
 	{
 		return true;
@@ -1930,11 +1907,6 @@ static void P_3dMovement(player_t *player)
 		totalthrust.z = FRACUNIT*P_MobjFlip(player->mo)/3; // A bit of extra push-back on slopes
 	else
 		totalthrust.z = FixedMul(mapobjectscale, K_GrowShrinkSpeedMul(player))*P_MobjFlip(player->mo)/3; // A bit of extra push-back on slopes, but scaled for mapobject and player size
-
-	if (K_SlopeResistance(player) == true || (!cv_ng_slopeclimb.value))
-	{
-		totalthrust.z = -(totalthrust.z);
-	}
 
 	// Get the old momentum; this will be needed at the end of the function! -SH
 	oldMagnitude = R_PointToDist2(player->mo->momx - player->cmomx, player->mo->momy - player->cmomy, 0, 0);
@@ -2482,32 +2454,6 @@ void P_MovePlayer(player_t *player)
 		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
 		player->drawangle -= max(2, spd / 6) * ANG1;
 		P_ResetPitchRoll(player->mo);
-	}
-	else if (player->tumbleBounces > 0)
-	{
-		fixed_t playerSpeed = P_AproxDistance(player->mo->momx, player->mo->momy); // maybe momz too?
-
-		const UINT8 minSpinSpeed = 4;
-		UINT8 spinSpeed = max(minSpinSpeed, min(8 + minSpinSpeed, (playerSpeed / player->mo->scale) * 2));
-
-		UINT8 rollSpeed = max(1, min(8, player->tumbleHeight / 10));
-
-		if (player->pflags & PF_TUMBLELASTBOUNCE)
-			spinSpeed = 2;
-
-		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
-		player->drawangle -= (ANGLE_11hh * spinSpeed);
-
-		player->mo->rollangle -= (ANGLE_11hh * rollSpeed);
-
-		if (player->pflags & PF_TUMBLELASTBOUNCE)
-		{
-			if (abs((signed)(player->mo->angle - player->drawangle)) < ANGLE_22h)
-				player->drawangle = player->mo->angle;
-
-			if (abs((signed)player->mo->rollangle) < ANGLE_22h)
-				player->mo->rollangle = 0;
-		}
 	}
 	else if (player->carry == CR_SLIDING)
 	{
@@ -4189,7 +4135,6 @@ void P_PlayerThink(player_t *player)
 		player->playerstate = PST_DEAD;
 
 		// hide the player sprite forever
-		player->mo->hitlag = INT32_MAX;
 		player->mo->renderflags |= RF_DONTDRAW;
 		player->mo->reappear = INFTICS; // also hides the follower
 
@@ -4210,7 +4155,6 @@ void P_PlayerThink(player_t *player)
 			P_SetTarget(&field, NULL); \
 
 		PlayerPointerErase(player->followmobj);
-		PlayerPointerErase(player->stumbleIndicator);
 		PlayerPointerErase(player->wavedashIndicator);
 		PlayerPointerErase(player->trickIndicator);
 		PlayerPointerErase(player->whip);
@@ -4562,11 +4506,6 @@ void P_PlayerThink(player_t *player)
 		player->mo->renderflags &= ~RF_DONTDRAW;
 	}
 
-	if (player->stairjank > 0)
-	{
-		player->stairjank--;
-	}
-
 	// Random skin / "ironman"
 	{
 		UINT32 skinflags = (demo.playback)
@@ -4754,7 +4693,7 @@ void P_PlayerAfterThink(player_t *player)
 	// so a lag value of 1 is exactly attached to the player.
 	K_HandleFollower(player);
 
-	if (P_MobjWasRemoved(player->mo) || (player->mo->eflags & MFE_PAUSED) == 0)
+	if (P_MobjWasRemoved(player->mo))
 	{
 		player->timeshitprev = player->timeshit;
 		player->timeshit = 0;

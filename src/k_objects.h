@@ -127,18 +127,6 @@ void Obj_LoopEndpointCollide(mobj_t *special, mobj_t *toucher);
 void Obj_BeginDropTargetMorph(mobj_t *target, skincolornum_t color);
 boolean Obj_DropTargetMorphThink(mobj_t *morph);
 
-/* Instawhip */
-void Obj_InstaWhipThink(mobj_t *whip);
-void Obj_SpawnInstaWhipRecharge(player_t *player, angle_t angleOffset);
-void Obj_InstaWhipRechargeThink(mobj_t *mobj);
-void Obj_SpawnInstaWhipReject(player_t *player);
-void Obj_InstaWhipRejectThink(mobj_t *mobj);
-
-/* Block VFX */
-void Obj_BlockRingThink(mobj_t *ring);
-void Obj_BlockBodyThink(mobj_t *body);
-void Obj_GuardBreakThink(mobj_t *fx);
-
 void Obj_ChargeAuraThink(mobj_t *aura);
 void Obj_ChargeFallThink(mobj_t *charge);
 void Obj_ChargeReleaseThink(mobj_t *release);
@@ -357,7 +345,6 @@ boolean Obj_FuelCanisterVisualThink(mobj_t *mo);
 boolean Obj_FuelCanisterEmitterThink(mobj_t *mo);
 boolean Obj_FuelCanisterThink(mobj_t *mo);
 void Obj_FuelCanisterTouch(mobj_t *special, mobj_t *toucher);
-void Obj_FuelCanisterExplosionTouch(mobj_t *special, mobj_t *toucher);
 boolean Obj_FuelCanisterExplosionThink(mobj_t *mo);
 
 /* Bustable Rocks */

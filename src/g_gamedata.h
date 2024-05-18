@@ -37,7 +37,6 @@ struct GamedataPlaytimeJson final
 	uint32_t custom;
 	uint32_t menus;
 	uint32_t statistics;
-	uint32_t tumble;
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(
 		GamedataPlaytimeJson,
@@ -51,8 +50,7 @@ struct GamedataPlaytimeJson final
 		special,
 		custom,
 		menus,
-		statistics,
-		tumble
+		statistics
 	)
 };
 
@@ -138,7 +136,6 @@ struct GamedataSkinRecordsPlaytimeJson final
 	uint32_t prisons;
 	uint32_t special;
 	uint32_t custom;
-	uint32_t tumble;
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(
 		GamedataSkinRecordsPlaytimeJson,
@@ -147,8 +144,7 @@ struct GamedataSkinRecordsPlaytimeJson final
 		battle,
 		prisons,
 		special,
-		custom,
-		tumble
+		custom
 	)
 };
 

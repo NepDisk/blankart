@@ -843,9 +843,6 @@ consvar_t cv_ng_fastfallbounce = UnsavedNetVar("ng_fastfallbounce", "On").values
 	{2, "On"},
 });
 consvar_t cv_ng_draft = UnsavedNetVar("ng_draft", "On").on_off();
-consvar_t cv_ng_tumble = UnsavedNetVar("ng_tumble", "On").on_off();
-consvar_t cv_ng_stumble = UnsavedNetVar("ng_stumble", "On").on_off();
-consvar_t cv_ng_hitlag = UnsavedNetVar("ng_hitlag", "On").on_off();
 consvar_t cv_ng_mapanger = UnsavedNetVar("ng_mapanger", "Default (2)").min_max(0, INT32_MAX, {{-1, "Disabled"}, {2, "Default (2)"}});
 consvar_t cv_ng_tripwires = UnsavedNetVar("ng_tripwires", "On").on_off().onchange(NG_Generic_OnChange);
 void NG_ForceNoPosition_OnChange(void);
@@ -857,14 +854,6 @@ void NG_Lives_OnChange(void);
 consvar_t cv_ng_lives = UnsavedNetVar("ng_lives", "On").on_off().onchange(NG_Lives_OnChange);
 consvar_t cv_ng_continuesrank = UnsavedNetVar("ng_continuesrank", "On").on_off();
 
-
-//Instawhip
-void NG_Instawhip_OnChange(void);
-consvar_t cv_ng_instawhip = UnsavedNetVar("ng_instawhip", "On").on_off().onchange(NG_Instawhip_OnChange);;
-consvar_t cv_ng_instawhipcharge = UnsavedNetVar("ng_instawhipcharge", "Default (75)").min_max(0, 1000, {{75, "Default (75)"}});
-consvar_t cv_ng_instawhiplockout = UnsavedNetVar("ng_instawhiplockout", "Default (70)").min_max(0, 1000, {{70, "Default (70)"}});
-consvar_t cv_ng_instawhipdrain = UnsavedNetVar("ng_instawhipdrain", "On").on_off();
-
 //Spindash
 void NG_Spindash_OnChange(void);
 consvar_t cv_ng_spindash = UnsavedNetVar("ng_spindash", "On").on_off().onchange(NG_Spindash_OnChange);;
@@ -874,13 +863,6 @@ consvar_t cv_ng_spindashoverheat = UnsavedNetVar("ng_spindashoverheat", "On").on
 
 //Driving
 void NG_OldPogoOverride_OnChange(void);
-consvar_t cv_ng_butteredslopes = UnsavedNetVar("ng_slopephysics", "On").on_off();
-consvar_t cv_ng_slopeclimb = UnsavedNetVar("ng_slopeclimb", "On").on_off();
-consvar_t cv_ng_stairjank = UnsavedNetVar("ng_stairjank", "All").values({
-	{0, "None"},
-	{1, "Bumpy roads only"},
-	{2, "All"},
-});
 consvar_t cv_ng_turnstyle = UnsavedNetVar("ng_turnstyle", "Vanilla").values({
 	{0, "V2 Indev"},
 	{1, "Tweaked"},

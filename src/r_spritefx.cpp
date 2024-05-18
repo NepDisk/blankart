@@ -34,11 +34,6 @@ INT32 R_ThingLightLevel(mobj_t* thing)
 				lightlevel += 255;
 			}
 		}
-		else if ((player->instaWhipCharge || player->defenseLockout) && !player->whip && (leveltime & 1))
-		{
-			// Darken on every other frame of instawhip cooldown
-			lightlevel -= 128;
-		}
 
 		if (player->pflags & PF_CASTSHADOW)
 		{
@@ -46,8 +41,7 @@ INT32 R_ThingLightLevel(mobj_t* thing)
 		}
 
 		if (!R_CanShowSkinInDemo((skin_t*)thing->skin-skins)
-		&& !thing->colorized
-		&& !thing->hitlag)
+		&& !thing->colorized)
 		{
 			lightlevel -= 128;
 		}
@@ -69,13 +63,6 @@ boolean R_SplatSlope(mobj_t* mobj, vector3_t position, pslope_t* slope)
 {
 	switch (mobj->type)
 	{
-	case MT_INSTAWHIP_RECHARGE: {
-		// Create an acute angle
-		slope->o = position;
-		FV2_Load(&slope->d, FCOS(mobj->angle) / 2, FSIN(mobj->angle) / 2);
-		slope->zdelta = FRACUNIT;
-		return true;
-	}
 
 	default:
 		break;

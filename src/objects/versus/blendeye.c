@@ -13,7 +13,6 @@
 #include "../../p_local.h"
 #include "../../m_random.h"
 #include "../../k_kart.h"
-#include "../../k_hitlag.h"
 #include "../../k_battle.h"
 #include "../../k_boss.h"
 #include "../../k_respawn.h"
@@ -546,7 +545,7 @@ void VS_BlendEye_Thinker(mobj_t *mobj)
 						if (P_MobjWasRemoved(players[i].mo))
 							continue;
 
-						if (players[i].mo->health == 0 || players[i].mo->hitlag)
+						if (players[i].mo->health == 0)
 							continue;
 
 						if (players[i].mo->z > mobj->z)
@@ -944,8 +943,6 @@ void VS_BlendEye_Thinker(mobj_t *mobj)
 
 boolean VS_BlendEye_Touched(mobj_t *special, mobj_t *toucher)
 {
-	if (toucher->hitlag > 0)
-		return false;
 
 	fixed_t thrust = FixedHypot(toucher->momx, toucher->momy);
 	angle_t ang = R_PointToAngle2(special->x, special->y, toucher->x - toucher->momx, toucher->y - toucher->momy);
@@ -1046,8 +1043,6 @@ void VS_BlendEye_Death(mobj_t *mobj)
 		P_SetMobjState(mobj->hprev, S_INVISIBLE);
 
 	mobj->flags |= MF_NOCLIP|MF_NOCLIPTHING;
-
-	K_AddHitLag(mobj, 6, true);
 }
 
 /// - AUXILLIARY OBJECTS - ///
@@ -1057,13 +1052,6 @@ boolean VS_BlendEye_Eye_Thinker(mobj_t *mobj)
 	if (P_MobjWasRemoved(mobj->target))
 	{
 		P_RemoveMobj(mobj);
-		return false;
-	}
-
-	if (mobj->target->hitlag)
-	{
-		P_InstaThrust(mobj, mobj->angle, 25*mobj->scale);
-		K_AddHitLag(mobj, mobj->target->hitlag, (mobj->target->eflags & MFE_DAMAGEHITLAG) == MFE_DAMAGEHITLAG);
 		return false;
 	}
 
@@ -1100,7 +1088,7 @@ void VS_BlendEye_Glass_Death(mobj_t *mobj)
 
 void VS_BlendEye_Eggbeater_Touched(mobj_t *t1, mobj_t *t2)
 {
-	if (t2->hitlag || (t1->health <= 0 || t2->health <= 0))
+	if ((t1->health <= 0 || t2->health <= 0))
 		return;
 
 	if (t1->z == t1->floorz)
@@ -1109,9 +1097,6 @@ void VS_BlendEye_Eggbeater_Touched(mobj_t *t1, mobj_t *t2)
 	INT32 minextravalue1 = -(P_IsObjectOnGround(t2) ? 5 : 15)*t1->scale;
 	if (t1->extravalue1 > minextravalue1)
 		t1->extravalue1 = minextravalue1;
-
-	if ((t2->player->tumbleBounces > 0) && (t2->momz > 0))
-		return;
 
 	fixed_t thrust = FixedHypot(t2->momx, t2->momy);
 	if (thrust < 20*mapobjectscale)

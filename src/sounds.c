@@ -1214,19 +1214,12 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"clawk1", false,  64, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, ""}, // SF_X8AWAYSOUND
   {"clawk2", false,  64, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, ""}, // SF_X8AWAYSOUND
 
-  // SRB2Kart - whip charge/hold
-  {"wchrg1", false,  64, 64, -1, NULL, 0,         -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"wchrg2", false,  64, 64, -1, NULL, 0,         -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-
   {"horn00", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "/"}, // HORNCODE
   {"melody", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "/"}, // Mystic Melody
   {"cdsprk", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "/"}, // Prison Egg CD sparkling
   {"monch",  false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, ""},
   {"etexpl", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "Game crash"},
   {"d4getm", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "Don't forget me"},
-
-  {"iwhp", false, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Instawhip attack
-  {"gbrk", false, 255,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Guard break!
 
   // Super Flicky Power-Up
   {"supflk", false, 255, 32, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Woodpecking - SF_NOINTERRUPT

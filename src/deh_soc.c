@@ -2750,12 +2750,6 @@ static void readcondition(UINT16 set, UINT32 id, char *word2)
 			return;
 		}
 	}
-	else if (fastcmp(params[0], "TOTALTUMBLETIME"))
-	{
-		PARAMCHECK(1);
-		ty = UC_TOTALTUMBLETIME;
-		re = get_number(params[1]);
-	}
 	else if (fastcmp(params[0], "GAMECLEAR"))
 	{
 		ty = UC_GAMECLEAR;

@@ -1559,15 +1559,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 
 	"S_WAVEDASH",
 
-	"S_INSTAWHIP",
-	"S_INSTAWHIP_RECHARGE1",
-	"S_INSTAWHIP_RECHARGE2",
-	"S_INSTAWHIP_RECHARGE3",
-	"S_INSTAWHIP_RECHARGE4",
-	"S_INSTAWHIP_REJECT",
-	"S_BLOCKRING",
-	"S_BLOCKBODY",
-
 	"S_CHARGEAURA",
 	"S_CHARGEFALL",
 	"S_CHARGEFLICKER",
@@ -2140,8 +2131,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_TRIPWIREBOOST_BLAST_TOP",
 	"S_TRIPWIREBOOST_BLAST_BOTTOM",
 
-	"S_SMOOTHLANDING",
-
 	"S_TRICKINDICATOR_OVERLAY",
 	"S_TRICKINDICATOR_UNDERLAY",
 	"S_TRICKINDICATOR_OVERLAY_ARROW",
@@ -2277,7 +2266,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_INSTASHIELDB7",
 
 	"S_POWERCLASH", // Invinc/Grow no damage collide VFX
-	"S_GUARDBREAK", // Guard break
 
 	"S_PLAYERBOMB1", // Player bomb overlay
 	"S_PLAYERBOMB2",
@@ -2618,8 +2606,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_DRAFTDUST4",
 	"S_DRAFTDUST5",
 
-	"S_TIREGREASE",
-
 	"S_OVERTIME_BULB1",
 	"S_OVERTIME_BULB2",
 	"S_OVERTIME_LASER",
@@ -2694,23 +2680,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_DEBTSPIKEC",
 	"S_DEBTSPIKED",
 	"S_DEBTSPIKEE",
-
-	// Sparks when driving on stairs
-	"S_JANKSPARK1",
-	"S_JANKSPARK2",
-	"S_JANKSPARK3",
-	"S_JANKSPARK4",
-
-	"S_HITLAG_1",
-	"S_HITLAG_2",
-	"S_HITLAG_3",
-	"S_HITLAG_4",
-	"S_HITLAG_5",
-	"S_HITLAG_6",
-	"S_HITLAG_8",
-	"S_HITLAG_9",
-	"S_HITLAG_10",
-
 
 	// Broly Ki Orb
 	"S_BROLY1",
@@ -3499,12 +3468,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_MAGICIANBOX",
 	"MT_WAVEDASH",
 
-	"MT_INSTAWHIP",
-	"MT_INSTAWHIP_RECHARGE",
-	"MT_INSTAWHIP_REJECT",
-	"MT_BLOCKRING",
-	"MT_BLOCKBODY",
-
 	"MT_CHARGEAURA",
 	"MT_CHARGEFALL",
 	"MT_CHARGEFLICKER",
@@ -3538,8 +3501,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_ITEM_DEBRIS_CLOUD_SPAWNER",
 	"MT_DRIFTELECTRICITY",
 	"MT_DRIFTELECTRICSPARK",
-	"MT_JANKSPARK",
-	"MT_HITLAG",
 
 	"MT_ROCKETSNEAKER", // Rocket sneakers
 
@@ -3614,7 +3575,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 
 	"MT_TRIPWIREBOOST",
 
-	"MT_SMOOTHLANDING",
 	"MT_TRICKINDICATOR",
 	"MT_SIDETRICK",
 	"MT_FORWARDTRICK",
@@ -3661,7 +3621,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_INSTASHIELDB",
 
 	"MT_POWERCLASH", // Invinc/Grow no damage clash VFX
-	"MT_GUARDBREAK", // Guard break
 
 	"MT_KARMAHITBOX",
 	"MT_KARMAWHEEL",
@@ -3751,7 +3710,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_GAINAX",
 	"MT_DRAFTDUST",
 	"MT_SPBDUST",
-	"MT_TIREGREASE",
 
 	"MT_OVERTIME_PARTICLE",
 	"MT_OVERTIME_CENTER",
@@ -3971,7 +3929,6 @@ const char *const MOBJFLAG_LIST[] = {
 	"DONTENCOREMAP",
 	"PICKUPFROMBELOW",
 	"NOSQUISH",
-	"NOHITLAGFORME",
 	NULL
 };
 
@@ -4024,9 +3981,7 @@ const char *const MOBJEFLAG_LIST[] = {
 	"APPLYPMOMZ", // Platform movement
 	"TRACERANGLE", // Compute and trigger on mobj angle relative to tracer
 	"JUSTBOUNCEDWALL",
-	"DAMAGEHITLAG",
 	"SLOPELAUNCHED",
-	"PAUSED", // Mobj is under the effect of hitlag
 	NULL
 };
 
@@ -4076,9 +4031,6 @@ const char *const PLAYERFLAG_LIST[] = {
 
 	"AIRFAILSAFE", // Whenever or not try the air boost
 	"TRICKDELAY", // Prevent tricks until control stick is neutral
-
-	"TUMBLELASTBOUNCE", // One more time for the funny
-	"TUMBLESOUND", // Don't play more than once
 
 	"HITFINISHLINE", // Already hit the finish line this tic
 	"WRONGWAY", // Moving the wrong way with respect to waypoints?
@@ -4719,12 +4671,10 @@ struct int_const_s const INT_CONST[] = {
 	{"DMG_NORMAL",DMG_NORMAL},
 	{"DMG_WIPEOUT",DMG_WIPEOUT},
 	{"DMG_EXPLODE",DMG_EXPLODE},
-	{"DMG_TUMBLE",DMG_TUMBLE},
+	{"DMG_SQUISH",DMG_SQUISH},
 	{"DMG_STING",DMG_STING},
 	{"DMG_KARMA",DMG_KARMA},
 	{"DMG_VOLTAGE",DMG_VOLTAGE},
-	{"DMG_STUMBLE",DMG_STUMBLE},
-	{"DMG_WHUMBLE",DMG_WHUMBLE},
 	//// Death types
 	{"DMG_INSTAKILL",DMG_INSTAKILL},
 	{"DMG_DEATHPIT",DMG_DEATHPIT},
@@ -5075,7 +5025,6 @@ struct int_const_s const INT_CONST[] = {
 	{"TC_RAINBOW",TC_RAINBOW},
 	{"TC_BLINK",TC_BLINK},
 	{"TC_DASHMODE",TC_DASHMODE},
-	{"TC_HITLAG",TC_HITLAG},
 	{"TC_INTERMISSION",TC_INTERMISSION},
 
 	// marathonmode flags
@@ -5188,10 +5137,6 @@ struct int_const_s const INT_CONST[] = {
 	{"TRICKMOMZRAMP",TRICKMOMZRAMP},
 	{"TRICKLAG",TRICKLAG},
 	{"TRICKDELAY",TRICKDELAY},
-
-	// tumble
-	{"TUMBLEBOUNCES",TUMBLEBOUNCES},
-	{"TUMBLEGRAVITY",TUMBLEGRAVITY},
 
 	{NULL,0}
 };

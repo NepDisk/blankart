@@ -457,11 +457,6 @@ void K_HandleFollower(player_t *player)
 	}
 	else // follower exists, woo!
 	{
-		if (P_MobjIsFrozen(player->follower))
-		{
-			// Don't update frames in hitlag
-			return;
-		}
 
 		// first of all, handle states following the same model as above:
 		if (player->follower->tics == 1)
@@ -741,12 +736,6 @@ void K_HandleFollower(player_t *player)
 		}
 	}
 
-	if (player->mo->hitlag)
-	{
-		player->follower->hitlag = player->mo->hitlag;
-		player->follower->eflags |= (player->mo->eflags & MFE_DAMAGEHITLAG);
-		return;
-	}
 }
 
 /*--------------------------------------------------

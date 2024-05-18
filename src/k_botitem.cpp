@@ -1464,114 +1464,6 @@ static void K_BotItemRings(const player_t *player, ticcmd_t *cmd)
 }
 
 /*--------------------------------------------------
-	static void K_BotItemInstashield(const player_t *player, ticcmd_t *cmd)
-
-		Item usage for instashield.
-
-	Input Arguments:-
-		player - Bot to do this for.
-		cmd - Bot's ticcmd to edit.
-
-	Return:-
-		None
---------------------------------------------------*/
-static void K_BotItemInstashield(const player_t *player, ticcmd_t *cmd)
-{
-	ZoneScoped;
-
-	const fixed_t radius = FixedMul(mobjinfo[MT_INSTAWHIP].radius, player->mo->scale);
-	size_t i = SIZE_MAX;
-
-	boolean nearbyThreat = false; // Someone's near enough to worry about, start charging.
-	boolean attackOpportunity = false; // Someone's close enough to hit!
-	boolean coastIsClear = true; // Nobody is nearby, let any pending charge go.
-
-	UINT8 stupidRating = MAXBOTDIFFICULTY - player->botvars.difficulty;
-	// Weak bots take a second to react on offense.
-	UINT8 reactiontime = stupidRating;
- 	// Weak bots misjudge their attack range. Purely accurate at Lv.MAX, 250% overestimate at Lv.1
-	fixed_t radiusWithError = radius + 3*(radius * stupidRating / MAXBOTDIFFICULTY)/2;
-
-	// Future work: Expand threat range versus fast pursuers.
-
-	if (leveltime < starttime || player->spindash || player->defenseLockout)
-	{
-		// Instashield is on cooldown.
-		return;
-	}
-
-	if (player->botvars.difficulty <= 7)
-	{
-		// Weak players don't whip.
-		// Weak bots don't either.
-		return;
-	}
-
-	// Find players within the instashield's range.
-	for (i = 0; i < MAXPLAYERS; i++)
-	{
-		player_t *target = NULL;
-		fixed_t dist = INT32_MAX;
-
-		if (!playeringame[i])
-		{
-			continue;
-		}
-
-		target = &players[i];
-		if (P_MobjWasRemoved(target->mo) == true
-			|| player == target
-			|| target->spectator == true
-			|| target->flashing != 0)
-		{
-			continue;
-		}
-
-		dist = P_AproxDistance(P_AproxDistance(
-			player->mo->x - target->mo->x,
-			player->mo->y - target->mo->y),
-			(player->mo->z - target->mo->z) / 4
-		);
-
-		if (dist <= 8 * radius)
-		{
-			coastIsClear = false;
-		}
-
-		if (dist <= 5 * radius)
-		{
-			nearbyThreat = true;
-		}
-
-		if (dist <= (radiusWithError + target->mo->radius))
-		{
-			attackOpportunity = true;
-			K_ItemConfirmForTarget(player, cmd, target, 1);
-		}
-	}
-
-	if (player->instaWhipCharge) // Already charging, do we stay committed?
-	{
-		cmd->buttons |= BT_ATTACK; // Keep holding, unless...
-
-		// ...there are no attackers that are even distantly threatening...
-		if (coastIsClear)
-			cmd->buttons &= ~BT_ATTACK;
-
-		// ...or we're ready to rock.
-		int instaWhipChargeTime = cv_ng_instawhipcharge.value*TICRATE/100;
-		if (attackOpportunity && player->instaWhipCharge >= (instaWhipChargeTime + reactiontime) && player->botvars.itemconfirm >= reactiontime)
-			cmd->buttons &= ~BT_ATTACK;
-	}
-	else // When should we get spooked and start a charge?
-	{
-		if (nearbyThreat)
-			cmd->buttons |= BT_ATTACK;
-	}
-
-}
-
-/*--------------------------------------------------
 	static void K_BotItemIceCube(player_t *player, ticcmd_t *cmd)
 
 		Item usage for ice cubes.
@@ -1674,11 +1566,6 @@ void K_BotItemUsage(const player_t *player, ticcmd_t *cmd, INT16 turnamt)
 		{
 			// Use rings!
 			K_BotItemRings(player, cmd);
-		}
-		else
-		{
-			// Use the instashield!
-			K_BotItemInstashield(player, cmd);
 		}
 	}
 	else
@@ -1880,7 +1767,7 @@ static void K_UpdateBotGameplayVarsItemUsageMash(player_t *player)
 --------------------------------------------------*/
 void K_UpdateBotGameplayVarsItemUsage(player_t *player)
 {
-	if (player->itemflags & IF_USERINGS && !player->instaWhipCharge)
+	if (player->itemflags & IF_USERINGS)
 	{
 		return;
 	}

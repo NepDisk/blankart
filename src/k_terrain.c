@@ -623,27 +623,6 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		S_StartSound(&sector->soundorg, sfx_s3kb1);
 	}
 
-	// Bumpy floor
-	if (terrain->flags & TRF_STAIRJANK && player->speed != 0 && cv_ng_stairjank.value > 0) //NOIRE: Only apply bumpy floor stairjank if the cvar is 1 or 2
-	{
-		/* use a shorter sound if not two tics have passed
-		 * since the last step */
-		S_ReducedVFXSound(mo, player->stairjank
-				>= 16 ?  sfx_s23b : sfx_s268, NULL);
-
-		if (player->stairjank == 0)
-		{
-			mobj_t *spark = P_SpawnMobjFromMobj(mo,
-					0, 0, 0, MT_JANKSPARK);
-			spark->fuse = 9;
-			spark->cusval = K_StairJankFlip(ANGLE_90);
-			P_SetTarget(&spark->target, mo);
-			P_SetTarget(&spark->owner, mo);
-			spark->renderflags |= RF_REDUCEVFX;
-		}
-		player->stairjank = 17;
-	}
-
 	// (Offroad is handled elsewhere!)
 }
 
@@ -1593,8 +1572,7 @@ boolean K_TerrainHasAffect(terrain_t *terrain, boolean badonly)
 {
 	if (terrain->friction > 0
 	|| terrain->offroad != 0
-	|| terrain->damageType != -1
-	|| (terrain->flags & TRF_STAIRJANK))
+	|| terrain->damageType != -1)
 		return true;
 
 	if (badonly)
@@ -1730,10 +1708,6 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	else if (stricmp(param, "sneakerPanel") == 0)
 	{
 		K_FlagBoolean(&terrain->flags, TRF_SNEAKERPANEL, val);
-	}
-	else if (stricmp(param, "bumpy") == 0 || stricmp(param, "stairJank") == 0)
-	{
-		K_FlagBoolean(&terrain->flags, TRF_STAIRJANK, val);
 	}
 	else if (stricmp(param, "tripwire") == 0)
 	{

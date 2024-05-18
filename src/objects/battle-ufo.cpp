@@ -182,26 +182,17 @@ void Obj_BattleUFODeath(mobj_t *mobj, mobj_t *inflictor)
 
 	ufo->momz = -(8*mapobjectscale)/2;
 
-	if (!P_MobjWasRemoved(inflictor) && inflictor->type == MT_INSTAWHIP &&
-		!P_MobjWasRemoved(inflictor->target) && inflictor->target->player)
-	{
-		// Just give it to the player, they earned it.
-		K_GivePowerUp(inflictor->target->player, pwrup, BATTLE_POWERUP_TIME);
-	}
-	else
-	{
-		mobj_t *drop = K_CreatePaperItem(
-			ufo->x,
-			ufo->y,
-			ufo->z + ufo->sprzoff() + (flip),
-			0,
-			flip,
-			pwrup,
-			BATTLE_POWERUP_TIME
-		);
 
-		drop->hitlag = ufo->hitlag();
-	}
+	mobj_t *drop = K_CreatePaperItem(
+		ufo->x,
+		ufo->y,
+		ufo->z + ufo->sprzoff() + (flip),
+		0,
+		flip,
+		pwrup,
+		BATTLE_POWERUP_TIME
+	);
+
 
 	if (ufo->spawner())
 	{
@@ -251,11 +242,6 @@ void Obj_BattleUFOLegThink(mobj_t *leg)
 	leg->momz = leg->target->momz;
 	leg->fuse = leg->target->fuse;
 
-	if (leg->target->hitlag)
-	{
-		leg->hitlag = leg->target->hitlag;
-		leg->eflags |= (leg->target->eflags & MFE_DAMAGEHITLAG);
-	}
 }
 
 void Obj_LinkBattleUFOSpawner(mobj_t *spawner)

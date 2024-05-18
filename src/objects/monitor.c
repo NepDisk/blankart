@@ -226,8 +226,6 @@ spawn_shard
 
 	th -= P_RandomKey(PR_ITEM_DEBRIS, ANGLE_45) - ANGLE_22h;
 
-	p->hitlag = 0;
-
 	P_Thrust(p, th, 6 * p->scale + monitor_rammingspeed(monitor));
 	p->momz = P_RandomRange(PR_ITEM_DEBRIS, 3, 10) * p->scale;
 
@@ -281,7 +279,6 @@ spawn_monitor_explosion (mobj_t *monitor)
 	for (i = 0; i < 8; ++i)
 	{
 		mobj_t *x = P_SpawnMobjFromMobj(monitor, 0, 0, 0, MT_BOOMEXPLODE);
-		x->hitlag = 0;
 		x->color = SKINCOLOR_WHITE;
 		x->momx = P_RandomRange(PR_EXPLOSION, -5, 5) * monitor->scale,
 			x->momy = P_RandomRange(PR_EXPLOSION, -5, 5) * monitor->scale,
@@ -443,8 +440,7 @@ has_state
 (		const mobj_t * mobj,
 		statenum_t state)
 {
-	return mobj->hitlag == 0 &&
-		(size_t)(mobj->state - states) == (size_t)state;
+	return (size_t)(mobj->state - states) == (size_t)state;
 }
 
 static mobj_t *
@@ -547,20 +543,8 @@ Obj_MonitorPartThink (mobj_t *part)
 		flicker(part, 2);
 	}
 
-	if (monitor->hitlag)
-	{
-		const fixed_t shake = FixedMul(
-				2 * get_damage_multiplier(monitor),
-				monitor->radius / 8);
-
-		part->sprxoff = P_AltFlip(shake, 2);
-		part->spryoff = P_AltFlip(shake, 4);
-	}
-	else
-	{
 		part->sprxoff = 0;
 		part->spryoff = 0;
-	}
 
 	switch (statenum)
 	{
@@ -636,12 +620,6 @@ Obj_MonitorGetDamage
 		damage = HEALTHFACTOR +
 			(FixedMul(weight, HEALTHFACTOR) / 9);
 
-
-		if (inflictor->player->tiregrease > 0)
-		{
-			damage *= 3; // Do 3x the damage if the player is in spring grease state
-		}
-
 		if (inflictor->scale > mapobjectscale)
 		{
 			damage = P_ScaleFromMap(damage, inflictor->scale);
@@ -649,16 +627,7 @@ Obj_MonitorGetDamage
 	}
 	else
 	{
-		if (inflictor->type == MT_INSTAWHIP)
-		{
-			damage = FRACUNIT/3;
-			if (K_IsPlayerWanted(inflictor->target->player))
-				damage = FRACUNIT; // Emerald hunting time!
-		}
-		else
-		{
 			damage = FRACUNIT; // kill instantly
-		}
 	}
 
 	return damage;
@@ -674,8 +643,6 @@ Obj_MonitorOnDamage
 	monitor_damage(monitor) = damage;
 	monitor_rammingspeed(monitor) = inflictor
 		? FixedDiv(FixedHypot(inflictor->momx, inflictor->momy), 4 * inflictor->radius) : 0;
-	monitor->hitlag =
-		3 * get_damage_multiplier(monitor) / FRACUNIT;
 	S_StartSound(monitor, sfx_kc40);
 }
 
@@ -732,10 +699,6 @@ Obj_MonitorOnDeath
 	spawn_monitor_explosion(monitor);
 
 	S_StartSound(monitor, sfx_gshcc);
-
-	// There is hitlag from being damaged, so remove
-	// tangibility RIGHT NOW.
-	monitor->flags &= ~(MF_SOLID);
 
 	if (!P_MobjWasRemoved(monitor_spot(monitor)))
 	{

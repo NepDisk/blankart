@@ -36,12 +36,6 @@ Make sure this matches the actual number of states
 #define GROW_PHYSICS_SCALE (3*FRACUNIT/2)
 #define SHRINK_PHYSICS_SCALE (3*FRACUNIT/4)
 
-#define INSTAWHIP_DURATION (12)
-#define INSTAWHIP_CHARGETIME (3*TICRATE/4)
-#define INSTAWHIP_RINGDRAINEVERY (TICRATE/2)
-#define INSTAWHIP_HOLD_DELAY (TICRATE*2)
-// MUST be longer or equal to INSTAWHIP_CHARGETIME.
-#define INSTAWHIP_TETHERBLOCK (TICRATE*4)
 #define PUNISHWINDOW (7*TICRATE/10)
 
 #define MAXCOMBOTHRUST (mapobjectscale*20)
@@ -53,11 +47,6 @@ Make sure this matches the actual number of states
 #define FLAMESHIELD_MAX (120)
 
 #define RR_PROJECTILE_FUSE (8*TICRATE)
-
-// 2023-08-26 +ang20 to Sal's OG values to make them friendlier - Tyron
-#define STUMBLE_STEEP_VAL (ANG60 + ANG20)
-#define STUMBLE_STEEP_VAL_AIR (ANG30 + ANG10 + ANG20)
-#define STUMBLE_AIRTIME TICRATE
 
 #define MAXRINGVOLUME 255
 #define MAXRINGTRANSPARENCY 255
@@ -132,20 +121,12 @@ angle_t K_MomentumAngleReal(const mobj_t *mo);
 void K_AwardPlayerRings(player_t *player, UINT16 rings, boolean overload);
 void K_DoInstashield(player_t *player);
 void K_DoPowerClash(mobj_t *t1, mobj_t *t2);
-void K_DoGuardBreak(mobj_t *t1, mobj_t *t2);
 void K_BattleAwardHit(player_t *player, player_t *victim, mobj_t *inflictor, UINT8 bumpersRemoved);
 void K_RemoveGrowShrink(player_t *player);
 boolean K_IsBigger(mobj_t *compare, mobj_t *other);
 void K_SpinPlayer(player_t *player, mobj_t *inflictor, mobj_t *source, INT32 type);
-void K_TumblePlayer(player_t *player, mobj_t *inflictor, mobj_t *source, boolean soften);
-void K_TumbleInterrupt(player_t *player);
-angle_t K_StumbleSlope(angle_t angle, angle_t pitch, angle_t roll);
-void K_StumblePlayer(player_t *player);
-boolean K_CheckStumble(player_t *player, angle_t oldPitch, angle_t oldRoll, boolean fromAir);
-void K_InitStumbleIndicator(player_t *player);
 void K_InitWavedashIndicator(player_t *player);
 void K_InitTrickIndicator(player_t *player);
-void K_UpdateStumbleIndicator(player_t *player);
 void K_UpdateWavedashIndicator(player_t *player);
 void K_UpdateTrickIndicator(player_t *player);
 INT32 K_ExplodePlayer(player_t *player, mobj_t *inflictor, mobj_t *source);
@@ -182,7 +163,6 @@ INT16 K_UpdateSteeringValue(INT16 inputSteering, INT16 destSteering);
 INT16 K_GetKartTurnValue(const player_t *player, INT16 turnvalue);
 INT32 K_GetUnderwaterTurnAdjust(const player_t *player);
 INT32 K_GetKartDriftSparkValue(const player_t *player);
-INT32 K_StairJankFlip(INT32 value);
 INT32 K_GetKartDriftSparkValueForStage(const player_t *player, UINT8 stage);
 void K_SpawnDriftBoostExplosion(player_t *player, int stage);
 void K_SpawnDriftElectricSparks(player_t *player, int color, boolean shockwave);
@@ -200,7 +180,6 @@ void K_StripItems(player_t *player);
 void K_StripOther(player_t *player);
 void K_MomentumToFacing(player_t *player);
 boolean K_ApplyOffroad(const player_t *player);
-boolean K_SlopeResistance(const player_t *player);
 fixed_t K_PlayerTripwireSpeedThreshold(const player_t *player);
 tripwirepass_t K_TripwirePassConditions(const player_t *player);
 boolean K_TripwirePass(const player_t *player);
@@ -227,7 +206,6 @@ SINT8 K_GetForwardMove(const player_t *player);
 fixed_t K_GetNewSpeed(const player_t *player);
 fixed_t K_3dKartMovement(const player_t *player);
 boolean K_PlayerEBrake(const player_t *player);
-boolean K_PlayerGuard(const player_t *player);
 SINT8 K_Sliptiding(const player_t *player);
 boolean K_FastFallBounce(player_t *player);
 fixed_t K_PlayerBaseFriction(const player_t *player, fixed_t original);
@@ -265,8 +243,6 @@ boolean K_Cooperative(void);
 
 // lat: used for when the player is in some weird state where it wouldn't be wise for it to be overwritten by another object that does similarly wacky shit.
 boolean K_isPlayerInSpecialState(player_t *p);
-
-void K_SetTireGrease(player_t *player, tic_t tics);
 
 boolean K_IsPlayingDisplayPlayer(player_t *player);
 

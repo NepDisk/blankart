@@ -88,7 +88,7 @@ void K_BossInfoTicker(void)
 			continue;
 
 		// Damaged quickly? Make it disappear immediately (making sure to match the flashing).
-		if ((bossinfo.weakspots[i].spot->hitlag > 0) && (bossinfo.weakspots[i].time > TICRATE/2))
+		if ((bossinfo.weakspots[i].time > TICRATE/2))
 			bossinfo.weakspots[i].time = (TICRATE/2) & ~(bossinfo.weakspots[i].time & 1);
 
 		// Handle counter.

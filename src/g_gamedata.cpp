@@ -61,7 +61,6 @@ void srb2::save_ng_gamedata()
 	ng.playtime.menus = gamedata->totalmenutime;
 	ng.playtime.statistics = gamedata->totaltimestaringatstatistics;
 	ng.rings.total = gamedata->totalrings;
-	ng.playtime.tumble = gamedata->totaltumbletime;
 	ng.rounds.race = gamedata->roundsplayed[GDGT_RACE];
 	ng.rounds.battle = gamedata->roundsplayed[GDGT_BATTLE];
 	ng.rounds.prisons = gamedata->roundsplayed[GDGT_PRISONS];
@@ -129,7 +128,6 @@ void srb2::save_ng_gamedata()
 		skin.records.time.prisons = memskin.records.modetimeplayed[GDGT_PRISONS];
 		skin.records.time.special = memskin.records.modetimeplayed[GDGT_SPECIAL];
 		skin.records.time.custom = memskin.records.modetimeplayed[GDGT_CUSTOM];
-		skin.records.time.tumble = memskin.records.tumbletime;
 		ng.skins[name] = std::move(skin);
 	}
 	for (auto unloadedskin = unloadedskins; unloadedskin; unloadedskin = unloadedskin->next)
@@ -471,7 +469,6 @@ void srb2::load_ng_gamedata()
 	gamedata->totalmenutime = js.playtime.menus;
 	gamedata->totaltimestaringatstatistics = js.playtime.statistics;
 	gamedata->totalrings = js.rings.total;
-	gamedata->totaltumbletime = js.playtime.tumble;
 	gamedata->roundsplayed[GDGT_RACE] = js.rounds.race;
 	gamedata->roundsplayed[GDGT_BATTLE] = js.rounds.battle;
 	gamedata->roundsplayed[GDGT_PRISONS] = js.rounds.prisons;
@@ -584,7 +581,6 @@ void srb2::load_ng_gamedata()
 		dummyrecord.modetimeplayed[GDGT_PRISONS] = skinpair.second.records.time.prisons;
 		dummyrecord.modetimeplayed[GDGT_SPECIAL] = skinpair.second.records.time.special;
 		dummyrecord.modetimeplayed[GDGT_CUSTOM] = skinpair.second.records.time.custom;
-		dummyrecord.tumbletime = skinpair.second.records.time.tumble;
 
 		if (skin != -1)
 		{

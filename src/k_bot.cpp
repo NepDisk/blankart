@@ -931,10 +931,7 @@ static botprediction_t *K_CreateBotPrediction(const player_t *player)
 
 	const precise_t time = I_GetPreciseTime();
 
-	// Stair janking makes it harder to steer, so attempt to steer harder.
-	const UINT8 jankDiv = (player->stairjank > 0) ? 4 : 1;
-
-	const INT16 handling = K_GetKartTurnValue(player, KART_FULLTURN) / jankDiv; // Reduce prediction based on how fast you can turn
+	const INT16 handling = K_GetKartTurnValue(player, KART_FULLTURN); // Reduce prediction based on how fast you can turn
 
 	const tic_t futuresight = (TICRATE * KART_FULLTURN) / std::max<INT16>(1, handling); // How far ahead into the future to try and predict
 	const fixed_t speed = K_BotSpeedScaled(player, P_AproxDistance(player->mo->momx, player->mo->momy));
@@ -1071,7 +1068,7 @@ static UINT8 K_TrySpindash(const player_t *player, ticcmd_t *cmd)
 
 	const INT32 angleDiff = AngleDelta(player->mo->angle, K_MomentumAngleReal(player->mo));
 
-	if (player->spindashboost || player->tiregrease // You just released a spindash, you don't need to try again yet, jeez.
+	if (player->spindashboost // You just released a spindash, you don't need to try again yet, jeez.
 		|| P_IsObjectOnGround(player->mo) == false) // Not in a state where we want 'em to spindash.
 	{
 		return 0;
@@ -1134,26 +1131,6 @@ static UINT8 K_TrySpindash(const player_t *player, ticcmd_t *cmd)
 			cmd->bot.spindashconfirm++; \
 		} \
 	}
-
-		if (K_SlopeResistance(player) == false && player->mo->standingslope != nullptr)
-		{
-			const pslope_t *slope = player->mo->standingslope;
-
-			if ((slope->flags & SL_NOPHYSICS) == 0 && abs(slope->zdelta) >= FRACUNIT/21)
-			{
-				const fixed_t speedPercent = FixedDiv(player->speed, 20 * player->mo->scale);
-				fixed_t slopeDot = 0;
-				angle_t angle = K_MomentumAngle(player->mo) - slope->xydirection;
-
-				if (P_MobjFlip(player->mo) * slope->zdelta < 0)
-				{
-					angle ^= ANGLE_180;
-				}
-
-				slopeDot = FINECOSINE(angle >> ANGLETOFINESHIFT);
-				uphill = ((slopeDot + (speedPercent / 2)) < -FRACUNIT/2);
-			}
-		}
 
 		constexpr fixed_t minimum_offroad = (3 << FRACBITS) >> 1; // Do not spindash in weak offroad
 		AddForCondition(K_ApplyOffroad(player) == true && player->offroad > minimum_offroad); // Slowed by offroad
@@ -1331,57 +1308,6 @@ static void K_BotTrick(const player_t *player, ticcmd_t *cmd, const botcontrolle
 }
 
 /*--------------------------------------------------
-	static angle_t K_BotSmoothLanding(const player_t *player, angle_t destangle)
-
-		Calculates a new destination angle while in the air,
-		to be able to successfully smooth land.
-
-	Input Arguments:-
-		player - Bot player to check.
-		destangle - Previous destination angle.
-
-	Return:-
-		New destination angle.
---------------------------------------------------*/
-static angle_t K_BotSmoothLanding(const player_t *player, angle_t destangle)
-{
-	ZoneScoped;
-
-	angle_t newAngle = destangle;
-	boolean air = !P_IsObjectOnGround(player->mo);
-	angle_t steepVal = air ? STUMBLE_STEEP_VAL_AIR : STUMBLE_STEEP_VAL;
-	angle_t slopeSteep = std::max<angle_t>(AngleDelta(player->mo->pitch, 0), AngleDelta(player->mo->roll, 0));
-
-	if (slopeSteep > steepVal)
-	{
-		fixed_t pitchMul = -FINESINE(destangle >> ANGLETOFINESHIFT);
-		fixed_t rollMul = FINECOSINE(destangle >> ANGLETOFINESHIFT);
-		angle_t testAngles[2];
-		angle_t testDeltas[2];
-		UINT8 i;
-
-		testAngles[0] = R_PointToAngle2(0, 0, rollMul, pitchMul);
-		testAngles[1] = R_PointToAngle2(0, 0, -rollMul, -pitchMul);
-
-		for (i = 0; i < 2; i++)
-		{
-			testDeltas[i] = AngleDelta(testAngles[i], destangle);
-		}
-
-		if (testDeltas[1] < testDeltas[0])
-		{
-			return testAngles[1];
-		}
-		else
-		{
-			return testAngles[0];
-		}
-	}
-
-	return newAngle;
-}
-
-/*--------------------------------------------------
 	static INT32 K_HandleBotTrack(const player_t *player, ticcmd_t *cmd, botprediction_t *predict)
 
 		Determines inputs for standard track driving.
@@ -1405,8 +1331,6 @@ static INT32 K_HandleBotTrack(const player_t *player, ticcmd_t *cmd, botpredicti
 	INT32 anglediff;
 
 	I_Assert(predict != nullptr);
-
-	destangle = K_BotSmoothLanding(player, destangle);
 
 	moveangle = player->mo->angle + K_GetUnderwaterTurnAdjust(player);
 	anglediff = AngleDeltaSigned(moveangle, destangle);
@@ -1539,8 +1463,6 @@ static INT32 K_HandleBotReverse(const player_t *player, ticcmd_t *cmd, botpredic
 			break;
 		}
 	}
-
-	destangle = K_BotSmoothLanding(player, destangle);
 
 	// Calculate turn direction first.
 	moveangle = player->mo->angle + K_GetUnderwaterTurnAdjust(player);
@@ -2061,7 +1983,7 @@ void K_UpdateBotGameplayVars(player_t *player)
 
 	player->botvars.turnconfirm += player->cmd.bot.turnconfirm;
 
-	if (player->spindashboost || player->tiregrease // You just released a spindash, you don't need to try again yet, jeez.
+	if (player->spindashboost // You just released a spindash, you don't need to try again yet, jeez.
 		|| P_IsObjectOnGround(player->mo) == false) // Not in a state where we want 'em to spindash.
 	{
 		player->botvars.spindashconfirm = 0;

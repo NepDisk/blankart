@@ -634,7 +634,7 @@ void ClearFakePlayerSkin(player_t* player)
 	if ((flags & SF_IRONMAN) && !P_MobjWasRemoved(player->mo))
 	{
 		SetFakePlayerSkin(player, skinid);
-		if (player->spectator == false && player->mo->hitlag == 0)
+		if (player->spectator == false)
 		{
 			S_StartSound(player->mo, sfx_s3k9f);
 			K_SpawnMagicianParticles(player->mo, 5);

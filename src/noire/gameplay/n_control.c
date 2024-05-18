@@ -61,11 +61,6 @@ INT16 N_GetKartDriftValue(const player_t* player, fixed_t countersteer)
 	basedrift = (83 * player->drift) - (((driftweight - 14) * player->drift) / 5); // 415 - 303
 	driftadjust = abs((252 - driftweight) * player->drift / 5);
 
-	if (player->tiregrease > 0) // Buff drift-steering while in greasemode
-	{
-		basedrift += (basedrift / greasetics) * player->tiregrease;
-	}
-
 	if (player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER) && cv_ng_underwaterhandling.value)
 	{
 		countersteer = FixedMul(countersteer, 3 * FRACUNIT / 2);

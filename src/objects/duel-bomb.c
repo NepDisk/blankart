@@ -86,7 +86,7 @@ void Obj_DuelBombTouch(mobj_t *bomb, mobj_t *toucher)
 		return;
 	}
 
-	P_DamageMobj(toucher, bomb, bomb, 1, DMG_TUMBLE);
+	P_DamageMobj(toucher, bomb, bomb, 1, DMG_WIPEOUT);
 	P_KillMobj(bomb, toucher, toucher, DMG_NORMAL);
 }
 

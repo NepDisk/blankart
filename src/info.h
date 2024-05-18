@@ -862,9 +862,6 @@ typedef enum sprite
 	SPR_SLPT, // Wavedash indicator
 	SPR_TRBS, // Trickdash indicator
 
-	SPR_IWHP, // Instawhip
-	SPR_WPRE, // Instawhip Recharge
-	SPR_WPRJ, // Instawhip Reject
 	SPR_GRNG, // Guard ring
 	SPR_GBDY, // Guard body
 
@@ -885,16 +882,6 @@ typedef enum sprite
 	SPR_DRWS, // Drift dust sparks
 	SPR_DREL, // Drift electricity
 	SPR_DRES, // Drift electric sparks
-	SPR_JANK, // Stair janking sparks
-	SPR_HFX1, // Hitlag stage 1
-	SPR_HFX2, // Hitlag stage 2
-	SPR_HFX3, // Hitlag stage 3
-	SPR_HFX4, // Hitlag stage 4
-	SPR_HFX5, // Hitlag stage 5
-	SPR_HFX6, // Hitlag stage 6
-	SPR_HFX8, // Hitlag stage 8
-	SPR_HFX9, // Hitlag stage 9
-	SPR_HFXX, // Hitlag stage 10
 
 	// Kart Items
 	SPR_RSHE, // Rocket sneaker
@@ -1011,7 +998,6 @@ typedef enum sprite
 	SPR_ISTB, // instashield layer B
 
 	SPR_PWCL, // Invinc/grow clash VFX
-	SPR_GBRK, // Guard break
 
 	SPR_ITEM,
 	SPR_ITMO,
@@ -2581,15 +2567,6 @@ typedef enum state
 
 	S_WAVEDASH,
 
-	S_INSTAWHIP,
-	S_INSTAWHIP_RECHARGE1,
-	S_INSTAWHIP_RECHARGE2,
-	S_INSTAWHIP_RECHARGE3,
-	S_INSTAWHIP_RECHARGE4,
-	S_INSTAWHIP_REJECT,
-	S_BLOCKRING,
-	S_BLOCKBODY,
-
 	S_CHARGEAURA,
 	S_CHARGEFALL,
 	S_CHARGEFLICKER,
@@ -3162,8 +3139,6 @@ typedef enum state
 	S_TRIPWIREBOOST_BLAST_TOP,
 	S_TRIPWIREBOOST_BLAST_BOTTOM,
 
-	S_SMOOTHLANDING,
-
 	S_TRICKINDICATOR_OVERLAY,
 	S_TRICKINDICATOR_UNDERLAY,
 	S_TRICKINDICATOR_OVERLAY_ARROW,
@@ -3299,7 +3274,6 @@ typedef enum state
 	S_INSTASHIELDB7,
 
 	S_POWERCLASH, // Grow/Invinc clash VFX
-	S_GUARDBREAK,
 
 	S_PLAYERBOMB1, // Karma player overlays
 	S_PLAYERBOMB2,
@@ -3644,8 +3618,6 @@ typedef enum state
 	S_DRAFTDUST4,
 	S_DRAFTDUST5,
 
-	S_TIREGREASE,
-
 	S_OVERTIME_BULB1,
 	S_OVERTIME_BULB2,
 	S_OVERTIME_LASER,
@@ -3718,21 +3690,6 @@ typedef enum state
 	S_DEBTSPIKEC,
 	S_DEBTSPIKED,
 	S_DEBTSPIKEE,
-
-	S_JANKSPARK1,
-	S_JANKSPARK2,
-	S_JANKSPARK3,
-	S_JANKSPARK4,
-
-	S_HITLAG_1,
-	S_HITLAG_2,
-	S_HITLAG_3,
-	S_HITLAG_4,
-	S_HITLAG_5,
-	S_HITLAG_6,
-	S_HITLAG_8,
-	S_HITLAG_9,
-	S_HITLAG_10,
 
 	// Broly Ki Orb
 	S_BROLY1,
@@ -4548,12 +4505,6 @@ typedef enum mobj_type
 	MT_MAGICIANBOX,
 	MT_WAVEDASH,
 
-	MT_INSTAWHIP,
-	MT_INSTAWHIP_RECHARGE,
-	MT_INSTAWHIP_REJECT,
-	MT_BLOCKRING,
-	MT_BLOCKBODY,
-
 	MT_CHARGEAURA,
 	MT_CHARGEFALL,
 	MT_CHARGEFLICKER,
@@ -4587,8 +4538,6 @@ typedef enum mobj_type
 	MT_ITEM_DEBRIS_CLOUD_SPAWNER,
 	MT_DRIFTELECTRICITY,
 	MT_DRIFTELECTRICSPARK,
-	MT_JANKSPARK,
-	MT_HITLAG,
 
 	MT_ROCKETSNEAKER,
 
@@ -4663,7 +4612,6 @@ typedef enum mobj_type
 
 	MT_TRIPWIREBOOST,
 
-	MT_SMOOTHLANDING,
 	MT_TRICKINDICATOR,
 	MT_SIDETRICK,
 	MT_FORWARDTRICK,
@@ -4710,7 +4658,6 @@ typedef enum mobj_type
 	MT_INSTASHIELDB,
 
 	MT_POWERCLASH, // Grow/Invinc clash VFX
-	MT_GUARDBREAK,
 
 	MT_KARMAHITBOX,
 	MT_KARMAWHEEL,
@@ -4800,7 +4747,6 @@ typedef enum mobj_type
 	MT_GAINAX,
 	MT_DRAFTDUST,
 	MT_SPBDUST,
-	MT_TIREGREASE,
 
 	MT_OVERTIME_PARTICLE,
 	MT_OVERTIME_CENTER,

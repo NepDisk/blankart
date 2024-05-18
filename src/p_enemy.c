@@ -12221,7 +12221,7 @@ void A_SpecialStageBombExplode(mobj_t *actor)
 	if (LUA_CallAction(A_SPECIALSTAGEBOMBEXPLODE, actor))
 		return;
 
-	K_SpawnLandMineExplosion(actor, SKINCOLOR_KETCHUP, actor->hitlag);
+	K_SpawnLandMineExplosion(actor, SKINCOLOR_KETCHUP, 0);
 	P_StartQuakeFromMobj(TICRATE/6, 24 * actor->scale, 512 * mapobjectscale, actor);
 }
 

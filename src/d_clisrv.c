@@ -2500,7 +2500,6 @@ void CL_ClearPlayer(INT32 playernum)
 		// These are mostly subservient to the player, and may not clean themselves up.
 		PlayerPointerRemove(players[playernum].mo);
 		PlayerPointerRemove(players[playernum].followmobj);
-		PlayerPointerRemove(players[playernum].stumbleIndicator);
 		PlayerPointerRemove(players[playernum].wavedashIndicator);
 		PlayerPointerRemove(players[playernum].trickIndicator);
 
