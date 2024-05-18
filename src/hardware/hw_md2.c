@@ -1303,9 +1303,9 @@ static void adjustTextureCoords(model_t *model, patch_t *patch)
 			numVertices = mesh->numTriangles * 3;
 		else
 			numVertices = mesh->numVertices;
-		
-		if (numVertices == 0)
-			return;
+
+		// yes this crap can happen after renderer switching
+		if (numVertices == 0) continue;
 
 		// if originaluvs points to uvs, we need to allocate new memory for adjusted uvs
 		// the old uvs are kept around for use in possible readjustments
