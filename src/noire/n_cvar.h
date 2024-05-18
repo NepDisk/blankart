@@ -42,7 +42,6 @@ extern consvar_t cv_ng_oldorbinaut;
 extern consvar_t cv_ng_oldjawz;
 
 //Mechanics
-extern consvar_t cv_ng_fastfallbounce;
 extern consvar_t cv_ng_draft;
 extern consvar_t cv_ng_mapanger;
 extern consvar_t cv_ng_tripwires;
@@ -51,17 +50,8 @@ extern consvar_t cv_ng_continuesrank;
 extern consvar_t cv_ng_dospecialstage;
 extern consvar_t cv_ng_forcenoposition;
 
-//Spindash
-extern consvar_t cv_ng_spindash;
-extern consvar_t cv_ng_spindashthreshold;
-extern consvar_t cv_ng_spindashcharge;
-extern consvar_t cv_ng_spindashoverheat;
-
 //Driving
-extern consvar_t cv_ng_turnstyle;
 extern consvar_t cv_ng_oldpogooverride;
-extern consvar_t cv_ng_underwaterhandling;
-extern consvar_t cv_ng_nophysicsflag;
 
 //Bots
 extern consvar_t cv_ng_botrubberbandboost;
@@ -74,7 +64,6 @@ extern consvar_t cv_ng_charsetrivals;
 
 void NG_Generic_OnChange(void);
 void NG_Rings_OnChange(void);
-void NG_Spindash_OnChange(void);
 void NG_Lives_OnChange(void);
 void NG_OldPogoOverride_OnChange(void);
 void NG_Rivals_OnChange(void);

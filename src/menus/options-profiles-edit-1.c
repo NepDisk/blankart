@@ -244,8 +244,8 @@ void M_ProfileDeviceSelect(INT32 choice)
 	optionsmenu.lastkey = 0;
 	optionsmenu.keyheldfor = 0;
 
-	optionsmenu.contx = optionsmenu.tcontx = controlleroffsets[gc_a][0];
-	optionsmenu.conty = optionsmenu.tconty = controlleroffsets[gc_a][1];
+	optionsmenu.contx = optionsmenu.tcontx = controlleroffsets[gc_accel][0];
+	optionsmenu.conty = optionsmenu.tconty = controlleroffsets[gc_accel][1];
 
 	M_SetupNextMenu(&OPTIONS_ProfileControlsDef, false);	// Don't set device here anymore.
 }

@@ -456,13 +456,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT16(save->p, players[i].springcolor);
 		WRITEUINT8(save->p, players[i].dashpadcooldown);
 
-		WRITEUINT16(save->p, players[i].spindash);
-		WRITEFIXED(save->p, players[i].spindashspeed);
-		WRITEUINT8(save->p, players[i].spindashboost);
-
-		WRITEFIXED(save->p, players[i].fastfall);
-		WRITEFIXED(save->p, players[i].fastfallBase);
-
 		WRITEUINT8(save->p, players[i].numboosts);
 		WRITEFIXED(save->p, players[i].boostpower);
 		WRITEFIXED(save->p, players[i].speedboost);
@@ -685,7 +678,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT32(save->p, players[i].botvars.itemdelay);
 		WRITEUINT32(save->p, players[i].botvars.itemconfirm);
 		WRITESINT8(save->p, players[i].botvars.turnconfirm);
-		WRITEUINT32(save->p, players[i].botvars.spindashconfirm);
 		WRITEUINT32(save->p, players[i].botvars.respawnconfirm);
 		WRITEUINT8(save->p, players[i].botvars.roulettePriority);
 		WRITEUINT32(save->p, players[i].botvars.rouletteTimeout);
@@ -1058,13 +1050,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].springcolor = READUINT16(save->p);
 		players[i].dashpadcooldown = READUINT8(save->p);
 
-		players[i].spindash = READUINT16(save->p);
-		players[i].spindashspeed = READFIXED(save->p);
-		players[i].spindashboost = READUINT8(save->p);
-
-		players[i].fastfall = READFIXED(save->p);
-		players[i].fastfallBase = READFIXED(save->p);
-
 		players[i].numboosts = READUINT8(save->p);
 		players[i].boostpower = READFIXED(save->p);
 		players[i].speedboost = READFIXED(save->p);
@@ -1287,7 +1272,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].botvars.itemdelay = READUINT32(save->p);
 		players[i].botvars.itemconfirm = READUINT32(save->p);
 		players[i].botvars.turnconfirm = READSINT8(save->p);
-		players[i].botvars.spindashconfirm = READUINT32(save->p);
 		players[i].botvars.respawnconfirm = READUINT32(save->p);
 		players[i].botvars.roulettePriority = READUINT8(save->p);
 		players[i].botvars.rouletteTimeout = READUINT32(save->p);

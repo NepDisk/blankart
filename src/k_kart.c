@@ -857,7 +857,6 @@ static void K_PlayerJustBumped(player_t *player)
 
 	player->justbumped = bumptime;
 	player->noEbrakeMagnet = ebraketime;
-	player->spindash = 0;
 
 	// If spinouttimer is not set yet but could be set later,
 	// this lets the bump still trigger wipeout friction. If
@@ -1755,7 +1754,7 @@ void K_SpawnDashDustRelease(player_t *player)
 	if (!P_IsObjectOnGround(player->mo))
 		return;
 
-	if (!player->speed && !player->startboost && !player->spindash && !player->dropdashboost)
+	if (!player->speed && !player->startboost && !player->dropdashboost)
 		return;
 
 	travelangle = player->mo->angle;
@@ -2180,7 +2179,7 @@ void K_SpawnMagicianParticles(mobj_t *mo, int spread)
 		dust = P_SpawnMobjFromMobjUnscaled(mo,
 			FixedMul(mo->radius / 4, FINECOSINE(ang >> ANGLETOFINESHIFT)),
 			FixedMul(mo->radius / 4, FINESINE(ang >> ANGLETOFINESHIFT)),
-			(target->height / 4) + target->sprzoff, (i%3 == 0) ? MT_SIGNSPARKLE : MT_SPINDASHDUST
+			(target->height / 4) + target->sprzoff, (i%3 == 0) ? MT_SIGNSPARKLE : MT_DUST
 		);
 		flip = P_MobjFlip(dust);
 
@@ -3351,37 +3350,6 @@ static fixed_t K_FlameShieldDashVar(INT32 val)
 	return (3*FRACUNIT/4) + (((val * FRACUNIT) / TICRATE));
 }
 
-INT16 K_GetSpindashChargeTime(const player_t *player)
-{
-	// more charge time for higher speed
-	// Tails = 1.7s, Knuckles = 2.2s, Metal = 2.7s
-	return cv_ng_spindashcharge.value == 0
-		? ((player->kartspeed + 8) * TICRATE) / 6
-		: cv_ng_spindashcharge.value;
-}
-
-fixed_t K_GetSpindashChargeSpeed(const player_t *player)
-{
-	// more speed for higher weight & speed
-	// Tails = +16.94%, Fang = +34.94%, Mighty = +34.94%, Metal = +43.61%
-	// (can be higher than this value when overcharged)
-
-	// The above comment is now strictly incorrect and I can't be assed to do the math properly.
-	// 2.2 introduces a power fudge to compensate for the removal of spindash overcharge. -Tyron
-	fixed_t val = (10*FRACUNIT/277) + (((player->kartspeed + player->kartweight) + 2) * FRACUNIT) / 45;
-
-	// 2.2 - Improved Spindash
-	if (!G_CompatLevel(0x000A))
-	{
-		if (gametyperules & GTR_CIRCUIT)
-			val = 5 * val / 4;
-	}
-
-	// Old behavior before desperation spindash
-	// return (gametyperules & GTR_CLOSERPLAYERS) ? (4 * val) : val;
-	return val;
-}
-
 static fixed_t K_RingDurationBoost(const player_t *player)
 {
 	fixed_t ret = FRACUNIT;
@@ -3501,19 +3469,6 @@ static void K_GetKartBoostPower(player_t *player)
 			),
 			2*SLIPTIDEHANDLING/5
 		);  // + 80% top speed (peak), +400% acceleration (peak), +20% handling
-	}
-
-	if (player->spindashboost) // Spindash boost
-	{
-		const fixed_t MAXCHARGESPEED = K_GetSpindashChargeSpeed(player);
-		const fixed_t exponent = FixedMul(player->spindashspeed, player->spindashspeed);
-
-		// character & charge dependent
-		ADDBOOST(
-			FixedMul(MAXCHARGESPEED, exponent), // + 0 to K_GetSpindashChargeSpeed()% top speed
-			(40 * exponent), // + 0% to 4000% acceleration
-			0 // + 0% handling
-		);
 	}
 
 	if (player->startboost) // Startup Boost
@@ -3834,7 +3789,7 @@ SINT8 K_GetForwardMove(const player_t *player)
 		return 0;
 	}
 
-	if (player->sneakertimer || player->spindashboost
+	if (player->sneakertimer
 		|| (((gametyperules & (GTR_ROLLINGSTART|GTR_CIRCUIT)) == (GTR_ROLLINGSTART|GTR_CIRCUIT)) && (leveltime < TICRATE/2)))
 	{
 		return MAXPLMOVE;
@@ -6447,7 +6402,6 @@ void K_DoPogoSpring(mobj_t *mo, fixed_t vertispeed, UINT8 sound)
 		mo->player->trickboostpower = max(FixedDiv(mo->player->speed, K_GetKartSpeed(mo->player, false, false)) - FRACUNIT, 0)*125/100;
 		mo->player->trickboostpower = FixedDiv(mo->player->trickboostpower, K_GrowShrinkSpeedMul(mo->player));
 		//CONS_Printf("Got boost: %d%\n", mo->player->trickboostpower*100 / FRACUNIT);
-		mo->player->fastfall = 0;
 	}
 
 	if (dontapplymomz == false)
@@ -7615,11 +7569,6 @@ static void K_UpdateEngineSounds(player_t *player)
 		// Dropdashing
 		targetsnd = ((buttons & BT_ACCELERATE) ? 12 : 0);
 	}
-	else if (K_PlayerEBrake(player) == true)
-	{
-		// Spindashing
-		targetsnd = ((buttons & BT_DRIFT) ? 12 : 0);
-	}
 	else
 	{
 		// Average out the value of forwardmove and the speed that you're moving at.
@@ -8539,16 +8488,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->infinitether--;
 	}
 
-	if (player->spindashboost)
-	{
-		player->spindashboost--;
-
-		if (player->spindashboost <= 0)
-		{
-			player->spindashspeed = player->spindashboost = 0;
-		}
-	}
-
 	if (player->invincibilitytimer && (player->ignoreAirtimeLeniency > 0 || onground == true || K_PowerUpRemaining(player, POWERUP_SMONITOR)))
 		player->invincibilitytimer--;
 
@@ -8651,7 +8590,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->driftboost = 0;
 		player->strongdriftboost = 0;
 		player->sneakertimer = 0;
-		player->spindashboost = 0;
 		player->flashing = TICRATE/2;
 		player->ringboost = 0;
 		player->driftboost = player->strongdriftboost = 0;
@@ -8981,12 +8919,10 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 			if (leveltime & 1)
 				K_SpawnGardenTopSpeedLines(player);
 		}
-		// Only allow drifting while NOT trying to do an spindash input.
 		else if (K_PressingEBrake(player) == false)
 		{
 			player->pflags |= PF_DRIFTINPUT;
 		}
-		// else, keep the previous value, because it might be brake-drifting.
 	}
 	else
 	{
@@ -9852,79 +9788,6 @@ boolean K_CheckPlayersRespawnColliding(INT32 playernum, fixed_t x, fixed_t y)
 	return true;
 }
 
-// countersteer is how strong the controls are telling us we are turning
-// turndir is the direction the controls are telling us to turn, -1 if turning right and 1 if turning left
-static INT16 K_GetKartDriftValue(const player_t *player, fixed_t countersteer)
-{
-	INT16 basedrift, driftadjust;
-	fixed_t driftweight = player->kartweight*14; // 12
-
-	if (player->drift == 0 || !P_IsObjectOnGround(player->mo))
-	{
-		// If they aren't drifting or on the ground, this doesn't apply
-		return 0;
-	}
-
-	if (player->pflags & PF_DRIFTEND)
-	{
-		// Drift has ended and we are tweaking their angle back a bit
-		return -266*player->drift;
-	}
-
-	basedrift = (83 * player->drift) - (((driftweight - 14) * player->drift) / 5); // 415 - 303
-	driftadjust = abs((252 - driftweight) * player->drift / 5);
-
-#if 0
-	if (player->mo->eflags & MFE_UNDERWATER)
-	{
-		countersteer = FixedMul(countersteer, 3*FRACUNIT/2);
-	}
-#endif
-
-	return basedrift + FixedMul(driftadjust, countersteer);
-}
-
-INT16 K_UpdateSteeringValue(INT16 inputSteering, INT16 destSteering)
-{
-	// player->steering is the turning value, but with easing applied.
-	// Keeps micro-turning from old easing, but isn't controller dependent.
-
-	INT16 amount = KART_FULLTURN/3;
-	INT16 diff = destSteering - inputSteering;
-	INT16 outputSteering = inputSteering;
-
-
-	// We switched steering directions, lighten up on easing for a more responsive countersteer.
-	// (Don't do this for steering 0, let digital inputs tap-adjust!)
-	if ((inputSteering > 0 && destSteering < 0) || (inputSteering < 0 && destSteering > 0))
-	{
-		// Don't let small turns in direction X allow instant turns in direction Y.
-		INT16 countersteer = min(KART_FULLTURN, abs(inputSteering));  // The farthest we should go is to 0 -- neutral.
-		amount = max(countersteer, amount); // But don't reduce turning strength from baseline either.
-	}
-
-
-	if (abs(diff) <= amount)
-	{
-		// Reached the intended value, set instantly.
-		outputSteering = destSteering;
-	}
-	else
-	{
-		// Go linearly towards the value we wanted.
-		if (diff < 0)
-		{
-			outputSteering -= amount;
-		}
-		else
-		{
-			outputSteering += amount;
-		}
-	}
-
-	return outputSteering;
-}
-
 static fixed_t K_GetUnderwaterStrafeMul(const player_t *player)
 {
 	const fixed_t minSpeed = 11 * player->mo->scale;
@@ -9933,250 +9796,6 @@ static fixed_t K_GetUnderwaterStrafeMul(const player_t *player)
 	baseline = 2 * K_GetKartSpeed(player, true, true) / 3;
 
 	return max(0, FixedDiv(max(player->speed, minSpeed) - minSpeed, baseline - minSpeed));
-}
-
-INT16 K_GetKartTurnValue(const player_t *player, INT16 turnvalue)
-{
-	fixed_t turnfixed = turnvalue * FRACUNIT;
-
-	fixed_t currentSpeed = 0;
-	fixed_t p_maxspeed = INT32_MAX, p_speed = INT32_MAX;
-
-	fixed_t weightadjust = INT32_MAX;
-
-	if (player->mo == NULL || P_MobjWasRemoved(player->mo) || player->spectator || objectplacing)
-	{
-		// Invalid object, or incorporeal player. Return the value exactly.
-		return turnvalue;
-	}
-
-	if (leveltime < introtime)
-	{
-		// No turning during the intro
-		return 0;
-	}
-
-	if (player->respawn.state == RESPAWNST_MOVE)
-	{
-		// No turning during respawn
-		return 0;
-	}
-
-	// Staff ghosts - direction-only trickpanel behavior
-	if (G_CompatLevel(0x000A) || K_PlayerUsesBotMovement(player))
-	{
-		if (player->trickpanel == TRICKSTATE_READY || player->trickpanel == TRICKSTATE_FORWARD)
-		{
-			// Forward trick or rising from trickpanel
-			return 0;
-		}
-	}
-
-	if (player->justDI > 0)
-	{
-		// No turning until you let go after DI-ing.
-		return 0;
-	}
-
-	if (Obj_PlayerRingShooterFreeze(player) == true)
-	{
-		// No turning while using Ring Shooter
-		return 0;
-	}
-
-	currentSpeed = FixedHypot(player->mo->momx, player->mo->momy);
-
-	if ((currentSpeed <= 0) // Not moving
-	&& (K_PressingEBrake(player) == false) // Not e-braking
-	&& (player->respawn.state == RESPAWNST_NONE) // Not respawning
-	&& (player->curshield != KSHIELD_TOP) // Not riding a Top
-	&& (P_IsObjectOnGround(player->mo) == true)) // On the ground
-	{
-		return 0;
-	}
-
-	p_maxspeed = K_GetKartSpeed(player, false, true);
-
-	if (player->curshield == KSHIELD_TOP)
-	{
-		// Do not downscale turning speed with faster
-		// movement speed; behaves as if turning in place.
-		p_speed = 0;
-	}
-	else
-	{
-		if (G_CompatLevel(0x000A))
-		{
-			// Compat level for 2.0 staff ghosts
-			p_speed = min(currentSpeed, p_maxspeed * 2);
-		}
-		else
-		{
-			// Turning dampens as you go faster, but at extremely high speeds, keeping some control is important.
-			// Dampening is applied in two stages, one harsh and one soft.
-			// The harsh window is larger for characters with better baseline maneuverability.
-			fixed_t stageSpeed = min(currentSpeed, (110 + 2*(9-player->kartweight)) * p_maxspeed/100);
-			if (stageSpeed < currentSpeed)
-			{
-				stageSpeed += (currentSpeed - stageSpeed) / 2;
-			}
-
-			p_speed = min(stageSpeed, p_maxspeed * 2);
-		}
-	}
-
-	if (K_PodiumSequence() == true)
-	{
-		// Normalize turning for podium
-		weightadjust = FixedDiv((p_maxspeed * 3), (p_maxspeed * 3) + (2 * FRACUNIT));
-		turnfixed = FixedMul(turnfixed, weightadjust);
-		turnfixed *= 2;
-		return (turnfixed / FRACUNIT);
-	}
-
-	weightadjust = FixedDiv((p_maxspeed * 3) - p_speed, (p_maxspeed * 3) + (player->kartweight * FRACUNIT));
-
-	if (K_PlayerUsesBotMovement(player))
-	{
-		turnfixed = FixedMul(turnfixed, 2*FRACUNIT); // Base increase to turning
-	}
-
-	if (player->drift != 0 && P_IsObjectOnGround(player->mo))
-	{
-		if (G_CompatLevel(0x000A))
-		{
-			// Compat level for 2.0 staff ghosts
-			fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN * FRACUNIT);
-
-			if (player->pflags & PF_DRIFTEND)
-			{
-				countersteer = FRACUNIT;
-			}
-
-			return K_GetKartDriftValue(player, countersteer);
-		}
-		else
-		{
-			if (cv_ng_turnstyle.value == 2)
-				if (player->pflags & PF_DRIFTEND)
-				{
-					// Sal: This was an unintended control regression from SRB2Kart, but we
-					// kind of prefer how it feels. It kind of sucks because the original
-					// eats turning entirely for a few tics. Let's do a healthy medium between
-					// SRB2Kart and RR: the kick-out value is eased towards normal turning control.
-
-					fixed_t drift_end_term = K_GetKartDriftValue(player, FRACUNIT) * FRACUNIT;
-					fixed_t drift_exit_frac = (abs(player->drift) * FRACUNIT) / 5;
-
-					turnfixed = Easing_InSine(
-						drift_exit_frac,
-						turnfixed,
-						drift_end_term
-					);
-
-					return (turnfixed / FRACUNIT);
-				}
-				else
-				{
-					// If we're drifting we have a completely different turning value
-					fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN * FRACUNIT);
-					return K_GetKartDriftValue(player, countersteer);
-				}
-			else if (cv_ng_turnstyle.value == 1)
-			{
-				if (player->pflags & PF_DRIFTEND)
-				{
-					// Sal: K_GetKartDriftValue is short-circuited to give a weird additive magic number,
-					// instead of an entirely replaced turn value. This gaslit me years ago when I was doing a
-					// code readability pass, where I missed that fact because it also returned early.
-					turnfixed += N_GetKartDriftValue(player, FRACUNIT) * FRACUNIT;
-					return (turnfixed / FRACUNIT);
-
-				}
-				else
-				{
-					// If we're drifting we have a completely different turning value
-					fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN * FRACUNIT);
-					return N_GetKartDriftValue(player, countersteer);
-
-				}
-			}
-		}
-	}
-
-	fixed_t finalhandleboost = player->handleboost;
-
-	// If you're sliptiding, don't interact with handling boosts.
-	// You need turning power proportional to your speed, no matter what!
-	fixed_t topspeed = K_GetKartSpeed(player, false, false);
-	if (K_Sliptiding(player))
-	{
-		fixed_t sliptide_handle;
-
-		if (G_CompatLevel(0x000A))
-		{
-			// Compat level for 2.0 staff ghosts
-			sliptide_handle = 5 * SLIPTIDEHANDLING / 4;
-		}
-		else
-		{
-			sliptide_handle = 3 * SLIPTIDEHANDLING / 4;
-		}
-
-		finalhandleboost = FixedMul(sliptide_handle, FixedDiv(player->speed, topspeed));
-	}
-
-	if (finalhandleboost > 0 && player->respawn.state == RESPAWNST_NONE)
-	{
-		turnfixed = FixedMul(turnfixed, FRACUNIT + finalhandleboost);
-	}
-
-	if (player->curshield == KSHIELD_TOP || !cv_ng_underwaterhandling.value) //NOIRE: Take into consideration the underwater handling cvar
-		;
-	else if (player->mo->eflags & MFE_UNDERWATER)
-	{
-		fixed_t div = min(FRACUNIT + K_GetUnderwaterStrafeMul(player), 2*FRACUNIT);
-		turnfixed = FixedDiv(turnfixed, div);
-	}
-
-	// Weight has a small effect on turning
-	turnfixed = FixedMul(turnfixed, weightadjust);
-
-	// Side trick
-	if (player->trickpanel == TRICKSTATE_LEFT || player->trickpanel == TRICKSTATE_RIGHT)
-	{
-		turnfixed /= 2;
-	}
-
-	// 2.2 - Presteering allowed in trickpanels
-	if (!G_CompatLevel(0x000A) && !K_PlayerUsesBotMovement(player))
-	{
-		if (player->trickpanel == TRICKSTATE_READY || player->trickpanel == TRICKSTATE_FORWARD)
-		{
-			// Forward trick or rising from trickpanel
-			turnfixed /= 2;
-			if (player->tricklock)
-				turnfixed /= (player->tricklock/2 + 1);
-		}
-	}
-
-	return (turnfixed / FRACUNIT);
-}
-
-INT32 K_GetUnderwaterTurnAdjust(const player_t *player)
-{
-	if (player->mo->eflags & MFE_UNDERWATER && cv_ng_underwaterhandling.value) //NOIRE: Take into consideration the underwater handling cvar
-	{
-		INT32 steer = (K_GetKartTurnValue(player,
-					player->steering) << TICCMD_REDUCE);
-
-		if (!player->drift)
-			steer = 9 * steer / 5;
-
-		return FixedMul(steer, 8 * K_GetUnderwaterStrafeMul(player));
-	}
-	else
-		return 0;
 }
 
 INT32 K_GetKartDriftSparkValue(const player_t *player)
@@ -11004,16 +10623,10 @@ boolean K_PlayerEBrake(const player_t *player)
 		return false;
 	}
 
-	if (player->fastfall != 0)
-	{
-		return true;
-	}
-
 	if (K_PressingEBrake(player) == true
 		&& (player->drift == 0 || P_IsObjectOnGround(player->mo) == false)
 		&& P_PlayerInPain(player) == false
 		&& player->justbumped == 0
-		&& player->spindashboost == 0
 		&& player->nocontrol == 0)
 	{
 		return true;
@@ -11039,6 +10652,9 @@ void K_KartEbrakeVisuals(player_t *p)
 	mobj_t *wave;
 	mobj_t *spdl;
 	fixed_t sx, sy;
+
+	if (!P_IsObjectOnGround(p->mo))
+		return;
 
 	if (K_PlayerEBrake(p) == true)
 	{
@@ -11079,7 +10695,7 @@ void K_KartEbrakeVisuals(player_t *p)
 		{
 			P_MoveOrigin(p->mo->hprev, p->mo->x, p->mo->y, p->mo->z);
 			p->mo->hprev->angle = p->mo->angle;
-			p->mo->hprev->fuse = TICRATE/2;		// When we leave spindash for any reason, make sure this bubble goes away soon after.
+			p->mo->hprev->fuse = TICRATE/2;
 			K_FlipFromObject(p->mo->hprev, p->mo);
 			P_SetTarget(&p->mo->hprev->owner, p->mo);
 			p->mo->hprev->renderflags |= RF_REDUCEVFX;
@@ -11089,84 +10705,6 @@ void K_KartEbrakeVisuals(player_t *p)
 			p->mo->hprev->spritexoffset = 0;
 			p->mo->hprev->spriteyoffset = 0;
 		}
-
-		if (!p->spindash)
-		{
-			// Spawn downwards fastline
-			sx = p->mo->x + P_RandomRange(PR_DECORATION, -48, 48)*p->mo->scale;
-			sy = p->mo->y + P_RandomRange(PR_DECORATION, -48, 48)*p->mo->scale;
-
-			spdl = P_SpawnMobj(sx, sy, p->mo->z, MT_DOWNLINE);
-			spdl->colorized = true;
-			spdl->color = SKINCOLOR_WHITE;
-			K_MatchGenericExtraFlags(spdl, p->mo);
-			P_SetTarget(&spdl->owner, p->mo);
-			spdl->renderflags |= RF_REDUCEVFX;
-			P_SetScale(spdl, p->mo->scale);
-
-			// squish the player a little bit.
-			p->mo->spritexscale = FRACUNIT*115/100;
-			p->mo->spriteyscale = FRACUNIT*85/100;
-		}
-		else
-		{
-			const UINT16 MAXCHARGETIME = K_GetSpindashChargeTime(p);
-			const fixed_t MAXSHAKE = FRACUNIT;
-
-			// update HOLD bubble with numbers based on charge.
-			if (p->mo->hprev && !P_MobjWasRemoved(p->mo->hprev))
-			{
-				const INT16 overcharge = (p->spindash - MAXCHARGETIME);
-				const boolean desperation = (p->rings <= 0); // desperation spindash
-
-				UINT8 frame = min(1 + ((p->spindash*3) / MAXCHARGETIME), 4);
-
-				// ?! limit.
-				if (overcharge >= TICRATE)
-					frame = 5;
-
-				p->mo->hprev->frame = frame|FF_FULLBRIGHT;
-
-				if (overcharge >= 0)
-				{
-					// overcharged spindash flashes red.
-					p->mo->hprev->color = SKINCOLOR_MAROON;
-					p->mo->hprev->colorized = (overcharge % 12) >= 6;
-
-					p->mo->hprev->spritexoffset = P_AltFlip(2*FRACUNIT, 2);
-				}
-
-				if (desperation)
-				{
-					// desperation spindash shakes VIOLENTLY.
-					p->mo->hprev->spritexoffset = P_AltFlip(4*FRACUNIT, 2);
-					p->mo->hprev->spriteyoffset = P_AltFlip(2*FRACUNIT, 1);
-				}
-			}
-
-			// shake the player as they charge their spindash!
-
-			// "gentle" shaking as we start...
-			if (p->spindash < MAXCHARGETIME)
-			{
-				fixed_t shake = FixedMul(((p->spindash)*FRACUNIT/MAXCHARGETIME), MAXSHAKE);
-				SINT8 mult = leveltime & 1 ? 1 : -1;
-
-				p->mo->spritexoffset = shake*mult;
-			}
-			else	// get VIOLENT on overcharge :)
-			{
-				fixed_t shake = MAXSHAKE + FixedMul(((p->spindash-MAXCHARGETIME)*FRACUNIT/TICRATE), MAXSHAKE)*3;
-				SINT8 mult = leveltime & 1 ? 1 : -1;
-
-				p->mo->spritexoffset = shake*mult;
-			}
-
-			// sqish them a little MORE....
-			p->mo->spritexscale = FRACUNIT*12/10;
-			p->mo->spriteyscale = FRACUNIT*8/10;
-		}
-
 
 		p->ebrakefor++;
 	}
@@ -11190,383 +10728,6 @@ void K_KartEbrakeVisuals(player_t *p)
 	}
 }
 
-static void K_KartSpindashDust(mobj_t *parent)
-{
-	fixed_t rad = FixedDiv(FixedHypot(parent->radius, parent->radius), parent->scale);
-	INT32 i;
-
-	for (i = 0; i < 2; i++)
-	{
-		fixed_t hmomentum = P_RandomRange(PR_DECORATION, 6, 12) * parent->scale;
-		fixed_t vmomentum = P_RandomRange(PR_DECORATION, 2, 6) * parent->scale;
-
-		angle_t ang = parent->player->drawangle + ANGLE_180;
-		SINT8 flip = 1;
-
-		mobj_t *dust;
-
-		if (i & 1)
-			ang -= ANGLE_45;
-		else
-			ang += ANGLE_45;
-
-		dust = P_SpawnMobjFromMobj(parent,
-			FixedMul(rad, FINECOSINE(ang >> ANGLETOFINESHIFT)),
-			FixedMul(rad, FINESINE(ang >> ANGLETOFINESHIFT)),
-			0, MT_SPINDASHDUST
-		);
-		flip = P_MobjFlip(dust);
-
-		dust->momx = FixedMul(hmomentum, FINECOSINE(ang >> ANGLETOFINESHIFT));
-		dust->momy = FixedMul(hmomentum, FINESINE(ang >> ANGLETOFINESHIFT));
-		dust->momz = vmomentum * flip;
-	}
-}
-
-static void K_KartSpindashWind(mobj_t *parent)
-{
-	mobj_t *wind = P_SpawnMobjFromMobj(parent,
-		P_RandomRange(PR_DECORATION,-36,36) * FRACUNIT,
-		P_RandomRange(PR_DECORATION,-36,36) * FRACUNIT,
-		FixedDiv(parent->height / 2, parent->scale) + (P_RandomRange(PR_DECORATION,-20,20) * FRACUNIT),
-		MT_SPINDASHWIND
-	);
-
-	P_SetTarget(&wind->target, parent);
-
-	if (parent->player && parent->player->wavedashboost)
-		P_SetScale(wind, wind->scale * 2);
-
-	if (parent->momx || parent->momy)
-		wind->angle = R_PointToAngle2(0, 0, parent->momx, parent->momy);
-	else
-		wind->angle = parent->player->drawangle;
-
-	wind->momx = 3 * parent->momx / 4;
-	wind->momy = 3 * parent->momy / 4;
-	wind->momz = 3 * P_GetMobjZMovement(parent) / 4;
-
-	K_MatchGenericExtraFlags(wind, parent);
-	P_SetTarget(&wind->owner, parent);
-	wind->renderflags |= RF_REDUCEVFX;
-}
-
-// Time after which you get a thrust for releasing spindash
-#define SPINDASHTHRUSTTIME 20
-
-static void K_KartSpindash(player_t *player)
-{
-	const boolean onGround = P_IsObjectOnGround(player->mo);
-	const INT16 MAXCHARGETIME = K_GetSpindashChargeTime(player);
-	UINT16 buttons = K_GetKartButtons(player);
-	boolean spawnWind = (leveltime % 2 == 0);
-
-	if (P_PlayerInPain(player))
-	{
-		player->spindash = 0;
-	}
-
-	if (player->spindash > 0 && (buttons & (BT_DRIFT|BT_BRAKE|BT_ACCELERATE)) != (BT_DRIFT|BT_BRAKE|BT_ACCELERATE))
-	{
-		player->spindashspeed = (min(player->spindash, MAXCHARGETIME) * FRACUNIT) / MAXCHARGETIME;
-		player->spindashboost = TICRATE;
-
-		// if spindash was charged enough, give a small thrust.
-		if (player->spindash >= SPINDASHTHRUSTTIME)
-		{
-			fixed_t thrust = FixedMul(player->mo->scale, player->spindash*FRACUNIT/5);
-
-			// Old behavior, before emergency zero-ring spindash
-			/*
-			if (gametyperules & GTR_CLOSERPLAYERS)
-				thrust *= 2;
-			*/
-
-			// Give a bit of a boost depending on charge.
-			P_InstaThrust(player->mo, player->mo->angle, thrust);
-		}
-
-		player->spindash = 0;
-		S_ReducedVFXSound(player->mo, sfx_s23c, player);
-		S_StopSoundByID(player->mo, sfx_kc38);
-	}
-
-
-	if ((player->spindashboost > 0) && (spawnWind == true))
-	{
-		K_KartSpindashWind(player->mo);
-	}
-
-	if ((player->wavedashboost > 0) && (spawnWind == true))
-	{
-		K_KartSpindashWind(player->mo);
-	}
-
-	if (player->spindashboost > (TICRATE/2))
-	{
-		K_KartSpindashDust(player->mo);
-	}
-
-	// 2.2 - Driftbrake slideoff fastfall prevention
-	if (!G_CompatLevel(0x000A))
-	{
-		if (player->drift && onGround && player->cmd.buttons & BT_BRAKE)
-		{
-			player->pflags |= PF_NOFASTFALL;
-			return;
-		}
-	}
-
-	if (K_PlayerEBrake(player) == false)
-	{
-		player->spindash = 0;
-		player->pflags &= ~PF_NOFASTFALL;
-		return;
-	}
-	else
-	{
-		// 2.2 - More responsive ebrake
-		if (!G_CompatLevel(0x000A))
-		{
-			if (onGround && player->noEbrakeMagnet == 0 && (FixedHypot(player->mo->momx, player->mo->momy) < 20*player->mo->scale))
-			{
-				P_Thrust(player->mo, K_MomentumAngleReal(player->mo) + ANGLE_180, FixedHypot(player->mo->momx, player->mo->momy)/8);
-			}
-		}
-
-	}
-
-	// Handle fast falling behaviors first.
-	if (player->respawn.state != RESPAWNST_NONE)
-	{
-		// This is handled in K_MovePlayerToRespawnPoint.
-		return;
-	}
-	else if (onGround == false)
-	{
-		if (player->pflags & PF_NOFASTFALL)
-			return;
-
-		if (player->fastfall == 0)
-		{
-			// Factors 3D momentum.
-			player->fastfallBase = FixedHypot(player->speed, player->mo->momz);
-		}
-
-		// Update fastfall.
-		player->fastfall = player->mo->momz;
-		player->spindash = 0;
-		P_ResetPitchRoll(player->mo);
-
-		return;
-	}
-	else if (player->fastfall != 0)
-	{
-		// Still handling fast-fall bounce.
-		player->pflags |= PF_NOFASTFALL;
-		return;
-	}
-
-	player->pflags |= PF_NOFASTFALL;
-
-	if (player->speed == 0 && player->steering != 0 && leveltime % 8 == 0)
-	{
-		// Rubber burn turn sfx
-		S_ReducedVFXSound(player->mo, sfx_ruburn, player);
-	}
-
-	if (cv_ng_spindash.value && player->speed < cv_ng_spindashthreshold.value*player->mo->scale)
-	{
-		if ((buttons & (BT_DRIFT|BT_BRAKE)) == (BT_DRIFT|BT_BRAKE))
-		{
-			UINT8 ringdropframes = 2 + (player->kartspeed + player->kartweight);
-			boolean spawnOldEffect = true;
-
-			INT16 chargetime = MAXCHARGETIME - ++player->spindash;
-
-			if (player->rings <= 0 && chargetime >= 0) // Desperation spindash
-			{
-				player->spindash++;
-				if (!S_SoundPlaying(player->mo, sfx_kc38))
-					S_StartSound(player->mo, sfx_kc38);
-			}
-
-			if (player->spindash >= SPINDASHTHRUSTTIME)
-			{
-				K_KartSpindashDust(player->mo);
-				spawnOldEffect = false;
-			}
-
-			if (chargetime <= (MAXCHARGETIME / 4) && spawnWind == true)
-			{
-				K_KartSpindashWind(player->mo);
-			}
-
-			if (player->flashing > 0 && (player->spindash % ringdropframes == 0) && player->hyudorotimer == 0)
-			{
-				// Every frame that you're invisible from flashing, spill a ring.
-				// Intentionally a lop-sided trade-off, so the game doesn't become
-				// Funky Kong's Ring Racers.
-
-				// 2.2 - No extended ring debt for recovery spindash
-				if (G_CompatLevel(0x000A))
-				{
-					P_PlayerRingBurst(player, 1);
-				}
-				else
-				{
-					if (player->rings > 0)
-						P_PlayerRingBurst(player, 1);
-				}
-
-			}
-
-			if (chargetime > 0)
-			{
-				UINT16 soundcharge = 0;
-				UINT8 add = 0;
-
-				while ((soundcharge += ++add) < chargetime);
-
-				if (soundcharge == chargetime)
-				{
-					if (spawnOldEffect == true)
-						K_SpawnDashDustRelease(player);
-					S_ReducedVFXSound(player->mo, sfx_s3kab, player);
-				}
-			}
-			else if (chargetime < -TICRATE && cv_ng_spindashoverheat.value)
-			{
-				P_DamageMobj(player->mo, NULL, NULL, 1, DMG_NORMAL);
-			}
-		}
-	}
-	else
-	{
-		if (leveltime % 4 == 0)
-			S_ReducedVFXSound(player->mo, sfx_kc2b, player);
-	}
-}
-
-#undef SPINDASHTHRUSTTIME
-
-boolean K_FastFallBounce(player_t *player)
-{
-	// Handle fastfall bounce.
-	if (player->fastfall != 0
-	&& ((cv_ng_fastfallbounce.value == 1 && player->curshield == KSHIELD_BUBBLE) || (cv_ng_fastfallbounce.value == 2)))
-	{
-		const fixed_t maxBounce = mapobjectscale * 10;
-		const fixed_t minBounce = mapobjectscale;
-		fixed_t bounce = 2 * abs(player->fastfall) / 3;
-
-		if (player->curshield != KSHIELD_BUBBLE && bounce <= 2 * maxBounce)
-		{
-			// Lose speed on bad bounce.
-			// Slow down more as horizontal momentum shrinks
-			// compared to vertical momentum.
-			angle_t a = R_PointToAngle2(0, 0, 4 * maxBounce, player->speed);
-			fixed_t f = FSIN(a);
-			player->mo->momx = FixedMul(player->mo->momx, f);
-			player->mo->momy = FixedMul(player->mo->momy, f);
-		}
-
-		if (bounce > maxBounce)
-		{
-			bounce = maxBounce;
-		}
-		else if (bounce < minBounce)
-		{
-			bounce = minBounce;
-		}
-
-		if (player->curshield == KSHIELD_BUBBLE)
-		{
-			S_StartSound(player->mo, sfx_s3k44);
-
-			// This is a slightly irritating way of doing this, but because ground contact while
-			// bubblebouncing gives you 1 tic of ground friction, naively using a factor of player
-			// speed makes your sustained speed heavily gamespeed dependent.
-			fixed_t minspeed = 12*K_GetKartSpeed(player, false, false)/10;
-			fixed_t fallspeed = abs(player->fastfall);
-			P_InstaThrust(player->mo, player->mo->angle, 11*max(minspeed, fallspeed)/10);
-
-			player->ignoreAirtimeLeniency = max(player->ignoreAirtimeLeniency, TICRATE);
-
-			bounce += 3 * mapobjectscale;
-
-			UINT8 i;
-			UINT8 numplayers = 0;
-			if (gametyperules & GTR_CIRCUIT)
-			{
-				for (i = 0; i < MAXPLAYERS; i++)
-				{
-					if (playeringame[i] && !players[i].spectator)
-						numplayers++;
-				}
-			}
-			else
-			{
-				numplayers = 1; // solo behavior
-			}
-
-			if (player->position == 1 && player->positiondelay <= 0 && numplayers != 1)
-			{
-				S_StartSound(player->mo, sfx_kc31);
-				K_StripItems(player);
-				vector3_t offset = { 0, 0, 0 };
-			}
-
-			if (player->tripwireReboundDelay)
-				bounce /= 2;
-		}
-		else
-		{
-			S_StartSound(player->mo, sfx_ffbonc);
-		}
-
-		if (player->mo->eflags & MFE_UNDERWATER)
-			bounce = (117 * bounce) / 200;
-
-		player->pflags |= PF_UPDATEMYRESPAWN;
-
-		player->fastfall = 0;
-
-		// 2.2 - More lenient fastfall
-		if (!G_CompatLevel(0x000A))
-		{
-			if (player->curshield != KSHIELD_BUBBLE)
-			{
-				// Nudge the player in their facing angle, and provide a little starting momentum if they need it.
-				// The bounce is already a strong tradeoff, so this allows it to be used for saves and get you back into flow.
-				angle_t momangle = K_MomentumAngle(player->mo);
-				fixed_t minspeed = K_GetKartSpeed(player, false, false)/2;
-				fixed_t returnspeed = max(FixedHypot(player->mo->momx, player->mo->momy), minspeed);
-
-				// Initial momentum set uses real speed to avoid some weird twitchy behavior at low XY speed
-				P_InstaThrust(player->mo, momangle, FixedHypot(player->mo->momx, player->mo->momy)/2);
-				P_Thrust(player->mo, player->mo->angle, returnspeed/2);
-			}
-		}
-
-		player->mo->momz = bounce * P_MobjFlip(player->mo);
-
-		return true;
-	}
-	else if (player->fastfall != 0 && ((!cv_ng_fastfallbounce.value) || (cv_ng_fastfallbounce.value == 1 && player->curshield != KSHIELD_BUBBLE)))
-	{
-		S_StartSound(player->mo, sfx_doord2);
-
-		player->pflags |= PF_UPDATEMYRESPAWN;
-
-		player->fastfall = 0;
-
-		return false;
-	}
-
-	return false;
-}
-
 static void K_AirFailsafe(player_t *player)
 {
 	const fixed_t maxSpeed = 6*player->mo->scale;
@@ -11587,7 +10748,6 @@ static void K_AirFailsafe(player_t *player)
 	UINT8 buttons = K_GetKartButtons(player);
 
 	// Accel inputs queue air-failsafe for when they're released,
-	// as long as they're not part of a fastfall attempt.
 	if ((buttons & (BT_ACCELERATE|BT_BRAKE)) == BT_ACCELERATE || K_GetForwardMove(player) != 0)
 	{
 		player->pflags |= PF_AIRFAILSAFE;
@@ -13128,25 +12288,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 		{
 			K_SpawnDashDustRelease(player);
 
-			if (player->fastfall)
-			{
-				if (player->curshield != KSHIELD_BUBBLE) // Allow bubblebounce (it's cute) but don't give standard trick rewards
-				{
-					P_InstaThrust(player->mo, player->mo->angle, 2*abs(player->fastfall)/3 + 15*FRACUNIT);
-					S_StartSound(player->mo, sfx_gshba);
-					player->fastfall = 0; // intentionally skip bounce
-					player->trickcharge = 0;
 
-					UINT8 i;
-					for (i = 0; i < 4; i++)
-					{
-						mobj_t *arc = P_SpawnMobjFromMobj(player->mo, 0, 0, 0, MT_CHARGEFALL);
-						P_SetTarget(&arc->target, player->mo);
-						arc->extravalue1 = i;
-					}
-				}
-			}
-			else
 			{
 				S_StartSound(player->mo, sfx_s23c);
 
@@ -13189,7 +12331,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	}
 
 	K_KartDrift(player, onground);
-	K_KartSpindash(player);
 
 	if (onground == false
 	&& !player->bungee		// if this list of condition ever gets bigger, maybe this should become a function.

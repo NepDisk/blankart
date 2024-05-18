@@ -1080,7 +1080,7 @@ void A_FaceStabMiss(mobj_t *actor)
 		actor->extravalue2 -= 2;
 		actor->extravalue1 = 0;
 		S_StartSound(actor, sfx_s3k47);
-		P_SharpDust(actor, MT_SPINDUST, actor->angle);
+		P_SharpDust(actor, MT_DUST, actor->angle);
 	}
 
 	if (actor->extravalue2 <= 0 || !P_TryMove(actor,
@@ -7712,7 +7712,7 @@ void A_OrbitNights(mobj_t* actor)
 
 // Function: A_GhostMe
 //
-// Description: Spawns a "ghost" mobj of this actor, ala spindash trails and the minus's digging "trails"
+// Description: Spawns a "ghost" mobj of this actor, and the minus's digging "trails"
 //
 // var1 = duration in tics
 // var2 = unused
@@ -10875,7 +10875,7 @@ void A_DoNPCSkid(mobj_t *actor)
 	// Spawn a particle every 3 tics.
 	if (!(leveltime % 3))
 	{
-		mobj_t *particle = P_SpawnMobjFromMobj(actor, 0, 0, 0, MT_SPINDUST);
+		mobj_t *particle = P_SpawnMobjFromMobj(actor, 0, 0, 0, MT_DUST);
 		particle->tics = 10;
 
 		P_SetScale(particle, 2*actor->scale/3);
@@ -11602,7 +11602,7 @@ void A_SnapperThinker(mobj_t *actor)
 		// The snapper spawns dust if going fast!
 		if (actor->reactiontime < 4)
 		{
-			mobj_t *dust = P_SpawnMobj(x0, y0, actor->z, MT_SPINDUST);
+			mobj_t *dust = P_SpawnMobj(x0, y0, actor->z, MT_DUST);
 			P_Thrust(dust, ang + ANGLE_180 + FixedAngle(P_RandomRange(PR_UNDEFINED, -20, 20)*FRACUNIT), speed*FRACUNIT);
 		}
 
@@ -12518,7 +12518,7 @@ A_SpawnItemDebrisCloud (mobj_t *actor)
 				P_RandomRange(PR_ITEM_DEBRIS, -spacing, spacing) * FRACUNIT,
 				P_RandomRange(PR_ITEM_DEBRIS, -spacing, spacing) * FRACUNIT,
 				P_RandomRange(PR_ITEM_DEBRIS, 0, 4 * spacing) * FRACUNIT,
-				MT_SPINDASHDUST
+				MT_DUST
 		);
 
 		puff->color = target->color;

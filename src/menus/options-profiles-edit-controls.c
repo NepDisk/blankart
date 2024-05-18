@@ -22,28 +22,25 @@ menuitem_t OPTIONS_ProfileControls[] = {
 		NULL, {NULL}, 0, 0},
 
 	{IT_CONTROL, "Accel / Confirm", "Accelerate / Confirm",
-		"TLB_A", {.routine = M_ProfileSetControl}, gc_a, 0},
+		"TLB_A", {.routine = M_ProfileSetControl}, gc_accel, 0},
 
 	{IT_CONTROL, "Look back", "Look backwards / Go back",
-		"TLB_B", {.routine = M_ProfileSetControl}, gc_b, 0},
-
-	{IT_CONTROL, "Spin Dash", "Spin Dash / Extra",
-		"TLB_C", {.routine = M_ProfileSetControl}, gc_c, 0},
+		"TLB_B", {.routine = M_ProfileSetControl}, gc_lookback, 0},
 
 	{IT_CONTROL, "Brake / Go back", "Brake / Go back",
-		"TLB_D", {.routine = M_ProfileSetControl}, gc_x, 0},
+		"TLB_D", {.routine = M_ProfileSetControl}, gc_brake, 0},
 
 	{IT_CONTROL, "Respawn", "Respawn",
-		"TLB_E", {.routine = M_ProfileSetControl}, gc_y, 0},
+		"TLB_E", {.routine = M_ProfileSetControl}, gc_respawn, 0},
 
 	{IT_CONTROL, "Action", "Multiplayer quick-chat / quick-vote",
-		"TLB_F", {.routine = M_ProfileSetControl}, gc_z, 0},
+		"TLB_F", {.routine = M_ProfileSetControl}, gc_vote, 0},
 
 	{IT_CONTROL, "Use Item", "Use item",
-		"TLB_H", {.routine = M_ProfileSetControl}, gc_l, 0},
+		"TLB_H", {.routine = M_ProfileSetControl}, gc_item, 0},
 
 	{IT_CONTROL, "Drift", "Drift",
-		"TLB_I", {.routine = M_ProfileSetControl}, gc_r, 0},
+		"TLB_I", {.routine = M_ProfileSetControl}, gc_drift, 0},
 
 	{IT_CONTROL, "Turn Left", "Turn left",
 		"TLB_M", {.routine = M_ProfileSetControl}, gc_left, 0},
@@ -58,7 +55,7 @@ menuitem_t OPTIONS_ProfileControls[] = {
 		"TLB_K", {.routine = M_ProfileSetControl}, gc_down, 0},
 
 	{IT_CONTROL, "Open pause menu", "Open pause menu",
-		"TLB_G", {.routine = M_ProfileSetControl}, gc_start, 0},
+		"TLB_G", {.routine = M_ProfileSetControl}, gc_pause, 0},
 
 	{IT_HEADER, "OPTIONAL CONTROLS", "Take a screenshot, chat...",
 		NULL, {NULL}, 0, 0},
@@ -95,9 +92,6 @@ menuitem_t OPTIONS_ProfileControls[] = {
 
 	{IT_HEADER, "TEST AND CONFIRM", "",
 		NULL, {NULL}, 0, 0},
-
-	{IT_STRING | IT_CALL, "TRY MAPPINGS", "Test your controls.",
-		NULL, {.routine = M_ProfileTryController}, 0, 0},
 
 	{IT_STRING | IT_CALL, "RESET TO DEFAULT", "Reset all controls back to default.",
 		NULL, {.routine = M_ProfileDefaultControls}, 0, 0},

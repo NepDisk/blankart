@@ -1194,17 +1194,6 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 		{
 			gravityadd *= 3;
 		}
-		else if (mo->player->fastfall != 0)
-		{
-			// Fast falling
-
-			const fixed_t unit = 64 * mapobjectscale;
-			const fixed_t mult = 3*FRACUNIT + (3 * FixedDiv(mo->player->fastfallBase, unit));
-
-			gravityadd = FixedMul(gravityadd, mult);
-			if (mo->player->curshield == KSHIELD_BUBBLE)
-				gravityadd *= 2;
-		}
 
 		//NOIRE SPRINGS: AAAAAAAAAAAAAAAAAAAAAA
 		if (mo->player->pogoSpringJumped) {
@@ -3240,16 +3229,6 @@ boolean P_CanRunOnWater(mobj_t *mobj, ffloor_t *rover)
 				// FIXME: Count solid FOFs in these checks
 				return false;
 			}
-		}
-
-		// E-brake during water-run forces a fastfall.
-		// We disable the ebrake input safety to do this, so we've gotta check it as late as
-		// possible: otherwise, this would cause misinput fastfall or underwater twerking.
-		if (mobj->player != NULL && K_PlayerEBrake(mobj->player))
-		{
-			if (P_IsObjectOnGround(mobj) && !mobj->player->fastfall)
-				mobj->player->pflags &= ~PF_NOFASTFALL;
-			return false;
 		}
 
 		return true;
@@ -6130,7 +6109,7 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 							P_RandomRange(PR_ITEM_RINGS, -spacing, spacing) * FRACUNIT,
 							P_RandomRange(PR_ITEM_RINGS, -spacing, spacing) * FRACUNIT,
 							P_RandomRange(PR_ITEM_RINGS, -spacing, spacing) * FRACUNIT,
-							MT_SPINDASHDUST
+							MT_DUST
 						);
 
 						P_SetScale(puff, (puff->destscale *= 5));
@@ -6384,7 +6363,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 			return;
 		}
 		break;
-	case MT_SPINDASHWIND:
 	case MT_DRIFTELECTRICSPARK:
 		mobj->renderflags ^= RF_DONTDRAW;
 		break;
@@ -8900,7 +8878,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			UINT8 i;
 			mobj_t *fire = P_SpawnMobj(mobj->x + (P_RandomRange(PR_SMOLDERING, -32, 32)*mobj->scale), mobj->y + (P_RandomRange(PR_SMOLDERING, -32, 32)*mobj->scale), mobj->z, MT_THOK);
 
-			fire->sprite = SPR_FPRT;
 			fire->frame = FF_FULLBRIGHT|FF_TRANS30;
 			fire->scale = mobj->scale*4;
 			fire->momz = P_RandomRange(PR_SMOLDERING, 2, 3)*mobj->scale;

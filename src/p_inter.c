@@ -655,7 +655,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				return;
 
 			// Don't immediately pick up spilled rings
-			if (special->threshold > 0 || P_PlayerInPain(player) || player->spindash) // player->spindash: Otherwise, players can pick up rings that are thrown out of them from invinc spindash penalty
+			if (special->threshold > 0 || P_PlayerInPain(player))
 				return;
 
 			if (!(P_CanPickupItem(player, 0)))
@@ -1981,7 +1981,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 					P_RandomRange(PR_ITEM_DEBRIS, -spacing, spacing) * FRACUNIT,
 					P_RandomRange(PR_ITEM_DEBRIS, -spacing, spacing) * FRACUNIT,
 					P_RandomRange(PR_ITEM_DEBRIS, 0, 4*spacing) * FRACUNIT,
-					MT_SPINDASHDUST
+					MT_DUST
 				);
 
 				P_SetScale(puff, (puff->destscale *= 2));
@@ -3138,7 +3138,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 			player->sneakertimer = player->numsneakers = 0;
 			player->driftboost = player->strongdriftboost = 0;
 			player->gateBoost = 0;
-			player->fastfall = 0;
 			player->ringboost = 0;
 			player->glanceDir = 0;
 			player->preventfailsafe = TICRATE*3;

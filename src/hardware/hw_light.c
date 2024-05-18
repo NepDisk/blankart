@@ -494,7 +494,6 @@ light_t *t_lspr[NUMSPRITES] =
 	&lspr[NOLIGHT],     // SPR_BUBL
 	&lspr[RINGLIGHT_L], // SPR_WZAP
 	&lspr[NOLIGHT],     // SPR_DUST
-	&lspr[NOLIGHT],     // SPR_FPRT
 	&lspr[SUPERSPARK_L], // SPR_TFOG
 	&lspr[NIGHTSLIGHT_L], // SPR_SEED
 	&lspr[NOLIGHT],     // SPR_PRTL

@@ -171,7 +171,6 @@ void Obj_AdventureAirBoosterHitboxTouch(mobj_t *hitbox, player_t *player)
 	player->springcolor = booster->color;
 	player->turbine = 0;
 	player->flashing = 0;
-	player->fastfall = 0;
 
 	S_StartSound(mo, booster->info->seesound);
 

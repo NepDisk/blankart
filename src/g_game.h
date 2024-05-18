@@ -129,7 +129,6 @@ void G_FinalClipAimingPitch(INT32 *aiming, player_t *player, boolean skybox);
 
 extern angle_t localangle[MAXSPLITSCREENPLAYERS];
 extern INT32 localaiming[MAXSPLITSCREENPLAYERS]; // should be an angle_t but signed
-extern INT32 localsteering[MAXSPLITSCREENPLAYERS];
 
 INT32 G_PlayerInputAnalog(UINT8 p, INT32 gc, UINT8 menuPlayers);
 boolean G_PlayerInputDown(UINT8 p, INT32 gc, UINT8 menuPlayers);

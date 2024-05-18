@@ -36,7 +36,6 @@ typedef enum
 	BT_VOTE			  = 1<<7,	// Vote
 
 	BT_EBRAKEMASK	= (BT_ACCELERATE|BT_BRAKE),
-	BT_SPINDASHMASK	= (BT_ACCELERATE|BT_BRAKE|BT_DRIFT),
 
 	// free: 1<<8 to 1<<12
 
@@ -80,7 +79,6 @@ struct ticcmd_t
 	struct
 	{
 		SINT8 turnconfirm;
-		SINT8 spindashconfirm;
 		SINT8 itemconfirm;
 	} bot;
 } ATTRPACK;

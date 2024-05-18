@@ -958,15 +958,6 @@ boolean P_CanApplySlopePhysics(mobj_t *mo, pslope_t *slope)
 		return false;
 	}
 
-	if (mo->player != NULL)
-	{
-		if (K_PlayerEBrake(mo->player) == true)
-		{
-			// Spindash negates slopes.
-			return false;
-		}
-	}
-
 	// We can do slope physics.
 	return true;
 }
@@ -980,9 +971,9 @@ boolean P_CanApplySlopeLaunch(mobj_t *mo, pslope_t *slope)
 		return false;
 	}
 
-	// No physics slopes are fine to launch off of. NOIRE: No, just no. Allow this to disabled via cvar
+	// No physics slopes are fine to launch off of. NOIRE: No, just no
 
-	if((mo->standingslope->flags & SL_NOPHYSICS) && cv_ng_nophysicsflag.value)
+	if (mo->standingslope->flags & SL_NOPHYSICS)
 	{
 		//Don't do slope launch pls thx.
 		return false;
@@ -1007,7 +998,7 @@ void P_QuantizeMomentumToSlope(vector3_t *momentum, pslope_t *slope)
 {
 	vector3_t axis; // Fuck you, C90.
 
-	if ((slope->flags & SL_NOPHYSICS) && cv_ng_nophysicsflag.value)
+	if ((slope->flags & SL_NOPHYSICS))
 		return; // No physics, no quantizing.
 
 	axis.x = -slope->d.y;

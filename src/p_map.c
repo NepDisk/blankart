@@ -850,7 +850,6 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			return BMIT_CONTINUE; // spinout would cause a softlock
 		}
 
-		if (!g_tm.thing->player->fastfall)
 		{
 			fixed_t tractorHeight = 211*mapobjectscale;
 			fixed_t zRange = FixedDiv(thing->z - g_tm.thing->z, tractorHeight);

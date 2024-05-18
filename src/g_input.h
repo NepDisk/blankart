@@ -65,15 +65,15 @@ typedef enum
 	gc_down,
 	gc_left,
 	gc_right,
-	gc_a,
-	gc_b,
-	gc_c,
-	gc_x,
-	gc_y,
-	gc_z,
-	gc_l,
-	gc_r,
-	gc_start,
+	gc_accel,
+	gc_lookback,
+	gc_spindash,
+	gc_brake,
+	gc_respawn,
+	gc_vote,
+	gc_item,
+	gc_drift,
+	gc_pause,
 
 	// special keys
 	gc_abc,
@@ -89,16 +89,6 @@ typedef enum
 	gc_startlossless,
 
 	num_gamecontrols,
-
-	// alias gameplay controls
-	gc_accel = gc_a,
-	gc_lookback = gc_b,
-	gc_spindash = gc_c,
-	gc_brake = gc_x,
-	gc_respawn = gc_y,
-	gc_vote = gc_z,
-	gc_item = gc_l,
-	gc_drift = gc_r,
 } gamecontrols_e;
 
 typedef enum

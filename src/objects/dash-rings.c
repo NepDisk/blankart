@@ -186,7 +186,6 @@ static void DashRingLaunch(player_t *player, mobj_t *ring)
 	player->mo->rollangle = 0;
 	P_ResetPitchRoll(player->mo);
 	player->flashing = 0;
-	player->fastfall = 0;
 
 	switch (ring->extravalue1)
 	{

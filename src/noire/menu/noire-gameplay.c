@@ -26,9 +26,6 @@ menuitem_t OPTIONS_NoireGameplay[] =
 	{IT_STRING | IT_SUBMENU, "Mechanics Options...", "Adjust the overall racing experience.",
 		NULL, {.submenu = &OPTIONS_NoireGameplayMechanicsDef}, 0, 0},
 
-	{IT_STRING | IT_SUBMENU, "Driving Options...", "Adjust the behavior and physics of driving.",
-		NULL, {.submenu = &OPTIONS_NoireGameplayDrivingDef}, 0, 0},
-
 	{IT_NOTHING|IT_SPACE, NULL, NULL,
 		NULL, {NULL}, 0, 0},
 
@@ -90,17 +87,11 @@ menuitem_t OPTIONS_NoireGameplayItems[] =
 menuitem_t OPTIONS_NoireGameplayMechanics[] =
 {
 
-	{IT_STRING | IT_SUBMENU, "Spindash Options...", "Adjust the functionality of the spindash.",
-		NULL, {.submenu = &OPTIONS_NoireGameplaySpindashDef}, 0, 0},
-
 	{IT_STRING | IT_SUBMENU, "Life Options...", "Adjust the behavior of the lives system.",
 		NULL, {.submenu = &OPTIONS_NoireGameplayLivesDef}, 0, 0},
 
 	{IT_NOTHING|IT_SPACE, NULL, NULL,
 		NULL, {NULL}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Fast Fall Bounce", "Enable or disable the short bounce upon landing after fast-falling.",
-		NULL, {.cvar = &cv_ng_fastfallbounce}, 0, 0},
 
 	{IT_STRING | IT_CVAR, "Draft/Tether", "Enable or disable the 'tether' between racers, pulling racers behind.",
 		NULL, {.cvar = &cv_ng_draft}, 0, 0},
@@ -116,42 +107,6 @@ menuitem_t OPTIONS_NoireGameplayMechanics[] =
 
 	{IT_STRING | IT_CVAR, "Special Stages", "Enable or disable special stages in Intense or higher GPs.",
 		NULL, {.cvar = &cv_ng_dospecialstage}, 0, 0},
-};
-
-///////////
-// SPINDASH
-///////////
-menuitem_t OPTIONS_NoireGameplaySpindash[] =
-{
-	{IT_STRING | IT_CVAR, "Spindash", "Toggle racers' ability to spindash.",
-		NULL, {.cvar = &cv_ng_spindash}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Threshold", "How low your speed must get to begin charging a spindash.",
-		NULL, {.cvar = &cv_ng_spindashthreshold}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Charge Time", "Time before maximum spindash thrust, in tics. ",
-		NULL, {.cvar = &cv_ng_spindashcharge}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Overheat", "Enable or disable overcharging spindash hurting racers.",
-		NULL, {.cvar = &cv_ng_spindashoverheat}, 0, 0},
-};
-
-///////////
-// DRIVING
-///////////
-menuitem_t OPTIONS_NoireGameplayDriving[] =
-{
-	{IT_STRING | IT_CVAR, "Turn Control Style", "How kart's turning should behave.",
-		NULL, {.cvar = &cv_ng_turnstyle}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Underwater Handling Adjust", "Toggle kart's different turning when underwater.",
-		NULL, {.cvar = &cv_ng_underwaterhandling}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "No Physics Flag SLope Launch", "Consider the 'No Physics' flag on slopes, launching racers or not.",
-		NULL, {.cvar = &cv_ng_nophysicsflag}, 0, 0},
-
-	/*{IT_STRING | IT_CVAR, "Old Pogo Override", "Should flat spring objects/panels act like SRB2Kart pogo springs?",
-		NULL, {.cvar = &cv_ng_oldpogooverride}, 0, 0},*/ // TODO: Fix this, its currently broken but the pogo springs terrain is fine?
 };
 
 ///////////
@@ -267,18 +222,6 @@ void NG_Lives_OnChange(void)
 	for (int i = 1; i < OPTIONS_NoireGameplayLivesDef.numitems; i++)
 	{
 		OPTIONS_NoireGameplayLives[i].status = cv_ng_lives.value
-			? (IT_STRING | IT_CVAR)
-			: IT_GRAYEDOUT;
-	}
-}
-
-void NG_Spindash_OnChange(void)
-{
-	if (con_startup) return;
-
-	for (int i = 1; i < OPTIONS_NoireGameplaySpindashDef.numitems; i++)
-	{
-		OPTIONS_NoireGameplaySpindash[i].status = cv_ng_spindash.value
 			? (IT_STRING | IT_CVAR)
 			: IT_GRAYEDOUT;
 	}
@@ -402,47 +345,11 @@ menu_t OPTIONS_NoireGameplayMechanicsDef = {
 	NULL,
 };
 
-menu_t OPTIONS_NoireGameplaySpindashDef = {
-	sizeof (OPTIONS_NoireGameplaySpindash) / sizeof (menuitem_t),
-	&OPTIONS_NoireGameplayMechanicsDef,
-	0,
-	OPTIONS_NoireGameplaySpindash,
-	48, 80,
-	SKINCOLOR_BLACK, 0,
-	MBF_DRAWBGWHILEPLAYING,
-	NULL,
-	2, 5,
-	M_DrawGenericOptions,
-	M_DrawOptionsCogs,
-	M_OptionsTick,
-	NULL,
-	NULL,
-	NULL,
-};
-
 menu_t OPTIONS_NoireGameplayLivesDef = {
 	sizeof (OPTIONS_NoireGameplayLives) / sizeof (menuitem_t),
 	&OPTIONS_NoireGameplayMechanicsDef,
 	0,
 	OPTIONS_NoireGameplayLives,
-	48, 80,
-	SKINCOLOR_BLACK, 0,
-	MBF_DRAWBGWHILEPLAYING,
-	NULL,
-	2, 5,
-	M_DrawGenericOptions,
-	M_DrawOptionsCogs,
-	M_OptionsTick,
-	NULL,
-	NULL,
-	NULL,
-};
-
-menu_t OPTIONS_NoireGameplayDrivingDef = {
-	sizeof (OPTIONS_NoireGameplayDriving) / sizeof (menuitem_t),
-	&OPTIONS_NoireGameplayDef,
-	0,
-	OPTIONS_NoireGameplayDriving,
 	48, 80,
 	SKINCOLOR_BLACK, 0,
 	MBF_DRAWBGWHILEPLAYING,

@@ -836,12 +836,6 @@ consvar_t cv_ng_capsules = UnsavedNetVar("ng_capsules", "On").on_off().onchange(
 consvar_t cv_ng_oldorbinaut = UnsavedNetVar("ng_oldorbinaut", "Ring Racers").values(rrOrKart_cons_t);
 consvar_t cv_ng_oldjawz = UnsavedNetVar("ng_oldjawz", "Ring Racers").values(rrOrKart_cons_t);
 
-//Mechanics
-consvar_t cv_ng_fastfallbounce = UnsavedNetVar("ng_fastfallbounce", "On").values({
-	{0, "Off"},
-	{1, "Bubble Shield"},
-	{2, "On"},
-});
 consvar_t cv_ng_draft = UnsavedNetVar("ng_draft", "On").on_off();
 consvar_t cv_ng_mapanger = UnsavedNetVar("ng_mapanger", "Default (2)").min_max(0, INT32_MAX, {{-1, "Disabled"}, {2, "Default (2)"}});
 consvar_t cv_ng_tripwires = UnsavedNetVar("ng_tripwires", "On").on_off().onchange(NG_Generic_OnChange);
@@ -854,23 +848,9 @@ void NG_Lives_OnChange(void);
 consvar_t cv_ng_lives = UnsavedNetVar("ng_lives", "On").on_off().onchange(NG_Lives_OnChange);
 consvar_t cv_ng_continuesrank = UnsavedNetVar("ng_continuesrank", "On").on_off();
 
-//Spindash
-void NG_Spindash_OnChange(void);
-consvar_t cv_ng_spindash = UnsavedNetVar("ng_spindash", "On").on_off().onchange(NG_Spindash_OnChange);;
-consvar_t cv_ng_spindashthreshold = UnsavedNetVar("ng_spindashthreshold", "Default (6)").min_max(0, 100, {{6, "Default (6)"}});
-consvar_t cv_ng_spindashcharge = UnsavedNetVar("ng_spindashcharge", "Default (0)").min_max(0, 100, {{0, "Default (0)"}});
-consvar_t cv_ng_spindashoverheat = UnsavedNetVar("ng_spindashoverheat", "On").on_off();
-
 //Driving
 void NG_OldPogoOverride_OnChange(void);
-consvar_t cv_ng_turnstyle = UnsavedNetVar("ng_turnstyle", "Vanilla").values({
-	{0, "V2 Indev"},
-	{1, "Tweaked"},
-	{2, "Vanilla"},
-});
-consvar_t cv_ng_underwaterhandling = UnsavedNetVar("ng_underwaterhandling", "On").on_off();
 consvar_t cv_ng_oldpogooverride = UnsavedNetVar("ng_oldpogooverride", "Off").on_off().onchange(NG_OldPogoOverride_OnChange);
-consvar_t cv_ng_nophysicsflag = UnsavedNetVar("ng_nophysicsflag", "Off").on_off();
 
 //Bots
 consvar_t cv_ng_botrubberbandboost = UnsavedNetVar("ng_botrubberbandboost", "On").on_off();

@@ -81,7 +81,7 @@ typedef enum
 {
 	PF_GODMODE			= 1<<0, // Immortal. No lightsnake from pits either
 
-	PF_UPDATEMYRESPAWN	= 1<<1, // Scripted sequences / fastfall can set this to force a respawn waypoint update
+	PF_UPDATEMYRESPAWN	= 1<<1, // Scripted sequences
 
 	PF_AUTOROULETTE		= 1<<2, // Accessibility: Non-deterministic item box, no manual stop.
 
@@ -126,7 +126,6 @@ typedef enum
 	PF_SHRINKACTIVE		= 1<<29, // "Shrink me" cheat is in effect. (Can't be disabled mid-race)
 
 	PF_VOID				= 1<<30, // Removed from reality! When leaving hitlag, reenable visibility+collision and kill speed.
-	PF_NOFASTFALL		= (INT32)(1U<<31), // Has already done ebrake/fastfall behavior for this input. Fastfalling needs a new input to prevent unwanted bounces on unexpected airtime.
 } pflags_t;
 
 typedef enum
@@ -397,7 +396,6 @@ struct botvars_t
 
 	SINT8 turnconfirm; // Confirm turn direction
 
-	tic_t spindashconfirm; // When high enough, they will try spindashing
 	UINT32 respawnconfirm; // When high enough, they will use Ring Shooter
 
 	UINT8 roulettePriority; // What items to go for on the roulette
@@ -715,13 +713,6 @@ struct player_t
 	UINT16 springstars;		// Spawn stars around a player when they hit a spring
 	UINT16 springcolor;		// Color of spring stars
 	UINT8 dashpadcooldown;	// Separate the vanilla SA-style dash pads from using flashing
-
-	UINT16 spindash;		// Spindash charge timer
-	fixed_t spindashspeed;	// Spindash release speed
-	UINT8 spindashboost;	// Spindash release boost timer
-
-	fixed_t fastfall;		// Fast fall momentum
-	fixed_t fastfallBase;	// Fast fall base speed multiplier
 
 	UINT8 numboosts;		// Count of how many boosts are being stacked, for after image spawning
 	fixed_t boostpower;		// Base boost value, for offroad

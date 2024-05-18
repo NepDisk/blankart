@@ -875,7 +875,7 @@ INT32 G_PlayerInputAnalog(UINT8 p, INT32 gc, UINT8 menuPlayers)
 	deviceID = G_GetDeviceForPlayer(p);
 
 	if ((in_menu == true && G_KeyBindIsNecessary(gc) == true) // In menu: check for all unoverrideable menu default controls.
-		|| (in_menu == false && gc == gc_start)) // In gameplay: check for the unoverrideable start button to be able to bring up the menu.
+		|| (in_menu == false && gc == gc_pause)) // In gameplay: check for the unoverrideable start button to be able to bring up the menu.
 	{
 		value = G_GetValueFromControlTable(KEYBOARD_MOUSE_DEVICE, JOYAXISRANGE/4, &(menucontrolreserved[gc][0]));
 		if (value > 0) // Check for press instead of bound.
@@ -2155,10 +2155,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	boolean spectator;
 	boolean bot;
 	UINT8 botdifficulty;
-
+	INT16 steering;
 	INT16 rings;
 	INT16 spheres;
-	INT16 steering;
 	angle_t playerangleturn;
 
 	UINT8 botdiffincrease;
@@ -2203,7 +2202,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	score = players[player].score;
 	lives = players[player].lives;
 	ctfteam = players[player].ctfteam;
-
+	steering = players[player].steering;
 	splitscreenindex = players[player].splitscreenindex;
 	spectator = players[player].spectator;
 

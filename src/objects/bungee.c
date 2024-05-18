@@ -41,7 +41,6 @@ void Obj_BungeeSpecial(mobj_t *mo, player_t *p)
 	P_InstaThrust(p->mo, 0, 0);
 	p->bungee = BUNGEE_LATCH;
 	p->mo->flags |= MF_NOCLIPTHING;	// prevent players from bumping if they latch onto the same bungee.
-	p->pflags |= PF_NOFASTFALL;		// didn't know this flag existed but it's very convenient!!
 
 	latch = P_SpawnMobj(p->mo->x, p->mo->y, p->mo->z, MT_THOK);
 	P_SetMobjState(latch, S_INVISIBLE);
@@ -119,7 +118,6 @@ void Obj_EndBungee(player_t *p)
 		return;
 	}
 
-	p->pflags &= ~PF_NOFASTFALL;
 	p->bungee = BUNGEE_NONE;
 
 	if (!P_MobjWasRemoved(p->mo))

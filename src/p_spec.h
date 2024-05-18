@@ -214,7 +214,7 @@ typedef enum
 typedef enum
 {
 	TMFB_REVERSE  = 1,
-	TMFB_SPINDASH = 1<<1,
+	//TMFB_SPINDASH = 1<<1,
 	TMFB_DYNAMIC  = 1<<2,
 } textmapfofbobbing_t;
 
@@ -230,7 +230,7 @@ typedef enum
 typedef enum
 {
 	TMFR_REVERSE  = 1,
-	TMFR_SPINDASH = 1<<1,
+	//TMFR_SPINDASH = 1<<1,
 } textmapfofrising_t;
 
 typedef enum
@@ -526,7 +526,6 @@ typedef enum
 	TMBOT_NORUBBERBAND = 1,
 	TMBOT_NOCONTROL    = 1<<1,
 	TMBOT_FORCEDIR     = 1<<2,
-	TMBOT_FASTFALL     = 1<<3,
 } textmapbotcontroller_t;
 
 typedef enum
@@ -1000,7 +999,7 @@ struct eachtime_t
 typedef enum
 {
 	RF_REVERSE  = 1,    //Lower when stood on
-	RF_SPINDASH = 1<<1, //Require spindash to move
+	//RF_SPINDASH = 1<<1, //Require spindash to move
 	RF_DYNAMIC  = 1<<2, //Dynamically sinking platform
 } raiseflag_t;
 

@@ -145,7 +145,6 @@ void Obj_PlayerCloudThink(player_t *player)
 		player->cloud--;
 		P_InstaThrust(mo, 0, 0);
 		mo->momz = 0;
-		player->fastfall = 0;
 
 		if (!player->cloud)
 		{

@@ -47,6 +47,9 @@
 #endif
 #include "i_net.h" // doomcom
 
+// Noire
+#include "noire/n_control.h"
+
 extern "C" consvar_t cv_forcebots;
 
 /*--------------------------------------------------
@@ -931,7 +934,7 @@ static botprediction_t *K_CreateBotPrediction(const player_t *player)
 
 	const precise_t time = I_GetPreciseTime();
 
-	const INT16 handling = K_GetKartTurnValue(player, KART_FULLTURN); // Reduce prediction based on how fast you can turn
+	const INT16 handling = N_GetKartTurnValue(player, KART_FULLTURN); // Reduce prediction based on how fast you can turn
 
 	const tic_t futuresight = (TICRATE * KART_FULLTURN) / std::max<INT16>(1, handling); // How far ahead into the future to try and predict
 	const fixed_t speed = K_BotSpeedScaled(player, P_AproxDistance(player->mo->momx, player->mo->momy));
@@ -1042,121 +1045,6 @@ static botprediction_t *K_CreateBotPrediction(const player_t *player)
 
 	ps_bots[player - players].prediction += I_GetPreciseTime() - time;
 	return predict;
-}
-
-/*--------------------------------------------------
-	static UINT8 K_TrySpindash(const player_t *player, ticcmd_t *cmd)
-
-		Determines conditions where the bot should attempt to spindash.
-
-	Input Arguments:-
-		player - Bot player to check.
-
-	Return:-
-		0 to make the bot drive normally, 1 to e-brake, 2 to e-brake & charge spindash.
-		(TODO: make this an enum)
---------------------------------------------------*/
-static UINT8 K_TrySpindash(const player_t *player, ticcmd_t *cmd)
-{
-	ZoneScoped;
-
-	const tic_t difficultyModifier = (TICRATE/6);
-
-	const fixed_t oldSpeed = R_PointToDist2(0, 0, player->rmomx, player->rmomy);
-	const fixed_t baseAccel = K_GetNewSpeed(player) - oldSpeed;
-	const fixed_t speedDiff = player->speed - player->lastspeed;
-
-	const INT32 angleDiff = AngleDelta(player->mo->angle, K_MomentumAngleReal(player->mo));
-
-	if (player->spindashboost // You just released a spindash, you don't need to try again yet, jeez.
-		|| P_IsObjectOnGround(player->mo) == false) // Not in a state where we want 'em to spindash.
-	{
-		return 0;
-	}
-
-	// Try "start boosts" first
-	if (leveltime == starttime)
-	{
-		// Forces them to release, even if they haven't fully charged.
-		// Don't want them to keep charging if they didn't have time to.
-		return 0;
-	}
-
-	if (leveltime < starttime)
-	{
-		INT32 boosthold = starttime - K_GetSpindashChargeTime(player);
-
-		boosthold -= (DIFFICULTBOT - std::min<UINT8>(DIFFICULTBOT, player->botvars.difficulty)) * difficultyModifier;
-
-		if (leveltime >= (unsigned)boosthold)
-		{
-			// Start charging...
-			return 2;
-		}
-		else
-		{
-			// Just hold your ground and e-brake.
-			return 1;
-		}
-	}
-
-	if (player->botvars.spindashconfirm >= BOTSPINDASHCONFIRM)
-	{
-		INT32 chargingPoint = (K_GetSpindashChargeTime(player) + difficultyModifier);
-
-		// Release quicker the higher the difficulty is.
-		// Sounds counter-productive, but that's actually the best strategy after the race has started.
-		chargingPoint -= std::min<UINT8>(DIFFICULTBOT, player->botvars.difficulty) * difficultyModifier;
-
-		if (player->spindash > chargingPoint)
-		{
-			// Time to release.
-			return 0;
-		}
-
-		return 2;
-	}
-	else
-	{
-		// Logic for normal racing.
-		boolean anyCondition = false;
-		boolean uphill = false;
-
-#define AddForCondition(x) \
-	if (x) \
-	{ \
-		anyCondition = true;\
-		if (player->botvars.spindashconfirm < BOTSPINDASHCONFIRM) \
-		{ \
-			cmd->bot.spindashconfirm++; \
-		} \
-	}
-
-		constexpr fixed_t minimum_offroad = (3 << FRACBITS) >> 1; // Do not spindash in weak offroad
-		AddForCondition(K_ApplyOffroad(player) == true && player->offroad > minimum_offroad); // Slowed by offroad
-		AddForCondition(speedDiff < (baseAccel >> 3)); // Accelerating slower than expected
-		AddForCondition(angleDiff > ANG60); // Being pushed backwards
-		AddForCondition(uphill == true); // Going up a steep slope without speed
-
-		if (player->cmomx || player->cmomy)
-		{
-			angle_t cAngle = R_PointToDist2(0, 0, player->cmomx, player->cmomy);
-			angle_t cDelta = AngleDelta(player->mo->angle, cAngle);
-
-			AddForCondition(cDelta > ANGLE_90); // Conveyor going against you
-		}
-
-		if (anyCondition == false)
-		{
-			if (player->botvars.spindashconfirm > 0)
-			{
-				cmd->bot.spindashconfirm--;
-			}
-		}
-	}
-
-	// We're doing just fine, we don't need to spindash, thanks.
-	return 0;
 }
 
 /*--------------------------------------------------
@@ -1332,7 +1220,7 @@ static INT32 K_HandleBotTrack(const player_t *player, ticcmd_t *cmd, botpredicti
 
 	I_Assert(predict != nullptr);
 
-	moveangle = player->mo->angle + K_GetUnderwaterTurnAdjust(player);
+	moveangle = player->mo->angle;
 	anglediff = AngleDeltaSigned(moveangle, destangle);
 
 	if (anglediff < 0)
@@ -1465,7 +1353,7 @@ static INT32 K_HandleBotReverse(const player_t *player, ticcmd_t *cmd, botpredic
 	}
 
 	// Calculate turn direction first.
-	moveangle = player->mo->angle + K_GetUnderwaterTurnAdjust(player);
+	moveangle = player->mo->angle;
 	angle = (moveangle - destangle);
 
 	if (angle < ANGLE_180)
@@ -1564,7 +1452,7 @@ static void K_BotPodiumTurning(const player_t *player, ticcmd_t *cmd)
 		player->currentwaypoint->mobj->x, player->currentwaypoint->mobj->y
 	);
 	const INT32 delta = AngleDeltaSigned(destAngle, player->mo->angle);
-	const INT16 handling = K_GetKartTurnValue(player, KART_FULLTURN);
+	const INT16 handling = N_GetKartTurnValue(player, KART_FULLTURN);
 	fixed_t mul = FixedDiv(delta, (angle_t)(handling << TICCMD_REDUCE));
 
 	if (mul > FRACUNIT)
@@ -1621,9 +1509,7 @@ static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 	botprediction_t *predict = nullptr;
 	auto predict_finally = srb2::finally([&predict]() { Z_Free(predict); });
 
-	boolean trySpindash = true;
 	angle_t destangle = 0;
-	UINT8 spindash = 0;
 	INT32 turnamt = 0;
 
 	if (!(gametyperules & GTR_BOTS) // No bot behaviors
@@ -1688,26 +1574,10 @@ static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 		forcedDir = true;
 	}
 
-	if (P_IsObjectOnGround(player->mo) == false)
-	{
-		if (player->fastfall == 0 && player->respawn.state == RESPAWNST_NONE)
-		{
-			if (botController != nullptr && (botController->flags & TMBOT_FASTFALL) == TMBOT_FASTFALL)
-			{
-				// Fast fall!
-				cmd->buttons |= BT_EBRAKEMASK;
-				return;
-			}
-		}
-
-		//return; // Don't allow bots to turn in the air.
-	}
-
 	if (forcedDir == true)
 	{
 		destangle = R_PointToAngle2(player->mo->x, player->mo->y, predict->x, predict->y);
 		turnamt = K_HandleBotTrack(player, cmd, predict, destangle);
-		trySpindash = false;
 	}
 	else if (leveltime <= starttime && finishBeamLine != nullptr && !N_UseLegacyStart())
 	{
@@ -1726,9 +1596,6 @@ static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 			player->mo->x, player->mo->y
 		) - (K_BotSpeedScaled(player, player->speed) * futureSight);
 
-		// Don't run the spindash code at all until we're in the right place
-		trySpindash = false;
-
 		if (distToFinish < closeDist)
 		{
 			// We're too close, we need to start backing up.
@@ -1739,13 +1606,6 @@ static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 			INT32 bullyTurn = INT32_MAX;
 
 			// We're in about the right place, let's do whatever we want to.
-
-			if (player->kartspeed >= 5)
-			{
-				// Faster characters want to spindash.
-				// Slower characters will use their momentum.
-				trySpindash = true;
-			}
 
 			// Look for characters to bully.
 			bullyTurn = K_PositionBully(player);
@@ -1764,21 +1624,10 @@ static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 					destangle = R_PointToAngle2(player->mo->x, player->mo->y, predict->x, predict->y);
 					turnamt = K_HandleBotTrack(player, cmd, predict, destangle);
 				}
-				cmd->buttons &= ~(BT_ACCELERATE|BT_BRAKE);
-				cmd->forwardmove = 0;
-				trySpindash = true;
 			}
 			else
 			{
 				turnamt = bullyTurn;
-
-				// If already spindashing, wait until we get a relatively OK charge first.
-				if (player->spindash == 0 || player->spindash > TICRATE)
-				{
-					trySpindash = false;
-					cmd->buttons |= BT_ACCELERATE;
-					cmd->forwardmove = MAXPLMOVE;
-				}
 			}
 		}
 		else
@@ -1800,7 +1649,6 @@ static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 	}
 	else if (leveltime <= starttime && N_UseLegacyStart())
 	{
-		trySpindash = false;
 
 		if (leveltime >= starttime-TICRATE-TICRATE/7)
 		{
@@ -1823,32 +1671,6 @@ static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 			destangle = R_PointToAngle2(player->mo->x, player->mo->y, predict->x, predict->y);
 			turnamt = K_HandleBotTrack(player, cmd, predict, destangle);
 		}
-	}
-
-	if (trySpindash == true)
-	{
-		// Spindashing
-		spindash = K_TrySpindash(player, cmd);
-
-		if (spindash > 0)
-		{
-			cmd->buttons |= BT_EBRAKEMASK;
-			cmd->forwardmove = 0;
-
-			if (spindash == 2 && player->speed < 6*mapobjectscale)
-			{
-				cmd->buttons |= BT_DRIFT;
-			}
-		}
-	}
-
-	if (spindash == 0 && player->exiting == 0)
-	{
-		// Don't pointlessly try to use rings/sneakers while charging a spindash.
-		// TODO: Allowing projectile items like orbinaut while e-braking would be nice, maybe just pass in the spindash variable?
-		t = I_GetPreciseTime();
-		K_BotItemUsage(player, cmd, turnamt);
-		ps_bots[player - players].item = I_GetPreciseTime() - t;
 	}
 
 	if (turnamt != 0)
@@ -1982,23 +1804,6 @@ void K_UpdateBotGameplayVars(player_t *player)
 	player->botvars.rubberband = K_UpdateRubberband(player);
 
 	player->botvars.turnconfirm += player->cmd.bot.turnconfirm;
-
-	if (player->spindashboost // You just released a spindash, you don't need to try again yet, jeez.
-		|| P_IsObjectOnGround(player->mo) == false) // Not in a state where we want 'em to spindash.
-	{
-		player->botvars.spindashconfirm = 0;
-	}
-	else
-	{
-		if (player->cmd.bot.spindashconfirm < 0 && abs(player->cmd.bot.spindashconfirm) > player->botvars.spindashconfirm)
-		{
-			player->botvars.spindashconfirm = 0;
-		}
-		else
-		{
-			player->botvars.spindashconfirm += player->cmd.bot.spindashconfirm;
-		}
-	}
 
 	const botcontroller_t *botController = K_GetBotController(player->mo);
 	if (K_TryRingShooter(player, botController) == true)

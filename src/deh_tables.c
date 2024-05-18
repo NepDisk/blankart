@@ -2639,9 +2639,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_WATERTRAILUNDERLAY7",
 	"S_WATERTRAILUNDERLAY8",
 
-	"S_SPINDASHDUST",
-	"S_SPINDASHWIND",
-
 	"S_SOFTLANDING1",
 	"S_SOFTLANDING2",
 	"S_SOFTLANDING3",
@@ -3724,8 +3721,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_WATERTRAIL",
 	"MT_WATERTRAILUNDERLAY",
 
-	"MT_SPINDASHDUST",
-	"MT_SPINDASHWIND",
 	"MT_SOFTLANDING",
 	"MT_DOWNLINE",
 	"MT_HOLDBUBBLE",
@@ -3995,7 +3990,7 @@ const char *const MAPTHINGFLAG_LIST[4] = {
 const char *const PLAYERFLAG_LIST[] = {
 	"GODMODE",
 
-	"UPDATEMYRESPAWN", // Scripted sequences / fastfall can set this to force a respawn waypoint update
+	"UPDATEMYRESPAWN", // Scripted sequences
 
 	"AUTOROULETTE", // Item box accessibility
 
@@ -4039,7 +4034,6 @@ const char *const PLAYERFLAG_LIST[] = {
 	"SHRINKACTIVE", // "Shrink me" cheat is in effect. (Can't be disabled mid-race)
 
 	"VOID", // Removed from reality! When leaving hitlag, reenable visibility+collision and kill speed.
-	"NOFASTFALL", // Has already done ebrake/fastfall behavior for this input. Fastfalling needs a new input to prevent unwanted bounces on unexpected airtime.
 
 	NULL // stop loop here.
 };

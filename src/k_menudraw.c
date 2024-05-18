@@ -5028,8 +5028,6 @@ void M_DrawProfileControls(void)
 	patch_t *hint = W_CachePatchName("MENUHINT", PU_CACHE);
 	INT32 hintofs = 3;
 
-	K_DrawInputDisplay(BASEVIDWIDTH*2/3 - optionsmenu.contx, BASEVIDHEIGHT/2 - optionsmenu.conty, 0, '_', pid, true, false);
-
 	if (optionsmenu.trycontroller)
 	{
 		optionsmenu.tcontx = BASEVIDWIDTH*2/3 - 10;
@@ -5272,7 +5270,7 @@ void M_DrawProfileControls(void)
 						M_DrawBindBen(benx, beny, (benx-14) - bindx);
 
 					// controller dest coords:
-					if (itemOn == i && gc > 0 && gc <= gc_start)
+					if (itemOn == i && gc > 0 && gc <= gc_pause)
 					{
 						optionsmenu.tcontx = controlleroffsets[gc][0];
 						optionsmenu.tconty = controlleroffsets[gc][1];

@@ -428,7 +428,6 @@ void P_ResetPlayer(player_t *player)
 	//player->drift = player->driftcharge = 0;
 	player->trickpanel = TRICKSTATE_NONE;
 	player->glanceDir = 0;
-	player->fastfall = 0;
 	player->turbine = 0;
 	Obj_EndBungee(player);
 	K_PlayerResetPogo(player); //NOIRE: Reset pogo status, as this method is called in some places its important and should be done.
@@ -1458,10 +1457,6 @@ boolean P_PlayerHitFloor(player_t *player, boolean fromAir, angle_t oldPitch, an
 				air = true;
 			}
 
-			if (air == false && K_FastFallBounce(player) == true)
-			{
-				return false;
-			}
 		}
 	}
 
@@ -2007,56 +2002,6 @@ static void P_3dMovement(player_t *player)
 		if (player->mo->movefactor != FRACUNIT) // Friction-scaled acceleration...
 			movepushforward = FixedMul(movepushforward, player->mo->movefactor);
 
-		if (player->curshield != KSHIELD_TOP)
-		{
-			INT32 a = K_GetUnderwaterTurnAdjust(player);
-			INT32 adj = 0;
-
-			if (a)
-			{
-				const fixed_t maxadj = ANG10/4;
-
-				adj = a / 4;
-
-				if (adj > 0)
-				{
-					if (adj > maxadj)
-						adj = maxadj;
-				}
-				else if (adj < 0)
-				{
-					if (adj < -(maxadj))
-						adj = -(maxadj);
-				}
-
-				if (abs(player->underwatertilt + adj) > abs(a))
-					adj = (a - player->underwatertilt);
-
-				if (abs(a) < abs(player->underwatertilt))
-					adj = 0;
-
-				movepushangle += a;
-			}
-
-			if (adj)
-			{
-				player->underwatertilt += adj;
-
-				if (abs(player->underwatertilt) > ANG30)
-				{
-					player->underwatertilt =
-						player->underwatertilt > 0 ? ANG30
-						: -(ANG30);
-				}
-			}
-			else
-			{
-				player->underwatertilt =
-					FixedMul(player->underwatertilt,
-							7*FRACUNIT/8);
-			}
-		}
-
 		totalthrust.x += P_ReturnThrustX(player->mo, movepushangle, movepushforward);
 		totalthrust.y += P_ReturnThrustY(player->mo, movepushangle, movepushforward);
 	}
@@ -2182,222 +2127,6 @@ static void P_3dMovement(player_t *player)
 	}
 }
 
-// For turning correction in P_UpdatePlayerAngle.
-// Given a range of possible steering inputs, finds a steering input that corresponds to the desired angle change.
-static INT16 P_FindClosestTurningForAngle(player_t *player, INT32 targetAngle, INT16 lowBound, INT16 highBound)
-{
-	INT16 newBound;
-	INT16 preferred = lowBound;
-	int attempts = 0;
-
-	// Only works if our low bound is actually our low bound.
-	if (highBound < lowBound)
-	{
-		INT16 tmp = lowBound;
-		lowBound = highBound;
-		highBound = tmp;
-	}
-
-	// Slightly frumpy binary search for the ideal turning input.
-	// We do this instead of reversing K_GetKartTurnValue so that future handling changes are automatically accounted for.
-
-	while (attempts++ < 20) // Practical calls of this function search maximum 10 times, this is solely for safety.
-	{
-		// These need to be treated as signed, or situations where boundaries straddle 0 are a mess.
-		INT32 lowAngle = K_GetKartTurnValue(player, lowBound) << TICCMD_REDUCE;
-		INT32 highAngle = K_GetKartTurnValue(player, highBound) << TICCMD_REDUCE;
-
-		// EXIT CONDITION 1: Hopeless search, target angle isn't between boundaries at all.
-		if (lowAngle >= targetAngle)
-			return lowBound;
-		if (highAngle <= targetAngle)
-			return highBound;
-
-		// Test the middle of our steering range, so we can see which side is more promising.
-		newBound = (lowBound + highBound) / 2;
-
-		// EXIT CONDITION 2: Boundaries converged and we're all out of precision.
-		if (newBound == lowBound || newBound == highBound)
-			break;
-
-		INT32 newAngle = K_GetKartTurnValue(player, newBound) << TICCMD_REDUCE;
-
-		angle_t lowError = abs(targetAngle - lowAngle);
-		angle_t highError = abs(targetAngle - highAngle);
-		angle_t newError = abs(targetAngle - newAngle);
-
-		// CONS_Printf("steering %d / %d / %d - angle %d / %d / %d - TA %d - error %d / %d / %d\n", lowBound, newBound, highBound, lowAngle, newAngle, highAngle, targetAngle, lowError, newError, highError);
-
-		// EXIT CONDITION 3: We got lucky!
-		if (lowError == 0)
-			return lowBound;
-		if (newError == 0)
-			return newBound;
-		if (highError == 0)
-			return highBound;
-
-		// If not, store the best estimate...
-		if (lowError <= newError && lowError <= highError)
-			preferred = lowBound;
-		if (highError <= newError && highError <= lowError)
-			preferred = highBound;
-		if (newError <= lowError && newError <= highError)
-			preferred = newBound;
-
-		// ....and adjust the bounds for another run.
-		if (lowAngle <= targetAngle && targetAngle <= newAngle)
-			highBound = newBound;
-		else
-			lowBound = newBound;
-	}
-
-	return preferred;
-}
-
-//
-// P_UpdatePlayerAngle
-//
-// Updates player angleturn with cmd->turning
-//
-static void P_UpdatePlayerAngle(player_t *player)
-{
-	angle_t angleChange = ANGLE_MAX;
-	UINT8 p = UINT8_MAX;
-	UINT8 i;
-
-	for (i = 0; i <= splitscreen; i++)
-	{
-		if (player == &players[g_localplayers[i]])
-		{
-			p = i;
-			break;
-		}
-	}
-
-	// Don't apply steering just yet. If we make a correction, we'll need to adjust it.
-	INT16 targetsteering = K_UpdateSteeringValue(player->steering, player->cmd.turning);
-	angleChange = K_GetKartTurnValue(player, targetsteering) << TICCMD_REDUCE;
-
-	if (K_PlayerUsesBotMovement(player))
-	{
-		// You're a bot. Go where you're supposed to go
-		player->steering = targetsteering;
-	}
-	else if ((!(player->cmd.flags & TICCMD_RECEIVED)) && (!!(player->oldcmd.flags && TICCMD_RECEIVED)))
-	{
-		// Missed a single tic. This ticcmd is copied from their previous one
-		// (less the TICCMD_RECEIVED flag), so it will include an old angle, and
-		// steering towards that will turn unambitiously. A better guess is to
-		// assume their inputs are the same, and turn based on those for 1 tic.
-		player->steering = targetsteering;
-		// "Why not use this for multiple consecutive dropped tics?" Oversimplification:
-		// Clients have default netticbuffer 1, so missing more than 1 tic will freeze
-		// your client, and with it, your local camera. Our goal then becomes not to
-		// steer PAST the angle you can see, so the default turn solver behavior is best.
-	}
-	else
-	{
-		// With a full slam on the analog stick, how far could we steer in either direction?
-		INT16 steeringRight =  K_UpdateSteeringValue(player->steering, KART_FULLTURN);
-		INT16 steeringLeft =  K_UpdateSteeringValue(player->steering, -KART_FULLTURN);
-
-		// When entering/leaving drifts, allow all legal turns with no easing.
-		// This is the hardest case for the turn solver, because your handling properties on
-		// client side are very different than your handling properties on server side—at least,
-		// until your drift status makes the full round-trip and is reflected in your gamestate.
-		if (player->drift && abs(player->drift) < 5)
-		{
-			steeringRight = KART_FULLTURN;
-			steeringLeft = -KART_FULLTURN;
-		}
-
-		angle_t maxTurnRight = K_GetKartTurnValue(player, steeringRight) << TICCMD_REDUCE;
-		angle_t maxTurnLeft = K_GetKartTurnValue(player, steeringLeft) << TICCMD_REDUCE;
-
-		// Grab local camera angle from ticcmd. Where do we actually want to go?
-		angle_t targetAngle = (player->cmd.angle) << TICCMD_REDUCE;
-		angle_t targetDelta = targetAngle - (player->mo->angle);
-
-		// Corrections via fake turn go through easing.
-		// That means undoing them takes the same amount of time as doing them.
-		// This can lead to oscillating death spiral states on a multi-tic correction, as we swing past the target angle.
-
-		// So before we go into death-spirals, if our predicton is _almost_ right... 
-		angle_t leniency_base;
-		if (G_CompatLevel(0x000A))
-		{
-			// Compat level for 2.0 staff ghosts
-			leniency_base = 4 * ANG1 / 3;
-		}
-		else
-		{
-			leniency_base = 8 * ANG1 / 3;
-		}
-		angle_t leniency = leniency_base * min(player->cmd.latency, 6);
-
-		// Don't force another turning tic, just give them the desired angle!
-
-		if (targetDelta == angleChange || (maxTurnRight == 0 && maxTurnLeft == 0))
-		{
-			// Either we're dead on or we can't steer at all.
-			player->steering = targetsteering;
-		}
-		else
-		{
-			// We're off. Try to legally steer the player towards their camera.
-
-			if (K_Sliptiding(player) && P_IsObjectOnGround(player->mo) && (player->cmd.turning != 0) && ((player->cmd.turning > 0) == (player->aizdriftstrat > 0)))
-			{
-				// Don't change handling direction if someone's inputs are sliptiding, you'll break the sliptide!
-				if (player->cmd.turning > 0)
-				{
-					steeringLeft = max(steeringLeft, 1);
-					steeringRight = max(steeringRight, steeringLeft);
-				}
-				else
-				{
-					steeringRight = min(steeringRight, -1);
-					steeringLeft = min(steeringLeft, steeringRight);
-				}
-			}
-
-			player->steering = P_FindClosestTurningForAngle(player, targetDelta, steeringLeft, steeringRight);
-			angleChange = K_GetKartTurnValue(player, player->steering) << TICCMD_REDUCE;
-
-			// And if the resulting steering input is close enough, snap them exactly.
-			if (min(targetDelta - angleChange, angleChange - targetDelta) <= leniency)
-				angleChange = targetDelta;
-		}
-	}
-
-	if (p == UINT8_MAX)
-	{
-		// When F12ing players, set local angle directly.
-		P_SetPlayerAngle(player, player->angleturn + angleChange);
-		player->mo->angle = player->angleturn;
-	}
-	else
-	{
-		player->angleturn += angleChange;
-		player->mo->angle = player->angleturn;
-	}
-
-	if (!cv_allowmlook.value || player->spectator == false)
-	{
-		player->aiming = 0;
-	}
-	else
-	{
-		player->aiming += (player->cmd.aiming << TICCMD_REDUCE);
-		player->aiming = G_ClipAimingPitch((INT32 *)&player->aiming);
-	}
-
-	if (p != UINT8_MAX)
-	{
-		localaiming[p] = player->aiming;
-	}
-}
-
 //
 // P_MovePlayer
 void P_MovePlayer(player_t *player)
@@ -2431,10 +2160,7 @@ void P_MovePlayer(player_t *player)
 	// MOVEMENT CODE	//
 	//////////////////////
 
-	if (cv_ng_turnstyle.value == 1 || cv_ng_turnstyle.value == 2)
-		P_UpdatePlayerAngle(player);
-	else
-		N_UpdatePlayerAngle(player);
+	N_UpdatePlayerAngle(player);
 
 	ticruned++;
 	if (!(cmd->flags & TICCMD_RECEIVED))
@@ -2509,9 +2235,6 @@ void P_MovePlayer(player_t *player)
 			else if (player->drift != 0)
 			{
 				INT32 a = (ANGLE_45 / 5) * player->drift;
-
-				if (player->mo->eflags & MFE_UNDERWATER && cv_ng_underwaterhandling.value)
-					a /= 2;
 
 				player->drawangle += a;
 			}
@@ -4847,7 +4570,6 @@ void P_ForceLocalAngle(player_t *player, angle_t angle)
 		if (player == &players[g_localplayers[i]])
 		{
 			D_ResetTiccmdAngle(i, angle);
-			localsteering[i] = angle;
 
 			break;
 		}

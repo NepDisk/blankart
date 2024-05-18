@@ -189,24 +189,14 @@ class TiccmdBuilder
 
 		angle_t angleChange = 0;
 
-		while (realtics > 0)
-		{
-			INT32& steering = localsteering[forplayer()];
-
-			steering = K_UpdateSteeringValue(steering, cmd->turning);
-			angleChange = K_GetKartTurnValue(player(), steering) << TICCMD_REDUCE;
-
-			realtics--;
-		}
-
-#if 0
+//#if 0
 		// Left here in case it needs unsealing later. This tried to replicate an old localcam function, but this behavior was unpopular in tests.
-		//if (player()->pflags & PF_DRIFTEND)
+		if (player()->pflags & PF_DRIFTEND)
 		{
 			localangle[forplayer()] = player()->mo->angle;
 		}
 		else
-#endif
+//#endif
 		{
 			int p = g_localplayers[forplayer()];
 
@@ -395,7 +385,6 @@ class TiccmdBuilder
 		};
 
 		map(gc_drift, BT_DRIFT); // drift
-		map(gc_spindash, BT_SPINDASHMASK); // C
 		map(gc_item, BT_ATTACK); // fire
 
 		map(gc_lookback, BT_LOOKBACK); // rear view

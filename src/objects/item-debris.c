@@ -115,7 +115,7 @@ spawn_cloud
 				P_RandomRange(PR_UNDEFINED, -spacing, spacing) * FRACUNIT,
 				P_RandomRange(PR_UNDEFINED, -spacing, spacing) * FRACUNIT,
 				P_RandomRange(PR_UNDEFINED, 0, 4 * spacing) * FRACUNIT,
-				MT_SPINDASHDUST
+				MT_DUST
 		);
 
 		puff->color = collector->color;
@@ -215,7 +215,7 @@ Obj_ItemDebrisThink (mobj_t *debris)
 	if (debris_type(debris) == DEBRIS_ALPHA)
 	{
 		mobj_t *dust = P_SpawnMobjFromMobj(
-				debris, 0, 0, 0,  MT_SPINDASHDUST);
+				debris, 0, 0, 0,  MT_DUST);
 
 		P_SetScale(dust, (dust->destscale /= 3));
 

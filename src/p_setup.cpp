@@ -5214,8 +5214,6 @@ static void P_ConvertBinaryLinedefTypes(void)
 			//Flags
 			if (lines[i].special == 152)
 				lines[i].args[2] |= TMFB_REVERSE;
-			if (lines[i].flags & ML_NOCLIMB)
-				lines[i].args[2] |= TMFB_SPINDASH;
 			if (lines[i].special == 153)
 				lines[i].args[2] |= TMFB_DYNAMIC;
 
@@ -5316,9 +5314,6 @@ static void P_ConvertBinaryLinedefTypes(void)
 			//Flags
 			if (lines[i].flags & ML_BLOCKPLAYERS)
 				lines[i].args[6] |= TMFR_REVERSE;
-			if (lines[i].flags & ML_NOCLIMB)
-				lines[i].args[6] |= TMFR_SPINDASH;
-
 			lines[i].special = 190;
 			break;
 		case 200: //FOF: Light block
@@ -8731,9 +8726,12 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	// Load the waypoints please!
 	if (gametyperules & GTR_CIRCUIT && gamestate != GS_TITLESCREEN)
 	{
-		if (K_SetupWaypointList() == false && numbosswaypoints == 0)
+		if (numbosswaypoints == 0)
 		{
-			CONS_Alert(CONS_ERROR, "Waypoints were not able to be setup! Player positions will not work correctly.\n");
+			if (K_SetupWaypointList() == false)
+			{
+				CONS_Alert(CONS_ERROR, "Waypoints were not able to be setup! Player positions will not work correctly.\n");
+			}
 		}
 
 		if (K_GenerateFinishBeamLine() == false)

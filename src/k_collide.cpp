@@ -1060,7 +1060,7 @@ boolean K_PuntCollide(mobj_t *t1, mobj_t *t2)
 				P_RandomRange(PR_ITEM_DEBRIS, -spacing, spacing) * FRACUNIT,
 				P_RandomRange(PR_ITEM_DEBRIS, -spacing, spacing) * FRACUNIT,
 				P_RandomRange(PR_ITEM_DEBRIS, 0, 4*spacing) * FRACUNIT,
-				MT_SPINDASHDUST
+				MT_DUST
 			);
 
 			puff->momz = puff->scale * P_MobjFlip(puff);

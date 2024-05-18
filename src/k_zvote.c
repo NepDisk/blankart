@@ -780,7 +780,7 @@ static void K_HandleMidVoteInput(void)
 
 		if (menuactive == false)
 		{
-			pressed = G_PlayerInputDown(i, gc_z, 0);
+			pressed = G_PlayerInputDown(i, gc_vote, 0);
 		}
 
 		// Between states, require us to unpress Z.
@@ -1055,7 +1055,7 @@ void K_DrawMidVote(void)
 	boolean pressed = false;
 	fixed_t x = INT32_MAX, y = INT32_MAX;
 
-	pressed = G_PlayerInputDown(id, gc_z, 0);
+	pressed = G_PlayerInputDown(id, gc_vote, 0);
 	gui = &g_midVote.gui[id];
 
 	if (gui->slide == 0)

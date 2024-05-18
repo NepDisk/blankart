@@ -795,9 +795,8 @@ boolean G_KeyBindIsNecessary(INT32 gc)
 {
 	switch (gc)
 	{
-		case gc_a:
-		case gc_c:
-		case gc_x:
+		case gc_accel:
+		case gc_brake:
 		case gc_up:
 		case gc_down:
 		case gc_left:
@@ -928,15 +927,13 @@ void G_DefineDefaultControls(void)
 	gamecontroldefault[gc_down         ][0] = KEY_DOWNARROW;
 	gamecontroldefault[gc_left         ][0] = KEY_LEFTARROW;
 	gamecontroldefault[gc_right        ][0] = KEY_RIGHTARROW;
-	gamecontroldefault[gc_a            ][0] = 'a';
-	gamecontroldefault[gc_b            ][0] = KEY_LSHIFT;
-	gamecontroldefault[gc_c            ][0] = 'q';
-	gamecontroldefault[gc_x            ][0] = 'd';
-	gamecontroldefault[gc_y            ][0] = 'v';
-	gamecontroldefault[gc_z            ][0] = 'z';
-	gamecontroldefault[gc_l            ][0] = KEY_SPACE;
-	gamecontroldefault[gc_r            ][0] = 's';
-	gamecontroldefault[gc_start        ][0] = KEY_ESCAPE;
+	gamecontroldefault[gc_accel            ][0] = 'a';
+	gamecontroldefault[gc_lookback            ][0] = KEY_LSHIFT;
+	gamecontroldefault[gc_drift            ][0] = 'd';
+	gamecontroldefault[gc_vote            ][0] = 'z';
+	gamecontroldefault[gc_item            ][0] = KEY_SPACE;
+	gamecontroldefault[gc_drift            ][0] = 's';
+	gamecontroldefault[gc_pause        ][0] = KEY_ESCAPE;
 	gamecontroldefault[gc_talk         ][0] = 't';
 	gamecontroldefault[gc_rankings     ][0] = KEY_TAB;
 	gamecontroldefault[gc_screenshot   ][0] = KEY_F8;
@@ -948,15 +945,13 @@ void G_DefineDefaultControls(void)
 	gamecontroldefault[gc_down ][1] = KEY_HAT1+1; // D-Pad Down
 	gamecontroldefault[gc_left ][1] = KEY_HAT1+2; // D-Pad Left
 	gamecontroldefault[gc_right][1] = KEY_HAT1+3; // D-Pad Right
-	gamecontroldefault[gc_a    ][1] = KEY_JOY1+0; // A
-	gamecontroldefault[gc_b    ][1] = KEY_JOY1+1; // B
-	gamecontroldefault[gc_c    ][1] = KEY_JOY1+3; // Y
-	gamecontroldefault[gc_x    ][1] = KEY_JOY1+2; // X
-	gamecontroldefault[gc_y    ][1] = KEY_JOY1+9; // LB
-	gamecontroldefault[gc_z    ][1] = KEY_JOY1+10; // RB
-	gamecontroldefault[gc_l    ][1] = KEY_AXIS1+8; // LT
-	gamecontroldefault[gc_r    ][1] = KEY_AXIS1+9; // RT
-	gamecontroldefault[gc_start][1] = KEY_JOY1+6; // Start
+	gamecontroldefault[gc_accel    ][1] = KEY_JOY1+0; // A
+	gamecontroldefault[gc_lookback    ][1] = KEY_JOY1+1; // B
+	gamecontroldefault[gc_brake    ][1] = KEY_JOY1+2; // X
+	gamecontroldefault[gc_vote    ][1] = KEY_JOY1+10; // RB
+	gamecontroldefault[gc_item    ][1] = KEY_AXIS1+8; // LT
+	gamecontroldefault[gc_drift    ][1] = KEY_AXIS1+9; // RT
+	gamecontroldefault[gc_pause][1] = KEY_JOY1+6; // Start
 
 	gamecontroldefault[gc_up   ][2] = KEY_AXIS1+2; // Axis Y-
 	gamecontroldefault[gc_down ][2] = KEY_AXIS1+3; // Axis Y+
@@ -972,10 +967,9 @@ void G_DefineDefaultControls(void)
 	menucontrolreserved[gc_down ][0] = KEY_DOWNARROW;
 	menucontrolreserved[gc_left ][0] = KEY_LEFTARROW;
 	menucontrolreserved[gc_right][0] = KEY_RIGHTARROW;
-	menucontrolreserved[gc_a    ][0] = KEY_ENTER;
-	menucontrolreserved[gc_c    ][0] = KEY_BACKSPACE;
-	menucontrolreserved[gc_x    ][0] = KEY_ESCAPE;
-	menucontrolreserved[gc_start][0] = KEY_ESCAPE; // Handled special
+	menucontrolreserved[gc_accel    ][0] = KEY_ENTER;
+	menucontrolreserved[gc_brake    ][0] = KEY_ESCAPE;
+	menucontrolreserved[gc_pause][0] = KEY_ESCAPE; // Handled special
 }
 
 static boolean G_ControlUsesAxis(INT32 map[MAXINPUTMAPPING])

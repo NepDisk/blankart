@@ -304,16 +304,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->springcolor);
 	else if (fastcmp(field,"dashpadcooldown"))
 		lua_pushinteger(L, plr->dashpadcooldown);
-	else if (fastcmp(field,"spindash"))
-		lua_pushinteger(L, plr->spindash);
-	else if (fastcmp(field,"spindashspeed"))
-		lua_pushinteger(L, plr->spindashspeed);
-	else if (fastcmp(field,"spindashboost"))
-		lua_pushinteger(L, plr->spindashboost);
-	else if (fastcmp(field,"fastfall"))
-		lua_pushfixed(L, plr->fastfall);
-	else if (fastcmp(field,"fastfallbase"))
-		lua_pushfixed(L, plr->fastfallBase);
 	else if (fastcmp(field,"numboosts"))
 		lua_pushinteger(L, plr->numboosts);
 	else if (fastcmp(field,"boostpower"))
@@ -856,16 +846,6 @@ static int player_set(lua_State *L)
 		plr->springcolor = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"dashpadcooldown"))
 		plr->dashpadcooldown = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"spindash"))
-		plr->spindash = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"spindashspeed"))
-		plr->spindashspeed = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"spindashboost"))
-		plr->spindashboost = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"fastfall"))
-		plr->fastfall = luaL_checkfixed(L, 3);
-	else if (fastcmp(field,"fastfallbase"))
-		plr->fastfallBase = luaL_checkfixed(L, 3);
 	else if (fastcmp(field,"numboosts"))
 		plr->numboosts = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"boostpower"))

@@ -24,6 +24,7 @@
 #include "d_main.h"
 #include "d_player.h"
 #include "d_clisrv.h"
+#include "g_input.h"
 #include "p_setup.h"
 #include "i_time.h"
 #include "i_system.h"
@@ -221,7 +222,7 @@ boolean G_CompatLevel(UINT16 level)
 // Ziptics are UINT16 now, go nuts
 
 #define ZT_BOT_TURN			0x0001
-#define ZT_BOT_SPINDASH		0x0002
+//#define ZT_BOT_SPINDASH		0x0002
 #define ZT_BOT_ITEM			0x0004
 
 #define DEMOMARKER 0x80 // demobuf.end
@@ -601,8 +602,6 @@ void G_ReadDemoTiccmd(ticcmd_t *cmd, INT32 playernum)
 
 		if (botziptic & ZT_BOT_TURN)
 			oldcmd[playernum].bot.turnconfirm = READSINT8(demobuf.p);
-		if (botziptic & ZT_BOT_SPINDASH)
-			oldcmd[playernum].bot.spindashconfirm = READSINT8(demobuf.p);
 		if (botziptic & ZT_BOT_ITEM)
 			oldcmd[playernum].bot.itemconfirm = READSINT8(demobuf.p);
 	}
@@ -706,13 +705,6 @@ void G_WriteDemoTiccmd(ticcmd_t *cmd, INT32 playernum)
 			WRITESINT8(demobuf.p, cmd->bot.turnconfirm);
 			oldcmd[playernum].bot.turnconfirm = cmd->bot.turnconfirm;
 			botziptic |= ZT_BOT_TURN;
-		}
-
-		if (cmd->bot.spindashconfirm != oldcmd[playernum].bot.spindashconfirm)
-		{
-			WRITESINT8(demobuf.p, cmd->bot.spindashconfirm);
-			oldcmd[playernum].bot.spindashconfirm = cmd->bot.spindashconfirm;
-			botziptic |= ZT_BOT_SPINDASH;
 		}
 
 		if (cmd->bot.itemconfirm != oldcmd[playernum].bot.itemconfirm)
@@ -1378,8 +1370,6 @@ readghosttic:
 		{
 			UINT16 botziptic = READUINT16(g->p);
 			if (botziptic & ZT_BOT_TURN)
-				g->p++;
-			if (botziptic & ZT_BOT_SPINDASH)
 				g->p++;
 			if (botziptic & ZT_BOT_ITEM)
 				g->p++;
@@ -4232,7 +4222,7 @@ boolean G_CheckDemoTitleEntry(void)
 	if (menuactive || chat_on)
 		return false;
 
-	if (!G_PlayerInputDown(0, gc_b, 0) && !G_PlayerInputDown(0, gc_x, 0))
+	if (!G_PlayerInputDown(0, gc_lookback, 0) && !G_PlayerInputDown(0, gc_brake, 0))
 		return false;
 
 	demo.willsave = true;

@@ -5375,16 +5375,6 @@ static void K_drawInput(void)
 		tic_t t = std::clamp(lt_ticker, start, start + kDelay) - start;
 		def[0][1] -= 24 + Easing_Linear(t * FRACUNIT / kDelay, 0, 7);
 	}
-
-	K_DrawInputDisplay(
-		def[k][0] - FixedToFloat(34 * slide),
-		def[k][1] - FixedToFloat(51 * slide) + tallySlide,
-		flags,
-		mode,
-		(local ? G_LocalSplitscreenPartyPosition : G_PartyPosition)(stplyr - players),
-		local,
-		stplyr->speed > 0
-	);
 }
 
 static void K_drawChallengerScreen(void)
@@ -5799,7 +5789,6 @@ static void K_DrawBotDebugger(void)
 	V_DrawSmallString(8, 36, 0, va("Item confirm: %d", bot->botvars.itemconfirm));
 
 	V_DrawSmallString(8, 42, 0, va("Turn: %d / %d / %d", -BOTTURNCONFIRM, bot->botvars.turnconfirm, BOTTURNCONFIRM));
-	V_DrawSmallString(8, 46, 0, va("Spindash: %d / %d", bot->botvars.spindashconfirm, BOTSPINDASHCONFIRM));
 	V_DrawSmallString(8, 50, 0, va("Respawn: %d / %d", bot->botvars.respawnconfirm, BOTRESPAWNCONFIRM));
 
 	V_DrawSmallString(8, 56, 0, va("Item priority: %d", bot->botvars.roulettePriority));

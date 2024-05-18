@@ -6489,7 +6489,7 @@ static void P_AddBlockThinker(sector_t *sec, line_t *sourceline)
   * \sa P_SpawnSpecials, T_RaiseSector
   * \author SSNTails <http://www.ssntails.org>
   */
-static void P_AddRaiseThinker(sector_t *sec, INT16 tag, fixed_t speed, fixed_t ceilingtop, fixed_t ceilingbottom, boolean lower, boolean spindash)
+static void P_AddRaiseThinker(sector_t *sec, INT16 tag, fixed_t speed, fixed_t ceilingtop, fixed_t ceilingbottom, boolean lower)
 {
 	raise_t *raise;
 
@@ -6508,15 +6508,13 @@ static void P_AddRaiseThinker(sector_t *sec, INT16 tag, fixed_t speed, fixed_t c
 
 	if (lower)
 		raise->flags |= RF_REVERSE;
-	if (spindash)
-		raise->flags |= RF_SPINDASH;
 
 	// interpolation
 	R_CreateInterpolator_SectorPlane(&raise->thinker, sec, false);
 	R_CreateInterpolator_SectorPlane(&raise->thinker, sec, true);
 }
 
-static void P_AddAirbob(sector_t *sec, INT16 tag, fixed_t dist, boolean raise, boolean spindash, boolean dynamic)
+static void P_AddAirbob(sector_t *sec, INT16 tag, fixed_t dist, boolean raise, boolean dynamic)
 {
 	raise_t *airbob;
 
@@ -6535,8 +6533,6 @@ static void P_AddAirbob(sector_t *sec, INT16 tag, fixed_t dist, boolean raise, b
 
 	if (!raise)
 		airbob->flags |= RF_REVERSE;
-	if (spindash)
-		airbob->flags |= RF_SPINDASH;
 	if (dynamic)
 		airbob->flags |= RF_DYNAMIC;
 
@@ -7162,7 +7158,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 						topheight = max(startheight, destheight);
 						bottomheight = min(startheight, destheight);
 
-						P_AddRaiseThinker(lines[l].frontsector, lines[l].args[0], lines[i].args[1] << FRACBITS, topheight, bottomheight, (destheight < startheight), !!(lines[i].args[3]));
+						P_AddRaiseThinker(lines[l].frontsector, lines[l].args[0], lines[i].args[1] << FRACBITS, topheight, bottomheight, (destheight < startheight));
 					}
 				}
 				break;
@@ -7175,7 +7171,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 						if (lines[l].special < 100 || lines[l].special >= 300)
 							continue;
 
-						P_AddAirbob(lines[l].frontsector, lines[l].args[0], lines[i].args[1] << FRACBITS, !!(lines[i].args[2] & TMFB_REVERSE), !!(lines[i].args[2] & TMFB_SPINDASH), !!(lines[i].args[2] & TMFB_DYNAMIC));
+						P_AddAirbob(lines[l].frontsector, lines[l].args[0], lines[i].args[1] << FRACBITS, !!(lines[i].args[2] & TMFB_REVERSE), !!(lines[i].args[2] & TMFB_DYNAMIC));
 					}
 				}
 				break;
@@ -7277,7 +7273,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 
 			case 150: // FOF (Air bobbing)
 				P_AddFakeFloorsByLine(i, 0xff, TMB_TRANSLUCENT, FOF_EXISTS|FOF_SOLID|FOF_RENDERALL, secthinkers);
-				P_AddAirbob(lines[i].frontsector, lines[i].args[0], lines[i].args[1] << FRACBITS, !!(lines[i].args[2] & TMFB_REVERSE), !!(lines[i].args[2] & TMFB_SPINDASH), !!(lines[i].args[2] & TMFB_DYNAMIC));
+				P_AddAirbob(lines[i].frontsector, lines[i].args[0], lines[i].args[1] << FRACBITS, !!(lines[i].args[2] & TMFB_REVERSE), !!(lines[i].args[2] & TMFB_DYNAMIC));
 				break;
 
 			case 160: // FOF (Water bobbing)
@@ -7324,7 +7320,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 
 				P_AddFakeFloorsByLine(i, lines[i].args[1], lines[i].args[2], ffloorflags, secthinkers);
 				if (lines[i].args[4] & TMFC_AIRBOB)
-					P_AddAirbob(lines[i].frontsector, lines[i].args[0], 16*FRACUNIT, false, false, false);
+					P_AddAirbob(lines[i].frontsector, lines[i].args[0], 16*FRACUNIT, false, false);
 				break;
 
 			case 190: // FOF (Rising)
@@ -7379,7 +7375,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 				}
 
 				P_AddFakeFloorsByLine(i, lines[i].args[1], lines[i].args[2], ffloorflags, secthinkers);
-				P_AddRaiseThinker(lines[i].frontsector, lines[i].args[0], lines[i].args[5] << FRACBITS, ceilingtop, ceilingbottom, !!(lines[i].args[6] & TMFR_REVERSE), !!(lines[i].args[6] & TMFR_SPINDASH));
+				P_AddRaiseThinker(lines[i].frontsector, lines[i].args[0], lines[i].args[5] << FRACBITS, ceilingtop, ceilingbottom, !!(lines[i].args[6] & TMFR_REVERSE));
 				break;
 			}
 			case 200: // Light block
@@ -9372,14 +9368,6 @@ void T_Pusher(pusher_t *p)
 
 		thing->momx += xspeed;
 		thing->momy += yspeed;
-
-		// Do not apply upwards wind if the player is
-		// fastfalling. This could cancel out the increased
-		// gravity from fastfalling!
-		if (!(thing->player && thing->player->fastfall && zspeed * P_MobjFlip(thing) > 0))
-		{
-			thing->momz += zspeed;
-		}
 
 		if (thing->player)
 		{

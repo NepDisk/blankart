@@ -654,9 +654,7 @@ static boolean AllowRingShooter(const player_t *player)
 
 	if (player->drift == 0
 		&& player->justbumped == 0
-		&& player->spindashboost == 0
 		&& player->nocontrol == 0
-		&& player->fastfall == 0
 		&& player->speed < minSpeed
 		&& P_PlayerInPain(player) == false
 		&& P_IsObjectOnGround(player->mo) == true)
@@ -719,7 +717,6 @@ void Obj_RingShooterInput(player_t *player)
 				base->x, base->y,
 				setz
 			);
-			player->fastfall = 0;
 
 			if (base->fuse < RS_FUSE_TIME)
 			{

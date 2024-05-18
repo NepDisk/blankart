@@ -1518,7 +1518,7 @@ static void Y_TickVoteSelection(void)
 					vote.players[i].selection -= SELECTION_NUM_ROWS * SELECTIONS_PER_ROW;
 				}
 
-				if (G_PlayerInputDown(i, gc_a, 0) && moved == false)
+				if (G_PlayerInputDown(i, gc_accel, 0) && moved == false)
 				{
 					Y_PlayerSendVote(i);
 					moved = true;

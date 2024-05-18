@@ -61,15 +61,10 @@ INT16 N_GetKartDriftValue(const player_t* player, fixed_t countersteer)
 	basedrift = (83 * player->drift) - (((driftweight - 14) * player->drift) / 5); // 415 - 303
 	driftadjust = abs((252 - driftweight) * player->drift / 5);
 
-	if (player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER) && cv_ng_underwaterhandling.value)
-	{
-		countersteer = FixedMul(countersteer, 3 * FRACUNIT / 2);
-	}
-
 	return basedrift + (FixedMul(driftadjust * FRACUNIT, countersteer) / FRACUNIT);
 }
 
-INT16 N_GetKartTurnValue(player_t* player, INT16 turnvalue)
+INT16 N_GetKartTurnValue(const player_t* player, INT16 turnvalue)
 {
 	fixed_t p_maxspeed;
 	fixed_t p_speed;
@@ -164,12 +159,6 @@ INT16 N_GetKartTurnValue(player_t* player, INT16 turnvalue)
 	if (player->handleboost > 0)
 	{
 		turnfixed = FixedMul(turnfixed, FRACUNIT + player->handleboost);
-	}
-
-
-	if (player->mo->eflags & (MFE_UNDERWATER|MFE_TOUCHWATER) && cv_ng_underwaterhandling.value)
-	{
-		turnfixed = FixedMul(turnfixed, 3 * FRACUNIT / 2);
 	}
 
 	// Weight has a small effect on turning

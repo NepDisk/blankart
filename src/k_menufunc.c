@@ -463,7 +463,7 @@ boolean M_Responder(event_t *ev)
 			if (Playing() && !demo.playback)
 			{
 				// Quick Retry (Y in modeattacking)
-				if (modeattacking && G_PlayerInputDown(0, gc_y, splitscreen + 1) == true)
+				if (modeattacking && G_PlayerInputDown(0, gc_respawn, splitscreen + 1) == true)
 				{
 					M_TryAgain(0);
 					return true;
@@ -478,13 +478,13 @@ boolean M_Responder(event_t *ev)
 						if (players[g_localplayers[workingpid]].spectator == true)
 							continue;
 
-						if (G_PlayerInputDown(workingpid, gc_l, 0) == false)
+						if (G_PlayerInputDown(workingpid, gc_item, 0) == false)
 							continue;
-						if (G_PlayerInputDown(workingpid, gc_r, 0) == false)
+						if (G_PlayerInputDown(workingpid, gc_drift, 0) == false)
 							continue;
-						if (G_PlayerInputDown(workingpid, gc_a, 0) == false)
+						if (G_PlayerInputDown(workingpid, gc_accel, 0) == false)
 							continue;
-						if (G_PlayerInputDown(workingpid, gc_start, 0) == false)
+						if (G_PlayerInputDown(workingpid, gc_pause, 0) == false)
 							continue;
 
 						if (workingpid == 0)
@@ -505,7 +505,7 @@ boolean M_Responder(event_t *ev)
 			}
 
 			// Bog-standard Pause
-			if (allowmpause && G_PlayerInputDown(0, gc_start, splitscreen + 1) == true)
+			if (allowmpause && G_PlayerInputDown(0, gc_pause, splitscreen + 1) == true)
 			{
 				if (!chat_on)
 				{
@@ -1098,16 +1098,14 @@ void M_UpdateMenuCMD(UINT8 i, boolean bailrequired)
 	if (G_PlayerInputDown(i, gc_left,  mp)) { menucmd[i].dpad_lr--; }
 	if (G_PlayerInputDown(i, gc_right, mp)) { menucmd[i].dpad_lr++; }
 
-	if (G_PlayerInputDown(i, gc_a, mp)) { menucmd[i].buttons |= MBT_A; }
-	if (G_PlayerInputDown(i, gc_b, mp)) { menucmd[i].buttons |= MBT_B; }
-	if (G_PlayerInputDown(i, gc_c, mp)) { menucmd[i].buttons |= MBT_C; }
-	if (G_PlayerInputDown(i, gc_x, mp)) { menucmd[i].buttons |= MBT_X; }
-	if (G_PlayerInputDown(i, gc_y, mp)) { menucmd[i].buttons |= MBT_Y; }
-	if (G_PlayerInputDown(i, gc_z, mp)) { menucmd[i].buttons |= MBT_Z; }
-	if (G_PlayerInputDown(i, gc_l, mp)) { menucmd[i].buttons |= MBT_L; }
-	if (G_PlayerInputDown(i, gc_r, mp)) { menucmd[i].buttons |= MBT_R; }
+	if (G_PlayerInputDown(i, gc_accel, mp)) { menucmd[i].buttons |= MBT_A; }
+	if (G_PlayerInputDown(i, gc_lookback, mp)) { menucmd[i].buttons |= MBT_B; }
+	if (G_PlayerInputDown(i, gc_brake, mp)) { menucmd[i].buttons |= MBT_X; }
+	if (G_PlayerInputDown(i, gc_vote, mp)) { menucmd[i].buttons |= MBT_Z; }
+	if (G_PlayerInputDown(i, gc_item, mp)) { menucmd[i].buttons |= MBT_L; }
+	if (G_PlayerInputDown(i, gc_drift, mp)) { menucmd[i].buttons |= MBT_R; }
 
-	if (G_PlayerInputDown(i, gc_start, mp)) { menucmd[i].buttons |= MBT_START; }
+	if (G_PlayerInputDown(i, gc_pause, mp)) { menucmd[i].buttons |= MBT_START; }
 
 	if (bailrequired && i == 0)
 	{
