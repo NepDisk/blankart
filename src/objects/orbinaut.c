@@ -298,144 +298,84 @@ boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 	return true;
 }
 
-void Obj_OrbinautThrown(mobj_t *th, fixed_t finalSpeed, SINT8 dir)
-{
-	orbinaut_flags(th) = 0;
-
-	if (orbinaut_owner(th) != NULL && P_MobjWasRemoved(orbinaut_owner(th)) == false
-		&& orbinaut_owner(th)->player != NULL)
-	{
-		th->color = orbinaut_owner(th)->player->skincolor;
-
-		const mobj_t *owner = orbinaut_owner(th);
-		const ffloor_t *rover = P_IsObjectFlipped(owner) ? owner->ceilingrover : owner->floorrover;
-
-		if (dir != -1 && rover && (rover->fofflags & FOF_SWIMMABLE))
-		{
-			// The owner can run on water, so we should too!
-			orbinaut_flags(th) |= ORBI_WATERSKI;
-		}
-	}
-	else
-	{
-		th->color = SKINCOLOR_GREY;
-	}
-
-	th->fuse = RR_PROJECTILE_FUSE;
-	orbinaut_speed(th) = finalSpeed;
-
-	orbinaut_flags(th) |= ORBI_TRAIL;
-
-	if (dir == -1)
-	{
-		// Thrown backwards, init orbiting in place
-		orbinaut_turn(th) = ORBINAUT_MAXTURN / ORBINAUT_TURNLERP;
-
-		th->angle -= ANGLE_45;
-		th->momx = FixedMul(finalSpeed, FINECOSINE(th->angle >> ANGLETOFINESHIFT));
-		th->momy = FixedMul(finalSpeed, FINESINE(th->angle >> ANGLETOFINESHIFT));
-	}
-}
-
 void Obj_OrbinautJawzMoveHeld(player_t *player)
 {
-	fixed_t finalscale = K_ItemScaleForPlayer(player);
-	fixed_t speed = 0;
-	mobj_t *cur = NULL, *next = player->mo->hnext;
+			mobj_t *cur = player->mo->hnext;
+				fixed_t speed = ((8 - min(4, player->itemamount)) * cur->info->speed) / 7;
 
-	player->bananadrag = 0; // Just to make sure
+				player->bananadrag = 0; // Just to make sure
 
-	if (next == NULL)
-		return;
-
-	speed = ((8 - min(4, player->itemamount)) * next->info->speed) / 7;
-
-	while ((cur = next) != NULL && P_MobjWasRemoved(cur) == false)
-	{
-		const fixed_t radius = FixedHypot(player->mo->radius, player->mo->radius) + FixedHypot(cur->radius, cur->radius); // mobj's distance from its Target, or Radius.
-		fixed_t z;
-
-		next = cur->hnext;
-
-		if (!cur->health)
-			continue;
-
-		cur->color = player->skincolor;
-
-		cur->angle -= ANGLE_90;
-		cur->angle += FixedAngle(speed) / 3;
-
-		if (orbinaut_shield_dist(cur) < radius)
-		{
-			orbinaut_shield_dist(cur) += P_AproxDistance(orbinaut_shield_dist(cur), radius) / 12;
-		}
-
-		if (orbinaut_shield_dist(cur) > radius)
-		{
-			orbinaut_shield_dist(cur) = radius;
-		}
-
-		// If the player is on the ceiling, then flip your items as well.
-		if (player && player->mo->eflags & MFE_VERTICALFLIP)
-		{
-			cur->eflags |= MFE_VERTICALFLIP;
-		}
-		else
-		{
-			cur->eflags &= ~MFE_VERTICALFLIP;
-		}
-
-		// Shrink your items if the player shrunk too.
-		cur->destscale = FixedMul(FixedDiv(orbinaut_shield_dist(cur), radius), finalscale);
-		P_SetScale(cur, cur->destscale);
-
-		if (P_MobjFlip(cur) > 0)
-		{
-			z = player->mo->z;
-		}
-		else
-		{
-			z = player->mo->z + player->mo->height - cur->height;
-		}
-
-		cur->flags |= (MF_NOCLIP|MF_NOCLIPTHING); // temporarily make them noclip other objects so they can't hit anyone while in the player
-		P_MoveOrigin(cur, player->mo->x, player->mo->y, z);
-		cur->momx = FixedMul(FINECOSINE(cur->angle >> ANGLETOFINESHIFT), orbinaut_shield_dist(cur));
-		cur->momy = FixedMul(FINESINE(cur->angle >> ANGLETOFINESHIFT), orbinaut_shield_dist(cur));
-		cur->flags &= ~(MF_NOCLIP|MF_NOCLIPTHING);
-
-		if (!P_TryMove(cur, player->mo->x + cur->momx, player->mo->y + cur->momy, true, NULL))
-		{
-			P_SlideMove(cur, NULL);
-			if (P_MobjWasRemoved(cur))
-				continue;
-		}
-
-		if (P_IsObjectOnGround(player->mo))
-		{
-			if (P_MobjFlip(cur) > 0)
-			{
-				if (cur->floorz > player->mo->z - cur->height)
+				while (cur && !P_MobjWasRemoved(cur))
 				{
-					z = cur->floorz;
-				}
-			}
-			else
-			{
-				if (cur->ceilingz < player->mo->z + player->mo->height + cur->height)
-				{
-					z = cur->ceilingz - cur->height;
-				}
-			}
-		}
+					const fixed_t radius = FixedHypot(player->mo->radius, player->mo->radius) + FixedHypot(cur->radius, cur->radius); // mobj's distance from its Target, or Radius.
+					fixed_t z;
 
-		// Center it during the scale up animation
-		z += (FixedMul(cur->info->height, finalscale - cur->scale) >> 1) * P_MobjFlip(cur);
+					if (!cur->health)
+					{
+						cur = cur->hnext;
+						continue;
+					}
 
-		cur->z = z;
-		cur->momx = cur->momy = 0;
-		cur->angle += ANGLE_90;
-	}
+					cur->color = player->skincolor;
+
+					cur->angle -= ANGLE_90;
+					cur->angle += FixedAngle(speed);
+
+					if (cur->extravalue1 < radius)
+						cur->extravalue1 += P_AproxDistance(cur->extravalue1, radius) / 12;
+					if (cur->extravalue1 > radius)
+						cur->extravalue1 = radius;
+
+					// If the player is on the ceiling, then flip your items as well.
+					if (player && player->mo->eflags & MFE_VERTICALFLIP)
+						cur->eflags |= MFE_VERTICALFLIP;
+					else
+						cur->eflags &= ~MFE_VERTICALFLIP;
+
+					// Shrink your items if the player shrunk too.
+					P_SetScale(cur, (cur->destscale = FixedMul(FixedDiv(cur->extravalue1, radius), player->mo->scale)));
+
+					if (P_MobjFlip(cur) > 0)
+						z = player->mo->z;
+					else
+						z = player->mo->z + player->mo->height - cur->height;
+
+					cur->flags |= MF_NOCLIPTHING; // temporarily make them noclip other objects so they can't hit anyone while in the player
+					P_MoveOrigin(cur, player->mo->x, player->mo->y, z);
+					cur->momx = FixedMul(FINECOSINE(cur->angle>>ANGLETOFINESHIFT), cur->extravalue1);
+					cur->momy = FixedMul(FINESINE(cur->angle>>ANGLETOFINESHIFT), cur->extravalue1);
+					cur->flags &= ~MF_NOCLIPTHING;
+
+					if (!P_TryMove(cur, player->mo->x + cur->momx, player->mo->y + cur->momy, true, NULL))
+					{
+						P_SlideMove(cur, NULL);
+						if (P_MobjWasRemoved(cur))
+							continue;
+					}
+
+					if (P_IsObjectOnGround(player->mo))
+					{
+						if (P_MobjFlip(cur) > 0)
+						{
+							if (cur->floorz > player->mo->z - cur->height)
+								z = cur->floorz;
+						}
+						else
+						{
+							if (cur->ceilingz < player->mo->z + player->mo->height + cur->height)
+								z = cur->ceilingz - cur->height;
+						}
+					}
+
+					// Center it during the scale up animation
+					z += (FixedMul(mobjinfo[cur->type].height, player->mo->scale - cur->scale)>>1) * P_MobjFlip(cur);
+
+					cur->z = z;
+					cur->momx = cur->momy = 0;
+					cur->angle += ANGLE_90;
+
+					cur = cur->hnext;
+				}
 }
 
 void Obj_OrbinautDrop(mobj_t *th)

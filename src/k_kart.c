@@ -4267,16 +4267,9 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 	switch (type)
 	{
 		case MT_ORBINAUT:
-
-			if (!cv_ng_oldorbinaut.value)
-				Obj_OrbinautThrown(th, finalspeed, dir);
-			else
 				Obj_OrbinautOldThrown(th, finalspeed, dir);
 			break;
 		case MT_JAWZ:
-			if (!cv_ng_oldjawz.value)
-				Obj_JawzThrown(th, finalspeed, dir);
-			else
 				Obj_JawzOldThrown(th, finalspeed, dir);
 			break;
 		case MT_SPB:
@@ -8080,17 +8073,10 @@ void K_KartPlayerAfterThink(player_t *player)
 			}
 		}
 
-		if (player->throwdir == -1 && !cv_ng_oldjawz.value)
-		{
-			// Backwards Jawz targets yourself.
-			targ = player->mo;
-			player->jawztargetdelay = 0;
-		}
-		else
-		{
-			// Find a new target.
-			targ = K_FindJawzTarget(player->mo, player, ANGLE_45);
-		}
+
+		// Find a new target.
+		targ = K_FindJawzTarget(player->mo, player, ANGLE_45);
+
 
 		if (targ != NULL && P_MobjWasRemoved(targ) == false)
 		{

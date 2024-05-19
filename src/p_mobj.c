@@ -7080,10 +7080,7 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 	}
 	case MT_JAWZ:
 	{
-		if (!cv_ng_oldjawz.value)
-			Obj_JawzThink(mobj);
-		else
-			OBJ_JawzOldThink(mobj);
+		OBJ_JawzOldThink(mobj);
 		P_MobjCheckWater(mobj);
 		break;
 	}

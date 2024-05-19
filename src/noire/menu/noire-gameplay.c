@@ -73,12 +73,6 @@ menuitem_t OPTIONS_NoireGameplayItems[] =
 {
 	{IT_STRING | IT_CVAR, "Capsules", "Enable or disable Item Capsules appearance in tracks.",
 		NULL, {.cvar = &cv_ng_capsules}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Orbinaut Behavior", "Toggle between Ring Racers or Kart's Orbinaut behavior.",
-		NULL, {.cvar = &cv_ng_oldorbinaut}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Jawz Behavior", "Toggle between Ring Racers or Kart's Jawz behavior.",
-		NULL, {.cvar = &cv_ng_oldjawz}, 0, 0},
 };
 
 ///////////
