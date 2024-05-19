@@ -5221,13 +5221,13 @@ static void K_drawKartFirstPerson(void)
 			splitflags |= (stplyr->mo->frame & FF_TRANSMASK);
 	}
 
-	if (stplyr->steering > steerThreshold) // strong left turn
+	if (stplyr->cmd.turning > steerThreshold) // strong left turn
 		target = 2;
-	else if (stplyr->steering < -steerThreshold) // strong right turn
+	else if (stplyr->cmd.turning < -steerThreshold) // strong right turn
 		target = -2;
-	else if (stplyr->steering > 0) // weak left turn
+	else if (stplyr->cmd.turning > 0) // weak left turn
 		target = 1;
-	else if (stplyr->steering < 0) // weak right turn
+	else if (stplyr->cmd.turning < 0) // weak right turn
 		target = -1;
 	else // forward
 		target = 0;
@@ -5250,8 +5250,8 @@ static void K_drawKartFirstPerson(void)
 	x <<= FRACBITS;
 	y <<= FRACBITS;
 
-	if (tn != stplyr->steering/50)
-		tn -= (tn - (stplyr->steering/50))/8;
+	if (tn != stplyr->cmd.turning/50)
+		tn -= (tn - (stplyr->cmd.turning/50))/8;
 
 	if (dr != stplyr->drift*16)
 		dr -= (dr - (stplyr->drift*16))/8;

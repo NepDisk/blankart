@@ -62,10 +62,6 @@ Make sure this matches the actual number of states
 #define MAXTOPACCEL (12*FRACUNIT)
 #define TOPACCELREGEN (FRACUNIT/16)
 
-// Mispredicted turns can generate phantom sliptide inputs for a few tics.
-// Delay the wavedash visuals until we're reasonably sure that it's a deliberate turn.
-#define HIDEWAVEDASHCHARGE (60)
-
 // Auto-respawn timer for when lap cheating or out of bounds
 // is detected.
 #define AUTORESPAWN_TIME (10*TICRATE)
@@ -126,9 +122,7 @@ void K_RemoveGrowShrink(player_t *player);
 void K_SquishPlayer(player_t *player, mobj_t *inflictor, mobj_t *source);
 boolean K_IsBigger(mobj_t *compare, mobj_t *other);
 void K_SpinPlayer(player_t *player, mobj_t *inflictor, mobj_t *source, INT32 type);
-void K_InitWavedashIndicator(player_t *player);
 void K_InitTrickIndicator(player_t *player);
-void K_UpdateWavedashIndicator(player_t *player);
 void K_UpdateTrickIndicator(player_t *player);
 INT32 K_ExplodePlayer(player_t *player, mobj_t *inflictor, mobj_t *source);
 void K_DebtStingPlayer(player_t *player, mobj_t *source);
@@ -161,8 +155,6 @@ INT32 K_GetKartRingPower(const player_t *player, boolean boosted);
 boolean K_CheckPlayersRespawnColliding(INT32 playernum, fixed_t x, fixed_t y);
 INT32 K_GetKartDriftSparkValue(const player_t *player);
 INT32 K_GetKartDriftSparkValueForStage(const player_t *player, UINT8 stage);
-void K_SpawnDriftBoostExplosion(player_t *player, int stage);
-void K_SpawnDriftElectricSparks(player_t *player, int color, boolean shockwave);
 void K_KartUpdatePosition(player_t *player);
 void K_UpdateAllPlayerPositions(void);
 SINT8 K_GetTotallyRandomResult(UINT8 useodds);

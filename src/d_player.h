@@ -408,7 +408,7 @@ typedef enum
 {
 	UFOD_GENERIC	= 1,
 	UFOD_BOOST		= 1<<1,
-	UFOD_WHIP		= 1<<2,
+	//				= 1<<2,
 	UFOD_BANANA		= 1<<3,
 	UFOD_ORBINAUT	= 1<<4,
 	UFOD_JAWZ		= 1<<5,
@@ -431,7 +431,6 @@ struct roundconditions_t
 
 	// Basically the same, but it's a specific event where no is an easy default
 	boolean tripwire_hyuu;
-	boolean whip_hyuu;
 	boolean spb_neuter;
 	boolean landmine_dunk;
 	boolean hit_midair;
@@ -606,7 +605,6 @@ struct player_t
 	// camera tilt
 	angle_t tilt;
 
-	INT16 steering;
 	angle_t angleturn;
 
 	// Mouse aiming, where the guy is looking at!
@@ -949,16 +947,9 @@ struct player_t
 
 	UINT8 tripwireReboundDelay; // When failing Tripwire, brieftly lock out speed-based tripwire pass (anti-cheese)
 
-	UINT16 wavedash; // How long is our chained sliptide? Grant a proportional boost when it's over.
-	UINT8 wavedashdelay; // How long since the last sliptide? Only boost once you've been straightened out for a bit.
-	UINT16 wavedashboost; // The actual boost granted from wavedash.
-	fixed_t wavedashpower; // Is this a bullshit "tap" wavedash? Weaken lower-charge wavedashes while keeping long sliptides fully rewarding.
-
 	UINT16 speedpunt;
 
 	UINT16 trickcharge; // Landed normally from a trick panel? Get the benefits package!
-
-	UINT16 infinitether; // Generic infinitether time, used for infinitether leniency.
 
 	UINT8 finalfailsafe; // When you can't Ringshooter, force respawn as a last ditch effort!
 	UINT8 freeRingShooterCooldown; // Can't use a free Ring Shooter again too soon after respawning.
@@ -970,9 +961,7 @@ struct player_t
 
 	fixed_t topAccel; // Reduced on straight wall collisions to give players extra recovery time
 
-	mobj_t *wavedashIndicator;
 	mobj_t *trickIndicator;
-	mobj_t *whip;
 	mobj_t *hand;
 	mobj_t *flickyAttacker;
 

@@ -1969,8 +1969,6 @@ boolean M_CheckCondition(condition_t *cn, player_t *player)
 
 		case UCRP_TRIPWIREHYUU:
 			return (player->roundconditions.tripwire_hyuu);
-		case UCRP_WHIPHYUU:
-			return (player->roundconditions.whip_hyuu);
 		case UCRP_SPBNEUTER:
 			return (player->roundconditions.spb_neuter);
 		case UCRP_LANDMINEDUNK:
@@ -2868,8 +2866,6 @@ static const char *M_GetConditionString(condition_t *cn)
 
 		case UCRP_TRIPWIREHYUU:
 			return "go through Tripwire while afflicted by Hyudoro";
-		case UCRP_WHIPHYUU:
-			return "Insta-Whip a racer while afflicted by Hyudoro";
 		case UCRP_SPBNEUTER:
 			return "shock a Self-Propelled Bomb into submission";
 		case UCRP_LANDMINEDUNK:
@@ -2902,9 +2898,6 @@ static const char *M_GetConditionString(condition_t *cn)
 				// See targetdamaging_t
 				case UFOD_BOOST:
 					work = "boost power";
-					break;
-				case UFOD_WHIP:
-					work = "Insta-Whip";
 					break;
 				case UFOD_BANANA:
 					work = "Bananas";

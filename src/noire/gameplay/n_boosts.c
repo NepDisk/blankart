@@ -54,26 +54,6 @@ fixed_t N_GetKartAccel(player_t *player)
 // This value is fine-tuned to feel like v1 again without reverting any of those changes.
 #define SLIPTIDEHANDLING 7*FRACUNIT/8
 
-static boolean K_HasInfiniteTether(player_t *player)
-{
-	switch (player->curshield)
-	{
-		case KSHIELD_LIGHTNING:
-			return true;
-	}
-
-	if (player->eggmanexplode > 0)
-		return true;
-
-	if (player->trickcharge)
-		return true;
-
-	if (player->infinitether)
-		return true;
-
-	return false;
-}
-
 static fixed_t K_RingDurationBoost(const player_t *player)
 {
 	fixed_t ret = FRACUNIT;
@@ -210,7 +190,7 @@ void N_GetKartBoostPower(player_t *player)
 		ADDBOOST(0, FRACUNIT, 0); // 0% speed 100% accel 20% handle
 	}
 
-	// This should always remain the last boost stack before tethering
+	// This should always remain the last boost stack
 	if (player->botvars.rubberband > FRACUNIT && K_PlayerUsesBotMovement(player) == true && cv_ng_botrubberbandboost.value)
 	{
 		ADDBOOST(player->botvars.rubberband - FRACUNIT, 0, 0);

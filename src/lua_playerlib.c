@@ -328,20 +328,10 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->tripwireReboundDelay);
 	else if (fastcmp(field,"eggmantransferdelay"))
 		lua_pushinteger(L, plr->eggmanTransferDelay);
-	else if (fastcmp(field,"wavedash"))
-		lua_pushinteger(L, plr->wavedash);
-	else if (fastcmp(field,"wavedashdelay"))
-		lua_pushinteger(L, plr->wavedashdelay);
-	else if (fastcmp(field,"wavedashboost"))
-		lua_pushinteger(L, plr->wavedashboost);
-	else if (fastcmp(field,"wavedashpower"))
-		lua_pushinteger(L, plr->wavedashpower);
 	else if (fastcmp(field,"speedpunt"))
 		lua_pushinteger(L, plr->speedpunt);
 	else if (fastcmp(field,"trickcharge"))
 		lua_pushinteger(L, plr->trickcharge);
-	else if (fastcmp(field,"infinitether"))
-		lua_pushinteger(L, plr->infinitether);
 	else if (fastcmp(field,"finalfailsafe"))
 		lua_pushinteger(L, plr->finalfailsafe);
 	else if (fastcmp(field,"lastsafelap"))
@@ -864,20 +854,10 @@ static int player_set(lua_State *L)
 		plr->tripwireReboundDelay = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"eggmantransferdelay"))
 		plr->eggmanTransferDelay = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"wavedash"))
-		plr->wavedash = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"wavedashdelay"))
-		plr->wavedashdelay = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"wavedashboost"))
-		plr->wavedashboost = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"wavedashpower"))
-		plr->wavedashpower = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"speedpunt"))
 		plr->speedpunt = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"trickcharge"))
 		plr->trickcharge = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"infinitether"))
-		plr->infinitether = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"finalfailsafe"))
 		plr->finalfailsafe = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"lastsafelap"))

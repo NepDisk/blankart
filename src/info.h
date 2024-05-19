@@ -859,7 +859,6 @@ typedef enum sprite
 	SPR_IMDB, // Item Monitor Small Shard (Debris)
 	SPR_MTWK, // Item Monitor Glass Twinkle
 
-	SPR_SLPT, // Wavedash indicator
 	SPR_TRBS, // Trickdash indicator
 
 	SPR_GRNG, // Guard ring
@@ -2564,8 +2563,6 @@ typedef enum state
 	S_MAGICIANBOX,
 	S_MAGICIANBOX_TOP,
 	S_MAGICIANBOX_BOTTOM,
-
-	S_WAVEDASH,
 
 	S_CHARGEAURA,
 	S_CHARGEFALL,
@@ -4491,7 +4488,6 @@ typedef enum mobj_type
 	MT_MONITOR_PART,
 	MT_MONITOR_SHARD,
 	MT_MAGICIANBOX,
-	MT_WAVEDASH,
 
 	MT_CHARGEAURA,
 	MT_CHARGEFALL,

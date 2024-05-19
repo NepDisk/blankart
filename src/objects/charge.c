@@ -66,13 +66,6 @@ void Obj_ChargeAuraThink (mobj_t *aura)
         // Visuals
         aura->renderflags |= RF_PAPERSPRITE|RF_ADD;
 
-        // fuck
-        boolean forceinvisible = !!!((leveltime - aura->cvmem) % 4);
-        if (aura->extravalue1 || !(player->driftcharge > K_GetKartDriftSparkValueForStage(player, 3)))
-            forceinvisible = false;
-
-        if (forceinvisible)
-            aura->renderflags |= RF_DONTDRAW;
 
         if (aura->extravalue2)
         {
@@ -89,12 +82,6 @@ void Obj_ChargeAuraThink (mobj_t *aura)
                 P_SetScale(spark, 15*aura->scale/10);
             }
 
-            if (forceinvisible)
-            {
-                mobj_t *flicker = P_SpawnMobjFromMobj(aura, 0, 0, 0, MT_CHARGEFLICKER);
-                P_SetTarget(&flicker->target, aura);
-                P_SetScale(flicker, aura->scale);
-            }
         }
     }
 }

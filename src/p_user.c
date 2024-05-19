@@ -3884,9 +3884,7 @@ void P_PlayerThink(player_t *player)
 			P_SetTarget(&field, NULL); \
 
 		PlayerPointerErase(player->followmobj);
-		PlayerPointerErase(player->wavedashIndicator);
 		PlayerPointerErase(player->trickIndicator);
-		PlayerPointerErase(player->whip);
 		PlayerPointerErase(player->hand);
 		PlayerPointerErase(player->ringShooter);
 		PlayerPointerErase(player->hoverhyudoro);

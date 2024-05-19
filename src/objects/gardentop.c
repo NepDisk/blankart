@@ -116,7 +116,7 @@ get_player_steer_tilt
 (		player_t * player,
 		INT32 stages)
 {
-	return player->steering
+	return player->cmd.turning
 		* stages
 
 		// 1 degree for a full turn

@@ -13,7 +13,6 @@
 void N_UpdatePlayerAngle(player_t* player)
 {
 	angle_t angleChange = N_GetKartTurnValue(player, player->cmd.turning) << TICCMD_REDUCE;
-	player->steering = player->cmd.turning;
 	UINT8 i;
 
 	P_SetPlayerAngle(player, player->angleturn + angleChange);

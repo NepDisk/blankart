@@ -60,7 +60,7 @@ void K_TickSpecialStage(void);
 	mobj_t *K_GetPossibleSpecialTarget(void)
 
 		Gets the global special stage target if valid
-		(for Jawz, tether, etc)
+		(for Jawz, etc)
 
 	Return:-
 		Target or NULL

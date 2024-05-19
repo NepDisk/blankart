@@ -2500,13 +2500,11 @@ void CL_ClearPlayer(INT32 playernum)
 		// These are mostly subservient to the player, and may not clean themselves up.
 		PlayerPointerRemove(players[playernum].mo);
 		PlayerPointerRemove(players[playernum].followmobj);
-		PlayerPointerRemove(players[playernum].wavedashIndicator);
 		PlayerPointerRemove(players[playernum].trickIndicator);
 
 #undef PlayerPointerRemove
 
 		// These have thinkers of their own.
-		P_SetTarget(&players[playernum].whip, NULL);
 		P_SetTarget(&players[playernum].hand, NULL);
 		P_SetTarget(&players[playernum].hoverhyudoro, NULL);
 		P_SetTarget(&players[playernum].ringShooter, NULL);

@@ -320,7 +320,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	"IMDB", // Item Monitor Small Shard (Debris)
 	"MTWK", // Item Monitor Glass Twinkle
 
-	"SLPT", // Wavedash indicator
 	"TRBS", // Trickdash indicator
 
 	"GRNG", // Guard ring
@@ -2096,8 +2095,6 @@ state_t states[NUMSTATES] =
 	{SPR_MGBX,                 FF_PAPERSPRITE|0, -1, {NULL}, 0, 0, S_NULL}, // S_MAGICIANBOX
 	{SPR_MGBT,                 FF_FLOORSPRITE|0, -1, {NULL}, 0, 0, S_NULL}, // S_MAGICIANBOX_TOP
 	{SPR_MGBB,                 FF_FLOORSPRITE|0, -1, {NULL}, 0, 0, S_NULL}, // S_MAGICIANBOX_BOTTOM
-
-	{SPR_SLPT,                 FF_PAPERSPRITE|0, -1, {NULL}, 0, 0, S_NULL}, // S_WAVEDASH
 
 	{SPR_TRC1,                 FF_FULLBRIGHT|FF_ANIMATE|0, -1, {NULL}, 4, 2, S_NULL}, // S_CHARGEAURA
 	{SPR_TRC2,                 FF_FULLBRIGHT|FF_ANIMATE|0, 20, {NULL}, 19, 1, S_NULL}, // S_CHARGEFALL
@@ -13330,33 +13327,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,              // damage
 		sfx_None,       // activesound
 		MF_NOGRAVITY|MF_NOCLIP|MF_NOCLIPTHING|MF_NOCLIPHEIGHT|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_WAVEDASH
-		-1,             // doomednum
-		S_WAVEDASH,    // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		20*FRACUNIT,    // radius
-		20*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_NOBLOCKMAP|MF_NOGRAVITY|MF_NOCLIPHEIGHT|MF_NOCLIPTHING|MF_DONTENCOREMAP, // flags
 		S_NULL          // raisestate
 	},
 

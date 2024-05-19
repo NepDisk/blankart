@@ -183,8 +183,6 @@ void K_DoIngameRespawn(player_t *player)
 	player->driftboost = player->strongdriftboost = 0;
 	player->gateBoost = 0;
 	player->trickcharge = 0;
-	player->infinitether = 0;
-	player->wavedash = player->wavedashboost = player->wavedashdelay = 0;
 
 	P_ResetPlayer(player);
 

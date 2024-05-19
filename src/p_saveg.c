@@ -82,9 +82,9 @@ typedef enum
 	SKYBOXCENTER = 0x0010,
 	HOVERHYUDORO = 0x0020,
 	// = 0x0040,
-	WAVEDASH = 0x0080,
+	// = 0x0080,
 	RINGSHOOTER = 0x0100,
-	WHIP = 0x0200,
+	// = 0x0200,
 	HAND = 0x0400,
 	FLICKYATTACKER = 0x0800,
 	FLICKYCONTROLLER = 0x1000,
@@ -229,7 +229,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, playerconsole[i]);
 		WRITEINT32(save->p, splitscreen_invitations[i]);
 
-		WRITEINT16(save->p, players[i].steering);
 		WRITEANGLE(save->p, players[i].angleturn);
 		WRITEANGLE(save->p, players[i].aiming);
 		WRITEANGLE(save->p, players[i].drawangle);
@@ -326,14 +325,8 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		if (players[i].hoverhyudoro)
 			flags |= HOVERHYUDORO;
 
-		if (players[i].wavedashIndicator)
-			flags |= WAVEDASH;
-
 		if (players[i].trickIndicator)
 			flags |= TRICKINDICATOR;
-
-		if (players[i].whip)
-			flags |= WHIP;
 
 		if (players[i].hand)
 			flags |= HAND;
@@ -367,14 +360,8 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		if (flags & HOVERHYUDORO)
 			WRITEUINT32(save->p, players[i].hoverhyudoro->mobjnum);
 
-		if (flags & WAVEDASH)
-			WRITEUINT32(save->p, players[i].wavedashIndicator->mobjnum);
-
 		if (flags & TRICKINDICATOR)
 			WRITEUINT32(save->p, players[i].trickIndicator->mobjnum);
-
-		if (flags & WHIP)
-			WRITEUINT32(save->p, players[i].whip->mobjnum);
 
 		if (flags & HAND)
 			WRITEUINT32(save->p, players[i].hand->mobjnum);
@@ -562,14 +549,8 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 
 		WRITEUINT8(save->p, players[i].tripwireReboundDelay);
 
-		WRITEUINT16(save->p, players[i].wavedash);
-		WRITEUINT8(save->p, players[i].wavedashdelay);
-		WRITEUINT16(save->p, players[i].wavedashboost);
-		WRITEFIXED(save->p, players[i].wavedashpower);
 		WRITEUINT16(save->p, players[i].speedpunt);
 		WRITEUINT16(save->p, players[i].trickcharge);
-
-		WRITEUINT16(save->p, players[i].infinitether);
 
 		WRITEUINT8(save->p, players[i].finalfailsafe);
 
@@ -861,7 +842,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		playerconsole[i] = READUINT8(save->p);
 		splitscreen_invitations[i] = READINT32(save->p);
 
-		players[i].steering = READINT16(save->p);
 		players[i].angleturn = READANGLE(save->p);
 		players[i].aiming = READANGLE(save->p);
 		players[i].drawangle = players[i].old_drawangle = READANGLE(save->p);
@@ -957,14 +937,8 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		if (flags & HOVERHYUDORO)
 			players[i].hoverhyudoro = (mobj_t *)(size_t)READUINT32(save->p);
 
-		if (flags & WAVEDASH)
-			players[i].wavedashIndicator = (mobj_t *)(size_t)READUINT32(save->p);
-
 		if (flags & TRICKINDICATOR)
 			players[i].trickIndicator = (mobj_t *)(size_t)READUINT32(save->p);
-
-		if (flags & WHIP)
-			players[i].whip = (mobj_t *)(size_t)READUINT32(save->p);
 
 		if (flags & HAND)
 			players[i].hand = (mobj_t *)(size_t)READUINT32(save->p);
@@ -1153,14 +1127,8 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 
 		players[i].tripwireReboundDelay = READUINT8(save->p);
 
-		players[i].wavedash = READUINT16(save->p);
-		players[i].wavedashdelay = READUINT8(save->p);
-		players[i].wavedashboost = READUINT16(save->p);
-		players[i].wavedashpower = READFIXED(save->p);
 		players[i].speedpunt = READUINT16(save->p);
 		players[i].trickcharge = READUINT16(save->p);
-
-		players[i].infinitether = READUINT16(save->p);
 
 		players[i].finalfailsafe = READUINT8(save->p);
 
@@ -5898,20 +5866,10 @@ static void P_RelinkPointers(void)
 			if (!RelinkMobj(&players[i].hoverhyudoro))
 				CONS_Debug(DBG_GAMELOGIC, "hoverhyudoro not found on player %d\n", i);
 		}
-		if (players[i].wavedashIndicator)
-		{
-			if (!RelinkMobj(&players[i].wavedashIndicator))
-				CONS_Debug(DBG_GAMELOGIC, "wavedashIndicator not found on player %d\n", i);
-		}
 		if (players[i].trickIndicator)
 		{
 			if (!RelinkMobj(&players[i].trickIndicator))
 				CONS_Debug(DBG_GAMELOGIC, "trickIndicator not found on player %d\n", i);
-		}
-		if (players[i].whip)
-		{
-			if (!RelinkMobj(&players[i].whip))
-				CONS_Debug(DBG_GAMELOGIC, "whip not found on player %d\n", i);
 		}
 		if (players[i].hand)
 		{

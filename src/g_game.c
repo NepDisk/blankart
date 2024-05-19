@@ -998,8 +998,6 @@ boolean G_PlayerInputDown(UINT8 p, INT32 gc, UINT8 menuPlayers)
 INT32 localaiming[MAXSPLITSCREENPLAYERS];
 angle_t localangle[MAXSPLITSCREENPLAYERS];
 
-INT32 localsteering[MAXSPLITSCREENPLAYERS];
-
 ticcmd_t *G_CopyTiccmd(ticcmd_t* dest, const ticcmd_t* src, const size_t n)
 {
 	return M_Memcpy(dest, src, n*sizeof(*src));
@@ -2155,7 +2153,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	boolean spectator;
 	boolean bot;
 	UINT8 botdifficulty;
-	INT16 steering;
 	INT16 rings;
 	INT16 spheres;
 	angle_t playerangleturn;
@@ -2202,11 +2199,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	score = players[player].score;
 	lives = players[player].lives;
 	ctfteam = players[player].ctfteam;
-	steering = players[player].steering;
 	splitscreenindex = players[player].splitscreenindex;
 	spectator = players[player].spectator;
 
-	steering = players[player].steering;
 	playerangleturn = players[player].angleturn;
 
 	skincolor = players[player].skincolor;
@@ -2413,13 +2408,11 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 
 		// These are mostly subservient to the player, and may not clean themselves up.
 		PlayerPointerRemove(players[player].followmobj);
-		PlayerPointerRemove(players[player].wavedashIndicator);
 		PlayerPointerRemove(players[player].trickIndicator);
 
 #undef PlayerPointerRemove
 
 		// These will erase themselves.
-		P_SetTarget(&players[player].whip, NULL);
 		P_SetTarget(&players[player].hand, NULL);
 
 		// TODO: Any better handling in store?
@@ -2455,7 +2448,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->jointime = jointime;
 	p->splitscreenindex = splitscreenindex;
 	p->spectator = spectator;
-	p->steering = steering;
 	p->angleturn = playerangleturn;
 	p->lastsafelap = lastsafelap;
 	p->lastsafecheatcheck = lastsafecheatcheck;

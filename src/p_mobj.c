@@ -9239,7 +9239,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 				break;
 			}
 
-			// Uses cmd.turning over steering intentionally.
 			if (abs(player->cmd.turning) > 100)
 			{
 				INT32 lastsign = 0;
@@ -11898,7 +11897,6 @@ void P_SpawnPlayer(INT32 playernum)
 
 	p->griefValue = 0;
 
-	K_InitWavedashIndicator(p);
 	K_InitTrickIndicator(p);
 
 	if ((gametyperules & GTR_BUMPERS) && !p->spectator)
