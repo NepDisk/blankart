@@ -41,6 +41,8 @@ public:
 
 	virtual ACSVM::Thread *allocThread();
 
+	virtual void printKill(ACSVM::Thread *thread, ACSVM::Word type, ACSVM::Word data);
+
 protected:
 	virtual void loadModule(ACSVM::Module *module);
 };
