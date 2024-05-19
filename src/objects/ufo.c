@@ -778,12 +778,6 @@ static UINT8 GetUFODamage(mobj_t *inflictor, UINT8 damageType)
 				ret = 20;
 				break;
 			}
-			case MT_GACHABOM:
-			{
-				// Thrown gachabom need to be tracked, but have no special damage value as of yet.
-				targetdamaging = UFOD_GACHABOM;
-				break;
-			}
 			case MT_SPB:
 			case MT_SPBEXPLOSION:
 			{
@@ -807,14 +801,6 @@ static UINT8 GetUFODamage(mobj_t *inflictor, UINT8 damageType)
 					break;
 				}
 
-				ret = 10;
-				break;
-			}
-			case MT_GARDENTOP:
-			{
-				// Garden Top is not classified as a "field
-				// item" because the player can ride it. So
-				// an explicit case is necessary.
 				ret = 10;
 				break;
 			}

@@ -89,11 +89,6 @@ boolean K_BananaBallhogCollide(mobj_t *t1, mobj_t *t2)
 			// Melt item
 			S_StartSound(t2, sfx_s3k43);
 		}
-		else if (K_IsRidingFloatingTop(t2->player))
-		{
-			// Float over silly banana
-			damageitem = false;
-		}
 		else
 		{
 			P_DamageMobj(t2, t1, t1->target, 1, DMG_NORMAL|DMG_WOMBO);
@@ -102,7 +97,7 @@ boolean K_BananaBallhogCollide(mobj_t *t1, mobj_t *t2)
 	else if (t2->type == MT_BANANA || t2->type == MT_BANANA_SHIELD
 		|| t2->type == MT_ORBINAUT || t2->type == MT_ORBINAUT_SHIELD
 		|| t2->type == MT_JAWZ || t2->type == MT_JAWZ_SHIELD
-		|| t2->type == MT_BALLHOG || t2->type == MT_GACHABOM)
+		|| t2->type == MT_BALLHOG)
 	{
 		// Other Item Damage
 		angle_t bounceangle = K_GetCollideAngle(t1, t2);
@@ -366,8 +361,7 @@ boolean K_MineCollide(mobj_t *t1, mobj_t *t2)
 		}
 	}
 	else if (t2->type == MT_ORBINAUT || t2->type == MT_JAWZ
-		|| t2->type == MT_ORBINAUT_SHIELD || t2->type == MT_JAWZ_SHIELD
-		|| t2->type == MT_GACHABOM)
+		|| t2->type == MT_ORBINAUT_SHIELD || t2->type == MT_JAWZ_SHIELD)
 	{
 		// Bomb death
 		angle_t bounceangle = K_GetCollideAngle(t1, t2);
@@ -436,7 +430,7 @@ boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 	else if (t2->type == MT_BANANA || t2->type == MT_BANANA_SHIELD
 		|| t2->type == MT_ORBINAUT || t2->type == MT_ORBINAUT_SHIELD
 		|| t2->type == MT_JAWZ || t2->type == MT_JAWZ_SHIELD
-		|| t2->type == MT_BALLHOG || t2->type == MT_GACHABOM)
+		|| t2->type == MT_BALLHOG)
 	{
 		// Other Item Damage
 		angle_t bounceangle = K_GetCollideAngle(t1, t2);
@@ -480,176 +474,6 @@ boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 		}
 
 		P_KillMobj(t1, t2, t2, DMG_NORMAL);
-	}
-
-	return true;
-}
-
-boolean K_DropTargetCollide(mobj_t *t1, mobj_t *t2)
-{
-	mobj_t *draggeddroptarget = (t1->type == MT_DROPTARGET_SHIELD) ? t1->target : NULL;
-	UINT8 strength;
-
-	if (((t1->target == t2) || (t1->target == t2->target)) && ((t1->threshold > 0 && t2->type == MT_PLAYER) || (t2->type != MT_PLAYER && t2->threshold > 0)))
-		return true;
-
-	if (t1->health <= 0 || t2->health <= 0)
-		return true;
-
-	if (t2->player && (t2->player->hyudorotimer || t2->player->justbumped))
-		return true;
-
-	if (draggeddroptarget && P_MobjWasRemoved(draggeddroptarget))
-		draggeddroptarget = NULL; // Beware order-of-execution on crushers, I guess?!
-
-	if (t1->health > 3) // forward thrown
-	{
-		strength = 0;
-	}
-	else if (t1->reactiontime == 0 || draggeddroptarget)
-	{
-		strength = 80;
-	}
-	else
-	{
-		strength = 140;
-	}
-
-	// Intensify bumps if already spinning...
-	P_Thrust(t1, R_PointToAngle2(t1->x, t1->y, t2->x, t2->y), strength * t1->scale);
-
-	if (draggeddroptarget)
-	{
-		// "Pass through" the shock of the impact, part 1.
-		t1->momx = t1->target->momx;
-		t1->momy = t1->target->momy;
-		t1->momz = t1->target->momz;
-	}
-
-	fixed_t bumppower = FRACUNIT;
-	if (t2->player)
-	{
-		fixed_t speeddampen = FixedDiv(t2->player->speed, 2*K_GetKartSpeed(t2->player, false, false));
-		bumppower = Easing_InQuad(
-			std::min(speeddampen, FRACUNIT),
-			FRACUNIT,
-			3*FRACUNIT/4
-		);
-		if (t2->player->tripwireLeniency || t2->player->tripwirePass != TRIPWIRE_NONE)
-			bumppower = FRACUNIT/2;
-	}
-
-	{
-		angle_t t2angle = R_PointToAngle2(t2->momx, t2->momy, 0, 0);
-		angle_t t2deflect;
-		fixed_t t1speed, t2speed;
-
-		K_KartBouncing(t1, t2);
-		t2speed = FixedHypot(t2->momx, t2->momy);
-
-		t1speed = FixedHypot(t1->momx, t1->momy);
-
-		t2deflect = t2angle - R_PointToAngle2(0, 0, t2->momx, t2->momy);
-		if (t2deflect > ANGLE_180)
-			t2deflect = InvAngle(t2deflect);
-		if (t2deflect < ANG10)
-			P_InstaThrust(t2, t2angle, FixedMul(t2speed, bumppower));
-
-		t1->angle = t1->old_angle = R_PointToAngle2(0, 0, t1->momx, t1->momy);
-
-		t1->reactiontime = (7 * (t1speed + t2speed)) / (4 * t1->scale);
-		if (t1->reactiontime < 10)
-			t1->reactiontime = 10;
-		t1->threshold = 10;
-	}
-
-	t1->renderflags &= ~RF_FULLDARK; // brightest on the bump
-
-	if (draggeddroptarget)
-	{
-		// "Pass through" the shock of the impact, part 2.
-		draggeddroptarget->momx = t1->momx;
-		draggeddroptarget->momy = t1->momy;
-		draggeddroptarget->momz = t1->momz;
-
-		// Have the drop target travel between them.
-		t1->momx = (t1->momx + t2->momx)/2;
-		t1->momy = (t1->momy + t2->momy)/2;
-		t1->momz = (t1->momz + t2->momz)/2;
-
-	}
-
-	{
-		mobj_t *ghost = P_SpawnGhostMobj(t1);
-		UINT8 i;
-
-		P_SetScale(ghost, 3*ghost->destscale/2);
-		ghost->destscale = 15*ghost->destscale/2;
-		ghost->fuse = 10;
-		ghost->scalespeed = (ghost->destscale - ghost->scale)/ghost->fuse;
-
-		for (i = 0; i < 2; i++)
-		{
-			mobj_t *blast = P_SpawnMobjFromMobj(t1, 0, 0, FixedDiv(t1->height, t1->scale), MT_BATTLEBUMPER_BLAST);
-			P_SetScale(blast, 5*blast->scale/2);
-
-			blast->angle = R_PointToAngle2(0, 0, t1->momx, t1->momy) + ANGLE_45;
-			if (i & 1)
-			{
-				blast->angle += ANGLE_90;
-			}
-
-			blast->destscale *= 10;
-		}
-	}
-
-	t1->flags |= MF_SHOOTABLE;
-	// The following sets t1->target to t2, so draggeddroptarget keeps it persisting...
-	P_DamageMobj(t1, t2, (t2->target ? t2->target : t2), 1, DMG_NORMAL);
-
-	switch (t1->health)
-	{
-		case 3:
-			t1->color = SKINCOLOR_LIME;
-			break;
-
-		case 2:
-			t1->color = SKINCOLOR_GOLD;
-			break;
-
-		case 1:
-			t1->color = SKINCOLOR_CRIMSON;
-			break;
-	}
-
-	t1->flags &= ~MF_SHOOTABLE;
-
-	t1->spritexscale = 3*FRACUNIT;
-	t1->spriteyscale = 3*FRACUNIT/2;
-
-	if (!t2->player)
-	{
-		t2->angle += ANGLE_180;
-		if (t2->type == MT_JAWZ)
-			P_SetTarget(&t2->tracer, t2->target); // Back to the source!
-		t2->threshold = 10;
-	}
-
-	if (t1->reactiontime > 1000) {
-		S_StartSound(t2, sfx_kdtrg3);
-	} else if (t1->reactiontime > 500) {
-		S_StartSound(t2, sfx_kdtrg2);
-	} else {
-		S_StartSound(t2, sfx_kdtrg1);
-	}
-
-	if (draggeddroptarget && !P_MobjWasRemoved(draggeddroptarget) && draggeddroptarget->player)
-	{
-		// The following removes t1, be warned
-		// (its newly assigned properties are moved across)
-		K_DropHnextList(draggeddroptarget->player);
-		// Do NOT modify or reference t1 after this line
-		// I mean it! Do not even absentmindedly try it
 	}
 
 	return true;
@@ -739,11 +563,9 @@ void K_LightningShieldAttack(mobj_t *actor, fixed_t size)
 
 boolean K_BubbleShieldCanReflect(mobj_t *t1, mobj_t *t2)
 {
-	return (t2->type == MT_ORBINAUT || t2->type == MT_JAWZ || t2->type == MT_GACHABOM
+	return (t2->type == MT_ORBINAUT || t2->type == MT_JAWZ
 		|| t2->type == MT_BANANA || t2->type == MT_EGGMANITEM || t2->type == MT_BALLHOG
 		|| t2->type == MT_SSMINE || t2->type == MT_LANDMINE || t2->type == MT_SINK
-		|| t2->type == MT_GARDENTOP
-		|| t2->type == MT_DROPTARGET
 		|| (t2->type == MT_PLAYER && t1->target != t2));
 }
 
@@ -751,7 +573,7 @@ boolean K_BubbleShieldReflect(mobj_t *t1, mobj_t *t2)
 {
 	mobj_t *owner = t1->player ? t1 : t1->target;
 
-	if (t2->target != owner || !t2->threshold || t2->type == MT_DROPTARGET)
+	if (t2->target != owner || !t2->threshold)
 	{
 		if (!t2->momx && !t2->momy)
 		{
@@ -872,7 +694,6 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		return (K_IsBigger(t1, t2) == true)
 			|| (t1->player->invincibilitytimer > 0)
 			|| (t1->player->flamedash > 0 && t1->player->itemtype == KITEM_FLAMESHIELD)
-			|| (t1->player->curshield == KSHIELD_TOP && !K_IsHoldingDownTop(t1->player))
 			|| (t1->player->bubbleblowup > 0);
 	};
 

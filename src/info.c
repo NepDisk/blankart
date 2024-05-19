@@ -2394,9 +2394,6 @@ state_t states[NUMSTATES] =
 	{SPR_LNDM, 0, -1, {NULL}, 0, 0, S_LANDMINE},	// S_LANDMINE
 	{SPR_NULL, 0,  1, {A_LandMineExplode}, 0, 0, S_NULL},		// S_LANDMINE_EXPLODE
 
-	{SPR_DTRG, 0, -1, {NULL}, 0, 0, S_NULL},	// S_DROPTARGET
-	{SPR_DTRG, 1, -1, {NULL}, 0, 0, S_NULL},	// S_DROPTARGET_SPIN
-
 	{SPR_BHOG,               0, 3, {A_PlaySound}, sfx_s1bd, 1, S_BALLHOG2},	// S_BALLHOG1
 	{SPR_BHOG, FF_FULLBRIGHT|1, 1, {NULL}, 0, 0, S_BALLHOG3},					// S_BALLHOG2
 	{SPR_BHOG, FF_FULLBRIGHT|2, 2, {NULL}, 0, 0, S_BALLHOG4},					// S_BALLHOG3
@@ -2549,14 +2546,6 @@ state_t states[NUMSTATES] =
 	{SPR_FLML, FF_FULLBRIGHT|FF_PAPERSPRITE|FF_ANIMATE|7, 7, {NULL}, 6, 1, S_NULL}, // S_FLAMESHIELDLINE2
 	{SPR_FLML, FF_FULLBRIGHT|FF_PAPERSPRITE|FF_ANIMATE|14, 7, {NULL}, 6, 1, S_NULL}, // S_FLAMESHIELDLINE3
 	{SPR_FLMF, FF_FULLBRIGHT, 2, {NULL}, 0, 0, S_NULL}, // S_FLAMESHIELDFLASH
-
-	{SPR_GTOP, FF_ANIMATE, -1, {NULL}, 5, 1, S_NULL}, // S_GARDENTOP_FLOATING
-	{SPR_GTOP, 0, 1, {NULL}, 5, 1, S_GARDENTOP_SINKING2}, // S_GARDENTOP_SINKING1
-	{SPR_GTOP, 2, 1, {NULL}, 5, 1, S_GARDENTOP_SINKING3}, // S_GARDENTOP_SINKING2
-	{SPR_GTOP, 4, 1, {NULL}, 5, 1, S_GARDENTOP_SINKING1}, // S_GARDENTOP_SINKING3
-	{SPR_GTOP, FF_ANIMATE, 100, {A_Scream}, 5, 1, S_NULL}, // S_GARDENTOP_DEAD
-	{SPR_BDRF, FF_FULLBRIGHT|FF_PAPERSPRITE|FF_ANIMATE|FF_RANDOMANIM, -1, {NULL}, 5, 2, S_NULL}, // S_GARDENTOPSPARK
-	{SPR_GTAR, FF_FULLBRIGHT|FF_PAPERSPRITE, -1, {NULL}, 5, 2, S_NULL}, // S_GARDENTOPARROW
 
 	{SPR_HYUU, FF_FULLBRIGHT, -1, {NULL}, 0, 0, S_NULL}, // S_HYUDORO
 	{SPR_HYUU, FF_FULLBRIGHT|1, -1, {NULL}, 0, 0, S_NULL}, // S_HYUDORO_RETURNING
@@ -3201,17 +3190,6 @@ state_t states[NUMSTATES] =
 	{SPR_SSCB, FF_SUBTRACT, -1, {NULL}, 0, 0, S_NULL}, // S_SPECIAL_UFO_GLASS_UNDER
 	{SPR_UFOA, FF_PAPERSPRITE, -1, {NULL}, 0, 0, S_NULL}, // S_SPECIAL_UFO_ARM
 	{SPR_UFOS, 0, -1, {NULL}, 0, 0, S_NULL}, // S_SPECIAL_UFO_STEM
-
-	{SPR_GBOM, FF_ANIMATE, -1, {NULL}, 3, 1, S_NULL}, // S_GACHABOM
-	{SPR_GBOM, FF_INVERT, 175, {NULL}, 0, 0, S_NULL}, // S_GACHABOM_DEAD
-
-	{SPR_NULL, 0, 1, {NULL}, 0, 0, S_GACHABOM_EXPLOSION_2},
-	{SPR_GCHX, 0|FF_PAPERSPRITE|FF_ANIMATE, 14, {NULL}, 6, 2, S_GACHABOM_EXPLOSION_3A}, // S_GACHABOM_EXPLOSION_2
-	{SPR_GCHX, 6|FF_PAPERSPRITE|FF_ANIMATE, 4, {NULL}, 1, 2, S_GACHABOM_EXPLOSION_3B}, // S_GACHABOM_EXPLOSION_3A
-	{SPR_NULL, 0|FF_PAPERSPRITE, 0, {A_Repeat}, 8, S_GACHABOM_EXPLOSION_3A, S_GACHABOM_EXPLOSION_4}, // S_GACHABOM_EXPLOSION_3B
-	{SPR_GCHX, 6|FF_PAPERSPRITE|FF_ANIMATE|FF_REVERSEANIM, 14, {NULL}, 6, 2, S_GACHABOM_WAITING}, // S_GACHABOM_EXPLOSION_4
-	{SPR_GBOM, FF_INVERT, 8, {A_SetScale}, FRACUNIT, 0, S_GACHABOM_RETURNING}, // S_GACHABOM_WAITING
-	{SPR_GBOM, FF_INVERT, -1, {A_SetScale}, FRACUNIT/2, 1, S_NULL}, // S_GACHABOM_RETURNING
 
 	{SPR_3DFR, 1|FF_ANIMATE, -1, {NULL}, 2, 5, S_NULL}, // S_SUPER_FLICKY
 
@@ -14572,87 +14550,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL					// raisestate
 	},
 
-	{           // MT_DROPTARGET
-		2056,           // doomednum
-		S_DROPTARGET,   // spawnstate
-		3,              // spawnhealth
-		S_NULL,         // seestate
-		sfx_tossed,     // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_DROPTARGET_SPIN, // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_DROPTARGET_SPIN, // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		128*FRACUNIT,	// speed
-		45*FRACUNIT,    // radius
-		32*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		1,              // damage
-		sfx_s3k96,      // activesound
-		MF_SPECIAL|MF_DONTENCOREMAP|MF_APPLYTERRAIN|MF_SLOPE|MF_DONTPUNT, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_DROPTARGET_SHIELD
-		-1,             // doomednum
-		S_DROPTARGET,   // spawnstate
-		3,              // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_DROPTARGET_SPIN, // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_DROPTARGET_SPIN, // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,				// speed
-		45*FRACUNIT,    // radius
-		32*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		1,              // damage
-		sfx_None,       // activesound
-		MF_SPECIAL|MF_NOGRAVITY|MF_SCENERY|MF_DONTENCOREMAP|MF_APPLYTERRAIN|MF_SLOPE|MF_DONTPUNT, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_DROPTARGET_MORPH
-		-1,             // doomednum
-		S_DROPTARGET,   // spawnstate
-		1,              // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,				// speed
-		45*FRACUNIT,    // radius
-		32*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		1,              // damage
-		sfx_None,       // activesound
-		MF_SCENERY|MF_NOBLOCKMAP|MF_NOCLIP|MF_NOGRAVITY|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
 	{           // MT_BALLHOG
 		-1,             // doomednum
 		S_BALLHOG1,     // spawnstate
@@ -14950,87 +14847,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL          // raisestate
 	},
 
-	{           // MT_GARDENTOP
-		-1,             // doomednum
-		S_GARDENTOP_FLOATING, // spawnstate
-		8,              // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		4,              // reactiontime
-		sfx_s3k8b,      // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_GARDENTOP_DEAD, // deathstate
-		S_NULL,         // xdeathstate
-		sfx_s3k7a,      // deathsound
-		30*FRACUNIT,    // speed
-		30*FRACUNIT,    // radius
-		68*FRACUNIT,    // height
-		-1,             // display offset
-		100,            // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_NOCLIPTHING|MF_DONTENCOREMAP|MF_DONTPUNT, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_GARDENTOPSPARK
-		-1,             // doomednum
-		S_GARDENTOPSPARK, // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		8,              // speed
-		8*FRACUNIT,     // radius
-		8*FRACUNIT,     // height
-		1,              // display offset
-		100,            // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_GARDENTOPARROW
-		-1,             // doomednum
-		S_GARDENTOPARROW, // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		8,              // speed
-		8*FRACUNIT,     // radius
-		54*FRACUNIT,    // height
-		1,              // display offset
-		100,            // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
 	{           // MT_HYUDORO
 		-1,             // doomednum
 		S_HYUDORO,      // spawnstate
@@ -15325,60 +15141,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,              // damage
 		sfx_None,       // activesound
 		MF_NOBLOCKMAP|MF_NOGRAVITY|MF_NOCLIP|MF_SCENERY|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_GACHABOM
-		-1,             // doomednum
-		S_GACHABOM,     // spawnstate
-		7,              // spawnhealth
-		S_NULL,         // seestate
-		sfx_tossed,     // seesound
-		8,              // reactiontime
-		sfx_s3k49,      // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_GACHABOM_DEAD, // deathstate
-		S_NULL,         // xdeathstate
-		sfx_s3k5d,      // deathsound
-		28*FRACUNIT,    // speed
-		24*FRACUNIT,    // radius
-		64*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		1,              // damage
-		sfx_s3k96,      // activesound
-		MF_SHOOTABLE|MF_DONTENCOREMAP|MF_APPLYTERRAIN|MF_SLOPE|MF_DONTPUNT, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_GACHABOM_REBOUND
-		-1,             // doomednum
-		S_GACHABOM_EXPLOSION_1, // spawnstate
-		1,              // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_GACHABOM_DEAD, // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		16*FRACUNIT,    // radius
-		32*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_NOBLOCKMAP|MF_NOGRAVITY|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOCLIPTHING|MF_DONTENCOREMAP, // flags
 		S_NULL          // raisestate
 	},
 

@@ -113,7 +113,6 @@ boolean K_IsDuelItem(mobjtype_t type)
 		case MT_SSMINE:
 		case MT_LANDMINE:
 		case MT_HYUDORO_CENTER:
-		case MT_DROPTARGET:
 		case MT_POGOSPRING:
 			return true;
 
@@ -499,7 +498,6 @@ INT32 K_GetShieldFromItem(INT32 item)
 		case KITEM_LIGHTNINGSHIELD: return KSHIELD_LIGHTNING;
 		case KITEM_BUBBLESHIELD: return KSHIELD_BUBBLE;
 		case KITEM_FLAMESHIELD: return KSHIELD_FLAME;
-		case KITEM_GARDENTOP: return KSHIELD_TOP;
 		default: return KSHIELD_NONE;
 	}
 }
@@ -534,9 +532,6 @@ SINT8 K_ItemResultToType(SINT8 getitem)
 			case KRITEM_DUALJAWZ:
 				return KITEM_JAWZ;
 
-			case KRITEM_TRIPLEGACHABOM:
-				return KITEM_GACHABOM;
-
 			default:
 				I_Error("Bad item cooldown redirect for result %d\n", getitem);
 				break;
@@ -557,7 +552,6 @@ UINT8 K_ItemResultToAmount(SINT8 getitem)
 		case KRITEM_TRIPLESNEAKER:
 		case KRITEM_TRIPLEBANANA:
 		case KRITEM_TRIPLEORBINAUT:
-		case KRITEM_TRIPLEGACHABOM:
 			return 3;
 
 		case KRITEM_QUADORBINAUT:
@@ -688,13 +682,7 @@ static fixed_t K_PlayerWeight(mobj_t *mobj, mobj_t *against)
 	if (!mobj->player)
 		return weight;
 
-	if (against && (against->type == MT_GARDENTOP || (against->player && against->player->curshield == KSHIELD_TOP)))
-	{
-		/* Players bumping into a Top get zero weight -- the
-			Top rider is immovable. */
-		weight = 0;
-	}
-	else if (against && !P_MobjWasRemoved(against) && against->player
+	if (against && !P_MobjWasRemoved(against) && against->player
 		&& ((!P_PlayerInPain(against->player) && P_PlayerInPain(mobj->player)) // You're hurt
 		|| (against->player->itemtype == KITEM_BUBBLESHIELD && mobj->player->itemtype != KITEM_BUBBLESHIELD))) // They have a Bubble Shield
 	{
@@ -756,7 +744,6 @@ fixed_t K_GetMobjWeight(mobj_t *mobj, mobj_t *against)
 			break;
 		case MT_ORBINAUT:
 		case MT_ORBINAUT_SHIELD:
-		case MT_GACHABOM:
 		case MT_DUELBOMB:
 			if (against->player)
 				weight = K_PlayerWeight(against, NULL);
@@ -768,10 +755,6 @@ fixed_t K_GetMobjWeight(mobj_t *mobj, mobj_t *against)
 			else
 				weight += 3*FRACUNIT;
 			break;
-		case MT_DROPTARGET:
-		case MT_DROPTARGET_SHIELD:
-			if (against->player)
-				weight = K_PlayerWeight(against, NULL);
 		default:
 			break;
 	}
@@ -805,13 +788,6 @@ static void K_SpawnBumpForObjs(mobj_t *mobj1, mobj_t *mobj2)
 	|| (mobj2->player && mobj2->player->itemtype == KITEM_BUBBLESHIELD))
 	{
 		S_StartSound(mobj1, sfx_s3k44);
-	}
-	else if (mobj1->type == MT_DROPTARGET || mobj1->type == MT_DROPTARGET_SHIELD) // no need to check the other way around
-	{
-		// Sound handled in K_DropTargetCollide
-		// S_StartSound(mobj2, sfx_s258);
-		fx->colorized = true;
-		fx->color = mobj1->color;
 	}
 	else
 	{
@@ -962,25 +938,24 @@ boolean K_KartBouncing(mobj_t *mobj1, mobj_t *mobj2)
 		|| (mobj2->player && mobj2->player->respawn.state != RESPAWNST_NONE))
 		return false;
 
-	if (mobj1->type != MT_DROPTARGET && mobj1->type != MT_DROPTARGET_SHIELD)
-	{ // Don't bump if you're flashing
-		INT32 flash;
 
-		flash = K_GetKartFlashing(mobj1->player);
-		if (mobj1->player && mobj1->player->flashing > 0 && mobj1->player->flashing < flash)
-		{
-			if (mobj1->player->flashing < flash-1)
-				mobj1->player->flashing++;
-			return false;
-		}
+	// Don't bump if you're flashing
+	INT32 flash;
 
-		flash = K_GetKartFlashing(mobj2->player);
-		if (mobj2->player && mobj2->player->flashing > 0 && mobj2->player->flashing < flash)
-		{
-			if (mobj2->player->flashing < flash-1)
-				mobj2->player->flashing++;
-			return false;
-		}
+	flash = K_GetKartFlashing(mobj1->player);
+	if (mobj1->player && mobj1->player->flashing > 0 && mobj1->player->flashing < flash)
+	{
+		if (mobj1->player->flashing < flash-1)
+			mobj1->player->flashing++;
+		return false;
+	}
+
+	flash = K_GetKartFlashing(mobj2->player);
+	if (mobj2->player && mobj2->player->flashing > 0 && mobj2->player->flashing < flash)
+	{
+		if (mobj2->player->flashing < flash-1)
+			mobj2->player->flashing++;
+		return false;
 	}
 
 	// Don't bump if you've recently bumped
@@ -1642,11 +1617,6 @@ void K_SpawnNormalSpeedLines(player_t *player)
 	K_SpawnGenericSpeedLines(player, false);
 }
 
-void K_SpawnGardenTopSpeedLines(player_t *player)
-{
-	K_SpawnGenericSpeedLines(player, true);
-}
-
 void K_SpawnInvincibilitySpeedLines(mobj_t *mo)
 {
 	mobj_t *fast = P_SpawnMobjFromMobj(mo,
@@ -1747,7 +1717,6 @@ static void K_SpawnGrowShrinkParticles(mobj_t *mo, INT32 timer)
 
 void K_SpawnBumpEffect(mobj_t *mo)
 {
-	mobj_t *top = mo->player ? K_GetGardenTop(mo->player) : NULL;
 
 	mobj_t *fx = P_SpawnMobj(mo->x, mo->y, mo->z, MT_BUMP);
 
@@ -1758,9 +1727,6 @@ void K_SpawnBumpEffect(mobj_t *mo)
 
 	fx->scale = mo->scale;
 
-	if (top)
-		S_StartSound(mo, top->info->attacksound);
-	else
 		S_StartSound(mo, sfx_s3k49);
 }
 
@@ -2005,10 +1971,6 @@ void K_KartMoveAnimation(player_t *player)
 	{
 		drift = intsign(player->aizdriftturn);
 		turndir = 0;
-	}
-	else if (player->curshield == KSHIELD_TOP)
-	{
-		drift = -turndir;
 	}
 	else if (turndir == 0 && drift == 0)
 	{
@@ -2567,8 +2529,6 @@ boolean K_ApplyOffroad(const player_t *player)
 {
 	if (player->invincibilitytimer || player->hyudorotimer || player->sneakertimer)
 		return false;
-	if (K_IsRidingFloatingTop(player))
-		return false;
 	return true;
 }
 
@@ -2617,12 +2577,6 @@ tripwirepass_t K_TripwirePassConditions(const player_t *player)
 		)
 		return TRIPWIRE_IGNORE;
 
-	// TRIPWIRE_CONSUME should always be checked last; this category should be
-	// used for tripwire states that are partially detrimental, and check
-	// leniency from OTHER states, not themselves.
-	if (player->curshield == KSHIELD_TOP)
-		return TRIPWIRE_CONSUME;
-
 	return TRIPWIRE_NONE;
 }
 
@@ -2641,7 +2595,6 @@ boolean K_WaterRun(mobj_t *mobj)
 	switch (mobj->type)
 	{
 		case MT_ORBINAUT:
-		case MT_GACHABOM:
 		{
 			if (Obj_OrbinautCanRunOnWater(mobj))
 			{
@@ -2674,11 +2627,6 @@ boolean K_WaterRun(mobj_t *mobj)
 			if (mobj->player == NULL)
 			{
 				return false;
-			}
-
-			if (mobj->player->curshield == KSHIELD_TOP)
-			{
-				return K_IsHoldingDownTop(mobj->player) == false;
 			}
 
 			minspeed = K_PlayerTripwireSpeedThreshold(mobj->player);
@@ -2718,11 +2666,6 @@ boolean K_WaterSkip(mobj_t *mobj)
 	{
 		case MT_PLAYER:
 		{
-			if (mobj->player != NULL && mobj->player->curshield == KSHIELD_TOP)
-			{
-				// Don't allow
-				return false;
-			}
 
 			if (K_PlayerEBrake(mobj->player))
 			{
@@ -2914,46 +2857,6 @@ void K_SpawnWaterRunParticles(mobj_t *mobj)
 			}
 		}
 	}
-}
-
-boolean K_IsRidingFloatingTop(const player_t *player)
-{
-	if (player->curshield != KSHIELD_TOP)
-	{
-		return false;
-	}
-
-	return !Obj_GardenTopPlayerIsGrinding(player);
-}
-
-boolean K_IsHoldingDownTop(const player_t *player)
-{
-	if (player->curshield != KSHIELD_TOP)
-	{
-		return false;
-	}
-
-	if ((K_GetKartButtons(player) & BT_DRIFT) != BT_DRIFT)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-mobj_t *K_GetGardenTop(const player_t *player)
-{
-	if (player->curshield != KSHIELD_TOP)
-	{
-		return NULL;
-	}
-
-	if (player->mo == NULL)
-	{
-		return NULL;
-	}
-
-	return player->mo->hnext;
 }
 
 static fixed_t K_FlameShieldDashVar(INT32 val)
@@ -3275,12 +3178,6 @@ fixed_t K_GetKartAccel(const player_t *player)
 
 	k_accel += 17 * stat; // 121 - 257
 
-	// Marble Garden Top gets 1200% accel
-	if (player->curshield == KSHIELD_TOP)
-	{
-		k_accel = FixedMul(k_accel, player->topAccel);
-	}
-
 	if (K_PodiumSequence() == true)
 	{
 		k_accel = FixedMul(k_accel, FRACUNIT / 4);
@@ -3384,29 +3281,6 @@ SINT8 K_GetForwardMove(const player_t *player)
 			forwardmove = MAXPLMOVE;
 	}
 
-	if (player->curshield == KSHIELD_TOP)
-	{
-		if (forwardmove < 0 ||
-				(K_GetKartButtons(player) & BT_DRIFT))
-		{
-			forwardmove = 0;
-		}
-		else
-		{
-			// forwardmove = MAXPLMOVE;
-
-			UINT8 minmove = MAXPLMOVE/10;
-			fixed_t assistmove = (MAXPLMOVE - minmove) * FRACUNIT;
-
-			angle_t topdelta = player->mo->angle - K_MomentumAngle(player->mo);
-			fixed_t topmult = FINECOSINE(topdelta >> ANGLETOFINESHIFT);
-			topmult = (topmult/2) + (FRACUNIT/2);
-			assistmove = FixedMul(topmult, assistmove);
-
-			forwardmove = minmove + FixedInt(assistmove);
-		}
-	}
-
 	return forwardmove;
 }
 
@@ -3417,11 +3291,6 @@ fixed_t K_GetNewSpeed(const player_t *player)
 	fixed_t p_accel = K_GetKartAccel(player);
 
 	fixed_t newspeed, oldspeed, finalspeed;
-
-	if (player->curshield == KSHIELD_TOP)
-	{
-		p_speed = 15 * p_speed / 10;
-	}
 
 	if (K_PlayerUsesBotMovement(player) == true && player->botvars.rubberband > 0)
 	{
@@ -3754,10 +3623,10 @@ void K_SquishPlayer(player_t *player, mobj_t *inflictor, mobj_t *source)
 static boolean K_IsScaledItem(mobj_t *mobj)
 {
 	return mobj && !P_MobjWasRemoved(mobj) &&
-		(mobj->type == MT_ORBINAUT || mobj->type == MT_JAWZ || mobj->type == MT_GACHABOM
+		(mobj->type == MT_ORBINAUT || mobj->type == MT_JAWZ
 		|| mobj->type == MT_BANANA || mobj->type == MT_EGGMANITEM || mobj->type == MT_BALLHOG
 		|| mobj->type == MT_SSMINE || mobj->type == MT_LANDMINE || mobj->type == MT_SINK
-		|| mobj->type == MT_GARDENTOP || mobj->type == MT_DROPTARGET || mobj->type == MT_PLAYER);
+		|| mobj->type == MT_PLAYER);
 }
 
 
@@ -3940,15 +3809,6 @@ void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 		{
 			player->roundconditions.tripwire_hyuu = true;
 			player->roundconditions.checkthisframe = true;
-		}
-
-		if (player->tripwirePass == TRIPWIRE_CONSUME && player->tripwireLeniency == 0)
-		{
-			if (player->curshield == KSHIELD_TOP)
-			{
-				S_StartSound(player->mo, sfx_kc65); // Player's handling is about to change, alert them!
-				Obj_GardenTopDestroy(player);
-			}
 		}
 
 		player->tripwireLeniency += TICRATE/2;
@@ -4297,13 +4157,6 @@ fixed_t K_ItemScaleForPlayer(player_t *player)
 
 fixed_t K_DefaultPlayerRadius(player_t *player)
 {
-	mobj_t *top = K_GetGardenTop(player);
-
-	if (top)
-	{
-		return top->radius;
-	}
-
 	return FixedMul(player->mo->scale,
 			player->mo->info->radius);
 }
@@ -4346,15 +4199,6 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 		finalspeed += FixedMul(source->player->speed, deltaFactor);
 
 		finalscale = K_ItemScaleForPlayer(source->player);
-
-		if (type == MT_GARDENTOP)
-		{
-			mobj_t *top = K_GetGardenTop(source->player);
-			if (top)
-			{
-				finalscale = top->scale;
-			}
-		}
 	}
 
 	if (type == MT_BUBBLESHIELDTRAP)
@@ -4370,7 +4214,6 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 		switch (type)
 		{
 			case MT_ORBINAUT:
-			case MT_GACHABOM:
 				// These items orbit in place.
 				// Look for a tight radius...
 				nerf = FRACUNIT/4;
@@ -4449,12 +4292,6 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 			// Contra spread shot scale up
 			th->destscale = th->destscale << 1;
 			th->scalespeed = abs(th->destscale - th->scale) / (2*TICRATE);
-			break;
-		case MT_GARDENTOP:
-			th->movefactor = finalspeed;
-			break;
-		case MT_GACHABOM:
-			Obj_GachaBomThrown(th, finalspeed, dir);
 			break;
 		default:
 			break;
@@ -4954,7 +4791,7 @@ void K_DriftDustHandling(mobj_t *spawner)
 		dust->destscale = spawner->scale * 3;
 		dust->scalespeed = spawner->scale/12;
 
-		if (!spawner->player || !K_GetGardenTop(spawner->player))
+		if (!spawner->player)
 		{
 			if (leveltime % 6 == 0)
 				S_StartSound(spawner, sfx_screec);
@@ -5056,12 +4893,6 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 			dir = defaultDir;
 	}
 
-	if (mapthing == MT_GACHABOM && dir > 0)
-	{
-		// This item is both a missile and not!
-		missile = false;
-	}
-
 	// Figure out projectile speed by game speed
 	if (missile)
 	{
@@ -5080,7 +4911,7 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 
 	if (missile) // Shootables
 	{
-		if (dir < 0 && mapthing != MT_SPB && mapthing != MT_GARDENTOP)
+		if (dir < 0 && mapthing != MT_SPB)
 		{
 			// Shoot backward
 			mo = K_SpawnKartMissile(player->mo, mapthing, (player->mo->angle + ANGLE_180) + angleOffset, 0, PROJSPEED, dir);
@@ -5089,14 +4920,6 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 		{
 			// Shoot forward
 			mo = K_SpawnKartMissile(player->mo, mapthing, player->mo->angle + angleOffset, 0, PROJSPEED, dir);
-		}
-
-		if (mapthing == MT_DROPTARGET && mo)
-		{
-			mo->health++;
-			mo->color = SKINCOLOR_WHITE;
-			mo->reactiontime = TICRATE/2;
-			P_SetMobjState(mo, mo->info->painstate);
 		}
 	}
 	else
@@ -5145,11 +4968,6 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 			{
 				mo->angle = FixedAngle(P_RandomRange(PR_DECORATION, -180, 180) << FRACBITS);
 				mo->rollangle = FixedAngle(P_RandomRange(PR_DECORATION, -180, 180) << FRACBITS);
-			}
-
-			if (mapthing == MT_GACHABOM)
-			{
-				Obj_GachaBomThrown(mo, mo->radius, dir);
 			}
 
 			// this is the small graphic effect that plops in you when you throw an item:
@@ -5504,8 +5322,7 @@ static void K_DoShrink(player_t *user)
 
 			if (mobj->type == MT_BANANA_SHIELD || mobj->type == MT_JAWZ_SHIELD ||
 			mobj->type == MT_SSMINE_SHIELD || mobj->type == MT_EGGMANITEM_SHIELD ||
-			mobj->type == MT_SINK_SHIELD || mobj->type == MT_ORBINAUT_SHIELD ||
-			mobj->type == MT_DROPTARGET_SHIELD)
+			mobj->type == MT_SINK_SHIELD || mobj->type == MT_ORBINAUT_SHIELD)
 			{
 				if (mobj->target && mobj->target->player)
 				{
@@ -5762,13 +5579,6 @@ void K_PopPlayerShield(player_t *player)
 			// Doesn't apply to non-S3K shields.
 			return;
 
-		case KSHIELD_TOP:
-			if (player->curshield == KSHIELD_TOP)
-			{
-				Obj_GardenTopDestroy(player);
-			}
-			return; // everything is handled by Obj_GardenTopDestroy
-
 		case KSHIELD_LIGHTNING:
 			S_StartSound(player->mo, sfx_s3k7c);
 			// K_DoLightningShield(player);
@@ -5826,11 +5636,6 @@ void K_DropHnextList(player_t *player)
 				dropall = false;
 				type = MT_SSMINE;
 				break;
-			case MT_DROPTARGET_SHIELD:
-				orbit = false;
-				dropall = false;
-				type = MT_DROPTARGET;
-				break;
 			case MT_EGGMANITEM_SHIELD:
 				orbit = false;
 				type = MT_EGGMANITEM;
@@ -5838,7 +5643,6 @@ void K_DropHnextList(player_t *player)
 			// intentionally do nothing
 			case MT_ROCKETSNEAKER:
 			case MT_SINK_SHIELD:
-			case MT_GARDENTOP:
 				return;
 			default:
 				continue;
@@ -6418,7 +6222,6 @@ static void K_MoveHeldObjects(player_t *player)
 			}
 		case MT_BANANA_SHIELD: // Kart trailing items
 		case MT_SSMINE_SHIELD:
-		case MT_DROPTARGET_SHIELD:
 		case MT_EGGMANITEM_SHIELD:
 		case MT_SINK_SHIELD:
 			{
@@ -6444,10 +6247,6 @@ static void K_MoveHeldObjects(player_t *player)
 
 						// Decided that this should use their "canon" color.
 						cur->color = SKINCOLOR_BLACK;
-					}
-					else if (cur->type == MT_DROPTARGET_SHIELD)
-					{
-						cur->renderflags = (cur->renderflags|RF_FULLBRIGHT) ^ RF_FULLDARK; // the difference between semi and fullbright
 					}
 
 					cur->flags &= ~MF_NOCLIPTHING;
@@ -7209,26 +7008,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	player->pflags &= ~(PF_CASTSHADOW);
 
-	if (player->curshield == KSHIELD_TOP)
-	{
-		mobj_t *top = K_GetGardenTop(player);
-
-		if (top)
-		{
-			/* FIXME: I cannot figure out how offset the
-			   player correctly in real time to pivot around
-			   the BOTTOM of the Top. This hack plus the one
-			   in R_PlayerSpriteRotation. */
-			player->mo->spritexoffset += FixedMul(
-					FixedDiv(top->height, top->scale),
-					FINESINE(top->rollangle >> ANGLETOFINESHIFT));
-
-			player->mo->sprzoff += top->sprzoff + (
-					P_GetMobjHead(top) -
-					P_GetMobjFeet(player->mo));
-		}
-	}
-
 	if (player->loop.radius)
 	{
 		// Offset sprite Z position so wheels touch top of
@@ -7764,15 +7543,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		}
 	}
 
-	// Players that bounce far off walls get reduced Top accel, to give them some time to get their bearings.
-	if ((player->mo->eflags & MFE_JUSTBOUNCEDWALL) && player->curshield == KSHIELD_TOP)
-	{
-		angle_t topdelta = player->mo->angle - K_MomentumAngle(player->mo);
-		fixed_t topmult = FINECOSINE(topdelta >> ANGLETOFINESHIFT);
-		topmult = (topmult/2) + (FRACUNIT/2); // 0 to original
-		player->topAccel = FixedMul(topmult, player->topAccel);
-	}
-
 	player->topAccel = min(player->topAccel + TOPACCELREGEN, MAXTOPACCEL);
 
 	if (player->stealingtimer == 0
@@ -8068,19 +7838,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (cmd->buttons & BT_DRIFT)
 	{
-		if (player->curshield == KSHIELD_TOP)
-		{
-			if (player->topdriftheld <= GARDENTOP_MAXGRINDTIME)
-				player->topdriftheld++;
-
-			// Squish :)
-			player->mo->spritexscale = 6*FRACUNIT/4;
-			player->mo->spriteyscale = 2*FRACUNIT/4;
-
-			if (leveltime & 1)
-				K_SpawnGardenTopSpeedLines(player);
-		}
-		else if (K_PressingEBrake(player) == false)
+		if (K_PressingEBrake(player) == false)
 		{
 			player->pflags |= PF_DRIFTINPUT;
 		}
@@ -8271,7 +8029,7 @@ void K_KartResetPlayerColor(player_t *player)
 
 finalise:
 
-	if (player->curshield && player->curshield != KSHIELD_TOP)
+	if (player->curshield)
 	{
 		fullbright = true;
 	}
@@ -9345,33 +9103,6 @@ void K_KartUpdatePosition(player_t *player)
 		player->positiondelay = POS_DELAY_TIME + 4; // Position number growth
 	}
 
-	/* except in FREE PLAY */
-	if (player->curshield == KSHIELD_TOP &&
-			(gametyperules & GTR_CIRCUIT) &&
-			realplayers > 1)
-	{
-		/* grace period so you don't fall off INSTANTLY */
-		if (K_GetItemRouletteDistance(player, 8) < 2000 && player->topinfirst < 2*TICRATE) // "Why 8?" Literally no reason, but since we intend for constant-ish distance we choose a fake fixed playercount.
-		{
-			player->topinfirst++;
-		}
-		else
-		{
-			if (position == 1)
-			{
-				Obj_GardenTopThrow(player);
-			}
-			else
-			{
-				player->topinfirst = 0;
-			}
-		}
-	}
-	else
-	{
-		player->topinfirst = 0;
-	}
-
 	player->position = position;
 }
 
@@ -9722,14 +9453,6 @@ void K_AdjustPlayerFriction(player_t *player)
 	}
 
 	player->mo->friction = prevfriction;
-
-	// Less friction on Top unless grinding
-	if (player->curshield == KSHIELD_TOP &&
-			K_GetForwardMove(player) > 0 &&
-			player->speed < 2 * K_GetKartSpeed(player, false, false))
-	{
-		player->mo->friction += 1024;
-	}
 
 	/*
 	if (K_PlayerEBrake(player) == true)
@@ -10381,35 +10104,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 								player->botvars.itemconfirm = 0;
 							}
 							break;
-						case KITEM_DROPTARGET:
-							if (ATTACK_IS_DOWN && !HOLDING_ITEM && NO_HYUDORO)
-							{
-								mobj_t *mo;
-								K_SetItemOut(player);
-								S_StartSound(player->mo, sfx_s254);
-								mo = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_DROPTARGET_SHIELD);
-								if (mo)
-								{
-									mo->flags |= MF_NOCLIPTHING;
-									mo->threshold = 10;
-									mo->movecount = 1;
-									mo->movedir = 1;
-									mo->cusval = player->itemscale;
-									P_SetTarget(&mo->target, player->mo);
-									P_SetTarget(&player->mo->hnext, mo);
-								}
-								player->botvars.itemconfirm = 0;
-							}
-							else if (ATTACK_IS_DOWN && (player->itemflags & IF_ITEMOUT))
-							{
-								K_ThrowKartItem(player, (player->throwdir > 0), MT_DROPTARGET, -1, 0, 0);
-								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
-								player->itemflags &= ~IF_ITEMOUT;
-								K_UpdateHnextList(player, true);
-								player->botvars.itemconfirm = 0;
-							}
-							break;
 						case KITEM_BALLHOG:
 							if (!HOLDING_ITEM && NO_HYUDORO)
 							{
@@ -10578,50 +10272,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									K_PlayAttackTaunt(player->mo);
 									player->botvars.itemconfirm = 0;
 								}
-							}
-							break;
-						case KITEM_GARDENTOP:
-							if (player->curshield == KSHIELD_TOP && K_GetGardenTop(player) == NULL)
-							{
-								Obj_GardenTopDeploy(player->mo);
-								player->botvars.itemconfirm = 0;
-							}
-							else if (ATTACK_IS_DOWN && NO_HYUDORO)
-							{
-								if (player->curshield != KSHIELD_TOP)
-								{
-									player->topinfirst = 0;
-									Obj_GardenTopDeploy(player->mo);
-								}
-								else
-								{
-									if (player->throwdir == -1)
-									{
-										const angle_t angle = P_IsObjectOnGround(player->mo) ?
-											player->mo->angle : K_MomentumAngle(player->mo);
-
-										mobj_t *top = Obj_GardenTopDestroy(player);
-
-										// Fly off the Top at high speed
-										P_InstaThrust(player->mo, angle, player->speed + (80 * mapobjectscale));
-										P_SetObjectMomZ(player->mo, player->mo->info->height / 8, true);
-
-										if (top != NULL)
-										{
-											top->momx = player->mo->momx;
-											top->momy = player->mo->momy;
-											top->momz = player->mo->momz;
-										}
-									}
-									else
-									{
-										Obj_GardenTopThrow(player);
-										S_StartSound(player->mo, sfx_tossed); // play only when actually thrown :^,J
-										K_PlayAttackTaunt(player->mo);
-									}
-								}
-
-								player->botvars.itemconfirm = 0;
 							}
 							break;
 						case KITEM_BUBBLESHIELD:
@@ -10825,22 +10475,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 								player->itemamount--;
 								player->itemflags &= ~IF_ITEMOUT;
 								K_UpdateHnextList(player, true);
-								player->botvars.itemconfirm = 0;
-							}
-							break;
-						case KITEM_GACHABOM:
-							if (ATTACK_IS_DOWN && !HOLDING_ITEM && NO_HYUDORO)
-							{
-								K_SetItemOut(player); // need this to set itemscale
-								K_ThrowKartItem(player, true, MT_GACHABOM, 0, 0, 0);
-								K_UnsetItemOut(player);
-								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
-								player->roundconditions.gachabom_miser = (
-									(player->roundconditions.gachabom_miser == 0)
-										? 1 : 0xFF
-								);
-								K_UpdateHnextList(player, false);
 								player->botvars.itemconfirm = 0;
 							}
 							break;

@@ -1125,10 +1125,6 @@ void P_TrackRoundConditionTargetDamage(targetdamaging_t targetdamaging)
 		if (players[g_localplayers[i]].spectator)
 			continue;
 		players[g_localplayers[i]].roundconditions.targetdamaging |= targetdamaging;
-		/* -- the following isn't needed because we can just check for targetdamaging == UFOD_GACHABOM
-		if (targetdamaging != UFOD_GACHABOM)
-			players[g_localplayers[i]].roundconditions.gachabom_miser = 0xFF;
-		*/
 	}
 }
 
@@ -1160,9 +1156,6 @@ static void P_AddBrokenPrison(mobj_t *target, mobj_t *inflictor, mobj_t *source)
 		;
 	else switch (inflictor->type)
 	{
-		case MT_GACHABOM:
-			targetdamaging = UFOD_GACHABOM;
-			break;
 		case MT_ORBINAUT:
 		case MT_ORBINAUT_SHIELD:
 			targetdamaging = UFOD_ORBINAUT;
@@ -1690,10 +1683,8 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 		 && !(target->type == MT_ORBINAUT || target->type == MT_ORBINAUT_SHIELD
 		 || target->type == MT_JAWZ || target->type == MT_JAWZ_SHIELD
 		 || target->type == MT_BANANA || target->type == MT_BANANA_SHIELD
-		 || target->type == MT_DROPTARGET || target->type == MT_DROPTARGET_SHIELD
 		 || target->type == MT_EGGMANITEM || target->type == MT_EGGMANITEM_SHIELD
-		 || target->type == MT_BALLHOG || target->type == MT_SPB
-		 || target->type == MT_GACHABOM))
+		 || target->type == MT_BALLHOG || target->type == MT_SPB))
 		target->flags |= MF_NOGRAVITY; // Don't drop Tails 03-08-2000
 	else
 		target->flags &= ~MF_NOGRAVITY; // lose it if you for whatever reason have it, I'm looking at you shields
@@ -1731,7 +1722,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 		{
 			if ((target->type == MT_BANANA_SHIELD && target->target->player->itemtype == KITEM_BANANA) // trail items
 				|| (target->type == MT_SSMINE_SHIELD && target->target->player->itemtype == KITEM_MINE)
-				|| (target->type == MT_DROPTARGET_SHIELD && target->target->player->itemtype == KITEM_DROPTARGET)
 				|| (target->type == MT_SINK_SHIELD && target->target->player->itemtype == KITEM_KITCHENSINK))
 			{
 				if (target->movedir != 0 && target->movedir < (UINT16)target->target->player->itemamount)
@@ -2201,11 +2191,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 				overlay->color = target->color;
 				P_SetMobjState(overlay, S_INVISIBLE);
 			}
-			break;
-
-		case MT_DROPTARGET:
-		case MT_DROPTARGET_SHIELD:
-			target->fuse = 1;
 			break;
 
 		case MT_BANANA:
@@ -3215,9 +3200,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				;
 			else switch (inflictor->type)
 			{
-				case MT_GACHABOM:
-					targetdamaging = UFOD_GACHABOM;
-					break;
 				case MT_ORBINAUT:
 				case MT_ORBINAUT_SHIELD:
 					targetdamaging = UFOD_ORBINAUT;

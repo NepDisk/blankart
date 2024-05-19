@@ -1064,14 +1064,6 @@ static boolean P_UseUnderwaterGravity(mobj_t *mo)
 	{
 		case MT_BANANA:
 			return false;
-
-		case MT_GACHABOM:
-			if (Obj_GachaBomWasTossed(mo))
-			{
-				return false;
-			}
-			break;
-
 		default:
 			break;
 	}
@@ -1190,11 +1182,6 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 			gravityadd = 0;
 		}
 
-		if (K_IsHoldingDownTop(mo->player))
-		{
-			gravityadd *= 3;
-		}
-
 		//NOIRE SPRINGS: AAAAAAAAAAAAAAAAAAAAAA
 		if (mo->player->pogoSpringJumped) {
 			gravityadd = (5 * gravityadd) / 2;
@@ -1236,14 +1223,10 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 			case MT_BATTLEBUMPER:
 				gravityadd /= 2;
 				break;
-			case MT_GACHABOM:
-				gravityadd = (5*gravityadd)/2;
-				break;
 			case MT_BANANA:
 			case MT_EGGMANITEM:
 			case MT_SSMINE:
 			case MT_LANDMINE:
-			case MT_DROPTARGET:
 			case MT_SINK:
 			case MT_EMERALD:
 				if (mo->health > 0)
@@ -1797,7 +1780,7 @@ void P_XYMovement(mobj_t *mo)
 						return;
 					}
 					// Bump sparks
-					else if (mo->type == MT_ORBINAUT || mo->type == MT_GACHABOM)
+					else if (mo->type == MT_ORBINAUT)
 					{
 						mobj_t *fx;
 						fx = P_SpawnMobj(mo->x, mo->y, mo->z, MT_BUMP);
@@ -1811,8 +1794,6 @@ void P_XYMovement(mobj_t *mo)
 					switch (mo->type)
 					{
 						case MT_ORBINAUT: // Orbinaut speed decreasing
-						case MT_GACHABOM:
-						case MT_GARDENTOP:
 							if (mo->health > 1)
 							{
 								S_StartSound(mo, mo->info->attacksound);
@@ -1837,12 +1818,6 @@ void P_XYMovement(mobj_t *mo)
 
 						case MT_BUBBLESHIELDTRAP:
 							S_StartSound(mo, sfx_s3k44); // Bubble bounce
-							break;
-
-						case MT_DROPTARGET:
-							// This prevents an item thrown at a wall from
-							// phasing through you on its return.
-							mo->threshold = 0;
 							break;
 
 						default:
@@ -5179,15 +5154,11 @@ boolean P_IsKartItem(INT32 type)
 		case MT_SSMINE:
 		case MT_SSMINE_SHIELD:
 		case MT_LANDMINE:
-		case MT_DROPTARGET:
-		case MT_DROPTARGET_SHIELD:
 		case MT_BALLHOG:
 		case MT_SPB:
 		case MT_BUBBLESHIELDTRAP:
-		case MT_GARDENTOP:
 		case MT_HYUDORO:
 		case MT_SINK:
-		case MT_GACHABOM:
 			return true;
 
 		default:
@@ -5211,9 +5182,7 @@ boolean P_IsKartFieldItem(INT32 type)
 		case MT_BUBBLESHIELDTRAP:
 		case MT_POGOSPRING:
 		case MT_SINK:
-		case MT_DROPTARGET:
 		case MT_DUELBOMB:
-		case MT_GACHABOM:
 			return true;
 
 		default:
@@ -5281,9 +5250,6 @@ static boolean P_IsTrackerType(INT32 type)
 			return true;
 
 		case MT_BUBBLESHIELDTRAP: // Mash prompt
-			return true;
-
-		case MT_GARDENTOP: // Frey
 			return true;
 
 		default:
@@ -6345,12 +6311,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 	case MT_MONITOR_SHARD:
 		Obj_MonitorShardThink(mobj);
 		break;
-	case MT_DROPTARGET_MORPH:
-		if (Obj_DropTargetMorphThink(mobj) == false)
-		{
-			return;
-		}
-		break;
 	case MT_SUPER_FLICKY_CONTROLLER:
 		Obj_SuperFlickyControllerThink(mobj);
 
@@ -6632,16 +6592,13 @@ static boolean P_MobjDeadThink(mobj_t *mobj)
 	case MT_ORBINAUT:
 	case MT_EGGMANITEM:
 	case MT_LANDMINE:
-	//case MT_DROPTARGET:
 	case MT_SPB:
-	case MT_GACHABOM:
 		if (P_IsObjectOnGround(mobj))
 		{
 			P_RemoveMobj(mobj);
 			return false;
 		}
 		/* FALLTHRU */
-	case MT_GARDENTOP:
 	case MT_ORBINAUT_SHIELD:
 	case MT_BANANA_SHIELD:
 	case MT_EGGMANITEM_SHIELD:
@@ -7115,7 +7072,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			}
 		}
 		break;
-	case MT_GACHABOM:
 	case MT_ORBINAUT:
 	{
 		Obj_OrbinautThink(mobj);
@@ -7318,51 +7274,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			mobj->momx = mobj->momy = 0;
 			mobj->health = 1;
 		}
-
-		if (mobj->threshold > 0)
-			mobj->threshold--;
-		break;
-	case MT_DROPTARGET:
-		if (mobj->reactiontime > 0)
-		{
-			// Slippery tipping mode.
-			INT32 slippytip = 1 + (mobj->reactiontime/2);
-			if (slippytip > 64)
-				slippytip = 64;
-			else if (slippytip < 8)
-				slippytip = 8;
-			if (!(mobj->health & 1) == !(mobj->flags2 & MF2_AMBUSH))
-			{
-				slippytip = -slippytip;
-			}
-			mobj->angle += slippytip*ANG2;
-
-			mobj->friction = ((2*ORIG_FRICTION)+FRACUNIT)/3; // too low still?
-
-			/*if (mobj->momx || mobj->momy || mobj->momz)
-			{
-				mobj_t *ghost = P_SpawnGhostMobj(mobj);
-				ghost->colorized = true; // already has color!
-			}*/
-
-			if (!--mobj->reactiontime)
-			{
-				P_SetMobjState(mobj, mobj->info->spawnstate);
-
-				// forward thrown
-				if (mobj->health == 4)
-				{
-					Obj_BeginDropTargetMorph(mobj, SKINCOLOR_LIME);
-				}
-			}
-		}
-		else
-		{
-			// Time to stop, ramp up the friction...
-			mobj->friction = ORIG_FRICTION/4; // too high still?
-		}
-
-		mobj->renderflags = (mobj->renderflags|RF_FULLBRIGHT) ^ RF_FULLDARK; // the difference between semi and fullbright
 
 		if (mobj->threshold > 0)
 			mobj->threshold--;
@@ -7617,7 +7528,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		}
 		break;
 	case MT_TRIPWIREBOOST: {
-		mobj_t *top;
 		fixed_t newHeight;
 		fixed_t newScale;
 
@@ -7630,14 +7540,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 
 		newHeight = mobj->target->height;
 		newScale = mobj->target->scale;
-
-		top = K_GetGardenTop(mobj->target->player);
-
-		if (top)
-		{
-			newHeight += 5 * top->height / 4;
-			newScale = FixedMul(newScale, FixedDiv(newHeight / 2, mobj->target->height));
-		}
 
 		mobj->angle = K_MomentumAngle(mobj->target);
 		P_MoveOrigin(mobj, mobj->target->x, mobj->target->y, mobj->target->z + (newHeight / 2));
@@ -8431,11 +8333,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		}
 		break;
 	}
-	case MT_GARDENTOP:
-	{
-		Obj_GardenTopThink(mobj);
-		break;
-	}
 	case MT_CHARGEAURA:
 	{
 		Obj_ChargeAuraThink(mobj);
@@ -8454,16 +8351,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 	case MT_CHARGEEXTRA:
 	{
 		Obj_ChargeExtraThink(mobj);
-		break;
-	}
-	case MT_GARDENTOPSPARK:
-	{
-		Obj_GardenTopSparkThink(mobj);
-		break;
-	}
-	case MT_GARDENTOPARROW:
-	{
-		Obj_GardenTopArrowThink(mobj);
 		break;
 	}
 	case MT_HYUDORO:
@@ -9520,14 +9407,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			}
 		}
 		break;
-	case MT_GACHABOM_REBOUND:
-		Obj_GachaBomReboundThink(mobj);
-
-		if (P_MobjWasRemoved(mobj))
-		{
-			return false;
-		}
-		break;
 	case MT_SUPER_FLICKY:
 		Obj_SuperFlickyThink(mobj);
 
@@ -10155,9 +10034,7 @@ void P_MobjThinker(mobj_t *mobj)
 		|| mobj->type == MT_CANNONBALLDECOR
 		|| mobj->type == MT_FALLINGROCK
 		|| mobj->type == MT_ORBINAUT
-		|| mobj->type == MT_GACHABOM
-		|| mobj->type == MT_JAWZ
-		|| (mobj->type == MT_DROPTARGET && mobj->reactiontime))
+		|| mobj->type == MT_JAWZ)
 	{
 		P_TryMove(mobj, mobj->x, mobj->y, true, NULL); // Sets mo->standingslope correctly
 
@@ -10429,7 +10306,6 @@ static void P_DefaultMobjShadowScale(mobj_t *thing)
 		case MT_ROCKETSNEAKER:
 		case MT_SPB:
 		case MT_DUELBOMB:
-		case MT_GACHABOM:
 		case MT_BALLOON:
 			thing->shadowscale = 3*FRACUNIT/2;
 			break;
@@ -10446,16 +10322,10 @@ static void P_DefaultMobjShadowScale(mobj_t *thing)
 			thing->shadowscale = 3*FRACUNIT/2;
 			thing->whiteshadow = false;
 			break;
-		case MT_DROPTARGET:
-		case MT_DROPTARGET_SHIELD:
-			thing->shadowscale = 5*FRACUNIT/4;
-			thing->whiteshadow = true;
-			break;
 		case MT_LIGHTNINGSHIELD:
 		case MT_BUBBLESHIELD:
 		case MT_BUBBLESHIELDTRAP:
 		case MT_FLAMESHIELD:
-		case MT_GARDENTOP:
 			thing->shadowscale = FRACUNIT;
 			break;
 		case MT_RING:
@@ -10845,12 +10715,6 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 						P_SpawnMobj(newx, newy, mobj->z, MT_EERIEFOG);
 				}
 			}
-			break;
-		case MT_DROPTARGET:
-		case MT_DROPTARGET_SHIELD:
-			mobj->color = SKINCOLOR_LIME;
-			mobj->colorized = true;
-			mobj->renderflags |= RF_FULLBRIGHT;
 			break;
 		case MT_BOSS3WAYPOINT:
 			// Remove before release

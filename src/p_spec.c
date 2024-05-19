@@ -5347,7 +5347,7 @@ static void P_EvaluateDamageType(player_t *player, sector_t *sector, boolean isT
 	switch (sector->damagetype)
 	{
 		case SD_GENERIC:
-			if (isTouching && K_IsRidingFloatingTop(player) == false)
+			if (isTouching)
 				P_DamageMobj(player->mo, NULL, NULL, 1, DMG_NORMAL);
 			break;
 		case SD_DEATHPIT:

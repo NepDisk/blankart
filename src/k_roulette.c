@@ -100,16 +100,12 @@ static UINT8 K_KartItemOddsRace[NUMKARTRESULTS-1][8] =
 	{ 0, 0, 0, 0, 0, 0, 0, 0 }, // Pogo Spring
 	{ 2, 1, 1, 0, 0, 0, 0, 0 }, // Super Ring
 	{ 0, 0, 0, 0, 0, 0, 0, 0 }, // Kitchen Sink
-	{ 3, 0, 0, 0, 0, 0, 0, 0 }, // Drop Target
-	{ 0, 0, 0, 1, 2, 2, 0, 0 }, // Garden Top
-	{ 0, 0, 0, 0, 0, 0, 0, 0 }, // Gachabom
 	{ 0, 0, 2, 3, 3, 1, 0, 0 }, // Sneaker x2
 	{ 0, 0, 0, 0, 4, 4, 4, 0 }, // Sneaker x3
 	{ 0, 1, 1, 0, 0, 0, 0, 0 }, // Banana x3
 	{ 0, 0, 1, 0, 0, 0, 0, 0 }, // Orbinaut x3
 	{ 0, 0, 0, 2, 0, 0, 0, 0 }, // Orbinaut x4
 	{ 0, 0, 1, 2, 1, 0, 0, 0 }, // Jawz x2
-	{ 0, 0, 0, 0, 0, 0, 0, 0 }  // Gachabom x3
 };
 
 static UINT8 K_KartItemOddsBattle[NUMKARTRESULTS-1][2] =
@@ -134,16 +130,12 @@ static UINT8 K_KartItemOddsBattle[NUMKARTRESULTS-1][2] =
 	{ 0, 0 }, // Pogo Spring
 	{ 0, 0 }, // Super Ring
 	{ 0, 0 }, // Kitchen Sink
-	{ 0, 0 }, // Drop Target
-	{ 0, 0 }, // Garden Top
-	{ 5, 0 }, // Gachabom
 	{ 0, 0 }, // Sneaker x2
 	{ 0, 1 }, // Sneaker x3
 	{ 0, 0 }, // Banana x3
 	{ 2, 0 }, // Orbinaut x3
 	{ 2, 1 }, // Orbinaut x4
 	{ 2, 1 }, // Jawz x2
-	{ 2, 0 }  // Gachabom x3
 };
 
 static UINT8 K_KartItemOddsSpecial[NUMKARTRESULTS-1][4] =
@@ -168,16 +160,12 @@ static UINT8 K_KartItemOddsSpecial[NUMKARTRESULTS-1][4] =
 	{ 0, 0, 0, 0 }, // Pogo Spring
 	{ 0, 0, 0, 0 }, // Super Ring
 	{ 0, 0, 0, 0 }, // Kitchen Sink
-	{ 0, 0, 0, 0 }, // Drop Target
-	{ 0, 0, 0, 0 }, // Garden Top
-	{ 0, 0, 0, 0 }, // Gachabom
 	{ 0, 0, 1, 1 }, // Sneaker x2
 	{ 0, 0, 0, 0 }, // Sneaker x3
 	{ 0, 0, 0, 0 }, // Banana x3
 	{ 0, 0, 1, 1 }, // Orbinaut x3
 	{ 0, 0, 0, 0 }, // Orbinaut x4
 	{ 0, 0, 1, 1 }, // Jawz x2
-	{ 0, 0, 0, 0 }  // Gachabom x3
 };
 
 static kartitems_t K_KartItemReelSpecialEnd[] =
@@ -195,26 +183,28 @@ static kartitems_t K_KartItemReelRingSneaker[] =
 
 static kartitems_t K_KartItemReelSPBAttack[] =
 {
-	KITEM_DROPTARGET,
 	KITEM_SUPERRING,
+	KITEM_SNEAKER,
 	KITEM_NONE
 };
 
 static kartitems_t K_KartItemReelBreakTheCapsules[] =
 {
-	KITEM_GACHABOM,
-	KRITEM_TRIPLEGACHABOM,
+	KITEM_ORBINAUT,
+	KRITEM_TRIPLEORBINAUT,
+	KITEM_BANANA,
+	KRITEM_TRIPLEBANANA,
 	KITEM_NONE
 };
 
 static kartitems_t K_KartItemReelBoss[] =
 {
-	KITEM_GACHABOM,
+	KITEM_BANANA,
 	KITEM_ORBINAUT,
 	KITEM_ORBINAUT,
 	KITEM_ORBINAUT,
 	KITEM_ORBINAUT,
-	KITEM_GACHABOM,
+	KITEM_BANANA,
 	KITEM_ORBINAUT,
 	KITEM_ORBINAUT,
 	KITEM_ORBINAUT,
@@ -319,7 +309,6 @@ botItemPriority_e K_GetBotItemPriority(kartitems_t result)
 		}
 		case KITEM_SNEAKER:
 		case KITEM_ROCKETSNEAKER:
-		case KITEM_GARDENTOP:
 		case KITEM_POGOSPRING:
 		{
 			// Used when not in 1st place and relatively far from players.
@@ -328,9 +317,7 @@ botItemPriority_e K_GetBotItemPriority(kartitems_t result)
 		}
 		case KITEM_HYUDORO:
 		case KITEM_LANDMINE:
-		case KITEM_DROPTARGET:
 		case KITEM_EGGMAN:
-		case KITEM_GACHABOM:
 		case KITEM_KITCHENSINK:
 		{
 			// Used when in 1st place and relatively far from players.
@@ -573,8 +560,6 @@ static boolean K_DenyAutoRouletteOdds(kartitems_t item)
 	// Deny items that are too hard for newbies
 	switch (item)
 	{
-		case KITEM_GARDENTOP:
-			return true;
 		default:
 			return false;
 	}
@@ -792,7 +777,6 @@ INT32 K_KartGetItemOdds(const player_t *player, itemroulette_t *const roulette, 
 		case KITEM_ROCKETSNEAKER:
 		case KITEM_JAWZ:
 		case KITEM_LANDMINE:
-		case KITEM_DROPTARGET:
 		case KITEM_BALLHOG:
 		case KRITEM_TRIPLESNEAKER:
 		case KRITEM_TRIPLEORBINAUT:

@@ -2065,12 +2065,6 @@ boolean M_CheckCondition(condition_t *cn, player_t *player)
 		case UCRP_TARGETATTACKMETHOD:
 			return (player->roundconditions.targetdamaging == (targetdamaging_t)cn->requirement);
 
-		case UCRP_GACHABOMMISER:
-			return (
-				player->roundconditions.targetdamaging == UFOD_GACHABOM
-				&& player->roundconditions.gachabom_miser != 0xFF
-			);
-
 		case UCRP_WETPLAYER:
 			return (((player->roundconditions.wet_player & cn->requirement) == 0)
 				&& !player->roundconditions.fell_off); // Levels with water tend to texture their pits as water too
@@ -2911,9 +2905,6 @@ static const char *M_GetConditionString(condition_t *cn)
 				case UFOD_SPB:
 					work = "Self-Propelled Bombs";
 					break;
-				case UFOD_GACHABOM:
-					work = "Gachabom";
-					break;
 				default:
 					break;
 			}
@@ -2923,9 +2914,6 @@ static const char *M_GetConditionString(condition_t *cn)
 
 			return va("using only %s", work);
 		}
-
-		case UCRP_GACHABOMMISER:
-			return "using exactly one Gachabom repeatedly";
 
 		case UCRP_WETPLAYER:
 			return va("without %s %s",

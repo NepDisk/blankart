@@ -1078,50 +1078,8 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 	if (thing->type == MT_BUBBLESHIELD || g_tm.thing->type == MT_BUBBLESHIELD)
 		return BMIT_CONTINUE;
 
-	// Droptarget reflect
-	if ((thing->type == MT_DROPTARGET || thing->type == MT_DROPTARGET_SHIELD)
-		&& (g_tm.thing->type == MT_ORBINAUT || g_tm.thing->type == MT_JAWZ || g_tm.thing->type == MT_GACHABOM
-		|| g_tm.thing->type == MT_BANANA || g_tm.thing->type == MT_EGGMANITEM || g_tm.thing->type == MT_BALLHOG
-		|| g_tm.thing->type == MT_SSMINE || g_tm.thing->type == MT_LANDMINE || g_tm.thing->type == MT_SINK
-		|| g_tm.thing->type == MT_GARDENTOP
-		|| g_tm.thing->type == MT_MONITOR
-		|| g_tm.thing->type == MT_BATTLECAPSULE
-		|| (g_tm.thing->type == MT_PLAYER)))
-	{
-		// see if it went over / under
-		if (g_tm.thing->z > thing->z + thing->height)
-			return BMIT_CONTINUE; // overhead
-		if (g_tm.thing->z + g_tm.thing->height < thing->z)
-			return BMIT_CONTINUE; // underneath
-
-		return K_DropTargetCollide(thing, g_tm.thing) ? BMIT_CONTINUE : BMIT_ABORT;
-	}
-	else if ((g_tm.thing->type == MT_DROPTARGET || g_tm.thing->type == MT_DROPTARGET_SHIELD)
-		&& (thing->type == MT_ORBINAUT || thing->type == MT_JAWZ || thing->type == MT_GACHABOM
-		|| thing->type == MT_BANANA || thing->type == MT_EGGMANITEM || thing->type == MT_BALLHOG
-		|| thing->type == MT_SSMINE || thing->type == MT_LANDMINE || thing->type == MT_SINK
-		|| thing->type == MT_GARDENTOP
-		|| thing->type == MT_MONITOR
-		|| thing->type == MT_BATTLECAPSULE
-		|| (thing->type == MT_PLAYER)))
-	{
-		// see if it went over / under
-		if (g_tm.thing->z > thing->z + thing->height)
-			return BMIT_CONTINUE; // overhead
-		if (g_tm.thing->z + g_tm.thing->height < thing->z)
-			return BMIT_CONTINUE; // underneath
-
-		return K_DropTargetCollide(g_tm.thing, thing) ? BMIT_CONTINUE : BMIT_ABORT;
-	}
-
-	// double make sure drop targets won't collide with anything else
-	if (thing->type == MT_DROPTARGET || g_tm.thing->type == MT_DROPTARGET
-		|| thing->type == MT_DROPTARGET_SHIELD || g_tm.thing->type == MT_DROPTARGET_SHIELD)
-		return BMIT_CONTINUE;
-
-	if (g_tm.thing->type == MT_ORBINAUT || g_tm.thing->type == MT_JAWZ || g_tm.thing->type == MT_GACHABOM
-		|| g_tm.thing->type == MT_ORBINAUT_SHIELD || g_tm.thing->type == MT_JAWZ_SHIELD
-		|| g_tm.thing->type == MT_GARDENTOP)
+	if (g_tm.thing->type == MT_ORBINAUT || g_tm.thing->type == MT_JAWZ
+		|| g_tm.thing->type == MT_ORBINAUT_SHIELD || g_tm.thing->type == MT_JAWZ_SHIELD)
 	{
 		// see if it went over / under
 		if (g_tm.thing->z > thing->z + thing->height)
@@ -1131,9 +1089,8 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 
 		return Obj_OrbinautJawzCollide(g_tm.thing, thing) ? BMIT_CONTINUE : BMIT_ABORT;
 	}
-	else if (thing->type == MT_ORBINAUT || thing->type == MT_JAWZ || thing->type == MT_GACHABOM
-		|| thing->type == MT_ORBINAUT_SHIELD || thing->type == MT_JAWZ_SHIELD
-		|| thing->type == MT_GARDENTOP)
+	else if (thing->type == MT_ORBINAUT || thing->type == MT_JAWZ
+		|| thing->type == MT_ORBINAUT_SHIELD || thing->type == MT_JAWZ_SHIELD)
 	{
 		// see if it went over / under
 		if (g_tm.thing->z > thing->z + thing->height)

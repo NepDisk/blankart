@@ -1,6 +1,5 @@
 target_sources(SRB2SDL2 PRIVATE
 	hyudoro.c
-	gardentop.c
 	shrink.c
 	item-debris.c
 	spb.c
@@ -13,11 +12,9 @@ target_sources(SRB2SDL2 PRIVATE
 	monitor.c
 	item-spot.c
 	loops.cpp
-	drop-target.c
 	ring-shooter.c
 	audience.c
 	random-item.c
-	gachabom-rebound.cpp
 	servant-hand.c
 	super-flicky.cpp
 	battle-ufo.cpp

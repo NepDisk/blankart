@@ -166,9 +166,6 @@ static patch_t *kp_hyudoro[3];
 static patch_t *kp_pogospring[3];
 static patch_t *kp_superring[3];
 static patch_t *kp_kitchensink[3];
-static patch_t *kp_droptarget[3];
-static patch_t *kp_gardentop[3];
-static patch_t *kp_gachabom[3];
 static patch_t *kp_bar[2];
 static patch_t *kp_doublebar[2];
 static patch_t *kp_triplebar[2];
@@ -536,9 +533,6 @@ void K_LoadKartHUDGraphics(void)
 	HU_UpdatePatch(&kp_pogospring[0], "K_ITPOGO");
 	HU_UpdatePatch(&kp_superring[0], "K_ITRING");
 	HU_UpdatePatch(&kp_kitchensink[0], "K_ITSINK");
-	HU_UpdatePatch(&kp_droptarget[0], "K_ITDTRG");
-	HU_UpdatePatch(&kp_gardentop[0], "K_ITGTOP");
-	HU_UpdatePatch(&kp_gachabom[0], "K_ITGBOM");
 	HU_UpdatePatch(&kp_bar[0], "K_RBBAR");
 	HU_UpdatePatch(&kp_doublebar[0], "K_RBBAR2");
 	HU_UpdatePatch(&kp_triplebar[0], "K_RBBAR3");
@@ -596,9 +590,6 @@ void K_LoadKartHUDGraphics(void)
 	HU_UpdatePatch(&kp_pogospring[1], "K_ISPOGO");
 	HU_UpdatePatch(&kp_superring[1], "K_ISRING");
 	HU_UpdatePatch(&kp_kitchensink[1], "K_ISSINK");
-	HU_UpdatePatch(&kp_droptarget[1], "K_ISDTRG");
-	HU_UpdatePatch(&kp_gardentop[1], "K_ISGTOP");
-	HU_UpdatePatch(&kp_gachabom[1], "K_ISGBOM");
 	HU_UpdatePatch(&kp_bar[1], "K_SBBAR");
 	HU_UpdatePatch(&kp_doublebar[1], "K_SBBAR2");
 	HU_UpdatePatch(&kp_triplebar[1], "K_SBBAR3");
@@ -654,9 +645,6 @@ void K_LoadKartHUDGraphics(void)
 	HU_UpdatePatch(&kp_pogospring[2], "ISPYPOGO");
 	HU_UpdatePatch(&kp_superring[2], "ISPYRING");
 	HU_UpdatePatch(&kp_kitchensink[2], "ISPYSINK");
-	HU_UpdatePatch(&kp_droptarget[2], "ISPYDTRG");
-	HU_UpdatePatch(&kp_gardentop[2], "ISPYGTOP");
-	HU_UpdatePatch(&kp_gachabom[2], "ISPYGBOM");
 
 	// CHECK indicators
 	sprintf(buffer, "K_CHECKx");
@@ -972,13 +960,6 @@ const char *K_GetItemPatch(UINT8 item, boolean tiny)
 			return (tiny ? "K_ISRING" : "K_ITRING");
 		case KITEM_KITCHENSINK:
 			return (tiny ? "K_ISSINK" : "K_ITSINK");
-		case KITEM_DROPTARGET:
-			return (tiny ? "K_ISDTRG" : "K_ITDTRG");
-		case KITEM_GARDENTOP:
-			return (tiny ? "K_ISGTOP" : "K_ITGTOP");
-		case KITEM_GACHABOM:
-		case KRITEM_TRIPLEGACHABOM:
-			return (tiny ? "K_ISGBOM" : "K_ITGBOM");
 		case KRITEM_TRIPLEORBINAUT:
 			return (tiny ? "K_ISORBN" : "K_ITORB3");
 		case KRITEM_QUADORBINAUT:
@@ -1013,9 +994,6 @@ static patch_t *K_GetCachedItemPatch(INT32 item, UINT8 offset)
 		kp_pogospring,
 		kp_superring,
 		kp_kitchensink,
-		kp_droptarget,
-		kp_gardentop,
-		kp_gachabom,
 	};
 
 	if (item == KITEM_SAD || (item > KITEM_NONE && item < NUMKARTITEMS))

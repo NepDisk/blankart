@@ -153,7 +153,6 @@ struct TargetTracking
 		switch (mobj->type)
 		{
 		// You can see this, you fucking liar
-		case MT_GARDENTOP:
 		case MT_BUBBLESHIELDTRAP:
 			return false;
 
@@ -428,12 +427,6 @@ std::optional<TargetTracking::Tooltip> object_tooltip(const mobj_t* mobj)
 						.text(left ? "\xB3" : "\xB2");
 				};
 			}
-		);
-
-	case MT_GARDENTOP:
-		return conditional(
-			mobj->tracer == stplyr->mo && Obj_GardenTopPlayerNeedsHelp(mobj),
-			[&] { return TextElement("Try \xA7!").font(splitfont); }
 		);
 
 	case MT_PLAYER:

@@ -799,12 +799,6 @@ static boolean K_CanDropDash(player_t *player)
 		return false;
 	}
 
-	// Garden Top is overpowered enough
-	if (player->curshield == KSHIELD_TOP)
-	{
-		return false;
-	}
-
 	return true;
 }
 

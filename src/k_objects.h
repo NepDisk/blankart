@@ -28,16 +28,6 @@ void Obj_HyudoroCenterThink(mobj_t *actor);
 void Obj_HyudoroCollide(mobj_t *special, mobj_t *toucher);
 boolean Obj_HyudoroShadowZ(mobj_t *actor, fixed_t *return_z, pslope_t **return_slope);
 
-/* Garden Top */
-void Obj_GardenTopDeploy(mobj_t *rider);
-mobj_t *Obj_GardenTopThrow(player_t *player);
-mobj_t *Obj_GardenTopDestroy(player_t *player);
-void Obj_GardenTopThink(mobj_t *top);
-void Obj_GardenTopSparkThink(mobj_t *spark);
-void Obj_GardenTopArrowThink(mobj_t *arrow);
-boolean Obj_GardenTopPlayerIsGrinding(const player_t *player);
-boolean Obj_GardenTopPlayerNeedsHelp(const mobj_t *top);
-
 /* Shrink */
 void Obj_PohbeeThinker(mobj_t *pohbee);
 void Obj_PohbeeRemoved(mobj_t *pohbee);
@@ -65,9 +55,7 @@ mobj_t *Obj_MantaRingCreate(mobj_t *spb, mobj_t *owner, mobj_t *chase);
 void Obj_OrbinautThink(mobj_t *th);
 boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2);
 void Obj_OrbinautThrown(mobj_t *th, fixed_t finalSpeed, SINT8 dir);
-void Obj_GachaBomThrown(mobj_t *th, fixed_t finalSpeed, SINT8 dir);
 void Obj_OrbinautJawzMoveHeld(player_t *player);
-boolean Obj_GachaBomWasTossed(mobj_t *th);
 void Obj_OrbinautDrop(mobj_t *th);
 boolean Obj_OrbinautCanRunOnWater(mobj_t *th);
 
@@ -123,10 +111,6 @@ void Obj_InitLoopCenter(mobj_t *center);
 void Obj_LinkLoopAnchor(mobj_t *anchor, mobj_t *center, UINT8 type);
 void Obj_LoopEndpointCollide(mobj_t *special, mobj_t *toucher);
 
-/* Drop Target */
-void Obj_BeginDropTargetMorph(mobj_t *target, skincolornum_t color);
-boolean Obj_DropTargetMorphThink(mobj_t *morph);
-
 void Obj_ChargeAuraThink(mobj_t *aura);
 void Obj_ChargeFallThink(mobj_t *charge);
 void Obj_ChargeReleaseThink(mobj_t *release);
@@ -150,10 +134,6 @@ boolean Obj_RandomItemSpawnIn(mobj_t *mobj);
 fixed_t Obj_RandomItemScale(fixed_t oldScale);
 void Obj_RandomItemSpawn(mobj_t *mobj);
 #define RINGBOX_TIME (105)
-
-/* Gachabom Rebound */
-void Obj_GachaBomReboundThink(mobj_t *mobj);
-void Obj_SpawnGachaBomRebound(mobj_t *source, mobj_t *target);
 
 /* Servant Hand */
 void Obj_ServantHandSpawning(player_t *player);

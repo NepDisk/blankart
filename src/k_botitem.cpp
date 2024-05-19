@@ -1032,73 +1032,6 @@ static void K_BotItemBallhog(const player_t *player, ticcmd_t *cmd)
 }
 
 /*--------------------------------------------------
-	static void K_BotItemDropTarget(const player_t *player, ticcmd_t *cmd, INT16 turnamt)
-
-		Item usage for Drop Target throwing.
-
-	Input Arguments:-
-		player - Bot to do this for.
-		cmd - Bot's ticcmd to edit.
-		turnamt - How hard they currently are turning.
-
-	Return:-
-		None
---------------------------------------------------*/
-static void K_BotItemDropTarget(const player_t *player, ticcmd_t *cmd, INT16 turnamt)
-{
-	ZoneScoped;
-
-	const fixed_t topspeed = K_GetKartSpeed(player, false, true);
-	fixed_t radius = FixedMul(1280 * mapobjectscale, K_GetKartGameSpeedScalar(gamespeed));
-	SINT8 throwdir = -1;
-	boolean tryLookback = false;
-	UINT8 snipeMul = 2;
-	player_t *target = NULL;
-
-	if (player->speed > topspeed)
-	{
-		radius = FixedMul(radius, FixedDiv(player->speed, topspeed));
-		snipeMul = 3; // Confirm faster when you'll throw it with a bunch of extra speed!!
-	}
-
-	cmd->bot.itemconfirm++;
-
-	if (abs(turnamt) >= KART_FULLTURN/2)
-	{
-		cmd->bot.itemconfirm += player->botvars.difficulty / 2;
-		throwdir = -1;
-	}
-
-	target = K_PlayerInCone(player, radius, 15, false);
-	if (target != NULL)
-	{
-		K_ItemConfirmForTarget(player, cmd, target, player->botvars.difficulty * snipeMul);
-		throwdir = 1;
-	}
-	else
-	{
-		target = K_PlayerInCone(player, radius, 15, true);
-
-		if (target != NULL)
-		{
-			K_ItemConfirmForTarget(player, cmd, target, player->botvars.difficulty);
-			throwdir = -1;
-			tryLookback = true;
-		}
-	}
-
-	if (tryLookback == true && throwdir == -1)
-	{
-		cmd->buttons |= BT_LOOKBACK;
-	}
-
-	if (player->botvars.itemconfirm > 10*TICRATE || player->bananadrag >= TICRATE)
-	{
-		K_BotGenericPressItem(player, cmd, throwdir);
-	}
-}
-
-/*--------------------------------------------------
 	static void K_BotItemJawz(const player_t *player, ticcmd_t *cmd)
 
 		Item usage for Jawz throwing.
@@ -1320,98 +1253,6 @@ static void K_BotItemFlame(const player_t *player, ticcmd_t *cmd)
 		{
 			//player->botvars.itemconfirm = 3*flamemax/4;
 		}
-	}
-}
-
-/*--------------------------------------------------
-	static void K_BotItemGardenTopDeploy(const player_t *player, ticcmd_t *cmd)
-
-		Item usage for deploying the Garden Top.
-
-	Input Arguments:-
-		player - Bot to do this for.
-		cmd - Bot's ticcmd to edit.
-
-	Return:-
-		None
---------------------------------------------------*/
-static void K_BotItemGardenTopDeploy(const player_t *player, ticcmd_t *cmd)
-{
-	ZoneScoped;
-
-	cmd->bot.itemconfirm++;
-
-	//if (player->curshield != KSHIELD_TOP)
-	if (player->botvars.itemconfirm > 2*TICRATE)
-	{
-		K_BotGenericPressItem(player, cmd, 0);
-	}
-}
-
-/*--------------------------------------------------
-	static void K_BotItemGardenTop(const player_t *player, ticcmd_t *cmd, INT16 turnamt)
-
-		Item usage for Garden Top movement.
-
-	Input Arguments:-
-		player - Bot to do this for.
-		cmd - Bot's ticcmd to edit.
-		turnamt - How hard they currently are turning.
-
-	Return:-
-		None
---------------------------------------------------*/
-static void K_BotItemGardenTop(const player_t *player, ticcmd_t *cmd, INT16 turnamt)
-{
-	ZoneScoped;
-
-	const fixed_t topspeed = K_GetKartSpeed(player, false, true);
-	fixed_t radius = FixedMul(2560 * mapobjectscale, K_GetKartGameSpeedScalar(gamespeed));
-	SINT8 throwdir = -1;
-	UINT8 snipeMul = 1;
-	player_t *target = NULL;
-
-	if (player->speed > topspeed)
-	{
-		radius = FixedMul(radius, FixedDiv(player->speed, topspeed));
-		snipeMul = 2; // Confirm faster when you'll throw it with a bunch of extra speed!!
-	}
-
-	cmd->bot.itemconfirm++;
-
-	target = K_PlayerInCone(player, radius, 15, false);
-	if (target != NULL)
-	{
-		K_ItemConfirmForTarget(player, cmd, target, player->botvars.difficulty * snipeMul);
-		throwdir = 1;
-	}
-
-	if (player->topdriftheld > 0)
-	{
-		// Grinding in place.
-		// Wait until we're mostly done turning.
-		// Cancel early if we hit max thrust speed.
-		if ((abs(turnamt) >= KART_FULLTURN/8)
-			&& (player->topdriftheld <= GARDENTOP_MAXGRINDTIME))
-		{
-			cmd->buttons |= BT_DRIFT;
-		}
-	}
-	else
-	{
-		const angle_t maxDelta = ANGLE_11hh;
-		angle_t delta = AngleDelta(player->mo->angle, K_MomentumAngle(player->mo));
-
-		if (delta > maxDelta)
-		{
-			// Do we need to turn? Start grinding!
-			cmd->buttons |= BT_DRIFT;
-		}
-	}
-
-	if (player->botvars.itemconfirm > 25*TICRATE)
-	{
-		K_BotGenericPressItem(player, cmd, throwdir);
 	}
 }
 
@@ -1674,26 +1515,6 @@ void K_BotItemUsage(const player_t *player, ticcmd_t *cmd, INT16 turnamt)
 					case KITEM_BALLHOG:
 						K_BotItemBallhog(player, cmd);
 						break;
-					case KITEM_DROPTARGET:
-						if (!(player->itemflags & IF_ITEMOUT))
-						{
-							K_BotItemGenericTrapShield(player, cmd, turnamt, false);
-						}
-						else
-						{
-							K_BotItemDropTarget(player, cmd, turnamt);
-						}
-						break;
-					case KITEM_GARDENTOP:
-						if (player->curshield != KSHIELD_TOP)
-						{
-							K_BotItemGardenTopDeploy(player, cmd);
-						}
-						else
-						{
-							K_BotItemGardenTop(player, cmd, turnamt);
-						}
-						break;
 					case KITEM_LIGHTNINGSHIELD:
 						K_BotItemLightning(player, cmd);
 						break;
@@ -1703,11 +1524,6 @@ void K_BotItemUsage(const player_t *player, ticcmd_t *cmd, INT16 turnamt)
 					case KITEM_FLAMESHIELD:
 						K_BotItemFlame(player, cmd);
 						break;
-					/*
-					case KITEM_GACHABOM:
-						K_BotItemGachabom(player, cmd);
-						break;
-					*/
 				}
 			}
 		}

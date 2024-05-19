@@ -44,8 +44,6 @@ static angle_t R_PlayerSpriteRotation(player_t *player, player_t *viewPlayer)
 
 	angle_t rollAngle = 0;
 
-	mobj_t *top = K_GetGardenTop(player);
-
 	if (player->mo->eflags & MFE_UNDERWATER)
 	{
 		rollAngle -= player->underwatertilt;
@@ -57,14 +55,6 @@ static angle_t R_PlayerSpriteRotation(player_t *player, player_t *viewPlayer)
 		rollAngle +=
 			FixedMul(sliptideLift, FINESINE(AbsAngle(angleDelta) >> ANGLETOFINESHIFT)) +
 			FixedMul(sliptideLift, FINECOSINE(angleDelta >> ANGLETOFINESHIFT));
-	}
-
-	if (top)
-	{
-		/* FIXME: why does it not look right at more acute
-		   angles without this? There's a related hack to
-		   spritexoffset in K_KartPlayerThink. */
-		rollAngle += 3 * (INT32)top->rollangle / 2;
 	}
 
 	return rollAngle;

@@ -540,9 +540,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].kickstartaccel);
 		WRITEUINT8(save->p, players[i].autoring);
 
-		WRITEUINT8(save->p, players[i].topdriftheld);
-		WRITEUINT8(save->p, players[i].topinfirst);
-
 		WRITEUINT8(save->p, players[i].shrinkLaserDelay);
 
 		WRITEUINT8(save->p, players[i].eggmanTransferDelay);
@@ -1117,9 +1114,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 
 		players[i].kickstartaccel = READUINT8(save->p);
 		players[i].autoring = READUINT8(save->p);
-
-		players[i].topdriftheld = READUINT8(save->p);
-		players[i].topinfirst = READUINT8(save->p);
 
 		players[i].shrinkLaserDelay = READUINT8(save->p);
 

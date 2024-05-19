@@ -192,7 +192,7 @@ boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 	if (t2->player)
 	{
 		if ((t2->player->flashing > 0)
-			&& !(t1->type == MT_ORBINAUT || t1->type == MT_JAWZ || t1->type == MT_GACHABOM))
+			&& !(t1->type == MT_ORBINAUT || t1->type == MT_JAWZ))
 			return true;
 
 		if (t2->player->hyudorotimer)
@@ -228,7 +228,7 @@ boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 	else if (t2->type == MT_ORBINAUT || t2->type == MT_JAWZ
 		|| t2->type == MT_ORBINAUT_SHIELD || t2->type == MT_JAWZ_SHIELD
 		|| t2->type == MT_BANANA || t2->type == MT_BANANA_SHIELD
-		|| t2->type == MT_BALLHOG || t2->type == MT_GACHABOM)
+		|| t2->type == MT_BALLHOG)
 	{
 		// Other Item Damage
 		angle_t bounceangle = K_GetCollideAngle(t1, t2);
@@ -267,11 +267,6 @@ boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 		damageitem = true;
 	}
 
-	if (t1->type == MT_GARDENTOP)
-	{
-		damageitem = false;
-	}
-
 	if (damageitem && P_MobjWasRemoved(t1) == false)
 	{
 		angle_t bounceangle;
@@ -289,21 +284,10 @@ boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 		S_StartSound(t1, t1->info->deathsound);
 		P_KillMobj(t1, t2, t2, DMG_NORMAL);
 
-		if (t1->type == MT_GACHABOM && !P_MobjWasRemoved(orbinaut_owner(t1)))
-		{
-			// Instead of flying out at an angle when
-			// destroyed, spawn an explosion and eventually
-			// return to sender. The original Gachabom will be
-			// removed next tic (see deathstate).
-			t1->tics = 2;
-			Obj_SpawnGachaBomRebound(t1, orbinaut_owner(t1));
-		}
-		else
-		{
-			P_SetObjectMomZ(t1, 24*FRACUNIT, false);
+		P_SetObjectMomZ(t1, 24*FRACUNIT, false);
 
-			P_InstaThrust(t1, bounceangle, 16*FRACUNIT);
-		}
+		P_InstaThrust(t1, bounceangle, 16*FRACUNIT);
+
 	}
 
 	if (sprung)
@@ -350,24 +334,6 @@ void Obj_OrbinautThrown(mobj_t *th, fixed_t finalSpeed, SINT8 dir)
 		th->angle -= ANGLE_45;
 		th->momx = FixedMul(finalSpeed, FINECOSINE(th->angle >> ANGLETOFINESHIFT));
 		th->momy = FixedMul(finalSpeed, FINESINE(th->angle >> ANGLETOFINESHIFT));
-	}
-}
-
-void Obj_GachaBomThrown(mobj_t *th, fixed_t finalSpeed, SINT8 dir)
-{
-	Obj_OrbinautThrown(th, finalSpeed, dir);
-
-	orbinaut_flags(th) &= ~(ORBI_TRAIL);
-
-	switch (dir)
-	{
-		case -1:
-			orbinaut_flags(th) |= ORBI_SPIN;
-			break;
-
-		case 1:
-			orbinaut_flags(th) |= ORBI_TOSSED;
-			break;
 	}
 }
 
@@ -470,11 +436,6 @@ void Obj_OrbinautJawzMoveHeld(player_t *player)
 		cur->momx = cur->momy = 0;
 		cur->angle += ANGLE_90;
 	}
-}
-
-boolean Obj_GachaBomWasTossed(mobj_t *th)
-{
-	return (orbinaut_flags(th) & ORBI_TOSSED) == ORBI_TOSSED;
 }
 
 void Obj_OrbinautDrop(mobj_t *th)

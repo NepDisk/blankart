@@ -1199,11 +1199,6 @@ typedef enum
 	sfx_bhog04,
 	sfx_bhog05,
 
-	// RR - Gachabom rebound
-	sfx_grbnd1,
-	sfx_grbnd2,
-	sfx_grbnd3,
-
 	// SRB2Kart - Drop target sounds
 	sfx_kdtrg1,
 	sfx_kdtrg2,
@@ -1232,13 +1227,6 @@ typedef enum
 	sfx_gate03,
 	sfx_gate04,
 	sfx_gate05,
-
-	// Wavedashing
-	sfx_waved1,
-	sfx_waved2,
-	sfx_waved3,
-	sfx_waved4,
-	sfx_waved5,
 
 	// Passing sounds
 	sfx_pass01,

@@ -1879,11 +1879,6 @@ static inline boolean P_IsMomentumAngleLocked(player_t *player)
 	// animation should continue for a bit after the physics
 	// stop.
 
-	if (K_IsRidingFloatingTop(player))
-	{
-		return true;
-	}
-
 	return false;
 }
 
@@ -2035,25 +2030,6 @@ static void P_3dMovement(player_t *player)
 
 	player->mo->momx += totalthrust.x;
 	player->mo->momy += totalthrust.y;
-
-	// Releasing a drift while on the Top translates all your
-	// momentum (and even then some) into whichever direction
-	// you're facing
-	if (onground && player->curshield == KSHIELD_TOP && (K_GetKartButtons(player) & BT_DRIFT) != BT_DRIFT && (player->oldcmd.buttons & BT_DRIFT))
-	{
-		const fixed_t gmin = FRACUNIT/4;
-		const fixed_t gmax = 3*FRACUNIT;
-
-		const fixed_t grindfactor = (gmax - gmin) / GARDENTOP_MAXGRINDTIME;
-		const fixed_t grindscale = gmin + (player->topdriftheld * grindfactor);
-
-		const fixed_t speed = R_PointToDist2(0, 0, player->mo->momx, player->mo->momy);
-		const fixed_t minspeed = 3 * K_GetKartSpeed(player, false, false) / 5; // 60% top speed
-
-		P_InstaThrust(player->mo, player->mo->angle, FixedMul(max(speed, minspeed), grindscale));
-
-		player->topdriftheld = 0;/* reset after release */
-	}
 
 	if (!onground)
 	{
@@ -3138,13 +3114,6 @@ boolean P_MoveChaseCamera(player_t *player, camera_t *thiscam, boolean resetcall
 
 			angle = thiscam->angle + input;
 		}
-	}
-
-	/* The Top is Big Large so zoom out */
-	if (player->curshield == KSHIELD_TOP)
-	{
-		camdist += 40 * mapobjectscale;
-		camheight += 40 * mapobjectscale;
 	}
 
 	if (!resetcalled && (leveltime >= introtime && timeover != 2)

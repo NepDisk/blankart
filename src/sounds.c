@@ -1131,11 +1131,6 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"bhog04", false, 64,  64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ballhog charging"},
   {"bhog05", false, 64,  64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ballhog charging"},
 
-  // RR - Gachabom rebound
-  {"grbnd1", false, 64,  64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Gachabom returning"},
-  {"grbnd2", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Gachabom orbiting"},
-  {"grbnd3", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Gachabom re-collected"},
-
   // SRB2Kart - Drop target sounds
   {"kdtrg1", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Low energy, SF_X8AWAYSOUND
   {"kdtrg2", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Medium energy, SF_X8AWAYSOUND
@@ -1163,12 +1158,6 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"gate03", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"gate04", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"gate05", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-
-  {"waved1", false,  32, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"waved2", false,  32, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"waved3", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"waved4", false,  32, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"waved5", false,  32, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
 
   // Passing sounds
   {"pass01", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},

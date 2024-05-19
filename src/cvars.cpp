@@ -714,16 +714,12 @@ consvar_t cv_items[] = {
 	UnsavedNetVar("pogospring",			"On").on_off(),
 	UnsavedNetVar("superring",			"On").on_off(),
 	UnsavedNetVar("kitchensink",		"On").on_off(),
-	UnsavedNetVar("droptarget",			"On").on_off(),
-	UnsavedNetVar("gardentop",			"On").on_off(),
-	UnsavedNetVar("gachabom",			"On").on_off(),
 	UnsavedNetVar("dualsneaker",		"On").on_off(),
 	UnsavedNetVar("triplesneaker",		"On").on_off(),
 	UnsavedNetVar("triplebanana",		"On").on_off(),
 	UnsavedNetVar("tripleorbinaut",		"On").on_off(),
 	UnsavedNetVar("quadorbinaut",		"On").on_off(),
 	UnsavedNetVar("dualjawz",			"On").on_off(),
-	UnsavedNetVar("triplegachabom",		"On").on_off(),
 };
 
 consvar_t cv_kartbot = UnsavedNetVar("bots", "Off").values({

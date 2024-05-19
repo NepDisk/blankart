@@ -175,10 +175,7 @@ Run this macro, then #undef FOREACH afterward
 	FOREACH (HYUDORO,       17),\
 	FOREACH (POGOSPRING,    18),\
 	FOREACH (SUPERRING,     19),\
-	FOREACH (KITCHENSINK,   20),\
-	FOREACH (DROPTARGET,    21),\
-	FOREACH (GARDENTOP,     22),\
-	FOREACH (GACHABOM,      23)
+	FOREACH (KITCHENSINK,   20)
 
 typedef enum
 {
@@ -195,7 +192,6 @@ typedef enum
 	KRITEM_TRIPLEORBINAUT,
 	KRITEM_QUADORBINAUT,
 	KRITEM_DUALJAWZ,
-	KRITEM_TRIPLEGACHABOM,
 
 	NUMKARTRESULTS,
 
@@ -221,7 +217,6 @@ typedef enum
 	KSHIELD_LIGHTNING = 1,
 	KSHIELD_BUBBLE = 2,
 	KSHIELD_FLAME = 3,
-	KSHIELD_TOP = 4,
 	NUMKARTSHIELDS
 } kartshields_t;
 
@@ -345,8 +340,6 @@ typedef enum
 #define ITEMSCALE_GROW 1
 #define ITEMSCALE_SHRINK 2
 
-#define GARDENTOP_MAXGRINDTIME (45)
-
 // player_t struct for all respawn variables
 struct respawnvars_t
 {
@@ -413,7 +406,7 @@ typedef enum
 	UFOD_ORBINAUT	= 1<<4,
 	UFOD_JAWZ		= 1<<5,
 	UFOD_SPB		= 1<<6,
-	UFOD_GACHABOM	= 1<<7,
+	//	= 1<<7,
 	// free up to and including 1<<31
 } targetdamaging_t;
 
@@ -441,7 +434,6 @@ struct roundconditions_t
 
 	// Attack-based conditions
 	targetdamaging_t targetdamaging;
-	UINT8 gachabom_miser;
 
 	fixed_t maxspeed;
 
@@ -935,9 +927,6 @@ struct player_t
 
 	UINT8 kickstartaccel;
 	boolean autoring;	// did we autoring this tic?
-
-	UINT8 topdriftheld;
-	UINT8 topinfirst;
 
 	UINT8 shrinkLaserDelay;
 
