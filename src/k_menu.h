@@ -1085,8 +1085,6 @@ extern struct optionsmenu_s {
 	UINT8 bindben_swallow;		// (bool) control is about to be cleared; (int) swallow/pose animation timer
 	INT32 bindinputs[MAXINPUTMAPPING]; // Set while binding
 
-	INT16 trycontroller;		// Starts at 3*TICRATE, holding B lowers this, when at 0, cancel controller try mode.
-
 	// Used for horrible axis shenanigans
 	INT32 lastkey;
 	tic_t keyheldfor;
@@ -1164,7 +1162,6 @@ void M_ProfileDefaultControls(INT32 ch);
 void M_ProfileClearControls(INT32 ch);
 
 void M_MapProfileControl(event_t *ev);
-void M_ProfileTryController(INT32 choice);
 void M_ProfileControlsConfirm(INT32 choice);
 
 // video modes menu (resolution)

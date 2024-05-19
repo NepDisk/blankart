@@ -435,7 +435,6 @@ struct roundconditions_t
 	boolean spb_neuter;
 	boolean landmine_dunk;
 	boolean hit_midair;
-	boolean hit_drafter_lookback;
 	boolean giant_foe_shrunken_orbi;
 	boolean returntosender_mark;
 
@@ -446,9 +445,6 @@ struct roundconditions_t
 	UINT8 gachabom_miser;
 
 	fixed_t maxspeed;
-
-	tic_t continuousdraft;
-	tic_t continuousdraft_best;
 
 	UINT8 consecutive_grow_lasers;
 	UINT8 best_consecutive_grow_lasers;
@@ -686,6 +682,7 @@ struct player_t
 	UINT16 flashing;
 	UINT16 spinouttimer;	// Spin-out from a banana peel or oil slick (was "pw_bananacam")
 	UINT8 spinouttype;		// Determines the mode of spinout/wipeout, see kartspinoutflags_t
+	UINT16 squishedtimer;		// Squish timmer
 	UINT8 instashield;		// Instashield no-damage animation timer
 	UINT8 wipeoutslow;		// Timer before you slowdown when getting wiped out
 	UINT8 justbumped;		// Prevent players from endlessly bumping into each other
@@ -720,10 +717,6 @@ struct player_t
 	fixed_t accelboost;		// Boost value smoothing for acceleration
 	fixed_t handleboost;	// Boost value smoothing for handling
 	angle_t boostangle;		// angle set when not spun out OR boosted to determine what direction you should keep going at if you're spun out and boosted.
-
-	fixed_t draftpower;		// (0 to FRACUNIT) - Drafting power, doubles your top speed & acceleration at max
-	UINT16 draftleeway;		// Leniency timer before removing draft power
-	SINT8 lastdraft;		// (-1 to 15) - Last player being drafted
 
 	UINT8 tripwireState; // see tripwirestate_t
 	UINT8 tripwirePass; // see tripwirepass_t

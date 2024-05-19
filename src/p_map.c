@@ -1031,7 +1031,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 	if (g_tm.thing->type == MT_RANDOMITEM)
 		return BMIT_CONTINUE;
 
-	if (g_tm.thing->type != MT_PLAYER && thing->player && K_BubbleShieldCanReflect(thing, g_tm.thing))
+	if (g_tm.thing->type != MT_PLAYER && thing->player && thing->player->bubbleblowup && K_BubbleShieldCanReflect(thing, g_tm.thing))
 	{
 		// see if it went over / under
 		if (g_tm.thing->z > thing->z + thing->height)
@@ -1041,7 +1041,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 
 		return K_BubbleShieldReflect(thing, g_tm.thing) ? BMIT_CONTINUE : BMIT_ABORT;
 	}
-	else if (thing->type != MT_PLAYER && g_tm.thing->player && K_BubbleShieldCanReflect(g_tm.thing, thing))
+	else if (thing->type != MT_PLAYER && g_tm.thing->player &&  g_tm.thing->player->bubbleblowup && K_BubbleShieldCanReflect(g_tm.thing, thing))
 	{
 		// see if it went over / under
 		if (g_tm.thing->z > thing->z + thing->height)
@@ -4337,8 +4337,10 @@ static boolean PIT_ChangeSector(mobj_t *thing, boolean realcrush)
 			// Crush the object
 			if (netgame && thing->player && thing->player->spectator)
 				P_DamageMobj(thing, NULL, NULL, 1, DMG_SPECTATOR); // Respawn crushed spectators
-			else
+			else if (!thing->player)
 				P_DamageMobj(thing, killer, killer, 1, DMG_CRUSHED);
+			else
+				P_DamageMobj(thing, NULL, NULL, 1, DMG_SQUISH);
 			return true;
 		}
 	}

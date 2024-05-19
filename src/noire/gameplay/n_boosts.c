@@ -216,26 +216,6 @@ void N_GetKartBoostPower(player_t *player)
 		ADDBOOST(player->botvars.rubberband - FRACUNIT, 0, 0);
 	}
 
-	if (player->draftpower > 0) // Drafting
-	{
-		// 30% - 44%, each point of speed adds 1.75%
-		fixed_t draftspeed = ((3*FRACUNIT)/10) + ((player->kartspeed-1) * ((7*FRACUNIT)/400));
-
-		if (gametyperules & GTR_CLOSERPLAYERS)
-		{
-			draftspeed *= 2;
-		}
-
-		if (K_HasInfiniteTether(player))
-		{
-			// infinite tether
-			draftspeed *= 2;
-		}
-
-		speedboost += FixedMul(draftspeed, player->draftpower); // (Drafting suffers no boost stack penalty.)
-		numboosts++;
-	}
-
 
 	// don't average them anymore, this would make a small boost and a high boost less useful
 	// just take the highest we want instead

@@ -910,6 +910,17 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		};
 	};
 
+	// Cause Spinout on invincibility
+	auto shouldSpinout = [](mobj_t *t1, mobj_t *t2)
+	{
+		return (t1->player->invincibilitytimer > 0);
+	};
+
+	if (forEither(shouldSpinout, doDamage(DMG_WIPEOUT)))
+	{
+		return true;
+	}
+
 	// Flame Shield dash damage
 	// Bubble Shield blowup damage
 	auto shouldWipeout = [](mobj_t *t1, mobj_t *t2)
@@ -938,6 +949,17 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		{
 			return true;
 		}
+	}
+
+	// Cause stumble on scale difference
+	auto shouldSquish= [](mobj_t *t1, mobj_t *t2)
+	{
+		return K_IsBigger(t1, t2);
+	};
+
+	if (forEither(shouldSquish, doDamage(DMG_SQUISH)))
+	{
+		return true;
 	}
 
 	if (cv_ng_ringsting.value)

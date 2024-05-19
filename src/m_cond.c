@@ -1944,8 +1944,6 @@ boolean M_CheckCondition(condition_t *cn, player_t *player)
 
 		case UCRP_SPEEDOMETER:
 			return (player->roundconditions.maxspeed >= cn->requirement);
-		case UCRP_DRAFTDURATION:
-			return (player->roundconditions.continuousdraft_best >= ((tic_t)cn->requirement)*TICRATE);
 		case UCRP_GROWCONSECUTIVEBEAMS:
 			return (player->roundconditions.best_consecutive_grow_lasers >= cn->requirement);
 
@@ -1979,8 +1977,6 @@ boolean M_CheckCondition(condition_t *cn, player_t *player)
 			return (player->roundconditions.landmine_dunk);
 		case UCRP_HITMIDAIR:
 			return (player->roundconditions.hit_midair);
-		case UCRP_HITDRAFTERLOOKBACK:
-			return (player->roundconditions.hit_drafter_lookback);
 		case UCRP_GIANTRACERSHRUNKENORBI:
 			return (player->roundconditions.giant_foe_shrunken_orbi);
 		case UCRP_RETURNMARKTOSENDER:
@@ -2853,8 +2849,6 @@ static const char *M_GetConditionString(condition_t *cn)
 					? "" : "at least ",
 				cn->requirement
 			);
-		case UCRP_DRAFTDURATION:
-			return va("consistently tether off other racers for %u seconds", cn->requirement);
 		case UCRP_GROWCONSECUTIVEBEAMS:
 			return va("touch the blue beams from your own Shrink at least %u times before returning to normal size", cn->requirement);
 
@@ -2882,8 +2876,6 @@ static const char *M_GetConditionString(condition_t *cn)
 			return "dunk a Land Mine on another racer's head";
 		case UCRP_HITMIDAIR:
 			return "hit another racer with a projectile while you're both in the air";
-		case UCRP_HITDRAFTERLOOKBACK:
-			return "hit a racer tethering off you while looking back at them";
 		case UCRP_GIANTRACERSHRUNKENORBI:
 			return "hit a giant racer with a shrunken Orbinaut";
 		case UCRP_RETURNMARKTOSENDER:

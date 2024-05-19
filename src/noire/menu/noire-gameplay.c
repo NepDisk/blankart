@@ -93,9 +93,6 @@ menuitem_t OPTIONS_NoireGameplayMechanics[] =
 	{IT_NOTHING|IT_SPACE, NULL, NULL,
 		NULL, {NULL}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Draft/Tether", "Enable or disable the 'tether' between racers, pulling racers behind.",
-		NULL, {.cvar = &cv_ng_draft}, 0, 0},
-
 	{IT_STRING | IT_CVAR, "Map Anger", "Amount of times a map has to be ignored by everyone to vote itself.",
 		NULL, {.cvar = &cv_ng_mapanger}, 0, 0},
 
@@ -143,9 +140,6 @@ menuitem_t OPTIONS_NoireGameplayRivals[] =
 
 	{IT_STRING | IT_CVAR, "Frantic Items", "Enable or disable the rival's frantic items.",
 		NULL, {.cvar = &cv_ng_rivalfrantic}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "2x Draft Power", "Should the rival pull ahead at double speed?",
-		NULL, {.cvar = &cv_ng_rivaldraft}, 0, 0},
 };
 
 ///////////

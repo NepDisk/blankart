@@ -3118,12 +3118,6 @@ state_t states[NUMSTATES] =
 	{SPR_LENS, FF_FULLBRIGHT|FF_ADD|FF_TRANS10|FF_ANIMATE|5,  14, {NULL}, 14, 1, S_GAINAX_MID2}, // S_GAINAX_MID1
 	{SPR_LENS, FF_FULLBRIGHT|FF_ADD|FF_TRANS10|FF_ANIMATE|19, -1, {NULL},  1, 1, S_NULL}, // S_GAINAX_MID2
 
-	{SPR_DRAF, 0, 2, {NULL}, 0, 0, S_DRAFTDUST2}, // S_DRAFTDUST1
-	{SPR_DRAF, 1, 1, {NULL}, 0, 0, S_DRAFTDUST3}, // S_DRAFTDUST2
-	{SPR_DRAF, 2, 1, {NULL}, 0, 0, S_DRAFTDUST4}, // S_DRAFTDUST3
-	{SPR_DRAF, 3, 1, {NULL}, 0, 0, S_DRAFTDUST5}, // S_DRAFTDUST4
-	{SPR_DRAF, 4, 1, {NULL}, 0, 0, S_NULL}, // S_DRAFTDUST5
-
 	{SPR_OTBU, FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_NULL}, // S_OVERTIME_BULB1
 	{SPR_OTBU, FF_FULLBRIGHT|2, 1, {NULL}, 0, 0, S_NULL}, // S_OVERTIME_BULB2
 	{SPR_OTLS, FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_NULL}, // S_OVERTIME_LASER
@@ -17849,36 +17843,9 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	    S_NULL          // raisestate
 	},
 
-	{           // MT_DRAFTDUST
-	    -1,             // doomednum
-	    S_DRAFTDUST1,   // spawnstate
-	    1000,           // spawnhealth
-	    S_NULL,         // seestate
-	    sfx_None,       // seesound
-	    8,              // reactiontime
-	    sfx_None,       // attacksound
-	    S_NULL,         // painstate
-	    0,              // painchance
-	    sfx_None,       // painsound
-	    S_NULL,         // meleestate
-	    S_NULL,         // missilestate
-	    S_NULL,         // deathstate
-	    S_NULL,         // xdeathstate
-	    sfx_None,       // deathsound
-	    0,              // speed
-	    8<<FRACBITS,    // radius
-	    16<<FRACBITS,   // height
-	    1,              // display offset
-	    100,            // mass
-	    0,              // damage
-	    sfx_None,       // activesound
-	    MF_NOBLOCKMAP|MF_DONTENCOREMAP, // flags
-	    S_NULL          // raisestate
-	},
-
 	{           // MT_SPBDUST
 	    -1,             // doomednum
-	    S_DRAFTDUST1,   // spawnstate
+	    S_DUST1,   // spawnstate
 	    1000,           // spawnhealth
 	    S_NULL,         // seestate
 	    sfx_None,       // seesound

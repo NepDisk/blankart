@@ -316,12 +316,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->handleboost);
 	else if (fastcmp(field,"boostangle"))
 		lua_pushangle(L, plr->boostangle);
-	else if (fastcmp(field,"draftpower"))
-		lua_pushinteger(L, plr->draftpower);
-	else if (fastcmp(field,"draftleeway"))
-		lua_pushinteger(L, plr->draftleeway);
-	else if (fastcmp(field,"lastdraft"))
-		lua_pushinteger(L, plr->lastdraft);
 	else if (fastcmp(field,"tripwirestate"))
 		lua_pushinteger(L, plr->tripwireState);
 	else if (fastcmp(field,"tripwirepass"))
@@ -858,12 +852,6 @@ static int player_set(lua_State *L)
 		plr->handleboost = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"boostangle"))
 		plr->boostangle = luaL_checkangle(L, 3);
-	else if (fastcmp(field,"draftpower"))
-		plr->draftpower = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"draftleeway"))
-		plr->draftleeway = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"lastdraft"))
-		plr->lastdraft = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"tripwirestate"))
 		plr->tripwireState = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"tripwirepass"))

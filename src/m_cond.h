@@ -127,7 +127,6 @@ typedef enum
 	UCRP_RINGSEXACT, // == [rings]
 
 	UCRP_SPEEDOMETER, // >= [percentage]
-	UCRP_DRAFTDURATION, // >= [time, seconds]
 	UCRP_GROWCONSECUTIVEBEAMS, // touch more than n times consecutively
 
 	UCRP_TRIGGER,	// Map execution trigger [id]
@@ -143,7 +142,6 @@ typedef enum
 	UCRP_SPBNEUTER, // Kill an SPB with Lightning
 	UCRP_LANDMINEDUNK, // huh? you died? that's weird. all i did was try to hug you...
 	UCRP_HITMIDAIR, // Hit another player mid-air with a kartfielditem
-	UCRP_HITDRAFTERLOOKBACK, // Hit a player that's behind you, while looking back at them, and they're drafting off you
 	UCRP_GIANTRACERSHRUNKENORBI, // Hit a giant racer with a shrunken Orbinaut
 	UCRP_RETURNMARKTOSENDER, // Hit the player responsible for Eggman Marking you with that explosion
 

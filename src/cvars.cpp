@@ -836,7 +836,6 @@ consvar_t cv_ng_capsules = UnsavedNetVar("ng_capsules", "On").on_off().onchange(
 consvar_t cv_ng_oldorbinaut = UnsavedNetVar("ng_oldorbinaut", "Ring Racers").values(rrOrKart_cons_t);
 consvar_t cv_ng_oldjawz = UnsavedNetVar("ng_oldjawz", "Ring Racers").values(rrOrKart_cons_t);
 
-consvar_t cv_ng_draft = UnsavedNetVar("ng_draft", "On").on_off();
 consvar_t cv_ng_mapanger = UnsavedNetVar("ng_mapanger", "Default (2)").min_max(0, INT32_MAX, {{-1, "Disabled"}, {2, "Default (2)"}});
 consvar_t cv_ng_tripwires = UnsavedNetVar("ng_tripwires", "On").on_off().onchange(NG_Generic_OnChange);
 void NG_ForceNoPosition_OnChange(void);
@@ -862,7 +861,6 @@ consvar_t cv_ng_rivals = UnsavedNetVar("ng_rivals", "On").on_off().onchange(NG_R
 consvar_t cv_ng_rivaltopspeed = UnsavedNetVar("ng_rivaltopspeed", "Default (11)").min_max(1, 100, {{11, "Default (11)"}});
 consvar_t cv_ng_rivalringpower = UnsavedNetVar("ng_rivalringpower", "Default (20)").min_max(0, 100, {{20, "Default (20)"}});
 consvar_t cv_ng_rivalfrantic = UnsavedNetVar("ng_rivalfrantic", "On").on_off();
-consvar_t cv_ng_rivaldraft = UnsavedNetVar("ng_rivaldraft", "On").on_off();
 
 //
 // Online cheats - synced in netgames.

@@ -265,12 +265,6 @@ void Obj_RideroidThink(mobj_t *mo)
 	if (p->ringboost)
 		maxspd = (maxspd*12)/10;	// Ring Boost: 120% max speed.
 
-	if (p->draftpower)
-	{
-		UINT8 draftperc = (p->draftpower*100 / FRACUNIT);	// 0-100%
-		maxspd += (draftperc/5) / 100;
-	}
-
 	if (p->startboost)
 		maxspd = (maxspd*15)/10;	// 150% speed
 

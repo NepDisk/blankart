@@ -427,6 +427,7 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT16(save->p, players[i].flashing);
 		WRITEUINT16(save->p, players[i].spinouttimer);
 		WRITEUINT8(save->p, players[i].spinouttype);
+		WRITEUINT16(save->p, players[i].squishedtimer);
 		WRITEUINT8(save->p, players[i].instashield);
 		WRITEUINT8(save->p, players[i].wipeoutslow);
 		WRITEUINT8(save->p, players[i].justbumped);
@@ -462,10 +463,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEFIXED(save->p, players[i].accelboost);
 		WRITEFIXED(save->p, players[i].handleboost);
 		WRITEANGLE(save->p, players[i].boostangle);
-
-		WRITEFIXED(save->p, players[i].draftpower);
-		WRITEUINT16(save->p, players[i].draftleeway);
-		WRITESINT8(save->p, players[i].lastdraft);
 
 		WRITEUINT8(save->p, players[i].tripwireState);
 		WRITEUINT8(save->p, players[i].tripwirePass);
@@ -1021,6 +1018,7 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].flashing = READUINT16(save->p);
 		players[i].spinouttimer = READUINT16(save->p);
 		players[i].spinouttype = READUINT8(save->p);
+		players[i].squishedtimer = READUINT16(save->p);
 		players[i].instashield = READUINT8(save->p);
 		players[i].wipeoutslow = READUINT8(save->p);
 		players[i].justbumped = READUINT8(save->p);
@@ -1056,10 +1054,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].accelboost = READFIXED(save->p);
 		players[i].handleboost = READFIXED(save->p);
 		players[i].boostangle = READANGLE(save->p);
-
-		players[i].draftpower = READFIXED(save->p);
-		players[i].draftleeway = READUINT16(save->p);
-		players[i].lastdraft = READSINT8(save->p);
 
 		players[i].tripwireState = READUINT8(save->p);
 		players[i].tripwirePass = READUINT8(save->p);

@@ -3229,18 +3229,6 @@ static void readcondition(UINT16 set, UINT32 id, char *word2)
 			return;
 		}
 	}
-	else if (fastcmp(params[0], "DRAFTDURATION"))
-	{
-		PARAMCHECK(1);
-		ty = UCRP_DRAFTDURATION;
-		re = get_number(params[1]);
-
-		if (re < 5)
-		{
-			deh_warning("Duration %d seconds too low for condition ID %d", re, id+1);
-			return;
-		}
-	}
 	else if (fastcmp(params[0], "GROWCONSECUTIVEBEAMS"))
 	{
 		PARAMCHECK(1);
@@ -3284,7 +3272,6 @@ static void readcondition(UINT16 set, UINT32 id, char *word2)
 	||        (++offset && fastcmp(params[0], "SPBNEUTER"))
 	||        (++offset && fastcmp(params[0], "LANDMINEDUNK"))
 	||        (++offset && fastcmp(params[0], "HITMIDAIR"))
-	||        (++offset && fastcmp(params[0], "HITDRAFTERLOOKBACK"))
 	||        (++offset && fastcmp(params[0], "GIANTRACERSHRUNKENORBI"))
 	||        (++offset && fastcmp(params[0], "RETURNMARKTOSENDER")))
 	{

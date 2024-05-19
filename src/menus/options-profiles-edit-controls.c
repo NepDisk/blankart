@@ -22,40 +22,40 @@ menuitem_t OPTIONS_ProfileControls[] = {
 		NULL, {NULL}, 0, 0},
 
 	{IT_CONTROL, "Accel / Confirm", "Accelerate / Confirm",
-		"TLB_A", {.routine = M_ProfileSetControl}, gc_accel, 0},
-
-	{IT_CONTROL, "Look back", "Look backwards / Go back",
-		"TLB_B", {.routine = M_ProfileSetControl}, gc_lookback, 0},
+		NULL, {.routine = M_ProfileSetControl}, gc_accel, 0},
 
 	{IT_CONTROL, "Brake / Go back", "Brake / Go back",
-		"TLB_D", {.routine = M_ProfileSetControl}, gc_brake, 0},
+		NULL, {.routine = M_ProfileSetControl}, gc_brake, 0},
 
 	{IT_CONTROL, "Respawn", "Respawn",
-		"TLB_E", {.routine = M_ProfileSetControl}, gc_respawn, 0},
+		NULL, {.routine = M_ProfileSetControl}, gc_respawn, 0},
 
 	{IT_CONTROL, "Action", "Multiplayer quick-chat / quick-vote",
-		"TLB_F", {.routine = M_ProfileSetControl}, gc_vote, 0},
+		NULL, {.routine = M_ProfileSetControl}, gc_vote, 0},
 
 	{IT_CONTROL, "Use Item", "Use item",
-		"TLB_H", {.routine = M_ProfileSetControl}, gc_item, 0},
+		NULL, {.routine = M_ProfileSetControl}, gc_item, 0},
 
 	{IT_CONTROL, "Drift", "Drift",
-		"TLB_I", {.routine = M_ProfileSetControl}, gc_drift, 0},
+		NULL, {.routine = M_ProfileSetControl}, gc_drift, 0},
 
 	{IT_CONTROL, "Turn Left", "Turn left",
-		"TLB_M", {.routine = M_ProfileSetControl}, gc_left, 0},
+		NULL, {.routine = M_ProfileSetControl}, gc_left, 0},
 
 	{IT_CONTROL, "Turn Right", "Turn right",
-		"TLB_L", {.routine = M_ProfileSetControl}, gc_right, 0},
+		NULL, {.routine = M_ProfileSetControl}, gc_right, 0},
 
 	{IT_CONTROL, "Aim Forward", "Aim forwards",
-		"TLB_J", {.routine = M_ProfileSetControl}, gc_up, 0},
+		NULL, {.routine = M_ProfileSetControl}, gc_up, 0},
 
 	{IT_CONTROL, "Aim Backwards", "Aim backwards",
-		"TLB_K", {.routine = M_ProfileSetControl}, gc_down, 0},
+		NULL, {.routine = M_ProfileSetControl}, gc_down, 0},
+
+	{IT_CONTROL, "Look back", "Look backwards / Go back",
+		NULL, {.routine = M_ProfileSetControl}, gc_lookback, 0},
 
 	{IT_CONTROL, "Open pause menu", "Open pause menu",
-		"TLB_G", {.routine = M_ProfileSetControl}, gc_pause, 0},
+		NULL, {.routine = M_ProfileSetControl}, gc_pause, 0},
 
 	{IT_HEADER, "OPTIONAL CONTROLS", "Take a screenshot, chat...",
 		NULL, {NULL}, 0, 0},
@@ -123,14 +123,14 @@ menu_t OPTIONS_ProfileControlsDef = {
 
 // sets whatever device has had its key pressed to the active device.
 // 20/05/22: Commented out for now but not deleted as it might still find some use in the future?
-/*
+
 static void SetDeviceOnPress(void)
 {
 	UINT8 i;
 
 	for (i=0; i < MAXDEVICES; i++)
 	{
-		if (deviceResponding[i])
+		if (G_IsDeviceResponding(i))
 		{
 			G_SetDeviceForPlayer(0, i); // Force-set this joystick as the current joystick we're using for P1 (which is the only one controlling menus)
 			CONS_Printf("SetDeviceOnPress: Device for %d set to %d\n", 0, i);
@@ -138,7 +138,7 @@ static void SetDeviceOnPress(void)
 		}
 	}
 }
-*/
+
 
 static boolean M_ClearCurrentControl(void)
 {
@@ -216,16 +216,6 @@ void M_HandleProfileControls(void)
 	}
 }
 
-void M_ProfileTryController(INT32 choice)
-{
-	(void)choice;
-
-	optionsmenu.trycontroller = TICRATE*5;
-
-	// Apply these controls right now on P1's end.
-	G_ApplyControlScheme(0, optionsmenu.tempcontrols);
-}
-
 static void M_ProfileControlSaveResponse(INT32 choice)
 {
 	if (choice == MA_YES)
@@ -285,60 +275,11 @@ boolean M_ProfileControlsInputs(INT32 ch)
 	(void)ch;
 
 	// By default, accept all inputs.
-	if (optionsmenu.trycontroller)
-	{
-		if (menucmd[pid].dpad_ud || menucmd[pid].dpad_lr || menucmd[pid].buttons)
-		{
-			if (menucmd[pid].dpad_ud != menucmd[pid].prev_dpad_ud || menucmd[pid].dpad_lr != menucmd[pid].prev_dpad_lr)
-				S_StartSound(NULL, sfx_s3k5b);
-
-			UINT32 newbuttons = menucmd[pid].buttons & ~(menucmd[pid].buttonsHeld);
-
-			if (newbuttons & MBT_L)
-				S_StartSound(NULL, sfx_kc69);
-			if (newbuttons & MBT_R)
-				S_StartSound(NULL, sfx_s3ka2);
-			
-			if (newbuttons & MBT_A)
-				S_StartSound(NULL, sfx_kc3c);
-			if (newbuttons & MBT_B)
-				S_StartSound(NULL, sfx_3db09);
-			if (newbuttons & MBT_C)
-				S_StartSound(NULL, sfx_s1be);
-			
-			if (newbuttons & MBT_X)
-				S_StartSound(NULL, sfx_s1a4);
-			if (newbuttons & MBT_Y)
-				S_StartSound(NULL, sfx_s3kcas);
-			if (newbuttons & MBT_Z)
-				S_StartSound(NULL, sfx_s3kc3s);
-
-			if (newbuttons & MBT_START)
-				S_StartSound(NULL, sfx_gshdc);
-
-			optionsmenu.trycontroller = 5*TICRATE;
-		}
-		else
-		{
-			optionsmenu.trycontroller--;
-		}
-
-		if (optionsmenu.trycontroller == 0)
-		{
-			// Reset controls to that of the current profile.
-			profile_t *cpr = PR_GetProfile(cv_currprofile.value);
-			if (cpr == NULL)
-				cpr = PR_GetProfile(0); // Creating a profile at boot, revert to guest profile
-			G_ApplyControlScheme(0, cpr->controls);
-		}
-
-		return true;
-	}
 
 	if (optionsmenu.bindtimer)
 		return true;	// Eat all inputs there. We'll use a stupid hack in M_Responder instead.
 
-	//SetDeviceOnPress();	// Update device constantly so that we don't stay stuck with otpions saying a device is unavailable just because we're mapping multiple devices...
+	SetDeviceOnPress();	// Update device constantly so that we don't stay stuck with otpions saying a device is unavailable just because we're mapping multiple devices...
 
 	if (M_MenuExtraPressed(pid))
 	{

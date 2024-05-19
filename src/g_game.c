@@ -2505,7 +2505,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->growshrinktimer = growshrinktimer;
 	p->karmadelay = 0;
 	p->eggmanblame = -1;
-	p->lastdraft = -1;
 	p->karthud[khud_fault] = khudfault;
 	p->kickstartaccel = kickstartaccel;
 	p->checkpointId = checkpointId;

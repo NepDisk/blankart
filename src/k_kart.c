@@ -1276,376 +1276,6 @@ static void K_UpdateOffroad(player_t *player)
 		player->offroad = 0;
 }
 
-static void K_DrawDraftCombiring(player_t *player, mobj_t *victim, fixed_t curdist, fixed_t maxdist, boolean transparent)
-{
-#define CHAOTIXBANDLEN 15
-#define CHAOTIXBANDCOLORS 9
-	static const UINT8 colors[CHAOTIXBANDCOLORS] = {
-		SKINCOLOR_SAPPHIRE,
-		SKINCOLOR_PLATINUM,
-		SKINCOLOR_TEA,
-		SKINCOLOR_GARDEN,
-		SKINCOLOR_BANANA,
-		SKINCOLOR_GOLD,
-		SKINCOLOR_ORANGE,
-		SKINCOLOR_SCARLET,
-		SKINCOLOR_TAFFY
-	};
-	fixed_t minimumdist = FixedMul(RING_DIST>>1, player->mo->scale);
-	UINT8 n = CHAOTIXBANDLEN;
-	UINT8 offset = ((leveltime / 3) % 3);
-	fixed_t stepx, stepy, stepz;
-	fixed_t curx, cury, curz;
-	UINT8 c;
-
-	if (maxdist == 0)
-	{
-		c = leveltime % CHAOTIXBANDCOLORS;
-	}
-	else
-	{
-		fixed_t num = curdist - minimumdist;
-		fixed_t den = maxdist - minimumdist;
-		if (den < 1)
-			den = 1;
-		if (num < 0)
-			num = 0;
-		if (num > den)
-			num = den;
-		c = FixedMul((CHAOTIXBANDCOLORS - 1)<<FRACBITS, FixedDiv(num, den)) >> FRACBITS;
-	}
-
-	stepx = (victim->x - player->mo->x) / CHAOTIXBANDLEN;
-	stepy = (victim->y - player->mo->y) / CHAOTIXBANDLEN;
-	stepz = ((victim->z + (victim->height / 2)) - (player->mo->z + (player->mo->height / 2))) / CHAOTIXBANDLEN;
-
-	curx = player->mo->x + stepx;
-	cury = player->mo->y + stepy;
-	curz = player->mo->z + stepz;
-
-	while (n)
-	{
-		if (offset == 0)
-		{
-			mobj_t *band = P_SpawnMobj(curx + (P_RandomRange(PR_DECORATION, -12, 12)*mapobjectscale),
-				cury + (P_RandomRange(PR_DECORATION, -12, 12)*mapobjectscale),
-				curz + (P_RandomRange(PR_DECORATION, 24, 48)*mapobjectscale),
-				MT_SIGNSPARKLE);
-
-			if (maxdist == 0)
-			{
-				P_SetMobjState(band, S_KSPARK1 + (leveltime % 8));
-				P_SetScale(band, (band->destscale = player->mo->scale));
-			}
-			else
-			{
-				P_SetMobjState(band, S_SIGNSPARK1 + (leveltime % 11));
-				P_SetScale(band, (band->destscale = (3*player->mo->scale)/2));
-			}
-
-			band->color = colors[c];
-			band->colorized = true;
-
-			band->fuse = 2;
-
-			if (transparent)
-				band->renderflags |= RF_GHOSTLY;
-
-			band->renderflags |= RF_DONTDRAW & ~(K_GetPlayerDontDrawFlag(player) | K_GetPlayerDontDrawFlag(victim->player));
-		}
-
-		curx += stepx;
-		cury += stepy;
-		curz += stepz;
-
-		offset = abs(offset-1) % 3;
-		n--;
-	}
-#undef CHAOTIXBANDLEN
-}
-
-static boolean K_HasInfiniteTether(player_t *player)
-{
-	switch (player->curshield)
-	{
-		case KSHIELD_LIGHTNING:
-			return true;
-	}
-
-	if (player->eggmanexplode > 0)
-		return true;
-
-	if (player->trickcharge)
-		return true;
-
-	if (player->infinitether)
-		return true;
-
-	return false;
-}
-
-static boolean K_TryDraft(player_t *player, mobj_t *dest, fixed_t minDist, fixed_t draftdistance, UINT8 leniency)
-{
-//#define EASYDRAFTTEST
-	fixed_t dist, olddraft;
-	fixed_t theirSpeed = 0;
-#ifndef EASYDRAFTTEST
-	angle_t yourangle, theirangle, diff;
-#endif
-
-	if (K_PodiumSequence() == true)
-	{
-		return false;
-	}
-
-#ifndef EASYDRAFTTEST
-	// Don't draft on yourself :V
-	if (dest->player && dest->player == player)
-	{
-		return false;
-	}
-#endif
-
-	if (dest->player != NULL)
-	{
-		// No tethering off of the guy who got the starting bonus :P
-		if (dest->player->startboost > 0)
-		{
-			return false;
-		}
-
-		theirSpeed = dest->player->speed;
-	}
-	else
-	{
-		theirSpeed = R_PointToDist2(0, 0, dest->momx, dest->momy);
-	}
-
-	// They're not enough speed to draft off of them.
-	if (theirSpeed < 20 * dest->scale)
-	{
-		return false;
-	}
-
-#ifndef EASYDRAFTTEST
-	yourangle = K_MomentumAngle(player->mo);
-	theirangle = K_MomentumAngle(dest);
-
-	// Not in front of this player.
-	diff = AngleDelta(R_PointToAngle2(player->mo->x, player->mo->y, dest->x, dest->y), yourangle);
-	if (diff > ANG10)
-	{
-		return false;
-	}
-
-	// Not moving in the same direction.
-	diff = AngleDelta(yourangle, theirangle);
-	if (diff > ANGLE_90)
-	{
-		return false;
-	}
-#endif
-
-	dist = P_AproxDistance(P_AproxDistance(dest->x - player->mo->x, dest->y - player->mo->y), dest->z - player->mo->z);
-
-#ifndef EASYDRAFTTEST
-	// TOO close to draft.
-	if (dist < minDist)
-	{
-		return false;
-	}
-
-	// Not close enough to draft.
-	if (dist > draftdistance && draftdistance > 0)
-	{
-		return false;
-	}
-#endif
-
-	// Bots are unusually good at keeping their facing aligned on long, tight turns.
-	// Force them to give up tether in these situations, like a drifting player typically would.
-	UINT16 rejectThreshold = KART_FULLTURN/4;
-	if (K_PlayerUsesBotMovement(player) && (abs(player->oldcmd.turning + player->cmd.turning) >= rejectThreshold))
-	{
-		return false;
-	}
-
-	olddraft = player->draftpower;
-
-	player->draftleeway = leniency;
-
-	if (dest->player != NULL)
-	{
-		player->lastdraft = dest->player - players;
-	}
-	else
-	{
-		player->lastdraft = MAXPLAYERS;
-	}
-
-	// Draft power is used later in K_GetKartBoostPower, ranging from 0 for normal speed and FRACUNIT for max draft speed.
-	// How much this increments every tic biases toward acceleration! (min speed gets 1.5% per tic, max speed gets 0.5% per tic)
-	if (player->draftpower < FRACUNIT)
-	{
-		fixed_t add = (FRACUNIT/200) + ((9 - player->kartspeed) * ((3*FRACUNIT)/1600));;
-		player->draftpower += add;
-
-		if ((player->bot && (player->botvars.rival || cv_levelskull.value)) && cv_ng_rivaldraft.value )
-		{
-			// Double speed for the rival!
-			player->draftpower += add;
-		}
-
-		if (gametyperules & GTR_CLOSERPLAYERS)
-		{
-			// Double speed in smaller environments
-			player->draftpower += add;
-		}
-	}
-
-	if (player->draftpower > FRACUNIT)
-	{
-		player->draftpower = FRACUNIT;
-	}
-
-	// Play draft finish noise
-	if (olddraft < FRACUNIT && player->draftpower >= FRACUNIT)
-	{
-		S_StartSound(player->mo, sfx_cdfm62);
-	}
-
-	// Spawn in the visual!
-	K_DrawDraftCombiring(player, dest, dist, draftdistance, false);
-	return true;
-}
-
-/**	\brief	Updates the player's drafting values once per frame
-
-	\param	player	player object passed from K_KartPlayerThink
-
-	\return	void
-*/
-static void K_UpdateDraft(player_t *player)
-{
-	mobj_t *addUfo = K_GetPossibleSpecialTarget();
-
-	fixed_t topspd = K_GetKartSpeed(player, false, false);
-	fixed_t draftdistance;
-	fixed_t minDist;
-	UINT8 leniency;
-	UINT8 i;
-
-	if (K_HasInfiniteTether(player))
-	{
-		// Lightning Shield gets infinite draft distance as its (other) passive effect.
-		draftdistance = 0;
-	}
-	else
-	{
-		// Distance you have to be to draft. If you're still accelerating, then this distance is lessened.
-		// This distance biases toward low weight! (min weight gets 4096 units, max weight gets 3072 units)
-		// This distance is also scaled based on game speed.
-		draftdistance = (3072 + (128 * (9 - player->kartweight))) * player->mo->scale;
-		if (player->speed < topspd)
-			draftdistance = FixedMul(draftdistance, FixedDiv(player->speed, topspd));
-		draftdistance = FixedMul(draftdistance, K_GetKartGameSpeedScalar(gamespeed));
-	}
-
-	// On the contrary, the leniency period biases toward high weight.
-	// (See also: the leniency variable in K_SpawnDraftDust)
-	leniency = (3*TICRATE)/4 + ((player->kartweight-1) * (TICRATE/4));
-
-	minDist = 640 * player->mo->scale;
-
-	if (gametyperules & GTR_CLOSERPLAYERS)
-	{
-		minDist /= 4;
-		draftdistance *= 2;
-		leniency *= 4;
-	}
-
-	// You need speed and commitment to draft.
-	if (player->speed >= 20 * player->mo->scale)
-	{
-		if (addUfo != NULL)
-		{
-			// Tether off of the UFO!
-			if (K_TryDraft(player, addUfo, minDist, draftdistance, leniency) == true)
-			{
-				return; // Finished doing our draft.
-			}
-		}
-
-		// Let's hunt for players to draft off of!
-		for (i = 0; i < MAXPLAYERS; i++)
-		{
-			player_t *otherPlayer = NULL;
-
-			if (playeringame[i] == false)
-			{
-				continue;
-			}
-
-			otherPlayer = &players[i];
-
-			if (otherPlayer->spectator == true)
-			{
-				continue;
-			}
-
-			if (otherPlayer->mo == NULL || P_MobjWasRemoved(otherPlayer->mo) == true)
-			{
-				continue;
-			}
-
-			if (K_TryDraft(player, otherPlayer->mo, minDist, draftdistance, leniency) == true)
-			{
-				//return;
-				goto draftdurationhandling; // Finished doing our draft.
-			}
-		}
-	}
-
-	// No one to draft off of? Then you can knock that off.
-	if (player->draftleeway > 0) // Prevent small disruptions from stopping your draft.
-	{
-		if (P_IsObjectOnGround(player->mo) == true)
-		{
-			// Allow maintaining tether in air setpieces.
-			player->draftleeway--;
-		}
-
-		if (player->lastdraft >= 0
-			&& player->lastdraft < MAXPLAYERS
-			&& playeringame[player->lastdraft]
-			&& !players[player->lastdraft].spectator
-			&& players[player->lastdraft].mo)
-		{
-			player_t *victim = &players[player->lastdraft];
-			fixed_t dist = P_AproxDistance(P_AproxDistance(victim->mo->x - player->mo->x, victim->mo->y - player->mo->y), victim->mo->z - player->mo->z);
-			K_DrawDraftCombiring(player, victim->mo, dist, draftdistance, true);
-		}
-		else if (addUfo != NULL)
-		{
-			// kind of a hack to not have to mess with how lastdraft works
-			fixed_t dist = P_AproxDistance(P_AproxDistance(addUfo->x - player->mo->x, addUfo->y - player->mo->y), addUfo->z - player->mo->z);
-			K_DrawDraftCombiring(player, addUfo, dist, draftdistance, true);
-		}
-	}
-	else // Remove draft speed boost.
-	{
-		player->draftpower = 0;
-		player->lastdraft = -1;
-		player->roundconditions.continuousdraft = 0;
-		return;
-	}
-
-draftdurationhandling:
-	player->roundconditions.continuousdraft++;
-	if (player->roundconditions.continuousdraft > player->roundconditions.continuousdraft_best)
-		player->roundconditions.continuousdraft_best = player->roundconditions.continuousdraft;
-}
-
 void K_KartPainEnergyFling(player_t *player)
 {
 	static const UINT8 numfling = 5;
@@ -3549,26 +3179,6 @@ static void K_GetKartBoostPower(player_t *player)
 		ADDBOOST(player->botvars.rubberband - FRACUNIT, 0, 0);
 	}
 
-	if (player->draftpower > 0) // Drafting
-	{
-		// 30% - 44%, each point of speed adds 1.75%
-		fixed_t draftspeed = ((3*FRACUNIT)/10) + ((player->kartspeed-1) * ((7*FRACUNIT)/400));
-
-		if (gametyperules & GTR_CLOSERPLAYERS)
-		{
-			draftspeed *= 2;
-		}
-
-		if (K_HasInfiniteTether(player))
-		{
-			// infinite tether
-			draftspeed *= 2;
-		}
-
-		speedboost += FixedMul(draftspeed, player->draftpower); // (Drafting suffers no boost stack penalty.)
-		numboosts++;
-	}
-
 	player->boostpower = boostpower;
 
 	// value smoothing
@@ -4138,6 +3748,41 @@ void K_RemoveGrowShrink(player_t *player)
 
 	player->growshrinktimer = 0;
 	player->roundconditions.consecutive_grow_lasers = 0;
+}
+
+void K_SquishPlayer(player_t *player, mobj_t *inflictor, mobj_t *source)
+{
+	// PS: Inflictor is unused for all purposes here and is actually only ever relevant to Lua. It may be nil too.
+	if (P_MobjWasRemoved(player->mo))
+		return; // mobj was removed (in theory that shouldn't happen)
+
+
+	player->squishedtimer = TICRATE;
+
+	// Reduce Shrink timer
+	if (player->growshrinktimer < 0)
+	{
+		player->growshrinktimer += TICRATE;
+		if (player->growshrinktimer >= 0)
+			K_RemoveGrowShrink(player);
+	}
+
+	player->flashing = K_GetKartFlashing(player);
+
+	player->mo->flags |= MF_NOCLIP;
+
+	if (player->mo->state != &states[S_KART_SPINOUT]) // Squash
+		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
+
+	player->instashield = 15;
+	if (cv_kartdebughuddrop.value && !modeattacking)
+		K_DropItems(player);
+	else
+	{
+		K_DropHnextList(player);
+		K_PopPlayerShield(player);
+	}
+	return;
 }
 
 // Should this object actually scale check?
@@ -5554,85 +5199,6 @@ void K_SpawnWipeoutTrail(mobj_t *mo)
 	dust->destscale = mo->scale;
 	P_SetScale(dust, mo->scale);
 	K_FlipFromObject(dust, mo);
-}
-
-void K_SpawnDraftDust(mobj_t *mo)
-{
-	UINT8 i;
-
-	I_Assert(mo != NULL);
-	I_Assert(!P_MobjWasRemoved(mo));
-
-	for (i = 0; i < 2; i++)
-	{
-		angle_t ang, aoff;
-		SINT8 sign = 1;
-		UINT8 foff = 0;
-		mobj_t *dust;
-		boolean drifting = false;
-
-		if (mo->player)
-		{
-			UINT8 leniency = (3*TICRATE)/4 + ((mo->player->kartweight-1) * (TICRATE/4));
-
-			if (gametyperules & GTR_CLOSERPLAYERS)
-				leniency *= 4;
-
-			ang = mo->player->drawangle;
-
-			if (mo->player->drift != 0)
-			{
-				drifting = true;
-				ang += (mo->player->drift * ((ANGLE_270 + ANGLE_22h) / 5)); // -112.5 doesn't work. I fucking HATE SRB2 angles
-				if (mo->player->drift < 0)
-					sign = 1;
-				else
-					sign = -1;
-			}
-
-			foff = 5 - ((mo->player->draftleeway * 5) / leniency);
-
-			// this shouldn't happen
-			if (foff > 4)
-				foff = 4;
-		}
-		else
-			ang = mo->angle;
-
-		if (!drifting)
-		{
-			if (i & 1)
-				sign = -1;
-			else
-				sign = 1;
-		}
-
-		aoff = (ang + ANGLE_180) + (ANGLE_45 * sign);
-
-		dust = P_SpawnMobj(mo->x + FixedMul(24*mo->scale, FINECOSINE(aoff>>ANGLETOFINESHIFT)),
-			mo->y + FixedMul(24*mo->scale, FINESINE(aoff>>ANGLETOFINESHIFT)),
-			mo->z, MT_DRAFTDUST);
-
-		P_SetMobjState(dust, S_DRAFTDUST1 + foff);
-
-		P_SetTarget(&dust->target, mo);
-		dust->angle = ang - (ANGLE_90 * sign); // point completely perpendicular from the player
-		dust->destscale = mo->scale;
-		P_SetScale(dust, mo->scale);
-		K_FlipFromObject(dust, mo);
-
-		if (leveltime & 1)
-			dust->tics++; // "randomize" animation
-
-		dust->momx = (4*mo->momx)/5;
-		dust->momy = (4*mo->momy)/5;
-		dust->momz = (4*P_GetMobjZMovement(mo))/5;
-
-		P_Thrust(dust, dust->angle, 4*mo->scale);
-
-		if (drifting) // only 1 trail while drifting
-			break;
-	}
 }
 
 //	K_DriftDustHandling
@@ -8042,8 +7608,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	}
 
 	K_UpdateOffroad(player);
-	if (cv_ng_draft.value)
-		K_UpdateDraft(player);
 	K_UpdateEngineSounds(player); // Thanks, VAda!
 
 	Obj_DashRingPlayerThink(player);
@@ -8105,17 +7669,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 				//ghost->momz = (3*player->mo->momz)/4;
 				if (leveltime & 1)
 					ghost->renderflags |= RF_DONTDRAW;
-			}
-
-			if (P_IsObjectOnGround(player->mo))
-			{
-				// Draft dust
-				if (player->draftpower >= FRACUNIT)
-				{
-					K_SpawnDraftDust(player->mo);
-					/*if (leveltime % 23 == 0 || !S_SoundPlaying(player->mo, sfx_s265))
-						S_StartSound(player->mo, sfx_s265);*/
-				}
 			}
 		}
 
@@ -8669,6 +8222,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->stealingtimer--;
 	else if (player->stealingtimer < 0)
 		player->stealingtimer++;
+
+	if (player->squishedtimer > 0)
+		player->squishedtimer--;
 
 	if (player->justbumped > 0)
 		player->justbumped--;
@@ -12331,6 +11887,19 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	}
 
 	K_KartDrift(player, onground);
+
+	// Squishing
+	// If a Grow player or a sector crushes you, get flattened instead of being killed.
+	if (player->squishedtimer <= 0)
+	{
+		player->mo->flags &= ~MF_NOCLIP;
+	}
+	else
+	{
+		player->mo->flags |= MF_NOCLIP;
+		player->mo->momx = 0;
+		player->mo->momy = 0;
+	}
 
 	if (onground == false
 	&& !player->bungee		// if this list of condition ever gets bigger, maybe this should become a function.

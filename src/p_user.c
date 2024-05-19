@@ -2174,7 +2174,13 @@ void P_MovePlayer(player_t *player)
 	}
 
 	// Kart frames
-	if (player->icecube.frozen)
+	if (player->squishedtimer)
+	{
+		player->mo->spriteyscale = (player->mo->scale - player->mo->height) / 2;
+		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
+		P_ResetPitchRoll(player->mo);
+	}
+	else if (player->icecube.frozen)
 	{
 		INT32 spd = FixedMul(player->mo->scale, FixedHypot(player->mo->momx, player->mo->momy)) / FRACUNIT;
 		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
@@ -2286,7 +2292,7 @@ void P_MovePlayer(player_t *player)
 		if (player->spectator)
 			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_SPECTATOR); // Respawn crushed spectators
 		else
-			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_CRUSHED);
+			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_SQUISH);
 
 		if (player->playerstate == PST_DEAD)
 			return;
