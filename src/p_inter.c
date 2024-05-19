@@ -1866,56 +1866,14 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			break;
 
 		case MT_PLAYER:
-			if (damagetype != DMG_SPECTATOR)
-			{
-				fixed_t flingSpeed = FixedHypot(target->momx, target->momy);
-				angle_t flingAngle;
+			target->fuse = TICRATE*3; // timer before mobj disappears from view (even if not an actual player)
+			target->momx = target->momy = target->momz = 0;
 
-				target->fuse = TICRATE*3; // timer before mobj disappears from view (even if not an actual player)
-				target->momx = target->momy = target->momz = 0;
+			if (target->player && target->player->pflags & PF_NOCONTEST)
+				break;
 
-				Obj_SpawnDestroyedKart(target);
-
-				if (source && !P_MobjWasRemoved(source))
-				{
-					flingAngle = R_PointToAngle2(
-						source->x - source->momx, source->y - source->momy,
-						target->x, target->y
-					);
-				}
-				else
-				{
-					flingAngle = target->angle;
-
-					if (P_RandomByte(PR_ITEM_RINGS) & 1)
-					{
-						flingAngle -= ANGLE_45/2;
-					}
-					else
-					{
-						flingAngle += ANGLE_45/2;
-					}
-				}
-
-				// On -20 ring deaths, you're guaranteed to be hitting the ground from Tumble,
-				// so make sure that this draws at the correct angle.
-				target->rollangle = 0;
-
-				fixed_t inflictorSpeed = 0;
-				if (!P_MobjWasRemoved(inflictor))
-				{
-					inflictorSpeed = FixedHypot(inflictor->momx, inflictor->momy);
-					if (inflictorSpeed > flingSpeed)
-					{
-						flingSpeed = inflictorSpeed;
-					}
-				}
-
-				boolean battle = (gametyperules & (GTR_BUMPERS | GTR_BOSS)) == GTR_BUMPERS;
-				P_InstaThrust(target, flingAngle, max(flingSpeed, 6 * target->scale) / (battle ? 1 : 3));
-				P_SetObjectMomZ(target, battle ? 20*FRACUNIT : 18*FRACUNIT, false);
-			}
-
+			P_SetObjectMomZ(target, 14*FRACUNIT, false);
+			P_PlayDeathSound(target);
 			// Prisons Free Play: don't eliminate P1 for
 			// spectating. Because in Free Play, this player
 			// can enter the game again, and these flags would
