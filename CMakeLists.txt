@@ -66,6 +66,7 @@ option(SRB2_CONFIG_STATIC_OPENGL "Enable static linking GL (do not do this)" OFF
 option(SRB2_CONFIG_ERRORMODE "Compile C code with warnings treated as errors." OFF)
 option(SRB2_CONFIG_DEBUGMODE "Compile with PARANOIA, ZDEBUG, RANGECHECK and PACKETDROP defined." OFF)
 option(SRB2_CONFIG_DEV_BUILD "Compile a development build." OFF)
+option(SRB2_CONFIG_ALWAYS_MAKE_DEBUGLINK "Always make a debuglink .debug." OFF)
 option(SRB2_CONFIG_TESTERS "Compile a build for testers." OFF)
 option(SRB2_CONFIG_MOBJCONSISTANCY "Compile with MOBJCONSISTANCY defined." OFF)
 option(SRB2_CONFIG_PACKETDROP "Compile with PACKETDROP defined." OFF)
@@ -174,7 +175,9 @@ if(NOT "${SRB2_GIT_DIR}" STREQUAL "" AND "${SRB2_SDL2_EXE_NAME}" STREQUAL "")
 	list(APPEND EXE_NAME_PARTS "ringracers")
 
 	if(NOT "${SRB2_GIT_REVISION}" STREQUAL "master")
-		list(APPEND EXE_NAME_PARTS ${SRB2_GIT_REVISION})
+		# substitute path-unsafe characters
+		string(REGEX REPLACE "[\\\/\^\$]" "_" SAFE_REVISION "${SRB2_GIT_REVISION}")
+		list(APPEND EXE_NAME_PARTS ${SAFE_REVISION})
 	endif()
 
 	if (SRB2_CONFIG_TESTERS)

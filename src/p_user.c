@@ -2349,8 +2349,7 @@ static void P_UpdatePlayerAngle(player_t *player)
 		// Corrections via fake turn go through easing.
 		// That means undoing them takes the same amount of time as doing them.
 		// This can lead to oscillating death spiral states on a multi-tic correction, as we swing past the target angle.
-
-		// So before we go into death-spirals, if our predicton is _almost_ right... 
+		// So before we go into death-spirals, if our predicton is _almost_ right...
 		angle_t leniency_base;
 		if (G_CompatLevel(0x000A))
 		{
@@ -4271,7 +4270,7 @@ void P_PlayerThink(player_t *player)
 	}
 	else if (cmd->buttons & BT_ACCELERATE)
 	{
-		if (!player->exiting && !(player->oldcmd.buttons & BT_ACCELERATE))
+		if (!player->exiting && !(player->oldcmd.buttons & BT_ACCELERATE) && ((cmd->buttons & BT_SPINDASHMASK) != BT_SPINDASHMASK) && player->trickpanel != TRICKSTATE_READY)
 		{
 			player->kickstartaccel = 0;
 		}

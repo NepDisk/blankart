@@ -13010,9 +13010,9 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							else if (ATTACK_IS_DOWN && (player->itemflags & IF_ITEMOUT)) // Banana x3 thrown
 							{
+								player->itemamount--;
 								K_ThrowKartItem(player, false, MT_BANANA, -1, 0, 0);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								K_UpdateHnextList(player, false);
 								player->botvars.itemconfirm = 0;
 							}
@@ -13076,9 +13076,9 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							else if (ATTACK_IS_DOWN && (player->itemflags & IF_ITEMOUT)) // Orbinaut x3 thrown
 							{
+								player->itemamount--;
 								K_ThrowKartItem(player, true, MT_ORBINAUT, 1, 0, 0);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								K_UpdateHnextList(player, false);
 								player->botvars.itemconfirm = 0;
 							}
@@ -13119,9 +13119,9 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							else if (ATTACK_IS_DOWN && HOLDING_ITEM && (player->itemflags & IF_ITEMOUT)) // Jawz thrown
 							{
+								player->itemamount--;
 								K_ThrowKartItem(player, true, MT_JAWZ, 1, 0, 0);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								K_UpdateHnextList(player, false);
 								player->botvars.itemconfirm = 0;
 							}
@@ -13147,9 +13147,9 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							else if (ATTACK_IS_DOWN && (player->itemflags & IF_ITEMOUT))
 							{
+								player->itemamount--;
 								K_ThrowKartItem(player, false, MT_SSMINE, 1, 1, 0);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								player->itemflags &= ~IF_ITEMOUT;
 								K_UpdateHnextList(player, true);
 								player->botvars.itemconfirm = 0;
@@ -13185,9 +13185,9 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							else if (ATTACK_IS_DOWN && (player->itemflags & IF_ITEMOUT))
 							{
+								player->itemamount--;
 								K_ThrowKartItem(player, (player->throwdir > 0), MT_DROPTARGET, -1, 0, 0);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								player->itemflags &= ~IF_ITEMOUT;
 								K_UpdateHnextList(player, true);
 								player->botvars.itemconfirm = 0;
@@ -13429,9 +13429,10 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 
 									if (player->bubbleblowup > bubbletime*2)
 									{
+										player->itemamount--;
 										K_ThrowKartItem(player, (player->throwdir > 0), MT_BUBBLESHIELDTRAP, -1, 0, 0);
 										if (player->throwdir == -1)
-										{		
+										{
 											P_InstaThrust(player->mo, player->mo->angle, player->speed + (80 * mapobjectscale));
 											player->wavedashboost += TICRATE;
 											player->wavedashpower = FRACUNIT;
@@ -13441,7 +13442,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 										player->bubbleblowup = 0;
 										player->bubblecool = 0;
 										player->itemflags &= ~IF_HOLDREADY;
-										player->itemamount--;
 										player->botvars.itemconfirm = 0;
 									}
 								}
@@ -13515,7 +13515,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 											player->mo, player->mo->angle,
 											FixedMul((50*player->mo->scale), K_GetKartGameSpeedScalar(gamespeed))
 										);
-										
+
 										player->wavedashboost += TICRATE;
 										player->wavedashpower = FRACUNIT;
 										player->fakeBoost = TICRATE/3;
@@ -13607,9 +13607,9 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							else if (ATTACK_IS_DOWN && HOLDING_ITEM && (player->itemflags & IF_ITEMOUT)) // Sink thrown
 							{
+								player->itemamount--;
 								K_ThrowKartItem(player, false, MT_SINK, 1, 2, 0);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								player->itemflags &= ~IF_ITEMOUT;
 								K_UpdateHnextList(player, true);
 								player->botvars.itemconfirm = 0;
@@ -13618,11 +13618,11 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 						case KITEM_GACHABOM:
 							if (ATTACK_IS_DOWN && !HOLDING_ITEM && NO_HYUDORO)
 							{
+								player->itemamount--;
 								K_SetItemOut(player); // need this to set itemscale
 								K_ThrowKartItem(player, true, MT_GACHABOM, 0, 0, 0);
 								K_UnsetItemOut(player);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								player->roundconditions.gachabom_miser = (
 									(player->roundconditions.gachabom_miser == 0)
 										? 1 : 0xFF
@@ -13749,7 +13749,13 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 
 			// We'll never need to go above that.
 			if (player->tricktime <= TRICKDELAY)
+			{
+				// 2.3 - Prevent accidental fastfalls during trickdelay
+				if (!G_CompatLevel(0x000C))
+					player->pflags |= PF_NOFASTFALL;
+
 				player->tricktime++;
+			}
 
 			// debug shit
 			//CONS_Printf("%d\n", player->mo->momz / mapobjectscale);
@@ -13777,14 +13783,20 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				const angle_t angledelta = FixedAngle(36*FRACUNIT);
 				angle_t baseangle = player->mo->angle + angledelta/2;
 
+				UINT16 buttons = player->cmd.buttons;
 				INT16 aimingcompare = abs(cmd->throwdir) - abs(cmd->turning);
 
 				// 2.2 - Pre-steering trickpanels
 				if (!G_CompatLevel(0x000A) && !K_PlayerUsesBotMovement(player))
 				{
-					if (!(player->cmd.buttons & BT_ACCELERATE))
+					if (!(buttons & BT_ACCELERATE))
 					{
 						aimingcompare = 0;
+					}
+					// 2.3 - also allow tricking with the Spindash button
+					else if (!G_CompatLevel(0x000C) && ((buttons & BT_SPINDASHMASK) == BT_SPINDASHMASK))
+					{
+						player->pflags |= PF_NOFASTFALL;
 					}
 				}
 
@@ -14031,9 +14043,22 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 		}
 		else
 		{
-			if ((player->pflags & PF_TRICKDELAY) && !(player->cmd.buttons & BT_ACCELERATE) && (player->tricktime >= TRICKDELAY))
+			if (G_CompatLevel(0x000C))
 			{
-				player->pflags &= ~PF_TRICKDELAY;
+				if ((player->pflags & PF_TRICKDELAY) && !(player->cmd.buttons & BT_ACCELERATE) && (player->tricktime >= TRICKDELAY))
+				{
+					player->pflags &= ~PF_TRICKDELAY;
+				}
+			}
+			else
+			// 2.3 - Spindash to trick
+			{
+				// Ignore pre-existing Accel inputs if not pressing Spindash. Always ignore pre-existing Spindash inputs to prevent accidental tricking.
+				if ((player->pflags & PF_TRICKDELAY) && (!(player->cmd.buttons & BT_ACCELERATE) || (((player->cmd.buttons & BT_SPINDASHMASK) == BT_SPINDASHMASK) && (player->oldcmd.buttons & BT_SPINDASHMASK) != BT_SPINDASHMASK)) && (player->tricktime >= TRICKDELAY))
+				{
+					player->pflags &= ~PF_TRICKDELAY;
+					player->pflags |= PF_NOFASTFALL;
+				}
 			}
 		}
 

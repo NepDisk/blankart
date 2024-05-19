@@ -655,7 +655,7 @@ static void G_UpdateRecordReplays(void)
 	}
 }
 
-// for consistency among messages: this modifies the game and removes savemoddata.
+// for consistency among messages: this marks the game as modified.
 void G_SetGameModified(boolean silent, boolean major)
 {
 	if ((majormods && modifiedgame) || !mainwads || (refreshdirmenu & REFRESHDIR_GAMEDATA)) // new gamedata amnesty?
@@ -668,9 +668,6 @@ void G_SetGameModified(boolean silent, boolean major)
 
 	//savemoddata = false; -- there is literally no reason to do this anymore.
 	majormods = true;
-
-	if (!silent)
-		CONS_Alert(CONS_NOTICE, M_GetText("Game must be restarted to play Record Attack.\n"));
 
 	// If in record attack recording, cancel it.
 	if (modeattacking)

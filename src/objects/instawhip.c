@@ -60,11 +60,12 @@ void Obj_InstaWhipThink (mobj_t *whip)
 
 void Obj_SpawnInstaWhipRecharge(player_t *player, angle_t angleOffset)
 {
-	mobj_t *x = P_SpawnMobjFromMobj(player->mo, 0, 0, 0, MT_INSTAWHIP_RECHARGE);
+	mobj_t *x = P_SpawnMobjFromMobj(player->mo, 0, 0, player->mo->height / 2, MT_INSTAWHIP_RECHARGE);
 
 	// This was previously used to delay the visual, back when this was VFX for a cooldown
 	// instead of VFX for a charge. We want to instantly bail out of that state now.
 	x->tics = 1;
+	x->eflags &= ~MFE_VERTICALFLIP; // Fix the visual being misaligned.
 	x->renderflags |= RF_SLOPESPLAT | RF_NOSPLATBILLBOARD;
 
 	P_SetTarget(&recharge_target(x), player->mo);
@@ -83,9 +84,8 @@ void Obj_InstaWhipRechargeThink(mobj_t *x)
 	}
 
 	P_MoveOrigin(x, target->x, target->y, target->z + (target->height / 2));
-	// <<1 == * 2, in case this does happen during multiple frames.
-	if (target->scale<<1 != x->scale)
-		P_InstaScale(x, target->scale<<1);
+	if (x->scale != target->scale * 2)
+		P_InstaScale(x, target->scale * 2);
 	x->angle = target->angle + recharge_offset(x);
 
 	// Flickers every other frame
@@ -95,6 +95,10 @@ void Obj_InstaWhipRechargeThink(mobj_t *x)
 void Obj_SpawnInstaWhipReject(player_t *player)
 {
 	mobj_t *x = P_SpawnMobjFromMobj(player->mo, 0, 0, 0, MT_INSTAWHIP_REJECT);
+	x->eflags &= ~MFE_VERTICALFLIP;
+	// Fixes an issue with gravflip misplacing the object for the first tic.
+	if (player->mo->eflags & MFE_VERTICALFLIP)
+		P_SetOrigin(x, player->mo->x, player->mo->y, player->mo->z);
 
 	P_SetTarget(&recharge_target(x), player->mo);
 }
