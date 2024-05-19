@@ -4065,9 +4065,6 @@ typedef enum mobj_type
 	MT_THOK, // Thok! mobj
 	MT_SHADOW, // Linkdraw Shadow (for invisible objects)
 	MT_PLAYER,
-	MT_KART_LEFTOVER,
-	MT_KART_TIRE,
-	MT_KART_PARTICLE,
 
 	// Generic Boss Items
 	MT_BOSSEXPLODE,

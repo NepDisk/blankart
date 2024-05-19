@@ -744,7 +744,6 @@ boolean K_BubbleShieldCanReflect(mobj_t *t1, mobj_t *t2)
 		|| t2->type == MT_SSMINE || t2->type == MT_LANDMINE || t2->type == MT_SINK
 		|| t2->type == MT_GARDENTOP
 		|| t2->type == MT_DROPTARGET
-		|| t2->type == MT_KART_LEFTOVER
 		|| (t2->type == MT_PLAYER && t1->target != t2));
 }
 

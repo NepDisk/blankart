@@ -1086,7 +1086,6 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 		|| g_tm.thing->type == MT_GARDENTOP
 		|| g_tm.thing->type == MT_MONITOR
 		|| g_tm.thing->type == MT_BATTLECAPSULE
-		|| g_tm.thing->type == MT_KART_LEFTOVER
 		|| (g_tm.thing->type == MT_PLAYER)))
 	{
 		// see if it went over / under
@@ -1104,7 +1103,6 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 		|| thing->type == MT_GARDENTOP
 		|| thing->type == MT_MONITOR
 		|| thing->type == MT_BATTLECAPSULE
-		|| thing->type == MT_KART_LEFTOVER
 		|| (thing->type == MT_PLAYER)))
 	{
 		// see if it went over / under
@@ -1521,24 +1519,6 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 				K_KartSolidBounce(g_tm.thing, thing);
 				return BMIT_CONTINUE;
 			}
-		}
-		else if (thing->type == MT_KART_LEFTOVER)
-		{
-			// see if it went over / under
-			if (g_tm.thing->z > thing->z + thing->height)
-				return BMIT_CONTINUE; // overhead
-			if (g_tm.thing->z + g_tm.thing->height < thing->z)
-				return BMIT_CONTINUE; // underneath
-
-			if (K_PlayerCanPunt(g_tm.thing->player))
-			{
-				P_DamageMobj(thing, g_tm.thing, g_tm.thing, 1, DMG_NORMAL);
-			}
-			else
-			{
-				K_KartBouncing(g_tm.thing, thing);
-			}
-			return BMIT_CONTINUE;
 		}
 		else if (thing->type == MT_MONITOR)
 		{

@@ -1281,10 +1281,6 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 				if (mo->fuse)
 					gravityadd /= 10;
 				break;
-			case MT_KART_PARTICLE:
-				if (!mo->fuse)
-					gravityadd *= 2;
-				break;
 			default:
 				break;
 		}
@@ -2476,19 +2472,6 @@ boolean P_ZMovement(mobj_t *mo)
 
 			if (mo->flags2 & MF2_SKULLFLY) // the skull slammed into something
 				mom.z = -mom.z;
-			else if (mo->type == MT_KART_LEFTOVER)
-			{
-				mom.z = 0;
-			}
-			else if (mo->type == MT_KART_TIRE)
-			{
-				mom.z = -mom.z;
-			}
-			else if (mo->type == MT_KART_PARTICLE)
-			{
-				mom.z = -mom.z / (mo->fuse ? 1 : 2);
-				Obj_DestroyedKartParticleLanding(mo);
-			}
 			else if (mo->type == MT_BIGTUMBLEWEED
 				|| mo->type == MT_LITTLETUMBLEWEED
 				|| mo->type == MT_CANNONBALLDECOR
@@ -6665,7 +6648,6 @@ static boolean P_MobjDeadThink(mobj_t *mobj)
 	//case MT_DROPTARGET:
 	case MT_SPB:
 	case MT_GACHABOM:
-	case MT_KART_LEFTOVER:
 		if (P_IsObjectOnGround(mobj))
 		{
 			P_RemoveMobj(mobj);
@@ -9737,22 +9719,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		break;
 	}
 
-	case MT_KART_PARTICLE:
-	{
-		Obj_DestroyedKartParticleThink(mobj);
-		break;
-	}
-
-	case MT_KART_LEFTOVER:
-	{
-		Obj_DestroyedKartThink(mobj);
-		if (P_MobjWasRemoved(mobj))
-		{
-			return false;
-		}
-		break;
-	}
-
 	default:
 		// check mobj against possible water content, before movement code
 		P_MobjCheckWater(mobj);
@@ -9816,7 +9782,6 @@ static boolean P_CanFlickerFuse(mobj_t *mobj)
 		case MT_POGOSPRING:
 		case MT_EMERALD:
 		case MT_BLENDEYE_PUYO:
-		case MT_KART_PARTICLE:
 			if (mobj->fuse <= TICRATE)
 			{
 				return true;
@@ -10453,7 +10418,6 @@ static void P_DefaultMobjShadowScale(mobj_t *thing)
 	switch (thing->type)
 	{
 		case MT_PLAYER:
-		case MT_KART_LEFTOVER:
 		case MT_BATTLECAPSULE:
 		case MT_SPECIAL_UFO:
 		case MT_CDUFO:
@@ -10721,9 +10685,6 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 			break;
 		case MT_POGOSPRING:
 			P_SetScale(mobj, (mobj->destscale = 3 * mobj->destscale / 2));
-			break;
-		case MT_KART_LEFTOVER:
-			mobj->color = SKINCOLOR_RED;
 			break;
 		case MT_SMASHINGSPIKEBALL:
 			mobj->movecount = mobj->z;

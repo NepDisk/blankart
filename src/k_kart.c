@@ -742,14 +742,6 @@ fixed_t K_GetMobjWeight(mobj_t *mobj, mobj_t *against)
 				break;
 			weight = K_PlayerWeight(mobj, against);
 			break;
-		case MT_KART_LEFTOVER:
-			weight = 5*FRACUNIT/2;
-
-			if (mobj->extravalue1 > 0)
-			{
-				weight = mobj->extravalue1 * (FRACUNIT >> 1);
-			}
-			break;
 		case MT_BUBBLESHIELD:
 			weight = K_PlayerWeight(mobj->target, against);
 			break;
@@ -789,10 +781,6 @@ fixed_t K_GetMobjWeight(mobj_t *mobj, mobj_t *against)
 
 static void K_SpawnBumpForObjs(mobj_t *mobj1, mobj_t *mobj2)
 {
-	if (mobj1->type == MT_KART_LEFTOVER && mobj1->health == 0)
-	{
-		return;
-	}
 
 	mobj_t *fx = P_SpawnMobj(
 		mobj1->x/2 + mobj2->x/2,

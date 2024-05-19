@@ -54,7 +54,6 @@ target_sources(SRB2SDL2 PRIVATE
 	talk-point.cpp
 	powerup-spinner.cpp
 	adventure-air-booster.c
-	destroyed-kart.cpp
 	pulley.cpp
 )
 

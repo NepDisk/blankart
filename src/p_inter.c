@@ -1693,7 +1693,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 		 || target->type == MT_DROPTARGET || target->type == MT_DROPTARGET_SHIELD
 		 || target->type == MT_EGGMANITEM || target->type == MT_EGGMANITEM_SHIELD
 		 || target->type == MT_BALLHOG || target->type == MT_SPB
-		 || target->type == MT_GACHABOM || target->type == MT_KART_LEFTOVER)) // kart dead items
+		 || target->type == MT_GACHABOM))
 		target->flags |= MF_NOGRAVITY; // Don't drop Tails 03-08-2000
 	else
 		target->flags &= ~MF_NOGRAVITY; // lose it if you for whatever reason have it, I'm looking at you shields
@@ -1872,6 +1872,44 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			if (target->player && target->player->pflags & PF_NOCONTEST)
 				break;
 
+			if (target->player && skins[target->player->skin].flags & SF_BADNIK)
+			{
+				{
+					UINT8 count = 24;
+					angle_t ang = 0;
+					angle_t step = ANGLE_MAX / count;
+					fixed_t spd = 8 * mapobjectscale;
+					for (UINT8 i = 0; i < count; ++i)
+					{
+						mobj_t *x = P_SpawnMobjFromMobjUnscaled(
+							target,
+							P_RandomRange(PR_EXPLOSION, -48, 48) * target->scale,
+							P_RandomRange(PR_EXPLOSION, -48, 48) * target->scale,
+							P_RandomRange(PR_EXPLOSION, -48, 48) * target->scale,
+							MT_THOK
+						);
+						P_InstaScale(x, 3 * x->scale / 2);
+						P_InstaThrust(x, ang, spd);
+						x->momz = P_RandomRange(PR_EXPLOSION, -4, 4) * mapobjectscale;
+						P_SetMobjStateNF(x, S_BADNIK_EXPLOSION1);
+						ang += step;
+					}
+					// burst effects (copied from MT_ITEMCAPSULE)
+					ang = FixedAngle(360*P_RandomFixed(PR_ITEM_DEBRIS));
+					for (UINT8 i = 0; i < 2; i++)
+					{
+						mobj_t *blast = P_SpawnMobjFromMobj(target, 0, 0, target->info->height >> 1, MT_BATTLEBUMPER_BLAST);
+						blast->angle = ang + i*ANGLE_90;
+						P_SetScale(blast, 2*blast->scale/3);
+						blast->destscale = 6*blast->scale;
+						blast->scalespeed = (blast->destscale - blast->scale) / 30;
+						P_SetMobjStateNF(blast, S_BADNIK_EXPLOSION_SHOCKWAVE1 + i);
+					}
+				}
+				target->spritexscale = 2*FRACUNIT;
+				target->spriteyscale = 2*FRACUNIT;
+				target->flags |= MF_NOSQUISH;
+			}
 			P_SetObjectMomZ(target, 14*FRACUNIT, false);
 			P_PlayDeathSound(target);
 			// Prisons Free Play: don't eliminate P1 for
@@ -1889,16 +1927,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 				}
 			}
 			break;
-
-		case MT_KART_LEFTOVER:
-			if (!P_MobjWasRemoved(inflictor))
-			{
-				K_KartSolidBounce(target, inflictor);
-				target->momz = 20 * inflictor->scale * P_MobjFlip(inflictor);
-			}
-			target->z += P_MobjFlip(target);
-			target->tics = 175;
-			return;
 
 		// SRB2Kart:
 
@@ -2687,8 +2715,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 	boolean force = false;
 	boolean spbpop = false;
 
-	INT32 laglength = 6;
-
 	if (objectplacing)
 		return false;
 
@@ -2705,16 +2731,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 
 	if (source && source->player && source->player->spectator)
 		return false;
-
-	if (((damagetype & DMG_TYPEMASK) == DMG_STING)
-	|| ((inflictor && !P_MobjWasRemoved(inflictor)) && inflictor->type == MT_BANANA && inflictor->health <= 1))
-	{
-		laglength = 2;
-	}
-	else if (target->type == MT_DROPTARGET || target->type == MT_DROPTARGET_SHIELD)
-	{
-		laglength = 0; // handled elsewhere
-	}
 
 	switch (target->type)
 	{
@@ -2762,13 +2778,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 		case MT_SA2_CRATE:
 		case MT_ICECAPBLOCK:
 			return Obj_TryCrateDamage(target, inflictor);
-
-		case MT_KART_LEFTOVER:
-			if (Obj_DestroyKart(target))
-				return false;
-
-			P_SetObjectMomZ(target, 12*FRACUNIT, false);
-			break;
 
 		default:
 			break;
