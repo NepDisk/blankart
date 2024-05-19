@@ -4993,53 +4993,6 @@ void K_DriftDustHandling(mobj_t *spawner)
 	}
 }
 
-void K_Squish(mobj_t *mo)
-{
-	const fixed_t maxstretch = 4*FRACUNIT;
-	const fixed_t factor = 5 * mo->height / 4;
-	const fixed_t threshold = factor / 6;
-
-	fixed_t old3dspeed = abs(mo->lastmomz);
-	fixed_t new3dspeed = abs(mo->momz);
-
-	fixed_t delta = abs(old3dspeed - new3dspeed);
-	fixed_t grav = mo->height/3;
-	fixed_t add = abs(grav - new3dspeed);
-
-	if (R_ThingIsFloorSprite(mo))
-		return;
-
-	if (delta < 2 * add && new3dspeed > grav)
-		delta += add;
-
-	if (delta > threshold)
-	{
-		mo->spritexscale =
-			FRACUNIT + FixedDiv(delta, factor);
-
-		if (mo->spritexscale > maxstretch)
-			mo->spritexscale = maxstretch;
-
-		if (new3dspeed > old3dspeed || new3dspeed > grav)
-		{
-			mo->spritexscale =
-				FixedDiv(FRACUNIT, mo->spritexscale);
-		}
-	}
-	else
-	{
-		mo->spritexscale -=
-			(mo->spritexscale - FRACUNIT)
-			/ (mo->spritexscale < FRACUNIT ? 8 : 3);
-	}
-
-	mo->spriteyscale =
-		FixedDiv(FRACUNIT, mo->spritexscale);
-
-	if (cv_bighead.value && (mo->type == MT_PLAYER || (!P_MobjWasRemoved(mo->target) && mo->target->type == MT_PLAYER)))
-		mo->spriteyscale *= 2;
-}
-
 static mobj_t *K_FindLastTrailMobj(player_t *player)
 {
 	mobj_t *trail;

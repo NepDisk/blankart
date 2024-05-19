@@ -3928,18 +3928,6 @@ static void P_CheckFloatbobPlatforms(mobj_t *mobj)
 	}
 }
 
-static void P_SquishThink(mobj_t *mobj)
-{
-	if (!(mobj->flags & MF_NOSQUISH) &&
-			!(mobj->eflags & MFE_SLOPELAUNCHED) &&
-			!(mobj->player && mobj->player->loop.radius != 0))
-	{
-		K_Squish(mobj);
-	}
-
-	mobj->lastmomz = mobj->momz;
-}
-
 static void P_PlayerMobjThinker(mobj_t *mobj)
 {
 	I_Assert(mobj != NULL);
@@ -4005,7 +3993,6 @@ static void P_PlayerMobjThinker(mobj_t *mobj)
 		mobj->eflags &= ~MFE_JUSTHITFLOOR;
 	}
 
-	P_SquishThink(mobj);
 	K_UpdateTerrainOverlay(mobj);
 
 animonly:
@@ -10181,7 +10168,6 @@ void P_MobjThinker(mobj_t *mobj)
 		P_ButteredSlope(mobj);
 	}
 
-	P_SquishThink(mobj);
 	K_UpdateTerrainOverlay(mobj);
 
 	// Crush enemies!

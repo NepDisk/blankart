@@ -1908,7 +1908,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 				}
 				target->spritexscale = 2*FRACUNIT;
 				target->spriteyscale = 2*FRACUNIT;
-				target->flags |= MF_NOSQUISH;
 			}
 			P_SetObjectMomZ(target, 14*FRACUNIT, false);
 			P_PlayDeathSound(target);

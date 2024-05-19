@@ -164,8 +164,8 @@ typedef enum
 	MF_DONTENCOREMAP    = 1<<28,
 	// Hitbox extends just as far below as above.
 	MF_PICKUPFROMBELOW  = 1<<29,
-	// Disable momentum-based squash and stretch.
-	MF_NOSQUISH         = 1<<30,
+	// was nosquish
+	//freeslot          = 1<<30,
 	// was hitlagdisabled forme
 	//freeslot    = (INT32)(1U<<31),
 	// no more free slots, gotta get rid of more crusty base SRB2 flags
