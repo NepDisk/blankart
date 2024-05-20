@@ -906,14 +906,7 @@ typedef enum sprite
 	SPR_FLMP, // Flame Shield paper sprites
 	SPR_FLML, // Flame Shield speed lines
 	SPR_FLMF, // Flame Shield flash
-	SPR_GTOP, // Marble Garden Zone Spinning Top
-	SPR_GTAR, // Garden Top Arrow
 	SPR_HYUU, // Hyudoro
-	SPR_GRWP, // Grow
-	SPR_POHB, // Shrink Poh-Bee
-	SPR_POHC, // Shrink Poh-Bee chain
-	SPR_SHRG, // Shrink gun
-	SPR_SHRL, // Shrink laser
 	SPR_SINK, // Kitchen Sink
 	SPR_SITR, // Kitchen Sink Trail
 	SPR_KBLN, // Battle Mode Bumper
@@ -1371,19 +1364,6 @@ typedef enum state
 
 	// technically the player goes here but it's an infinite tic state
 	S_OBJPLACE_DUMMY,
-
-	S_KART_LEFTOVER,
-	S_KART_LEFTOVER_NOTIRES,
-
-	S_KART_TIRE1,
-	S_KART_TIRE2,
-
-	S_KART_FIRE,
-	S_KART_SMOKE,
-
-	S_KART_XPL01,
-	S_KART_XPL02,
-	S_KART_XPL03,
 
 	// Boss Explosion
 	S_BOSSEXPLODE,

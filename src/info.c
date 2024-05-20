@@ -367,14 +367,7 @@ char sprnames[NUMSPRITES + 1][5] =
 	"FLMP", // Flame Shield paper sprites
 	"FLML", // Flame Shield speed lines
 	"FLMF", // Flame Shield flash
-	"GTOP", // Marble Garden Zone Spinning Top
-	"GTAR", // Garden Top Arrow
 	"HYUU", // Hyudoro
-	"GRWP", // Grow
-	"POHB", // Shrink Poh-Bee
-	"POHC", // Shrink Poh-Bee chain
-	"SHRG", // Shrink gun
-	"SHRL", // Shrink laser
 	"SINK", // Kitchen Sink
 	"SITR", // Kitchen Sink Trail
 	"KBLN", // Battle Mode Bumper
@@ -885,19 +878,6 @@ state_t states[NUMSTATES] =
 	{SPR_PLAY, SPR2_SIGL|FF_ANIMATE|FF_PAPERSPRITE, -1, {NULL}, 0, 1, 0},					// S_KART_SIGL
 
 	{SPR_NULL, 0, -1, {NULL}, 0, 0, S_OBJPLACE_DUMMY}, // S_OBJPLACE_DUMMY
-
-	{SPR_KART, 0, -1, {NULL}, 0, 0, S_NULL}, // S_KART_LEFTOVER
-	{SPR_DIEF, 0, -1, {NULL}, 0, 0, S_NULL}, // S_KART_LEFTOVER_NOTIRES
-
-	{SPR_TIRE, 0, -1, {NULL}, 0, 0, S_NULL}, // S_KART_TIRE1
-	{SPR_TIRE, 1, -1, {NULL}, 0, 0, S_NULL}, // S_KART_TIRE2
-
-	{SPR_DIEL, 0|FF_ANIMATE, 12, {NULL}, 11, 1, S_NULL}, // S_KART_FIRE
-	{SPR_DIEM, FF_SEMIBRIGHT|FF_ANIMATE|FF_TRANS30, 30, {NULL}, 9, 3, S_NULL}, // S_KART_SMOKE
-
-	{SPR_DIEN, 0|FF_PAPERSPRITE|FF_ADD, 3, {NULL}, 0, 0, S_KART_XPL02}, // S_KART_XPL01
-	{SPR_DIEN, 1|FF_PAPERSPRITE|FF_ADD|FF_ANIMATE, 4, {NULL}, 1, 2, S_KART_XPL03}, // S_KART_XPL02
-	{SPR_DIEN, 3|FF_PAPERSPRITE|FF_ADD|FF_ANIMATE, 10, {NULL}, 4, 2, S_NULL}, // S_KART_XPL03
 
 	// Boss Explosion
 	{SPR_BOM2, FF_FULLBRIGHT|FF_ANIMATE, (5*7), {NULL}, 6, 5, S_NULL}, // S_BOSSEXPLODE
