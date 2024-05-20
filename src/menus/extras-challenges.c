@@ -353,8 +353,7 @@ menu_t *M_InterruptMenuWithChallenges(menu_t *desiredmenu)
 {
 	UINT16 newunlock;
 
-	if (Playing() == true
-	|| M_GameTrulyStarted() == false)
+	if (Playing() == true)
 		return desiredmenu;
 
 	M_UpdateUnlockablesAndExtraEmblems(false, true);

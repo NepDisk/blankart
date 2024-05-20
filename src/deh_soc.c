@@ -3647,8 +3647,6 @@ void readmaincfg(MYFILE *f, boolean mainfile)
 					ttname[0] = 0;
 					hidetitlepics = true;
 				}
-				else if (fastcmp(word2, "RINGRACERS"))
-					ttmode = TTMODE_RINGRACERS;
 				titlechanged = true;
 			}
 			else if (fastcmp(word, "TITLEPICSNAME"))

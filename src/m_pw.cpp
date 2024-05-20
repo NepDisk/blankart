@@ -137,7 +137,6 @@ void f_tournament()
 	// calls G_LoadLevel, which will trigger a gamedata save. Garbage factory
 	if (success)
 	{
-		gamedata->gonerlevel = GDGONER_DONE;
 		gamedata->sealedswapalerted = true;
 		G_SetUsedCheats();
 	}
@@ -595,7 +594,6 @@ void f_devmode()
 		mapheaderinfo[i]->records.mapvisited = MV_MAX;
 	}
 
-	gamedata->gonerlevel = GDGONER_DONE;
 	gamedata->sealedswapalerted = true;
 
 	M_ClearMenus(true);
@@ -612,7 +610,6 @@ void f_devmode()
 
 void f_proceed()
 {
-	gamedata->gonerlevel = GDGONER_DONE;
 	gamedata->finishedtutorialchallenge = true;
 	M_UpdateUnlockablesAndExtraEmblems(true, true);
 
@@ -759,9 +756,6 @@ void M_PasswordInit(void)
 {
 	passwords.emplace_back(f_tournament, "dSZpCST31Tu3rPJ4z18iR9Tcv+9Xi8/f7nQGplj2mvruy2A4CJJqZm1gzi6CQKl68pRXiNGUX0n4BI2LjaBcoA==");
 	// Tee hee.
-	passwords.emplace_back([] { M_WrongWarp(0); }, "WAJJ66pw2rSopXOuw4c4iKzIz3goKtivrv7b/THqYP8ev+E/sRn2LMXHqv8s+uzwMcVNoDxNn+AgG26xi+wgzg==");
-	passwords.emplace_back([] { M_GonerGDQ(true); }, "B287p2gJUgmUikAABl1ndG/3r0zqdIMvsMDzBrypwo78BR58S9Whu+Doma00oV+DySTalWYi1VyTs/5GWzgFEg==");
-	passwords.emplace_back([] { M_GonerGDQ(false); }, "1yO8FCDe0PhtgrQt0IQ4TPPfggSOnf4NiRaT86gnj4/PxMbyi4vXl4F4zpm/Xhf2oSStuhr+n7Qv2tcqv6lzaA==");
 	passwords.emplace_back(f_bighead, "V+YkwthNUePKS7zs5uB90VwN6Jeqgl+1r663U5zSGOEIxAO6BoWipzZoxa5H//LM+5Ag9GIGRnEcLbU21hjGfQ==");
 	passwords.emplace_back(f_4thgear, "zRMhR+s27VTYE0jgFf2l+PX51N3qJPvZ3oWuM/71oUaKY5zyQ2y7WIrIb464MFWn4IsK2P5rShsR9MotC/9ojQ==");
 	passwords.emplace_back(f_shittysigns, "yd02TPSLRgBydXlkZaEJABqegGjfJfn1aIMODfc2CC5ymJ4ydG7FblW20CH6vbo1IB1X9eBKJShuunPBClnWOQ==");

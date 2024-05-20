@@ -80,7 +80,6 @@ void srb2::save_ng_gamedata()
 	ng.milestones.enteredtutorialchallenge = gamedata->enteredtutorialchallenge;
 	ng.milestones.sealedswapalerted = gamedata->sealedswapalerted;
 	ng.milestones.tutorialdone = gamedata->tutorialdone;
-	ng.milestones.gonerlevel = gamedata->gonerlevel;
 	ng.prisons.thisprisoneggpickup = gamedata->thisprisoneggpickup;
 	ng.prisons.prisoneggstothispickup = gamedata->prisoneggstothispickup;
 	ng.tafolderhash = quickncasehash(timeattackfolder, 64);
@@ -488,7 +487,6 @@ void srb2::load_ng_gamedata()
 	gamedata->enteredtutorialchallenge = js.milestones.enteredtutorialchallenge;
 	gamedata->sealedswapalerted = js.milestones.sealedswapalerted;
 	gamedata->tutorialdone = js.milestones.tutorialdone;
-	gamedata->gonerlevel = js.milestones.gonerlevel;
 	gamedata->thisprisoneggpickup = js.prisons.thisprisoneggpickup;
 
 	gamedata->prisoneggstothispickup = js.prisons.prisoneggstothispickup;

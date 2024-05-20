@@ -542,7 +542,6 @@ void M_PlayMenuJam(void)
 	if (soundtest.playing)
 		return;
 
-	const boolean trulystarted = M_GameTrulyStarted();
 	const boolean profilemode = (
 		optionsmenu.profilemenu
 		&& !optionsmenu.resetprofilemenu
@@ -552,19 +551,6 @@ void M_PlayMenuJam(void)
 	{
 		if (optionsmenu.resetprofilemenu)
 			Music_Stop("menu");
-
-		return;
-	}
-
-	// trulystarted == false in the Tutorial.
-	// But profile menu music should play during the Tutorial (Playing()).
-	if (!trulystarted && !Playing())
-	{
-		if (M_GonerMusicPlayable() && NotCurrentlyPlaying("_GONER"))
-		{
-			Music_Remap("menu", "_GONER");
-			Music_Play("menu");
-		}
 
 		return;
 	}
@@ -659,7 +645,7 @@ boolean M_ConsiderSealedSwapAlert(void)
 
 void M_ValidateRestoreMenu(void)
 {
-	if (restoreMenu == NULL || restoreMenu == &MAIN_GonerDef)
+	if (restoreMenu == NULL)
 		restoreMenu = &MainDef;
 }
 
@@ -767,14 +753,7 @@ void M_StartControlPanel(void)
 
 	if (gamestate == GS_TITLESCREEN && restoreMenu == NULL) // Set up menu state
 	{
-		// No instantly skipping the titlescreen.
-		// (We can change this timer later when extra animation is added.)
-		if (finalecount < (
-			M_GameTrulyStarted()
-				? 1
-				: 3*TICRATE
-			)
-		)
+		if (finalecount < 1)
 		{
 			return;
 		}
@@ -824,32 +803,7 @@ void M_StartControlPanel(void)
 
 		Music_Stop("title");
 
-		if (gamedata != NULL
-		&& gamedata->gonerlevel < GDGONER_OUTRO
-		&& gamestartchallenge < MAXUNLOCKABLES)
-		{
-			// See M_GameTrulyStarted
-			if (
-				gamedata->unlockpending[gamestartchallenge]
-				|| gamedata->unlocked[gamestartchallenge]
-			)
-			{
-				gamedata->gonerlevel = GDGONER_OUTRO;
-				M_GonerBGImplyPassageOfTime();
-			}
-		}
-
-		if (M_GameTrulyStarted() == false)
-		{
-			// Are you ready for the First Boot Experience?
-			M_ResetOptions();
-
-			currentMenu = &MAIN_GonerDef;
-			restoreMenu = NULL;
-
-			M_PlayMenuJam();
-		}
-		else if (cv_currprofile.value == -1) // Only ask once per session.
+		if (cv_currprofile.value == -1) // Only ask once per session.
 		{
 			// Make sure the profile data is ready now since we need to select a profile.
 			M_ResetOptions();
@@ -1043,10 +997,8 @@ void M_GoBack(INT32 choice)
 
 		M_SetupNextMenu(currentMenu->prevMenu, false);
 	}
-	else if (Playing() || M_GameTrulyStarted())
+	else if (Playing())
 		M_ClearMenus(true);
-	else // No returning to the title screen.
-		M_QuitSRB2(-1);
 
 	if (!(behaviourflags & MBF_SOUNDLESS))
 		S_StartSound(NULL, sfx_s3k5b);
@@ -1489,11 +1441,6 @@ void M_Ticker(void)
 	{
 		// Anything in M_Ticker that isn't actively playing is considered "in menus" for time tracking
 		gamedata->totalmenutime++;
-	}
-
-	if (!Playing() && !M_GameTrulyStarted())
-	{
-		M_GonerBGTick();
 	}
 
 #if 0

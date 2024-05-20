@@ -577,12 +577,5 @@ void M_EndGame(INT32 choice)
 	if (!Playing())
 		return;
 
-	if (M_GameTrulyStarted() == false)
-	{
-		// No returning to the title screen.
-		M_QuitSRB2(-1);
-		return;
-	}
-
 	M_StartMessage("Return to Menu", M_GetText("Are you sure you want to\nreturn to the menu?\n"), &M_ExitGameResponse, MM_YESNO, NULL, NULL);
 }

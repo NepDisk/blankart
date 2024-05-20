@@ -959,9 +959,8 @@ void M_Drawer(void)
 	if (menuactive)
 	{
 		boolean drawbgroutine = false;
-		boolean trulystarted = M_GameTrulyStarted();
 
-		if (gamestate == GS_MENU && trulystarted)
+		if (gamestate == GS_MENU)
 		{
 			if (currentMenu->bgroutine)
 				drawbgroutine = true;
@@ -974,11 +973,7 @@ void M_Drawer(void)
 			&& (currentMenu->behaviourflags & MBF_DRAWBGWHILEPLAYING))
 				drawbgroutine = true;
 
-			if (!Playing() && !trulystarted)
-			{
-				M_DrawGonerBack();
-			}
-			else if (!WipeInAction && currentMenu != &PAUSE_PlaybackMenuDef)
+			if (!WipeInAction && currentMenu != &PAUSE_PlaybackMenuDef)
 			{
 				V_DrawFadeScreen(122, 3);
 			}
@@ -4335,7 +4330,7 @@ void M_DrawOptionsCogs(void)
 			&& currentMenu->prevMenu->prevMenu == &PLAY_MP_HostDef
 			)
 		);
-	boolean solidbg = M_GameTrulyStarted() && !eggahack;
+	boolean solidbg = !eggahack;
 	UINT32 tick = ((optionsmenu.ticker/10) % 3) + 1;
 
 	// the background isn't drawn outside of being in the main menu state.
@@ -5275,7 +5270,7 @@ void M_DrawProfileControls(void)
 		INT32 ypos = BASEVIDHEIGHT + hintofs - 9 - 12;
 		V_DrawThinString(12, ypos, V_YELLOWMAP, currentMenu->menuitems[itemOn].tooltip);
 
-		boolean standardbuttons = gamedata->gonerlevel > GDGONER_PROFILE;
+		boolean standardbuttons = 1;
 		INT32 xpos = BASEVIDWIDTH - 12;
 		xpos = standardbuttons ?
 			M_DrawProfileLegend(xpos, ypos, "\xB2 / \xBC  Clear", NULL) :
@@ -8686,71 +8681,6 @@ void M_DrawStatistics(void)
 	}
 
 	V_DrawRightAlignedThinString(BASEVIDWIDTH-20, 50, 0, beststr);
-}
-
-static void M_DrawWrongPlayer(UINT8 i)
-{
-#define wrongpl wrongwarp.wrongplayers[i]
-	if (wrongpl.skin >= numskins)
-		return;
-
-	UINT8 *colormap = R_GetTranslationColormap(wrongpl.skin, skins[wrongpl.skin].prefcolor, GTC_MENUCACHE);
-
-	M_DrawCharacterSprite(
-		wrongpl.across,
-		160 - ((i & 1) ? 0 : 32),
-		wrongpl.skin,
-		wrongpl.spinout ? SPR2_SPIN : SPR2_SLWN,
-		wrongpl.spinout ? ((wrongpl.across/8) & 7) : 6,
-		(wrongwarp.ticker+i),
-		0, colormap
-	);
-#undef wrongpl
-}
-
-void M_DrawWrongWarp(void)
-{
-	INT32 titleoffset = 0, titlewidth, x, y;
-	const char *titletext = "WRONG GAME? WRONG GAME! ";
-
-	if (wrongwarp.ticker < 2*TICRATE/3)
-		return;
-
-	V_DrawFadeScreen(31, min((wrongwarp.ticker - 2*TICRATE/3), 5));
-
-	// SMK title screen recreation!?
-
-	if (wrongwarp.ticker >= 2*TICRATE)
-	{
-		// Done as four calls and not a loop for the sake of render order
-		M_DrawWrongPlayer(0);
-		M_DrawWrongPlayer(2);
-		M_DrawWrongPlayer(1);
-		M_DrawWrongPlayer(3);
-	}
-
-	y = 20;
-
-	x = BASEVIDWIDTH - 8;
-
-	if (wrongwarp.ticker < TICRATE)
-	{
-		INT32 adjust = floor(pow(2, (double)(TICRATE - wrongwarp.ticker)));
-		x += adjust/2;
-		y += adjust;
-	}
-
-	titlewidth = V_LSTitleHighStringWidth(titletext, 0);
-	titleoffset = (-wrongwarp.ticker) % titlewidth;
-
-	while (titleoffset < BASEVIDWIDTH)
-	{
-		V_DrawLSTitleHighString(titleoffset, y, 0, titletext);
-		titleoffset += titlewidth;
-	}
-
-	patch_t *bumper = W_CachePatchName((M_UseAlternateTitleScreen() ? "MTSJUMPR1" : "MTSBUMPR1"), PU_CACHE);
-	V_DrawScaledPatch(x-(SHORT(bumper->width)), (BASEVIDHEIGHT-8)-(SHORT(bumper->height)), 0, bumper);
 }
 
 void M_DrawSoundTest(void)

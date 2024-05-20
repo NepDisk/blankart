@@ -218,8 +218,6 @@ void M_OptionsTick(void)
 				optionsmenu.topt_start = I_GetTime();
 			}
 		}
-
-		M_GonerCheckLooking();
 	}
 
 	// And one last giggle...
@@ -242,14 +240,12 @@ void M_VideoOptions(INT32 choice)
 {
 	(void)choice;
 	M_OptionsMenuGoto(&OPTIONS_VideoDef);
-	M_GonerResetLooking(GDGONER_VIDEO);
 }
 
 void M_SoundOptions(INT32 choice)
 {
 	(void)choice;
 	M_OptionsMenuGoto(&OPTIONS_SoundDef);
-	M_GonerResetLooking(GDGONER_SOUND);
 }
 
 void M_GameplayOptions(INT32 choice)

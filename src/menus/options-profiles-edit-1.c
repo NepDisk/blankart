@@ -131,17 +131,9 @@ static void M_ProfileEditExit(void)
 {
 	M_ProfileEditApply();
 
-	if (M_GameTrulyStarted() == true)
-	{
-		optionsmenu.toptx = 160;
-		optionsmenu.topty = 35;
-		optionsmenu.resetprofile = true;	// Reset profile after the transition is done.
-	}
-	else
-	{
-		M_ResetOptions();			// Reset all options variables otherwise things are gonna go reaaal bad lol.
-		optionsmenu.profile = NULL;	// Make sure to get rid of that, too.
-	}
+	optionsmenu.toptx = 160;
+	optionsmenu.topty = 35;
+	optionsmenu.resetprofile = true;	// Reset profile after the transition is done.
 
 	PR_SaveProfiles();					// save profiles after we do that.
 }

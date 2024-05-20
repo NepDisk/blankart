@@ -84,7 +84,6 @@ struct GamedataChallengeKeysJson final
 
 struct GamedataMilestonesJson final
 {
-	uint32_t gonerlevel;
 	bool everloadedaddon;
 	bool everfinishcredits;
 	bool eversavedreplay;
@@ -98,7 +97,6 @@ struct GamedataMilestonesJson final
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(
 		GamedataMilestonesJson,
-		gonerlevel,
 		everloadedaddon,
 		everfinishcredits,
 		eversavedreplay,

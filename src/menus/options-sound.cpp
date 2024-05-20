@@ -32,7 +32,7 @@ namespace
 bool basic_options()
 {
 	// M_GameTrulyStarted
-	return gamedata && gamestartchallenge < MAXUNLOCKABLES && !netgame && gamedata->gonerlevel <= GDGONER_PROFILE;
+	return gamedata;
 }
 
 int flip_delay = 0;

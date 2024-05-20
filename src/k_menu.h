@@ -221,20 +221,6 @@ typedef enum
 	quitkart
 } main_e;
 
-extern menuitem_t MAIN_Goner[];
-extern menu_t MAIN_GonerDef;
-
-void M_GonerTick(void);
-void M_GonerBGTick(void);
-void M_GonerBGImplyPassageOfTime(void);
-void M_DrawGonerBack(void);
-void M_GonerProfile(INT32 choice);
-void M_GonerTutorial(INT32 choice);
-void M_GonerResetLooking(int type);
-void M_GonerCheckLooking(void);
-void M_GonerGDQ(boolean opinion);
-boolean M_GonerMusicPlayable(void);
-
 extern menuitem_t PLAY_CharSelect[];
 extern menu_t PLAY_CharSelectDef;
 
@@ -1485,23 +1471,6 @@ boolean M_StatisticsInputs(INT32 ch);
 
 void M_DrawCharacterIconAndEngine(INT32 x, INT32 y, UINT8 skin, UINT8 *colormap, UINT8 baseskin);
 fixed_t M_DrawCupWinData(INT32 rankx, INT32 ranky, cupheader_t *cup, UINT8 difficulty, boolean flash, boolean statsmode);
-
-#define MAXWRONGPLAYER MAXSPLITSCREENPLAYERS
-#define WRONGPLAYEROFFSCREEN 48
-
-extern struct wrongwarp_s {
-	INT32 ticker;
-	tic_t delaytowrongplayer;
-	struct wrongplayer_s
-	{
-		UINT8 skin;
-		INT16 across;
-		boolean spinout;
-	} wrongplayers[MAXWRONGPLAYER];
-} wrongwarp;
-
-void M_WrongWarp(INT32 choice);
-void M_DrawWrongWarp(void);
 
 typedef enum
 {

@@ -428,52 +428,6 @@ static void DRPC_EmptyRequests(void)
 	}
 }
 
-#ifndef DISCORD_SECRETIVE
-/*--------------------------------------------------
-	static boolean DRPC_DisplayGonerSetup(void)
-
-		Returns true if we're in the initial
-		tutorial game state.
---------------------------------------------------*/
-static boolean DRPC_DisplayGonerSetup(void)
-{
-	if (M_GameTrulyStarted())
-	{
-		// We're past all that tutorial stuff.
-		return false;
-	}
-
-	if (Playing())
-	{
-		// Need to check a bunch of stuff manually,
-		// since with command line and/or console you
-		// can play a bit of the game without fully
-		// fully starting the game.
-
-		if (netgame)
-		{
-			// We smuggled into a netgame early,
-			// show the netgame's info.
-			return false;
-		}
-
-		if (tutorialchallenge == TUTORIALSKIP_INPROGRESS)
-		{
-			// Attempting the Dirty Bubble Challenge
-			return true;
-		}
-
-		// If it's not GT_TUTORIAL, it's directly
-		// command line into a specific map.
-		return (gametype == GT_TUTORIAL);
-	}
-
-	// If we're in a menu, and the game hasn't started,
-	// then we're definitely in goner setup.
-	return true;
-}
-#endif
-
 enum {
 	DISCORD_GS_UNKNOWN,
 	DISCORD_GS_CUSTOM,
@@ -487,7 +441,6 @@ enum {
 	DISCORD_GS_REPLAY,
 	DISCORD_GS_TITLE,
 	DISCORD_GS_CREDITS,
-	DISCORD_GS_GONER
 };
 
 /*--------------------------------------------------
@@ -565,11 +518,7 @@ void DRPC_UpdatePresence(void)
 	char gtname[128];
 
 	UINT8 gs = DISCORD_GS_UNKNOWN;
-	if (DRPC_DisplayGonerSetup())
-	{
-		gs = DISCORD_GS_GONER;
-	}
-	else if (demo.playback)
+	if (demo.playback)
 	{
 		switch (demo.attract)
 		{
@@ -687,22 +636,7 @@ void DRPC_UpdatePresence(void)
 	}
 
 	// Server info
-	if (gs == DISCORD_GS_GONER)
-	{
-		if (Playing())
-		{
-			discordPresence.state = "TRAINING DATA";
-		}
-		else if (gamedata->gonerlevel >= GDGONER_OUTRO)
-		{
-			discordPresence.state = "EVALUATION";
-		}
-		else
-		{
-			discordPresence.state = "MISSING DATA";
-		}
-	}
-	else if (netgame)
+	if (netgame)
 	{
 		if (DRPC_InvitesAreAllowed() == true)
 		{
@@ -773,197 +707,186 @@ void DRPC_UpdatePresence(void)
 		}
 	}
 
-	if (gs == DISCORD_GS_GONER)
+	// Gametype info
+	if ((gamestate == GS_LEVEL || gamestate == GS_INTERMISSION || gamestate == GS_VOTING || gamestate == GS_CEREMONY) && Playing())
 	{
-		// Gametype info
-		discordPresence.details = "Setup";
-
-		discordPresence.largeImageKey = "gs_goner";
-		discordPresence.largeImageText = "NO SIGNAL";
-	}
-	else
-	{
-		// Gametype info
-		if ((gamestate == GS_LEVEL || gamestate == GS_INTERMISSION || gamestate == GS_VOTING || gamestate == GS_CEREMONY) && Playing())
+		if (grandprixinfo.gp)
 		{
-			if (grandprixinfo.gp)
-			{
-				char roundstr[32];
+			char roundstr[32];
 
-				if (gamestate == GS_CEREMONY)
+			if (gamestate == GS_CEREMONY)
+			{
+				snprintf(roundstr, 32, " | Ceremony");
+			}
+			else
+			{
+				switch (grandprixinfo.eventmode)
 				{
-					snprintf(roundstr, 32, " | Ceremony");
-				}
-				else
-				{
-					switch (grandprixinfo.eventmode)
+					case GPEVENT_BONUS:
 					{
-						case GPEVENT_BONUS:
+						snprintf(roundstr, 32, " | Bonus");
+						break;
+					}
+					case GPEVENT_SPECIAL:
+					{
+						snprintf(roundstr, 32, " | Special");
+						break;
+					}
+					case GPEVENT_NONE:
+					{
+						if (roundqueue.position > 0 && roundqueue.position <= roundqueue.size)
 						{
-							snprintf(roundstr, 32, " | Bonus");
-							break;
+							snprintf(roundstr, 32, " | Round %d", roundqueue.position);
 						}
-						case GPEVENT_SPECIAL:
-						{
-							snprintf(roundstr, 32, " | Special");
-							break;
-						}
-						case GPEVENT_NONE:
-						{
-							if (roundqueue.position > 0 && roundqueue.position <= roundqueue.size)
-							{
-								snprintf(roundstr, 32, " | Round %d", roundqueue.position);
-							}
-							break;
-						}
+						break;
 					}
 				}
+			}
 
-				snprintf(detailstr, 128, "Grand Prix%s | %s",
-					roundstr,
-					grandprixinfo.masterbots ? "Master" : gpdifficulty_cons_t[grandprixinfo.gamespeed].strvalue
-				);
-				discordPresence.details = detailstr;
-			}
-			else if (battleprisons == true)
+			snprintf(detailstr, 128, "Grand Prix%s | %s",
+				roundstr,
+				grandprixinfo.masterbots ? "Master" : gpdifficulty_cons_t[grandprixinfo.gamespeed].strvalue
+			);
+			discordPresence.details = detailstr;
+		}
+		else if (battleprisons == true)
+		{
+			discordPresence.details = "Prison Break";
+		}
+		else if (modeattacking)
+		{
+			if (modeattacking & ATTACKING_SPB)
 			{
-				discordPresence.details = "Prison Break";
-			}
-			else if (modeattacking)
-			{
-				if (modeattacking & ATTACKING_SPB)
-				{
-					discordPresence.details = "SPB Attack";
-				}
-				else
-				{
-					discordPresence.details = "Time Attack";
-				}
+				discordPresence.details = "SPB Attack";
 			}
 			else
 			{
-				snprintf(detailstr, 128, "%s%s%s",
-					gametypes[gametype]->name,
-					(gametypes[gametype]->speed == KARTSPEED_AUTO) ? va(" | %s", kartspeed_cons_t[gamespeed + 1].strvalue) : "",
-					(encoremode == true) ? " | Encore" : ""
-				);
-				discordPresence.details = detailstr;
+				discordPresence.details = "Time Attack";
 			}
 		}
-
-		if (gamestate == GS_LEVEL && Playing())
+		else
 		{
-			const time_t currentTime = time(NULL);
-			const time_t mapTimeStart = currentTime - ((leveltime + starttime) / TICRATE);
-
-			discordPresence.startTimestamp = mapTimeStart;
-
-			if (timelimitintics > 0)
-			{
-				const time_t mapTimeEnd = mapTimeStart + ((timelimitintics + starttime + 1) / TICRATE);
-				discordPresence.endTimestamp = mapTimeEnd;
-			}
+			snprintf(detailstr, 128, "%s%s%s",
+				gametypes[gametype]->name,
+				(gametypes[gametype]->speed == KARTSPEED_AUTO) ? va(" | %s", kartspeed_cons_t[gamespeed + 1].strvalue) : "",
+				(encoremode == true) ? " | Encore" : ""
+			);
+			discordPresence.details = detailstr;
 		}
+	}
 
-		// Gametype image
-		// I am REALLY REALLY sad that there isn't enough room in a
-		// single Rich Presence app to handle enough images for all
-		// of the maps...
-		switch (gs)
+	if (gamestate == GS_LEVEL && Playing())
+	{
+		const time_t currentTime = time(NULL);
+		const time_t mapTimeStart = currentTime - ((leveltime + starttime) / TICRATE);
+
+		discordPresence.startTimestamp = mapTimeStart;
+
+		if (timelimitintics > 0)
 		{
-			case DISCORD_GS_CUSTOM:
-			{
-				discordPresence.largeImageKey = "custom_gs";
-				snprintf(gtname, 128, "%s", gametypes[gametype]->name);
-				discordPresence.largeImageText = gtname;
-				break;
-			}
-			case DISCORD_GS_RACE:
-			{
-				discordPresence.largeImageKey = "gs_race";
-				discordPresence.largeImageText = "Race";
-				break;
-			}
-			case DISCORD_GS_BATTLE:
-			{
-				discordPresence.largeImageKey = "gs_battle";
-				discordPresence.largeImageText = "Battle";
-				break;
-			}
-			case DISCORD_GS_TUTORIAL:
-			{
-				discordPresence.largeImageKey = "gs_tutorial";
-				discordPresence.largeImageText = "Tutorial";
-				break;
-			}
-			case DISCORD_GS_TIMEATTACK:
-			{
-				discordPresence.largeImageKey = "gs_timeattack";
-				discordPresence.largeImageText = "Time Attack";
-				break;
-			}
-			case DISCORD_GS_GRANDPRIX:
-			{
-				discordPresence.largeImageKey = "gs_grandprix";
-				discordPresence.largeImageText = "Grand Prix";
-				break;
-			}
-			case DISCORD_GS_VOTING:
-			{
-				discordPresence.largeImageKey = "gs_voting";
-				discordPresence.largeImageText = "Voting";
-				break;
-			}
-			case DISCORD_GS_MENU:
-			{
-				discordPresence.largeImageKey = "gs_menu";
-				discordPresence.largeImageText = "Menu";
-				break;
-			}
-			case DISCORD_GS_REPLAY:
-			{
-				discordPresence.largeImageKey = "gs_replay";
-				discordPresence.largeImageText = "Watching Replays";
-				break;
-			}
-			case DISCORD_GS_TITLE:
-			{
-				discordPresence.largeImageKey = "gs_title";
-				discordPresence.largeImageText = "Title Screen";
-				break;
-			}
-			case DISCORD_GS_CREDITS:
-			{
-				discordPresence.largeImageKey = "gs_credits";
-				discordPresence.largeImageText = "Credits";
-				break;
-			}
-			default:
-			{
-				discordPresence.largeImageKey = "misc_develop";
-				discordPresence.largeImageText = "Invalid DRPC state?";
-				break;
-			}
+			const time_t mapTimeEnd = mapTimeStart + ((timelimitintics + starttime + 1) / TICRATE);
+			discordPresence.endTimestamp = mapTimeEnd;
 		}
+	}
 
-		// Character info
-		if (Playing() && playeringame[consoleplayer] && !players[consoleplayer].spectator)
+	// Gametype image
+	// I am REALLY REALLY sad that there isn't enough room in a
+	// single Rich Presence app to handle enough images for all
+	// of the maps...
+	switch (gs)
+	{
+		case DISCORD_GS_CUSTOM:
 		{
-			// Character image
-			if ((unsigned)players[consoleplayer].skin < g_discord_skins) // Supported skins
-			{
-				snprintf(charimg, 32, "char_%s", skins[ players[consoleplayer].skin ].name);
-				discordPresence.smallImageKey = charimg;
-			}
-			else
-			{
-				// Use the custom character icon!
-				discordPresence.smallImageKey = "custom_char";
-			}
-
-			snprintf(charname, 128, "Character: %s", skins[players[consoleplayer].skin].realname);
-			discordPresence.smallImageText = charname; // Character name
+			discordPresence.largeImageKey = "custom_gs";
+			snprintf(gtname, 128, "%s", gametypes[gametype]->name);
+			discordPresence.largeImageText = gtname;
+			break;
 		}
+		case DISCORD_GS_RACE:
+		{
+			discordPresence.largeImageKey = "gs_race";
+			discordPresence.largeImageText = "Race";
+			break;
+		}
+		case DISCORD_GS_BATTLE:
+		{
+			discordPresence.largeImageKey = "gs_battle";
+			discordPresence.largeImageText = "Battle";
+			break;
+		}
+		case DISCORD_GS_TUTORIAL:
+		{
+			discordPresence.largeImageKey = "gs_tutorial";
+			discordPresence.largeImageText = "Tutorial";
+			break;
+		}
+		case DISCORD_GS_TIMEATTACK:
+		{
+			discordPresence.largeImageKey = "gs_timeattack";
+			discordPresence.largeImageText = "Time Attack";
+			break;
+		}
+		case DISCORD_GS_GRANDPRIX:
+		{
+			discordPresence.largeImageKey = "gs_grandprix";
+			discordPresence.largeImageText = "Grand Prix";
+			break;
+		}
+		case DISCORD_GS_VOTING:
+		{
+			discordPresence.largeImageKey = "gs_voting";
+			discordPresence.largeImageText = "Voting";
+			break;
+		}
+		case DISCORD_GS_MENU:
+		{
+			discordPresence.largeImageKey = "gs_menu";
+			discordPresence.largeImageText = "Menu";
+			break;
+		}
+		case DISCORD_GS_REPLAY:
+		{
+			discordPresence.largeImageKey = "gs_replay";
+			discordPresence.largeImageText = "Watching Replays";
+			break;
+		}
+		case DISCORD_GS_TITLE:
+		{
+			discordPresence.largeImageKey = "gs_title";
+			discordPresence.largeImageText = "Title Screen";
+			break;
+		}
+		case DISCORD_GS_CREDITS:
+		{
+			discordPresence.largeImageKey = "gs_credits";
+			discordPresence.largeImageText = "Credits";
+			break;
+		}
+		default:
+		{
+			discordPresence.largeImageKey = "misc_develop";
+			discordPresence.largeImageText = "Invalid DRPC state?";
+			break;
+		}
+	}
+
+	// Character info
+	if (Playing() && playeringame[consoleplayer] && !players[consoleplayer].spectator)
+	{
+		// Character image
+		if ((unsigned)players[consoleplayer].skin < g_discord_skins) // Supported skins
+		{
+			snprintf(charimg, 32, "char_%s", skins[ players[consoleplayer].skin ].name);
+			discordPresence.smallImageKey = charimg;
+		}
+		else
+		{
+			// Use the custom character icon!
+			discordPresence.smallImageKey = "custom_char";
+		}
+
+		snprintf(charname, 128, "Character: %s", skins[players[consoleplayer].skin].realname);
+		discordPresence.smallImageText = charname; // Character name
 	}
 #endif // DISCORD_SECRETIVE
 

@@ -103,8 +103,7 @@ boolean M_CanShowLevelInList(INT16 mapnum, levelsearch_t *levelsearch)
 	// Finally, the most complex check: does the map have lock conditions?
 	if (levelsearch->checklocked)
 	{
-		// All tutorial courses can be visited for the first time once the game has truly started.
-		if (levelsearch->tutorial == false || M_GameTrulyStarted() == false)
+		if (levelsearch->tutorial == false)
 		{
 			// Check for visitation
 			if (!(mapheaderinfo[mapnum]->menuflags & LF2_NOVISITNEEDED)
@@ -778,8 +777,7 @@ void M_LevelSelected(INT16 add, boolean menuupdate)
 			{
 				restoreMenu = &PLAY_MP_OptSelectDef;
 			}
-			else /*if (!M_GameTrulyStarted() ||
-				levellist.levelsearch.tutorial)*/
+			else
 			{
 				restoreMenu = currentMenu;
 			}

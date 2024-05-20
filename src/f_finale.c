@@ -93,7 +93,7 @@ static UINT32 demoIdleLeft;
 
 // customizable title screen graphics
 
-ttmode_enum ttmode = TTMODE_RINGRACERS;
+ttmode_enum ttmode = TTMODE_KART;
 UINT8 ttscale = 1; // FRACUNIT / ttscale
 // ttmode user vars
 char ttname[9];
@@ -113,19 +113,10 @@ INT16 curttloop;
 UINT16 curtttics;
 
 // ttmode old
-/*
 static patch_t *ttbanner; // SONIC ROBO BLAST 2
 static patch_t *ttkart; // *vroom* KART
 static patch_t *ttcheckers; // *vroom* KART
 static patch_t *ttkflash; // flash screen
-*/
-
-static patch_t *kts_bumper; // DR ROBOTNIKS RING RACERS
-static patch_t *kts_eggman; // dr. robotnik himself
-static patch_t *kts_tails; // tails himself
-static patch_t *kts_tails_tails; // tails' tails
-static patch_t *kts_electricity[6]; // ring o' electricity
-static patch_t *kts_copyright; // (C) SEGA
 
 #define NOWAY
 
@@ -246,7 +237,7 @@ static void F_NewCutscene(const char *basetext)
 //
 // F_TitleBGScroll
 //
-/*
+
 static void F_TitleBGScroll(INT32 scrollspeed)
 {
 	INT32 x, y, w;
@@ -286,14 +277,13 @@ static void F_TitleBGScroll(INT32 scrollspeed)
 	W_UnlockCachedPatch(pat);
 	W_UnlockCachedPatch(pat2);
 }
-*/
+
 
 // =============
 //  INTRO SCENE
 // =============
-#define NUMINTROSCENES 5
-#define INTROSCENE_DISCLAIMER 1
-#define INTROSCENE_KREW 2 // first scene with Kart Krew Dev
+#define NUMINTROSCENES 2
+#define INTROSCENE_KREW 1 // first scene with Kart Krew Dev
 INT32 intro_scenenum = 0;
 INT32 intro_curtime = 0;
 
@@ -302,10 +292,7 @@ const char *introtext[NUMINTROSCENES];
 static tic_t introscenetime[NUMINTROSCENES] =
 {
 	2*TICRATE,				// OUR SRB2 ASSOCIATES
-	9*TICRATE,				// Disclaimer and Epilepsy Warning
-	3*TICRATE,				// KKD
-	(2*TICRATE)/3,			// S&K
-	TICRATE + (TICRATE/3),	// Get ready !!
+	4*TICRATE,				// KKD
 };
 
 // custom intros
@@ -365,455 +352,34 @@ void F_StartIntro(void)
 //
 static void F_IntroDrawScene(void)
 {
-	INT32 cx = 62*FRACUNIT, cy = 20*FRACUNIT;
-	INT32 jitterx = 0, jittery = 0;
+	boolean highres = true;
+	INT32 cx = 8, cy = 128;
+	patch_t *background = NULL;
 	INT32 bgxoffs = 0;
-	patch_t *logoparts[5];
-	UINT8 bgcol = 31;
 
-	INT32 textoffs = 12 * FRACUNIT;
-
-	if (intro_scenenum < INTROSCENE_KREW)
+	// DRAW A FULL PIC INSTEAD OF FLAT!
+	if (intro_scenenum == 1)
 	{
-		logoparts[0] = NULL;
+		background = W_CachePatchName("KARTKREW", PU_CACHE);
+		highres = true;
 	}
-	else if (intro_scenenum == INTROSCENE_KREW)
+
+	V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 0);
+
+	if (background)
 	{
-		logoparts[0] = W_CachePatchName("KKLOGO_C", PU_CACHE);
-		//logoparts[1] = W_CachePatchName("KKTEXT_C", PU_CACHE);
-		logoparts[1] = NULL;
-
-		bgcol = 0;
-	}
-	else
-	{
-		logoparts[0] = W_CachePatchName("KKLOGO_A", PU_CACHE);
-		logoparts[1] = W_CachePatchName("KKLOGO_B", PU_CACHE);
-		logoparts[2] = W_CachePatchName("KKTEXT_A", PU_CACHE);
-		logoparts[3] = W_CachePatchName("KKTEXT_B", PU_CACHE);
-		logoparts[4] = NULL;
-
-		if (intro_scenenum == INTROSCENE_KREW+1)
-		{
-			bgxoffs = 1 + P_RandomKey(PR_INTERPHUDRANDOM, 8);
-
-			bgcol -= (timetonext * 31) / introscenetime[intro_scenenum];
-
-			const angle_t fa = (FixedAngle(intro_curtime*FRACUNIT) >> ANGLETOFINESHIFT) & FINEMASK;
-
-			jitterx = FINECOSINE(fa);
-			jittery = FINESINE(fa);
-
-			if (finalecount & 1)
-			{
-				jitterx = -jitterx;
-				jittery = -jittery;
-				bgxoffs = -bgxoffs;
-			}
-		}
+		if (highres)
+			V_DrawSmallScaledPatch(bgxoffs, 0, 0, background);
 		else
-		{
-			bgxoffs = (1 + 8) + ((1 + intro_curtime) * 24);
-		}
+			V_DrawScaledPatch(bgxoffs, 0, 0, background);
 	}
 
-	V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, bgcol);
+	W_UnlockCachedPatch(background);
 
-	UINT8 i;
-	for (i = 0; logoparts[i]; i++)
-	{
-		V_DrawFixedPatch(
-			cx + jitterx + (bgxoffs * FRACUNIT),
-			cy + jittery,
-			FRACUNIT,
-			0,
-			logoparts[i],
-			NULL
-		);
+	if (animtimer)
+		animtimer--;
 
-		bgxoffs = -bgxoffs;
-
-		if (i == 1)
-		{
-			jitterx = -jitterx;
-			jittery = -jittery;
-			cy -= textoffs;
-		}
-	}
-
-	if (intro_scenenum == INTROSCENE_KREW)
-	{
-		INT32 trans = 10;
-
-		if (intro_curtime < TICRATE/3)
-			textoffs -= ((intro_curtime*3) - TICRATE) * FRACUNIT;
-		else if (timetonext > 10)
-			trans = (10 - (intro_curtime - TICRATE/2));
-		else
-			trans = 10 - (timetonext/2);
-
-		if (trans < 5)
-			trans = 5;
-
-		V_SetClipRect(
-			0,
-			144 * FRACUNIT,
-			BASEVIDWIDTH * FRACUNIT,
-			BASEVIDHEIGHT * FRACUNIT,
-			0
-		);
-
-		V_DrawFixedPatch(
-			cx,
-			cy - textoffs,
-			FRACUNIT,
-			0,
-			W_CachePatchName("KKTEXT_C", PU_CACHE),
-			NULL
-		);
-
-		V_ClearClipRect();
-
-		if (trans < 10)
-		{
-			V_SetClipRect(
-				0,
-				173 * FRACUNIT - textoffs,
-				BASEVIDWIDTH * FRACUNIT,
-				10 * FRACUNIT,
-				0
-			);
-
-			INT32 runningtally = (intro_curtime - (TICRATE + TICRATE/3));
-
-			if (runningtally > 0) //Starts off in negatives, can reach up to 57
-			{
-				if (runningtally < 10 || (runningtally >= 30 && runningtally < 40)) //Slide between 0-9 and 30-39
-				{
-					// Animate a Slide...
-					// The original code exploited the way runningTally ticks up and the kart krew text offset is the same to it [the time]
-					// So we need to take in consideration the fact that for the second slide, time has advanced 30 units, while our text has only a offset of 20...
-					// And so we have to substract 20. Why 20 instead of 30? Because we need to start sliding off the kartkrew text, not from the beginning!
-					textoffs += runningtally >= 30 ? (runningtally - 20) * FRACUNIT : runningtally * FRACUNIT; 
-				}
-				else if (runningtally >= 10 && runningtally < 30)
-				{
-					textoffs += 10 * FRACUNIT; // Hold the first one (kartkrew.org)
-				}
-				else
-				{
-					textoffs += 20 * FRACUNIT; //Hold the second one
-				}
-			}
-
-			// Joyeaux Anniversaire
-			V_DrawCenteredMenuString(BASEVIDWIDTH/2, 174 - (textoffs/FRACUNIT), (trans<<V_ALPHASHIFT)|V_SUBTRACT, "2013 - 11 years - 2024");
-
-			// Joyeaux Adressaire
-			V_DrawCenteredMenuString(BASEVIDWIDTH/2, 184 - (textoffs/FRACUNIT), (trans<<V_ALPHASHIFT)|V_SUBTRACT, "kartkrew.org");
-
-			//NOIRE. Could change to V_MODULATE for it to be more noticeable... but then it doesn't match with the rest, and it's weird.
-			V_DrawCenteredMenuString(BASEVIDWIDTH/2, 194 - (textoffs/FRACUNIT), (trans << V_ALPHASHIFT)|V_SUBTRACT, "Noire Custom Client" );
-
-			V_ClearClipRect();
-
-			// FIXME:
-			// !!! LEGACY GL OMEGA-HACK !!!
-			// V_SUBTRACT is rendering the entire screen black ONLY IF it is the final draw call.
-			// The following draw call completely off-screen avoids this.
-			V_DrawCharacter(-100, -100, 'c', true);
-		}
-	}
-
-	//V_DrawString(cx, cy, 0, cutscene_disptext);
-}
-
-typedef enum
-{
-	DISCLAIMER_SHINE = 0,
-	DISCLAIMER_WHITEHOLD,
-	DISCLAIMER_FADE,
-	DISCLAIMER_SOUNDHOLD,
-	DISCLAIMER_SLIDE,
-	DISCLAIMER_FINAL,
-	DISCLAIMER_OUT,
-} disclaimerstate;
-
-static disclaimerstate dc_state = 0;
-static UINT16 dc_tics = 0;
-static UINT8 dc_segaframe = 1;
-static UINT8 dc_bgcol = 0;
-static INT32 dc_lasttime = 0;
-static boolean dc_ticking = false;
-static UINT8 dc_bluesegafade = 0;
-static UINT8 dc_textfade = 9;
-static UINT8 dc_subtextfade = 9;
-
-static void F_DisclaimerAdvanceState(void)
-{
-	dc_state++;
-	dc_tics = 0;
-}
-
-static void F_DisclaimerDrawScene(void)
-{
-	boolean heretrulystarted = M_GameTrulyStarted();
-
-	// ================================= SETUP
-
-	if (intro_curtime == 0)
-	{
-		if (!heretrulystarted)
-		{
-			dc_state = DISCLAIMER_FINAL;
-			dc_bgcol = 31;
-			dc_bluesegafade = 10;
-		}
-		else
-		{
-			dc_state = 0;
-			dc_bgcol = 0;
-			dc_bluesegafade = 0;
-		}
-
-		dc_segaframe = 1;
-		dc_textfade = 9;
-		dc_subtextfade = 9;
-		dc_lasttime = intro_curtime;
-	}
-
-	// ================================= TICK?
-
-	if (intro_curtime != dc_lasttime) // This function is once-per-frame, advance time only once per tic
-		dc_ticking = true;
-	else
-		dc_ticking = false;
-
-	dc_lasttime = intro_curtime;
-
-	// ================================= DRAWING
-
-	V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, dc_bgcol);
-
-	/*
-	V_DrawFill(0, 0, 320, 10, 254);
-	V_DrawMenuString(1, 1, V_ORANGEMAP, va("ST: %d (%d) - SF: SEGA_A%02d - BG: %d - FADE A %d B %d C %d",
-										dc_state, dc_tics, dc_segaframe, dc_bgcol, dc_bluesegafade, dc_textfade, dc_subtextfade));
-	*/
-
-	if (intro_curtime == 0)
-		return;
-
-	// Anaglyph SEGA
-	if (heretrulystarted && dc_state >= DISCLAIMER_SLIDE)
-		V_DrawFixedPatch(0, 0, FRACUNIT, 0, W_CachePatchName(va("SEGA_B%02d", dc_segaframe), PU_CACHE), 0);
-
-	// Blue SEGA
-	if (dc_bluesegafade < 10)
-	{
-		UINT32 overlayalpha = 0;
-
-		if (dc_state >= DISCLAIMER_SLIDE)
-			overlayalpha = dc_bluesegafade << V_ALPHASHIFT;
-
-		V_DrawFixedPatch(0, 0, FRACUNIT, overlayalpha, W_CachePatchName(va("SEGA_A%02d", dc_segaframe), PU_CACHE), 0);
-	}
-
-	// Disclaimer text
-	if (dc_state >= DISCLAIMER_FINAL)
-	{
-		UINT32 textalpha = 0;
-		if (dc_textfade > 0)
-			textalpha = dc_textfade << V_ALPHASHIFT;
-
-		UINT32 subtextalpha = 0;
-		if (dc_subtextfade > 0)
-			subtextalpha = dc_subtextfade << V_ALPHASHIFT;
-
-		char *newText;
-		char *twoText;
-
-		if (!heretrulystarted)
-		{
-			// Megamix disclaimer. ~toast 220324
-
-			const char *sillystring = "Dr. Robotnik's Ring Racers";
-			const INT32 sillywidth = V_MenuStringWidth(sillystring, 0) + 12;
-			INT32 sillyx = -((INT32)timetonext % sillywidth);
-
-			V_SetClipRect(
-				1,
-				1,
-				(BASEVIDWIDTH * FRACUNIT) - 1,
-				(BASEVIDHEIGHT * FRACUNIT) - 1,
-				0
-			);
-
-			while (sillyx < BASEVIDWIDTH)
-			{
-				V_DrawMenuString(
-					sillyx,
-					8 + 1,
-					subtextalpha,
-					sillystring
-				);
-
-				sillyx += sillywidth;
-
-				V_DrawMenuString(
-					BASEVIDWIDTH - sillyx,
-					BASEVIDHEIGHT - (8 + 8),
-					subtextalpha,
-					sillystring
-				);
-			}
-
-			V_ClearClipRect();
-
-			newText = V_ScaledWordWrap(
-				290 << FRACBITS,
-				FRACUNIT, FRACUNIT, FRACUNIT,
-				0, HU_FONT,
-				"\"Dr. Robotnik's Ring Racers\" is a free fangame & was not produced by or under license from any portion of ""\x88""SEGA Corporation""\x80"". All registered trademarks belong to their respective owners & were used without intent to harm or profit."
-			);
-
-			twoText = V_ScaledWordWrap(
-				290 << FRACBITS,
-				FRACUNIT, FRACUNIT, FRACUNIT,
-				0, HU_FONT,
-				"This software is based on heavily modified code originally created by id Software & is used under the terms of the GNU General Public License 2.0."
-			);
-
-			char *redText;
-			//char *blueText; // seussian
-
-			redText = V_ScaledWordWrap(
-				290 << FRACBITS,
-				FRACUNIT, FRACUNIT, FRACUNIT,
-				0, HU_FONT,
-				"\x88""SEGA""\x80"" retains rights to the original characters and environments, while all new assets remain property of Kart Krew Dev where applicable.\n"
-			);
-
-			V_DrawString(16, 26, textalpha, newText);
-			V_DrawCenteredString(160, 88, textalpha|V_PINKMAP, "This game should not be sold.");
-			V_DrawString(16, 102, textalpha, twoText);
-			V_DrawString(16, 142, textalpha, redText);
-
-			Z_Free(redText);
-		}
-		else
-		{
-			V_DrawCenteredMenuString(160, 25, textalpha, "Original games and designs by");
-
-			UINT16 margin = 5;
-			UINT16 offset = BASEVIDWIDTH/2-(BASEVIDWIDTH-margin*2)/2;
-
-			newText = V_ScaledWordWrap(
-				(BASEVIDWIDTH - margin*2) << FRACBITS,
-				FRACUNIT, FRACUNIT, FRACUNIT,
-				0, MENU_FONT,
-				"\"Dr. Robotnik's Ring Racers\" is a not-for-profit fangame. All registered trademarks belong to their respective owners. This game should not be sold."
-			);
-
-			twoText = V_ScaledWordWrap(
-				(BASEVIDWIDTH - margin*2) << FRACBITS,
-				FRACUNIT, FRACUNIT, FRACUNIT,
-				0, MENU_FONT,
-				"Photosensitivity warning: This game contains flashing lights and high-contrast patterns."
-			);
-
-			V_DrawMenuString(offset, 125, subtextalpha, newText);
-			V_DrawMenuString(offset, 165, subtextalpha, twoText);
-			V_DrawMenuString(offset, 165, V_BLUEMAP|subtextalpha, "Photosensitivity warning");
-		}
-
-		Z_Free(newText);
-		Z_Free(twoText);
-	}
-
-	// ================================= STATE LOGIC
-
-	if (!dc_ticking)
-		return;
-
-	// Advance SEGA animation
-	if (dc_state == DISCLAIMER_SHINE || dc_state == DISCLAIMER_FADE || (dc_state == DISCLAIMER_SLIDE && dc_tics%2))
-		dc_segaframe++;
-
-	// Fade BG to black
-	if (dc_state >= DISCLAIMER_SLIDE)
-	{
-		if (dc_bgcol < 31)
-			dc_bgcol++;
-		else
-			dc_bgcol = 31;
-	}
-
-	// Fade out blue SEGA overlay
-	if (dc_state == DISCLAIMER_SLIDE)
-	{
-		if (dc_bluesegafade < 10 && !(dc_tics%2))
-			dc_bluesegafade++;
-	}
-
-	// Fade in text
-	if (dc_state == DISCLAIMER_FINAL)
-	{
-		if (dc_textfade > 0 && !(dc_tics%3))
-			dc_textfade--;
-
-		if (dc_subtextfade > 5 && !(dc_tics%6))
-			dc_subtextfade--;
-	}
-
-	// ================================= STATE TRANSITIONS
-
-	dc_tics++;
-
-	if (dc_state == DISCLAIMER_SHINE && dc_segaframe == 18) // End of shine
-		F_DisclaimerAdvanceState();
-
-	if (dc_state == DISCLAIMER_WHITEHOLD && dc_tics == 15)
-		F_DisclaimerAdvanceState();
-
-	if (dc_state == DISCLAIMER_FADE && dc_segaframe == 23) // Solid blue SEGA
-	{
-		F_DisclaimerAdvanceState();
-		Music_Play("lawyer");
-	}
-
-	if (dc_state == DISCLAIMER_SOUNDHOLD && dc_tics == TICRATE*2-5)
-		F_DisclaimerAdvanceState();
-
-	if (dc_state == DISCLAIMER_SLIDE && dc_segaframe == 37) // End of animation
-		F_DisclaimerAdvanceState();
-
-	if (dc_state == DISCLAIMER_FINAL && timetonext < TICRATE/2)
-		F_DisclaimerAdvanceState();
-
-	if (dc_state == DISCLAIMER_OUT)
-	{
-		F_WipeStartScreen();
-		V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 31);
-		F_WipeEndScreen();
-		F_RunWipe(wipe_level_toblack, wipedefs[wipe_level_toblack], false, "FADEMAP0", false, false);
-
-		if (M_GameTrulyStarted() == false)
-		{
-			D_StartTitle();
-			return;
-		}
-
-		intro_scenenum++;
-		timetonext = introscenetime[intro_scenenum];
-		animtimer = stoptimer = 0;
-		intro_curtime = 0;
-
-		F_WipeStartScreen();
-		F_IntroDrawScene();
-		F_WipeEndScreen();
-		F_RunWipe(wipe_level_toblack, wipedefs[wipe_level_toblack], false, "FADEMAP0", true, false);
-	}
+	V_DrawString(cx, cy, 0, cutscene_disptext);
 }
 
 //
@@ -832,13 +398,6 @@ void F_IntroDrawer(void)
 		V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 31);
 		V_DrawScaledPatch(0, 0, 0,
 			W_CachePatchName("STARTUP", PU_CACHE));
-
-		return;
-	}
-
-	if (intro_scenenum == INTROSCENE_DISCLAIMER)
-	{
-		F_DisclaimerDrawScene();
 
 		return;
 	}
@@ -862,15 +421,6 @@ void F_IntroTicker(void)
 		return;
 	}
 
-	// check for skipping
-	const boolean disclaimerskippable =
-	(
-		intro_scenenum == INTROSCENE_DISCLAIMER
-		 /*ORIGINAL CODE
-		 && dc_state == DISCLAIMER_FINAL
-		 && dc_tics >= (TICRATE/2) + (5*6) // bottom text needs to fade all the way in
-		 */
-	);
 	const boolean doskip =
 	(
 		skippableallowed
@@ -878,28 +428,18 @@ void F_IntroTicker(void)
 		&& (intro_curtime > TICRATE/2)
 		&& (
 			intro_scenenum >= INTROSCENE_KREW
-			|| disclaimerskippable
 		)
 	);
 
 	if (keypressed)
 		keypressed = false;
 
-	if (doskip && disclaimerskippable)
-	{
-		dc_state = DISCLAIMER_OUT;
-		dc_tics = 0;
-	}
-	else if (doskip || timetonext <= 0)
+	if (doskip || timetonext <= 0)
 	{
 		intro_scenenum++;
 
 		INT32 destscenenum = NUMINTROSCENES-1;
-		if (M_GameTrulyStarted() == false)
-		{
-			destscenenum = INTROSCENE_DISCLAIMER;
-		}
-		else if (doskip)
+		if (doskip)
 		{
 			destscenenum = INTROSCENE_KREW;
 		}
@@ -918,7 +458,6 @@ void F_IntroTicker(void)
 
 		if (
 			doskip
-			|| intro_scenenum == INTROSCENE_DISCLAIMER
 			|| intro_scenenum == INTROSCENE_KREW
 		)
 		{
@@ -930,11 +469,16 @@ void F_IntroTicker(void)
 
 	if (intro_scenenum == INTROSCENE_KREW)
 	{
-		if (intro_curtime == TICRATE/2)
-			S_StartSound(NULL, sfx_kc5e);
-
-		if (timetonext == 24)
+		if (intro_curtime == 8)
 			S_StartSound(NULL, sfx_vroom);
+		else if (intro_curtime == 47)
+		{
+			// Need to use M_Random otherwise it always uses the same sound
+			INT32 rskin = M_RandomKey(numskins);
+			UINT8 rtaunt = M_RandomKey(2);
+			sfxenum_t rsound = skins[rskin].soundsid[SKSKBST1+rtaunt];
+			S_StartSound(NULL, rsound);
+		}
 	}
 
 	F_WriteText();
@@ -1579,25 +1123,17 @@ static void F_CacheTitleScreen(void)
 {
 	UINT16 i;
 
-	kts_copyright = W_CachePatchName("KTSCR", PU_PATCH_LOWPRIORITY);
-
 	switch (curttmode)
 	{
 		case TTMODE_NONE:
 			break;
 
-		case TTMODE_RINGRACERS:
+		case TTMODE_KART:
 		{
-			kts_bumper = W_CachePatchName(
-				(M_UseAlternateTitleScreen() ? "KTSJUMPR1" : "KTSBUMPR1"),
-				PU_PATCH_LOWPRIORITY);
-			kts_eggman = W_CachePatchName("KTSEGG01", PU_PATCH_LOWPRIORITY);
-			kts_tails = W_CachePatchName("KTSTAL01", PU_PATCH_LOWPRIORITY);
-			kts_tails_tails = W_CachePatchName("KTSTAL02", PU_PATCH_LOWPRIORITY);
-			for (i = 0; i < 6; i++)
-			{
-				kts_electricity[i] = W_CachePatchName(va("KTSELCT%.1d", i+1), PU_PATCH_LOWPRIORITY);
-			}
+			ttbanner = W_CachePatchName("TTKBANNR", PU_PATCH_LOWPRIORITY);
+			ttkart = W_CachePatchName("TTKART", PU_PATCH_LOWPRIORITY);
+			ttcheckers = W_CachePatchName("TTCHECK", PU_PATCH_LOWPRIORITY);
+			ttkflash = W_CachePatchName("TTKFLASH", PU_PATCH_LOWPRIORITY);
 			break;
 		}
 
@@ -1611,8 +1147,6 @@ static void F_CacheTitleScreen(void)
 		}
 	}
 }
-
-static boolean cache_gametrulystarted = false;
 
 void F_StartTitleScreen(void)
 {
@@ -1630,10 +1164,7 @@ void F_StartTitleScreen(void)
 	else
 		wipegamestate = GS_TITLESCREEN;
 
-	cache_gametrulystarted = M_GameTrulyStarted();
-
-	if (cache_gametrulystarted == true
-		&& titlemap
+	if (titlemap
 		&& ((titleMapNum = G_MapNumber(titlemap)) < nummapheaders)
 		&& mapheaderinfo[titleMapNum]
 		&& mapheaderinfo[titleMapNum]->lumpnum != LUMPERROR)
@@ -1760,161 +1291,86 @@ void F_VersionDrawer(void)
 #undef addtext
 }
 
-#define GONERTYPEWRITERDURATION (5)
-#define GONERTYPEWRITERWAIT (TICRATE/2)
-
 // (no longer) De-Demo'd Title Screen
 void F_TitleScreenDrawer(void)
 {
 	boolean hidepics = false;
 
+	if (modeattacking)
+		return; // We likely came here from retrying. Don't do a damn thing.
+
 	// Draw that sky!
-	if (cache_gametrulystarted == false)
-	{
-		V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 31);
-	}
-	else if (curbgcolor >= 0)
-	{
+	if (curbgcolor >= 0)
 		V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, curbgcolor);
-	}
 	else if (!curbghide || !titlemapinaction || gamestate == GS_WAITINGPLAYERS)
-	{
 		F_SkyScroll(curbgxspeed, curbgyspeed, curbgname);
-	}
 
 	// Don't draw outside of the title screen, or if the patch isn't there.
 	if (gamestate != GS_TITLESCREEN && gamestate != GS_WAITINGPLAYERS)
 		return;
 
+	// Don't draw if title mode is set to Old/None and the patch isn't there
+	/*
+	if (!ttwing && (curttmode == TTMODE_OLD || curttmode == TTMODE_NONE))
+		return;
+	*/
+
 	// rei|miru: use title pics?
 	hidepics = curhidepics;
 	if (hidepics)
-	{
 		goto luahook;
-	}
 
-	if (cache_gametrulystarted == false)
+	switch(curttmode)
 	{
-		INT32 trans;
-
-		if (finalecount >= GONERTYPEWRITERWAIT)
-		{
-			INT32 checkcount = finalecount - GONERTYPEWRITERWAIT;
-			const char *typetext = "RING RACERS";
-			INT32 bx = V_TitleCardStringWidth(typetext, false);
-
-			V_DrawTitleCardString((BASEVIDWIDTH - bx)/2, 80, typetext, V_TRANSLUCENT, true, (checkcount/GONERTYPEWRITERDURATION), 0, false);
-
-			if (checkcount > 2*TICRATE)
-			{
-				trans = 10 - (checkcount - 2*TICRATE)/4;
-
-				if (trans < 0)
-					trans = 0;
-
-				if (trans < 10)
-				{
-					V_DrawCenteredThinString(BASEVIDWIDTH/2, 80 + 32, V_AQUAMAP|(trans << V_ALPHASHIFT), "Press any input to proceed.");
-				}
-
-				if (trans < 3)
-				{
-					// Secondary Megamix disclaimer. ~toast 060524
-
-					const char *sillystring = "Technical Kart Racer";
-					const INT32 sillywidth = V_MenuStringWidth(sillystring, 0) + 12;
-					INT32 sillyx = -((INT32)finalecount % sillywidth);
-
-					const INT32 subtextalpha = ((trans + (10 - 3)) << V_ALPHASHIFT);
-
-					V_SetClipRect(
-						1,
-						1,
-						(BASEVIDWIDTH * FRACUNIT) - 1,
-						(BASEVIDHEIGHT * FRACUNIT) - 1,
-						0
-					);
-
-					while (sillyx < BASEVIDWIDTH)
-					{
-						V_DrawMenuString(
-							sillyx,
-							80 - (8 + 8),
-							subtextalpha,
-							sillystring
-						);
-
-						sillyx += sillywidth;
-
-						V_DrawMenuString(
-							BASEVIDWIDTH - sillyx,
-							120 + (8 + 1),
-							subtextalpha,
-							sillystring
-						);
-					}
-
-					V_ClearClipRect();
-				}
-			}
-		}
-
-		trans = 10 - finalecount/5;
-		if (trans < 10)
-		{
-			if (trans < 0)
-				trans = 0;
-			trans <<= V_ALPHASHIFT;
-			V_DrawCenteredMenuString(BASEVIDWIDTH/2, (BASEVIDHEIGHT/2) - 7, trans, "Dr. Robotnik's");
-		}
-	}
-	else switch (curttmode)
-	{
+		case TTMODE_KART:
 		case TTMODE_NONE:
-		{
-			break;
-		}
 
-		case TTMODE_RINGRACERS:
-		{
-			//if (cache_gametrulystarted == true)
+			if (finalecount < 50)
 			{
-				const char *eggName = "eggman";
-				INT32 eggSkin = R_SkinAvailableEx(eggName, false);
-				skincolornum_t eggColor = SKINCOLOR_RED;
-				UINT8 *eggColormap = NULL;
+				V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 31);
 
-				const char *tailsName = "tails";
-				INT32 tailsSkin = R_SkinAvailableEx(tailsName, false);
-				skincolornum_t tailsColor = SKINCOLOR_ORANGE;
-				UINT8 *tailsColormap = NULL;
+				V_DrawSmallScaledPatch(84, 36, 0, ttbanner);
 
-				if (eggSkin != -1)
-				{
-					eggColor = skins[eggSkin].prefcolor;
-				}
-				eggColormap = R_GetTranslationColormap(TC_DEFAULT, eggColor, GTC_MENUCACHE);
+				if (finalecount >= 20)
+					V_DrawSmallScaledPatch(84, 87, 0, ttkart);
+				else if (finalecount >= 10)
+					V_DrawSciencePatch((84<<FRACBITS) - FixedDiv(180<<FRACBITS, 10<<FRACBITS)*(20-finalecount), (87<<FRACBITS), 0, ttkart, FRACUNIT/2);
+			}
+			else if (finalecount < 52)
+			{
+				V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 0);
+				V_DrawSmallScaledPatch(84, 36, 0, ttkflash);
+			}
+			else
+			{
+				INT32 transval = 0;
 
-				if (tailsSkin != -1)
-				{
-					tailsColor = skins[tailsSkin].prefcolor;
-				}
-				tailsColormap = R_GetTranslationColormap(TC_DEFAULT, tailsColor, GTC_MENUCACHE);
+				if (finalecount <= (50+(9<<1)))
+					transval = (finalecount - 50)>>1;
 
-				V_DrawFixedPatch(0, 0, FRACUNIT, 0, kts_tails_tails, tailsColormap);
-				V_DrawFixedPatch(0, 0, FRACUNIT, V_ADD, kts_electricity[finalecount % 6], NULL);
+				F_TitleBGScroll(5);
 
-				V_DrawFixedPatch(0, 0, FRACUNIT, 0, kts_eggman, eggColormap);
-				V_DrawFixedPatch(0, 0, FRACUNIT, 0, kts_tails, tailsColormap);
+				V_DrawSciencePatch(0, 0 - FixedMul(40<<FRACBITS, FixedDiv(finalecount%70, 70)), V_SNAPTOTOP|V_SNAPTOLEFT, ttcheckers, FRACUNIT);
+				V_DrawSciencePatch(280<<FRACBITS, -(40<<FRACBITS) + FixedMul(40<<FRACBITS, FixedDiv(finalecount%70, 70)), V_SNAPTOTOP|V_SNAPTORIGHT, ttcheckers, FRACUNIT);
 
-				V_DrawFixedPatch(0, 0, FRACUNIT, 0, kts_bumper, NULL);
+				if (transval)
+					V_DrawFadeScreen(0, 10 - transval);
+
+				V_DrawSmallScaledPatch(84, 36, 0, ttbanner);
+
+				V_DrawSmallScaledPatch(84, 87, 0, ttkart);
+
+				if (!transval)
+					return;
+
+				V_DrawSmallScaledPatch(84, 36, transval<<V_ALPHASHIFT, ttkflash);
 			}
 
+			//V_DrawCenteredString(BASEVIDWIDTH/2, 64, 0, "SRB2 Kart v2.0");
+			//V_DrawCenteredString(BASEVIDWIDTH/2, 96, 0, "Development EXE");
 			break;
-		}
 
 		case TTMODE_USER:
-		{
 			if (!ttuser[max(0, ttuser_count)])
 			{
 				if(curttloop > -1 && ttuser[curttloop])
@@ -1928,14 +1384,9 @@ void F_TitleScreenDrawer(void)
 			V_DrawSciencePatch(curttx<<FRACBITS, curtty<<FRACBITS, 0, ttuser[ttuser_count], FRACUNIT);
 
 			if (!(finalecount % max(1, curtttics)))
-			{
 				ttuser_count++;
-			}
 			break;
-		}
 	}
-
-	V_DrawFixedPatch(0, 0, FRACUNIT, 0, kts_copyright, NULL);
 
 luahook:
 	// The title drawer is sometimes called without first being started
@@ -1954,7 +1405,7 @@ luahook:
 	}
 	LUA_HUD_DrawList(luahuddrawlist_title);
 
-	F_VersionDrawer();
+	//F_VersionDrawer();
 
 	if (finalecount > 0)
 		M_DrawMenuMessage();
@@ -1974,40 +1425,27 @@ void F_TitleScreenTicker(boolean run)
 
 	if (run)
 	{
-		if (finalecount == 0)
+		if (finalecount == 10 && curttmode == TTMODE_KART)
 		{
-			if (!cache_gametrulystarted)
-			{
-				S_StartSound(NULL, sfx_s3k93);
-			}
-			else if (!Music_Playing("title"))
-			{
-				// Now start the music
+			S_StartSound(NULL, sfx_s23e);
+		}
+		else if (finalecount == 50 && TTMODE_KART)
+		{
+			// Now start the music
+			if (!Music_Playing("title"))
 				F_PlayTitleScreenMusic();
-			}
+			S_StartSound(NULL, sfx_s23c);
+		}
+		else if (finalecount == 0 && curttmode != TTMODE_KART)
+		{
+			if (!Music_Playing("title"))
+				F_PlayTitleScreenMusic();
 		}
 		else if (menumessage.active)
 		{
 			M_MenuMessageTick();
 		}
-
 		finalecount++;
-
-		if (!cache_gametrulystarted && finalecount > GONERTYPEWRITERWAIT)
-		{
-			if (finalecount == GONERTYPEWRITERWAIT + 2*TICRATE + TICRATE/3)
-			{
-				S_StartSound(NULL, sfx_s3k61);
-			}
-
-			if (((finalecount - GONERTYPEWRITERWAIT) % GONERTYPEWRITERDURATION) == 0)
-			{
-				// hardcoded for RING RACERS string
-				INT32 lettercount = (finalecount - GONERTYPEWRITERWAIT)/GONERTYPEWRITERDURATION;
-				if (lettercount != 5 && lettercount <= 11)
-					S_StartSound(NULL, sfx_typri1);
-			}
-		}
 	}
 
 	// don't trigger if doing anything besides idling on title
@@ -2074,7 +1512,7 @@ void F_TitleScreenTicker(boolean run)
 	}
 
 	// no demos to play? or, are they disabled?
-	if (!cv_rollingdemos.value || cache_gametrulystarted == false)
+	if (!cv_rollingdemos.value)
 		return;
 
 	#if defined (TESTERS)
@@ -2179,8 +1617,6 @@ loadreplay:
 		G_DoPlayDemoEx(dname, dlump);
 	}
 }
-
-#undef GONERTYPEWRITERDURATION
 
 void F_AttractDemoTicker(void)
 {

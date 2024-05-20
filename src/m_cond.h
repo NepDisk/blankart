@@ -299,17 +299,6 @@ typedef enum {
 #define GDINIT_CHAOKEYS 10 // Start with 10 Chao Keys !!
 #define GDINIT_PRISONSTOPRIZE 15 // 15 Prison Eggs to your [Wild Prize] !!
 
-typedef enum {
-	GDGONER_INIT = 0,
-	GDGONER_INTRO,
-	GDGONER_VIDEO,
-	GDGONER_SOUND,
-	GDGONER_PROFILE,
-	GDGONER_TUTORIAL,
-	GDGONER_OUTRO,
-	GDGONER_DONE,
-} gdgoner_t;
-
 struct candata_t
 {
 	UINT16 col;
@@ -391,8 +380,6 @@ struct gamedata_t
 	boolean tutorialdone;
 	gdmusic_t musicstate;
 
-	UINT8 gonerlevel;
-
 	// BACKWARDS COMPAT ASSIST
 	boolean importprofilewins;
 };
@@ -463,7 +450,6 @@ extern UINT16 gamestartchallenge;
 // Checking unlockable status
 boolean M_CheckNetUnlockByID(UINT16 unlockid);
 boolean M_SecretUnlocked(INT32 type, boolean local);
-boolean M_GameTrulyStarted(void);
 boolean M_CupLocked(cupheader_t *cup);
 boolean M_CupSecondRowLocked(void);
 boolean M_MapLocked(UINT16 mapnum);

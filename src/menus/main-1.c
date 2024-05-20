@@ -103,23 +103,6 @@ void M_QuitSRB2(INT32 choice)
 
 	(void)choice;
 
-	if (M_GameTrulyStarted())
-	{
-		INT32 mrand = M_RandomKey(sizeof(quitsounds) / sizeof(INT32));
-		if (quitsounds[mrand])
-			S_StartSound(NULL, quitsounds[mrand]);
-
-		M_StartMessage(
-			"Quit Game",
-			"Are you sure you want to quit playing?\n",
-			&M_QuitResponse, MM_YESNO,
-			"Leave the game",
-			"No, I want to go back!"
-		);
-
-		return;
-	}
-
 	M_StartMessage(
 		"Exit Program",
 		"Are you sure you want to quit?\n",
