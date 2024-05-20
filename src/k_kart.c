@@ -2867,9 +2867,7 @@ static void K_GetKartBoostPower(player_t *player)
 
 	if (player->invincibilitytimer) // Invincibility
 	{
-		// S-Monitor: no extra %
-		fixed_t extra = FRACUNIT / 1400 * (player->invincibilitytimer - K_PowerUpRemaining(player, POWERUP_SMONITOR));
-		ADDBOOST(3*FRACUNIT/8 + extra, 3*FRACUNIT, SLIPTIDEHANDLING/2); // + 37.5 + ?% top speed, + 300% acceleration, +25% handling
+		ADDBOOST(3*FRACUNIT/8, 3*FRACUNIT, SLIPTIDEHANDLING/2); // + 37.5 + ?% top speed, + 300% acceleration, +25% handling
 	}
 
 	if (player->growshrinktimer > 0) // Grow
@@ -3954,7 +3952,7 @@ void K_MineFlashScreen(mobj_t *source)
 }
 
 // Spawns the purely visual explosion
-void K_SpawnMineExplosion(mobj_t *source, skincolornum_t color, tic_t delay)
+void K_SpawnMineExplosion(mobj_t *source, skincolornum_t color)
 {
 	INT32 i, radius, height;
 	mobj_t *smoldering = P_SpawnMobj(source->x, source->y, source->z, MT_SMOLDERING);
@@ -4033,13 +4031,11 @@ void K_SpawnMineExplosion(mobj_t *source, skincolornum_t color, tic_t delay)
 		truc->color = color;
 		truc->renderflags |= RF_DONTDRAW;
 	}
-
-	Obj_SpawnBrolyKi(source, delay);
 }
 
 #undef MINEQUAKEDIST
 
-void K_SpawnLandMineExplosion(mobj_t *source, skincolornum_t color, tic_t delay)
+void K_SpawnLandMineExplosion(mobj_t *source, skincolornum_t color)
 {
 	mobj_t *smoldering;
 	mobj_t *expl;
@@ -4361,7 +4357,8 @@ static void K_SpawnDriftSparks(player_t *player)
 			{
 				// transition
 				P_SetScale(spark, (spark->destscale = spark->scale*3/2));
-				S_StartSound(player->mo, sfx_cock);
+				if (player->trickcharge)
+					S_StartSound(player->mo, sfx_cock);
 			}
 			else
 			{
@@ -5175,7 +5172,6 @@ void K_DoSneaker(player_t *player, INT32 type)
 static void K_DoShrink(player_t *user)
 {
 	INT32 i;
-	mobj_t *mobj, *next;
 
 	S_StartSound(user->mo, sfx_kc46); // Sound the BANG!
 
@@ -7268,7 +7264,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 			player->spheres++;
 	}
 
-	if (player->invincibilitytimer && (player->ignoreAirtimeLeniency > 0 || onground == true || K_PowerUpRemaining(player, POWERUP_SMONITOR)))
+	if (player->invincibilitytimer || K_PowerUpRemaining(player, POWERUP_SMONITOR))
 		player->invincibilitytimer--;
 
 	if (!player->invincibilitytimer)
@@ -7304,7 +7300,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if ((player->respawn.state == RESPAWNST_NONE) && player->growshrinktimer != 0)
 	{
-		if (player->growshrinktimer > 0 && (onground == true || player->ignoreAirtimeLeniency > 0))
+		if (player->growshrinktimer > 0)
 			player->growshrinktimer--;
 		if (player->growshrinktimer < 0)
 			player->growshrinktimer++;
@@ -7329,9 +7325,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	{
 		player->finalfailsafe = 0;
 	}
-
-	if (player->ignoreAirtimeLeniency)
-		player->ignoreAirtimeLeniency--;
 
 	if (player->freeRingShooterCooldown)
 		player->freeRingShooterCooldown--;
@@ -7408,7 +7401,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		fixed_t floatpertic = floatdelta / MAXCOMBOTIME;
 
 		fixed_t totalthrust = thrustpertic * player->progressivethrust + MINCOMBOTHRUST;
-		fixed_t totalfloat = floatpertic * player->progressivethrust + MINCOMBOFLOAT;
 
 		if (player->speed > K_GetKartSpeed(player, false, false))
 			totalthrust = 0;
@@ -8583,9 +8575,6 @@ static void K_KartDrift(player_t *player, boolean onground)
 			S_StartSound(player->mo, sfx_s23c);
 			K_SpawnDashDustRelease(player);
 
-			// Used to detect useful driftboosts.
-			UINT8 oldDriftBoost = player->driftboost;
-
 			// Airtime means we're not gaining speed. Get grounded!
 			if (!onground)
 				player->mo->momz -= player->speed/2;
@@ -9116,8 +9105,6 @@ SINT8 K_Sliptiding(const player_t *player)
 void K_KartEbrakeVisuals(player_t *p)
 {
 	mobj_t *wave;
-	mobj_t *spdl;
-	fixed_t sx, sy;
 
 	if (!P_IsObjectOnGround(p->mo))
 		return;
@@ -9727,12 +9714,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 						case KITEM_INVINCIBILITY:
 							if (ATTACK_IS_DOWN && !HOLDING_ITEM && NO_HYUDORO) // Doesn't hold your item slot hostage normally, so you're free to waste it if you have multiple
 							{
-								UINT32 behind = K_GetItemRouletteDistance(player, player->itemRoulette.playing);
-								UINT32 behindScaled = behind * TICRATE / 4500;
-								behindScaled = min(behindScaled, 10*TICRATE);
-
-								K_DoInvincibility(player,
-									max(7u * TICRATE + behindScaled, player->invincibilitytimer + 5u*TICRATE));
+								K_DoInvincibility(player,itemtime+(2*TICRATE));// 10 seconds
 								K_PlayPowerGloatSound(player->mo);
 
 								player->itemamount--;
@@ -10047,8 +10029,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									S_StartSound(player->mo, sfx_alarmg);
 								}
 
-								player->growshrinktimer = max(0, player->growshrinktimer);
-								player->growshrinktimer += ((gametyperules & GTR_CLOSERPLAYERS) ? 8 : 12) * TICRATE;
+								player->growshrinktimer = itemtime+(4*TICRATE); // 12 seconds
 
 								S_StartSound(player->mo, sfx_kc5a);
 

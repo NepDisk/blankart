@@ -46,8 +46,7 @@ typedef enum
 #define K_SpawnBlendEyeExplosion(mo) \
 	K_SpawnMineExplosion( \
 		mo, \
-		EYECOLOR, \
-		0 \
+		EYECOLOR \
 	)
 
 /// - MAIN BODY - ///

@@ -3201,7 +3201,7 @@ static int lib_kSpawnMineExplosion(lua_State *L)
 	NOHUD
 	if (!source)
 		return LUA_ErrInvalid(L, "mobj_t");
-	K_SpawnMineExplosion(source, color, delay);
+	K_SpawnMineExplosion(source, color);
 	return 0;
 }
 

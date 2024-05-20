@@ -931,7 +931,7 @@ void podiumData_s::Draw(void)
 
 	if (state >= PODIUM_ST_DATA_SLIDEIN)
 	{
-		K_DrawKartPositionNumXY(
+		/*K_DrawKartPositionNum(
 			rank.position, 1,
 			(drawer_winner.x() + 36) * FRACUNIT, (drawer_winner.y() + 2) * FRACUNIT,
 			FRACUNIT, drawer_winner.flags(),
@@ -940,7 +940,7 @@ void podiumData_s::Draw(void)
 			true,
 			true,
 			(rank.position > 3)
-		);
+		);*/
 
 		if (state == PODIUM_ST_DONE)
 		{

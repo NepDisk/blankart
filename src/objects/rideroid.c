@@ -106,7 +106,7 @@ static void Obj_explodeRideroid(mobj_t *mo)
 	mobj_t *pmo = mo->target;
 
 	Obj_getPlayerOffRideroid(mo);
-	K_SpawnMineExplosion(pmo, pmo->color, 3);
+	K_SpawnMineExplosion(pmo, pmo->color);
 	S_StartSound(pmo, sfx_s3k4e);
 	Obj_killRideroid(mo);
 

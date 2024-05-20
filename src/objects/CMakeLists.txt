@@ -6,7 +6,6 @@ target_sources(SRB2SDL2 PRIVATE
 	orbinaut.c
 	jawz.c
 	duel-bomb.c
-	broly.cpp
 	ufo.c
 	monitor.c
 	item-spot.c

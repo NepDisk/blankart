@@ -2636,10 +2636,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_DEBTSPIKED",
 	"S_DEBTSPIKEE",
 
-	// Broly Ki Orb
-	"S_BROLY1",
-	"S_BROLY2",
-
 	"S_SPECIAL_UFO_POD",
 	"S_SPECIAL_UFO_OVERLAY",
 	"S_SPECIAL_UFO_GLASS",
@@ -3652,8 +3648,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_PAPERITEMSPOT",
 
 	"MT_BEAMPOINT",
-
-	"MT_BROLY",
 
 	"MT_SPECIAL_UFO",
 	"MT_SPECIAL_UFO_PIECE",

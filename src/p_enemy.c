@@ -12168,7 +12168,7 @@ void A_SSMineExplode(mobj_t *actor)
 	if (!P_MobjWasRemoved(actor->target) && actor->target->player)
 		color = actor->target->player->skincolor;
 
-	K_SpawnMineExplosion(actor, color, delay);
+	K_SpawnMineExplosion(actor, color);
 }
 
 void A_SSMineFlash(mobj_t *actor)
@@ -12195,11 +12195,10 @@ void A_LandMineExplode(mobj_t *actor)
 	if (actor->target && !P_MobjWasRemoved(actor->target))
 		colour = actor->target->color;
 
-	K_SpawnLandMineExplosion(actor, colour, delay);
+	K_SpawnLandMineExplosion(actor, colour);
 
 	actor->fuse = actor->tics;	// disappear when this state ends.
 
-	Obj_SpawnBrolyKi(actor, delay);
 }
 
 void A_BallhogExplode(mobj_t *actor)
@@ -12221,7 +12220,7 @@ void A_SpecialStageBombExplode(mobj_t *actor)
 	if (LUA_CallAction(A_SPECIALSTAGEBOMBEXPLODE, actor))
 		return;
 
-	K_SpawnLandMineExplosion(actor, SKINCOLOR_KETCHUP, 0);
+	K_SpawnLandMineExplosion(actor, SKINCOLOR_KETCHUP);
 	P_StartQuakeFromMobj(TICRATE/6, 24 * actor->scale, 512 * mapobjectscale, actor);
 }
 

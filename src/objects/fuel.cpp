@@ -8,7 +8,6 @@
 // See the 'LICENSE' file for more details.
 //-----------------------------------------------------------------------------
 
-#include "broly.hpp"
 #include "objects.hpp"
 
 #include "../doomdef.h"
@@ -85,20 +84,6 @@ struct FuelCanister : Mobj
 		}
 	};
 
-	struct Explosion : Broly
-	{
-		static constexpr mobjtype_t kMobjType = MT_BETA_PARTICLE_EXPLOSION;
-
-		static Explosion* spawn(Mobj* source)
-		{
-			Explosion* x = Broly::spawn<Explosion>(source, 3*TICRATE, {1, 8 * mapobjectscale});
-			x->voice(sfx_lcfuel);
-			return x;
-		}
-
-		bool think() { return Broly::think(); }
-	};
-
 	bool valid() const { return Mobj::valid() && momz; }
 
 	static FuelCanister* spawn(Mobj* source)
@@ -128,11 +113,6 @@ struct FuelCanister : Mobj
 		angle += 8 * ANG1;
 
 		return true;
-	}
-
-	void touch(Mobj* toucher)
-	{
-		Explosion::spawn(toucher);
 	}
 
 private:
@@ -205,14 +185,4 @@ boolean Obj_FuelCanisterEmitterThink(mobj_t *mo)
 boolean Obj_FuelCanisterThink(mobj_t *mo)
 {
 	return static_cast<FuelCanister*>(mo)->think();
-}
-
-void Obj_FuelCanisterTouch(mobj_t *special, mobj_t *toucher)
-{
-	static_cast<FuelCanister*>(special)->touch(static_cast<Mobj*>(toucher));
-}
-
-boolean Obj_FuelCanisterExplosionThink(mobj_t *mo)
-{
-	return static_cast<FuelCanister::Explosion*>(mo)->think();
 }

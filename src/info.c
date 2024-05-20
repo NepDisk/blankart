@@ -3161,10 +3161,6 @@ state_t states[NUMSTATES] =
 	{SPR_DEBT, 6|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKEE}, // S_DEBTSPIKED
 	{SPR_DEBT, 7|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE1}, // S_DEBTSPIKEE
 
-	// Broly Ki Orb
-	{SPR_LSSJ, FF_REVERSESUBTRACT|FF_FULLBRIGHT, -1, {NULL}, 0, 0, S_BROLY2}, // S_BROLY1
-	{SPR_NULL, 0, 5*TICRATE, {A_SSMineFlash}, 0, 0, S_NULL}, // S_BROLY2
-
 	{SPR_UFOB, 0, -1, {NULL}, 0, 0, S_NULL}, // S_SPECIAL_UFO_POD
 	{SPR_UFOB, 1|FF_FULLBRIGHT|FF_ANIMATE, -1, {NULL}, 1, 1, S_NULL}, // S_SPECIAL_UFO_OVERLAY
 	{SPR_SSCA, 0,           -1, {NULL}, 0, 0, S_NULL}, // S_SPECIAL_UFO_GLASS
@@ -17718,33 +17714,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		1,              // damage
 		sfx_None,       // activesound
 		MF_NOBLOCKMAP|MF_NOSECTOR|MF_NOCLIPTHING|MF_NOGRAVITY|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_BROLY
-		-1,             // doomednum
-		S_BROLY1,       // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		40*FRACUNIT,    // radius
-		80*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		1,              // damage
-		sfx_None,       // activesound
-		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOCLIPTHING|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_SCENERY|MF_DONTENCOREMAP, // flags
 		S_NULL          // raisestate
 	},
 

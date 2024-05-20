@@ -552,8 +552,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].lastsafelap);
 		WRITEUINT8(save->p, players[i].lastsafecheatcheck);
 
-		WRITEUINT8(save->p, players[i].ignoreAirtimeLeniency);
-
 		WRITEFIXED(save->p, players[i].topAccel);
 
 		WRITEMEM(save->p, players[i].public_key, PUBKEYLENGTH);
@@ -1124,8 +1122,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 
 		players[i].lastsafelap = READUINT8(save->p);
 		players[i].lastsafecheatcheck = READUINT8(save->p);
-
-		players[i].ignoreAirtimeLeniency = READUINT8(save->p);
 
 		players[i].topAccel = READFIXED(save->p);
 

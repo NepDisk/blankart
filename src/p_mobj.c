@@ -6302,12 +6302,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 	case MT_DRIFTELECTRICSPARK:
 		mobj->renderflags ^= RF_DONTDRAW;
 		break;
-	case MT_BROLY:
-		if (Obj_BrolyKiThink(mobj) == false)
-		{
-			return;
-		}
-		break;
 	case MT_MONITOR_SHARD:
 		Obj_MonitorShardThink(mobj);
 		break;
@@ -6409,14 +6403,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 	{
 		Obj_FuelCanisterEmitterThink(mobj);
 		return;
-	}
-	case MT_BETA_PARTICLE_EXPLOSION:
-	{
-		if (Obj_FuelCanisterExplosionThink(mobj) == false)
-		{
-			return;
-		}
-		break;
 	}
 	case MT_EMROCKS_PARTICLE:
 	{

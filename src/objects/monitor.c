@@ -267,10 +267,6 @@ spawn_monitor_explosion (mobj_t *monitor)
 
 	UINT8 i;
 
-	// Note that a Broly Ki is purposefully not spawned. This
-	// is to reduce visual clutter since these monitors would
-	// probably get popped a lot.
-
 	K_MineFlashScreen(monitor);
 
 	P_SetScale(smoldering, (smoldering->destscale /= 3));

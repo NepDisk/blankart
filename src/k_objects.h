@@ -62,11 +62,6 @@ void Obj_DuelBombReverse(mobj_t *bomb);
 void Obj_DuelBombTouch(mobj_t *bomb, mobj_t *toucher);
 void Obj_DuelBombInit(mobj_t *bomb);
 
-/* Broly Ki */
-mobj_t *Obj_SpawnBrolyKi(mobj_t *source, tic_t duration);
-mobj_t *Obj_SpawnCustomBrolyKi(mobj_t *source, tic_t duration, fixed_t start, fixed_t end);
-boolean Obj_BrolyKiThink(mobj_t *ki);
-
 /* Special Stage UFO */
 waypoint_t *K_GetSpecialUFOWaypoint(mobj_t *ufo);
 void Obj_SpecialUFOThinker(mobj_t *ufo);
@@ -317,8 +312,6 @@ void Obj_FuelCanisterEmitterInit(mobj_t *mo);
 boolean Obj_FuelCanisterVisualThink(mobj_t *mo);
 boolean Obj_FuelCanisterEmitterThink(mobj_t *mo);
 boolean Obj_FuelCanisterThink(mobj_t *mo);
-void Obj_FuelCanisterTouch(mobj_t *special, mobj_t *toucher);
-boolean Obj_FuelCanisterExplosionThink(mobj_t *mo);
 
 /* Bustable Rocks */
 void Obj_LinkRocks(mobj_t *mo);

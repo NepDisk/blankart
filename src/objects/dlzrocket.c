@@ -65,7 +65,7 @@ void Obj_DLZRocketDismount(player_t *p)
 		return;
 
 	p->dlzrocket = 0;
-	K_SpawnMineExplosion(p->mo, p->mo->color, 3);
+	K_SpawnMineExplosion(p->mo, p->mo->color);
 	S_StartSound(p->mo, sfx_s3k4e);
 }
 
