@@ -2039,27 +2039,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_HYUDORO",
 	"S_HYUDORO_RETURNING",
 
-	// Grow
-	"S_GROW_PARTICLE",
-
-	// Shrink
-	"S_SHRINK_POHBEE",
-	"S_SHRINK_POHBEE2",
-	"S_SHRINK_POHBEE3",
-	"S_SHRINK_POHBEE4",
-	"S_SHRINK_POHBEE5",
-	"S_SHRINK_POHBEE6",
-	"S_SHRINK_POHBEE7",
-	"S_SHRINK_POHBEE8",
-
-	"S_SHRINK_CHAIN",
-
-	"S_SHRINK_GUN",
-	"S_SHRINK_GUN_OVERLAY",
-
-	"S_SHRINK_LASER",
-	"S_SHRINK_PARTICLE",
-
 	// The legend
 	"S_SINK",
 	"S_SINK_SHIELD",
@@ -3505,14 +3484,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 
 	"MT_HYUDORO",
 	"MT_HYUDORO_CENTER",
-
-	"MT_GROW_PARTICLE",
-
-	"MT_SHRINK_POHBEE",
-	"MT_SHRINK_GUN",
-	"MT_SHRINK_CHAIN",
-	"MT_SHRINK_LASER",
-	"MT_SHRINK_PARTICLE",
 
 	"MT_SINK", // Kitchen Sink Stuff
 	"MT_SINK_SHIELD",

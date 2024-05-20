@@ -8360,11 +8360,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		Obj_HyudoroCenterThink(mobj);
 		break;
 	}
-	case MT_SHRINK_POHBEE:
-	{
-		Obj_PohbeeThinker(mobj);
-		break;
-	}
 	case MT_ITEM_DEBRIS:
 	{
 		Obj_ItemDebrisThink(mobj);
@@ -11045,16 +11040,6 @@ void P_RemoveMobj(mobj_t *mobj)
 		case MT_SPB:
 		{
 			spbplace = -1;
-			break;
-		}
-		case MT_SHRINK_POHBEE:
-		{
-			Obj_PohbeeRemoved(mobj);
-			break;
-		}
-		case MT_SHRINK_GUN:
-		{
-			Obj_ShrinkGunRemoved(mobj);
 			break;
 		}
 		case MT_SPECIAL_UFO_PIECE:
@@ -14605,12 +14590,6 @@ boolean P_MobjCanChangeFlip(mobj_t *mobj)
 {
 	switch (mobj->type)
 	{
-		case MT_SHRINK_POHBEE:
-		case MT_SHRINK_GUN:
-		case MT_SHRINK_CHAIN:
-		case MT_SHRINK_LASER:
-		case MT_SHRINK_PARTICLE:
-			return false;
 
 		default:
 			break;

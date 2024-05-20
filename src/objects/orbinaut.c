@@ -332,9 +332,6 @@ void Obj_OrbinautJawzMoveHeld(player_t *player)
 					else
 						cur->eflags &= ~MFE_VERTICALFLIP;
 
-					// Shrink your items if the player shrunk too.
-					P_SetScale(cur, (cur->destscale = FixedMul(FixedDiv(cur->extravalue1, radius), player->mo->scale)));
-
 					if (P_MobjFlip(cur) > 0)
 						z = player->mo->z;
 					else

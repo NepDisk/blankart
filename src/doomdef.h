@@ -64,12 +64,12 @@ extern "C" {
 
 //#define NOMD5
 
-// If you don't disable ALL debug first, you get ALL debug enabled
-#if !defined (NDEBUG)
-#define PACKETDROP
-#define PARANOIA
-#define ZDEBUG
-#endif
+// If you don't disable ALL debug first, you get ALL debug enabled - Shutuo
+//#if !defined (NDEBUG)
+//#define PACKETDROP
+//#define PARANOIA
+//#define ZDEBUG
+//#endif
 
 // Uncheck this to compile debugging code
 //#ifndef PARANOIA
@@ -90,7 +90,7 @@ extern char logfilename[1024];
 
 //#define DEVELOP // Disable this for release builds to remove excessive cheat commands and enable MD5 checking and stuff, all in one go. :3
 #ifdef DEVELOP
-#define PARANOIA // On by default for DEVELOP builds
+//#define PARANOIA // On by default for DEVELOP builds
 #define VERSIONSTRING "Noire Development EXE"
 #define VERSIONSTRING_RC "Noire Development EXE" "\0"
 // most interface strings are ignored in development mode.

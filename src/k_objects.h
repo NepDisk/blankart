@@ -28,13 +28,6 @@ void Obj_HyudoroCenterThink(mobj_t *actor);
 void Obj_HyudoroCollide(mobj_t *special, mobj_t *toucher);
 boolean Obj_HyudoroShadowZ(mobj_t *actor, fixed_t *return_z, pslope_t **return_slope);
 
-/* Shrink */
-void Obj_PohbeeThinker(mobj_t *pohbee);
-void Obj_PohbeeRemoved(mobj_t *pohbee);
-void Obj_ShrinkGunRemoved(mobj_t *gun);
-boolean Obj_ShrinkLaserCollide(mobj_t *gun, mobj_t *victim);
-void Obj_CreateShrinkPohbees(player_t *owner);
-
 /* Item Debris */
 void Obj_SpawnItemDebrisEffects(mobj_t *collectible, mobj_t *collector);
 void Obj_ItemDebrisThink(mobj_t *debris);

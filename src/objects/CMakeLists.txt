@@ -1,6 +1,5 @@
 target_sources(SRB2SDL2 PRIVATE
 	hyudoro.c
-	shrink.c
 	item-debris.c
 	spb.c
 	manta-ring.c

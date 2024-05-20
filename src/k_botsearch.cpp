@@ -470,16 +470,6 @@ static BlockItReturn_t K_FindObjectsForNudging(mobj_t *thing)
 		case MT_SPECIALSTAGEBOMB:
 			K_AddDodgeObject(thing, side, 20);
 			break;
-		case MT_SHRINK_GUN:
-			if (thing->target == g_nudgeSearch.botmo)
-			{
-				K_AddAttackObject(thing, side, 20);
-			}
-			else
-			{
-				K_AddDodgeObject(thing, side, 20);
-			}
-			break;
 		case MT_RANDOMITEM:
 			if (anglediff >= 45)
 			{
