@@ -24,7 +24,6 @@
 #include "k_objects.h"
 #include "k_roulette.h"
 #include "k_podium.h"
-#include "k_powerup.h"
 #include "m_random.h"
 #include "k_hud.h" // K_AddMessage
 #include "m_easing.h"

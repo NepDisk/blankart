@@ -86,8 +86,8 @@ typedef enum
 	RINGSHOOTER = 0x0100,
 	// = 0x0200,
 	HAND = 0x0400,
-	FLICKYATTACKER = 0x0800,
-	FLICKYCONTROLLER = 0x1000,
+	// = 0x0800,
+	// = 0x1000,
 	TRICKINDICATOR = 0x2000,
 	BARRIER = 0x4000,
 } player_saveflags;
@@ -334,15 +334,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		if (players[i].ringShooter)
 			flags |= RINGSHOOTER;
 
-		if (players[i].flickyAttacker)
-			flags |= FLICKYATTACKER;
-
-		if (players[i].powerup.flickyController)
-			flags |= FLICKYCONTROLLER;
-
-		if (players[i].powerup.barrier)
-			flags |= BARRIER;
-
 		WRITEUINT16(save->p, flags);
 
 		if (flags & SKYBOXVIEW)
@@ -368,15 +359,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 
 		if (flags & RINGSHOOTER)
 			WRITEUINT32(save->p, players[i].ringShooter->mobjnum);
-
-		if (flags & FLICKYATTACKER)
-			WRITEUINT32(save->p, players[i].flickyAttacker->mobjnum);
-
-		if (flags & FLICKYCONTROLLER)
-			WRITEUINT32(save->p, players[i].powerup.flickyController->mobjnum);
-
-		if (flags & BARRIER)
-			WRITEUINT32(save->p, players[i].powerup.barrier->mobjnum);
 
 		WRITEUINT32(save->p, (UINT32)players[i].followitem);
 
@@ -558,8 +540,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 
 		WRITESINT8(save->p, players[i].pitblame);
 
-		WRITEUINT8(save->p, players[i].powerupVFXTimer);
-
 		WRITEUINT8(save->p, players[i].preventfailsafe);
 
 		WRITEUINT8(save->p, players[i].tripwireUnstuck);
@@ -729,11 +709,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		// ACS has read access to this, so it has to be net-communicated.
 		// It is the ONLY roundcondition that is sent over the wire and I'd like it to stay that way.
 		WRITEUINT32(save->p, players[i].roundconditions.unlocktriggers);
-
-		// powerupvars_t
-		WRITEUINT16(save->p, players[i].powerup.superTimer);
-		WRITEUINT16(save->p, players[i].powerup.barrierTimer);
-		WRITEUINT16(save->p, players[i].powerup.rhythmBadgeTimer);
 
 		// level_tally_t
 		WRITEUINT8(save->p, players[i].tally.active);
@@ -939,15 +914,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		if (flags & RINGSHOOTER)
 			players[i].ringShooter = (mobj_t *)(size_t)READUINT32(save->p);
 
-		if (flags & FLICKYATTACKER)
-			players[i].flickyAttacker = (mobj_t *)(size_t)READUINT32(save->p);
-
-		if (flags & FLICKYCONTROLLER)
-			players[i].powerup.flickyController = (mobj_t *)(size_t)READUINT32(save->p);
-
-		if (flags & BARRIER)
-			players[i].powerup.barrier = (mobj_t *)(size_t)READUINT32(save->p);
-
 		players[i].followitem = (mobjtype_t)READUINT32(save->p);
 
 		//SetPlayerSkinByNum(i, players[i].skin);
@@ -1129,8 +1095,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 
 		players[i].pitblame = READSINT8(save->p);
 
-		players[i].powerupVFXTimer = READUINT8(save->p);
-
 		players[i].preventfailsafe = READUINT8(save->p);
 
 		players[i].tripwireUnstuck = READUINT8(save->p);
@@ -1311,11 +1275,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		// ACS has read access to this, so it has to be net-communicated.
 		// It is the ONLY roundcondition that is sent over the wire and I'd like it to stay that way.
 		players[i].roundconditions.unlocktriggers = READUINT32(save->p);
-
-		// powerupvars_t
-		players[i].powerup.superTimer = READUINT16(save->p);
-		players[i].powerup.barrierTimer = READUINT16(save->p);
-		players[i].powerup.rhythmBadgeTimer = READUINT16(save->p);
 
 		// level_tally_t
 		players[i].tally.active = READUINT8(save->p);
@@ -5866,21 +5825,6 @@ static void P_RelinkPointers(void)
 		{
 			if (!RelinkMobj(&players[i].ringShooter))
 				CONS_Debug(DBG_GAMELOGIC, "ringShooter not found on player %d\n", i);
-		}
-		if (players[i].flickyAttacker)
-		{
-			if (!RelinkMobj(&players[i].flickyAttacker))
-				CONS_Debug(DBG_GAMELOGIC, "flickyAttacker not found on player %d\n", i);
-		}
-		if (players[i].powerup.flickyController)
-		{
-			if (!RelinkMobj(&players[i].powerup.flickyController))
-				CONS_Debug(DBG_GAMELOGIC, "powerup.flickyController not found on player %d\n", i);
-		}
-		if (players[i].powerup.barrier)
-		{
-			if (!RelinkMobj(&players[i].powerup.barrier))
-				CONS_Debug(DBG_GAMELOGIC, "powerup.barrier not found on player %d\n", i);
 		}
 	}
 }

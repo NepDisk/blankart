@@ -194,22 +194,7 @@ typedef enum
 	KRITEM_DUALJAWZ,
 
 	NUMKARTRESULTS,
-
-	// Power-ups exist in the same enum as items so it's easy
-	// for paper items to be reused for them.
-	FIRSTPOWERUP,
-	POWERUP_SMONITOR = FIRSTPOWERUP,
-	POWERUP_BARRIER,
-	POWERUP_BUMPER,
-	POWERUP_BADGE,
-	POWERUP_SUPERFLICKY,
-	POWERUP_POINTS,
-	ENDOFPOWERUPS,
-	LASTPOWERUP = ENDOFPOWERUPS - 1,
-	NUMPOWERUPS = ENDOFPOWERUPS - FIRSTPOWERUP,
 } kartitems_t;
-
-#define POWERUP_BIT(x) (1 << ((x) - FIRSTPOWERUP))
 
 typedef enum
 {
@@ -526,15 +511,6 @@ typedef struct {
 	boolean flip;
 	sonicloopcamvars_t camera;
 } sonicloopvars_t;
-
-// player_t struct for power-ups
-struct powerupvars_t {
-	UINT16 superTimer;
-	UINT16 barrierTimer;
-	UINT16 rhythmBadgeTimer;
-	mobj_t *flickyController;
-	mobj_t *barrier;
-};
 
 // player_t struct for Frozen Production ice cube state
 struct icecubevars_t {
@@ -943,11 +919,8 @@ struct player_t
 
 	mobj_t *trickIndicator;
 	mobj_t *hand;
-	mobj_t *flickyAttacker;
 
 	SINT8 pitblame; // Index of last player that hit you, resets after being in control for a bit. If you deathpit, credit the old attacker!
-
-	UINT8 powerupVFXTimer; // Battle powerup feedback
 
 	UINT8 preventfailsafe; // Set when taking damage to prevent cheesing eggboxes
 
@@ -982,7 +955,6 @@ struct player_t
 
 	sonicloopvars_t loop;
 	roundconditions_t roundconditions;
-	powerupvars_t powerup;
 	icecubevars_t icecube;
 
 	level_tally_t tally;

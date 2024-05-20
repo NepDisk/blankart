@@ -2509,10 +2509,6 @@ void CL_ClearPlayer(INT32 playernum)
 		P_SetTarget(&players[playernum].hoverhyudoro, NULL);
 		P_SetTarget(&players[playernum].ringShooter, NULL);
 
-		// TODO: Any better handling in store?
-		P_SetTarget(&players[playernum].flickyAttacker, NULL);
-		P_SetTarget(&players[playernum].powerup.flickyController, NULL);
-		P_SetTarget(&players[playernum].powerup.barrier, NULL);
 
 		// These are camera items and possibly belong to multiple players.
 		P_SetTarget(&players[playernum].skybox.viewpoint, NULL);

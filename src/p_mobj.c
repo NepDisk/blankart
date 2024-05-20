@@ -2369,12 +2369,6 @@ boolean P_ZMovement(mobj_t *mo)
 				return false;
 			}
 		}
-		else if (mo->type == MT_SUPER_FLICKY)
-		{
-			mom.z = -mom.z;
-
-			Obj_SuperFlickyLanding(mo);
-		}
 		else if (mo->type == MT_DRIFTCLIP)
 		{
 			mom.z = -mom.z/2;
@@ -5244,7 +5238,6 @@ static boolean P_IsTrackerType(INT32 type)
 		case MT_EMERALD:
 		case MT_BATTLEUFO_SPAWNER: // debug
 		case MT_BATTLEUFO:
-		case MT_SUPER_FLICKY:
 		case MT_SPRAYCAN:
 		case MT_WAYPOINT: // debug
 			return true;
@@ -6305,22 +6298,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 	case MT_MONITOR_SHARD:
 		Obj_MonitorShardThink(mobj);
 		break;
-	case MT_SUPER_FLICKY_CONTROLLER:
-		Obj_SuperFlickyControllerThink(mobj);
-
-		if (P_MobjWasRemoved(mobj))
-		{
-			return;
-		}
-		break;
-	case MT_POWERUP_AURA:
-		Obj_PowerUpAuraThink(mobj);
-
-		if (P_MobjWasRemoved(mobj))
-		{
-			return;
-		}
-		break;
 	case MT_ARKARROW:
 		Obj_ArkArrowThink(mobj);
 		break;
@@ -6342,14 +6319,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 		}
 
 		mobj->angle += ANG2;
-		break;
-	}
-	case MT_MEGABARRIER:
-	{
-		if (!Obj_MegaBarrierThink(mobj))
-		{
-			return;
-		}
 		break;
 	}
 	case MT_GGZICECUBE:
@@ -6449,11 +6418,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 	case MT_SS_GOBLET:
 	{
 		Obj_SSGobletMobjThink(mobj);
-		return;
-	}
-	case MT_GOTPOWERUP:
-	{
-		Obj_TickPowerUpSpinner(mobj);
 		return;
 	}
 	case MT_IPULLUP:
@@ -9383,14 +9347,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 					mobj->target->z + (mobj->target->height >> 1)
 				);
 			}
-		}
-		break;
-	case MT_SUPER_FLICKY:
-		Obj_SuperFlickyThink(mobj);
-
-		if (P_MobjWasRemoved(mobj))
-		{
-			return false;
 		}
 		break;
 	case MT_RAINBOWDASHRING:

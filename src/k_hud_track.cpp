@@ -114,9 +114,6 @@ struct TargetTracking
 		case MT_PLAYER:
 			return player_emeralds_color();
 
-		case MT_SUPER_FLICKY:
-			return Obj_SuperFlickyOwner(mobj) ? static_cast<skincolornum_t>(Obj_SuperFlickyOwner(mobj)->color) : SKINCOLOR_NONE;
-
 		default:
 			return SKINCOLOR_NONE;
 		}
@@ -257,14 +254,6 @@ private:
 		using layers = decltype(Animation::layers);
 		switch (mobj->type)
 		{
-		case MT_SUPER_FLICKY:
-			return {
-				{ // Near
-					{4, 2, {kp_superflickytarget[0]}}, // 1P
-					{{4, 2, {kp_superflickytarget[1]}}}, // 4P
-				},
-			};
-
 		case MT_SPRAYCAN:
 			return {
 				{ // Near
@@ -370,9 +359,6 @@ bool is_object_tracking_target(const mobj_t* mobj)
 	case MT_MONITOR:
 		return is_player_tracking_target() && Obj_MonitorGetEmerald(mobj) != 0;
 
-	case MT_SUPER_FLICKY:
-		return Obj_IsSuperFlickyWhippable(mobj, stplyr->mo);
-
 	case MT_SPRAYCAN:
 		return !(mobj->renderflags & (RF_TRANSMASK | RF_DONTDRAW)) && // the spraycan wasn't collected yet
 			P_CheckSight(stplyr->mo, const_cast<mobj_t*>(mobj));
@@ -445,7 +431,6 @@ Visibility is_object_visible(const mobj_t* mobj)
 	switch (mobj->type)
 	{
 	case MT_SPRAYCAN:
-	case MT_SUPER_FLICKY:
 		// Always flickers.
 		return Visibility::kFlicker;
 

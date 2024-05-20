@@ -1279,12 +1279,6 @@ typedef enum
 	sfx_etexpl,
 	sfx_d4getm,
 
-	sfx_supflk,
-	sfx_fbost1,
-	sfx_fbird,
-	sfx_fhurt1,
-	sfx_fhurt2,
-
 	sfx_dashr,
 	sfx_rainbr,
 
@@ -1333,14 +1327,6 @@ typedef enum
 	sfx_dmgb2,
 	sfx_dmgb3,
 	sfx_dmgb4,
-
-	// Powerup sounds
-	sfx_bpwrua, // Super Power
-	sfx_bpwrub, // Mega Barrier
-	sfx_bpwruc, // Bumper Restock
-	sfx_bpwrud, // Rhythm Badge
-	sfx_bpwrue, // Super Flicky
-	sfx_bpwruf, // Bonus
 
 	// Next up: UNIQUE ENGINE SOUNDS! Hoooooo boy...
 	// Engine class A - Low Speed, Low Weight

@@ -1210,13 +1210,6 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"etexpl", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "Game crash"},
   {"d4getm", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "Don't forget me"},
 
-  // Super Flicky Power-Up
-  {"supflk", false, 255, 32, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Woodpecking - SF_NOINTERRUPT
-  {"fbost1", false, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Slowing down
-  {"fbird",  false, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Speeding up
-  {"fhurt1", false, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Whipped
-  {"fhurt2", false, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Hunting
-
   {"dashr",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Regular Dash Ring
   {"rainbr", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Rainbow Dash Ring
 
@@ -1257,14 +1250,6 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"dmgb2",  false, 255, 8, -1, NULL, 0,         -1,  -1, LUMPERROR, "Damaged"},
   {"dmgb3",  false, 255, 8, -1, NULL, 0,         -1,  -1, LUMPERROR, "Damaged"},
   {"dmgb4",  false, 255, 8, -1, NULL, 0,         -1,  -1, LUMPERROR, "Damaged"},
-
-  // Powerup sounds
-  {"bpwrua",  false, 255, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, "Super Power"},
-  {"bpwrub",  false, 255, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, "Mega Barrier"},
-  {"bpwruc",  false, 255, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, "Bumper Restock"},
-  {"bpwrud",  false, 255, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, "Rhythm Badge"},
-  {"bpwrue",  false, 255, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, "Super Flicky"},
-  {"bpwruf",  false, 255, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, "Bonus"},
 
   // SRB2Kart - Engine sounds
   // Engine class A

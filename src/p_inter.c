@@ -45,7 +45,6 @@
 #include "k_roulette.h"
 #include "k_boss.h"
 #include "acs/interface.h"
-#include "k_powerup.h"
 #include "k_collide.h"
 #include "m_easing.h"
 #include "k_hud.h" // K_AddMessage
@@ -401,28 +400,18 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				return;
 			}
 
-			if (special->threshold >= FIRSTPOWERUP)
-			{
-				if (P_PlayerInPain(player))
-					return;
+			// Avoid being picked up immediately
+			if (special->scale < special->destscale/2)
+				return;
 
-				K_GivePowerUp(player, special->threshold, special->movecount);
-			}
+			if (!P_CanPickupItem(player, 3) || (player->itemamount && player->itemtype != special->threshold))
+				return;
+
+			player->itemtype = special->threshold;
+			if ((UINT16)(player->itemamount) + special->movecount > 255)
+				player->itemamount = 255;
 			else
-			{
-				// Avoid being picked up immediately
-				if (special->scale < special->destscale/2)
-					return;
-
-				if (!P_CanPickupItem(player, 3) || (player->itemamount && player->itemtype != special->threshold))
-					return;
-
-				player->itemtype = special->threshold;
-				if ((UINT16)(player->itemamount) + special->movecount > 255)
-					player->itemamount = 255;
-				else
-					player->itemamount += special->movecount;
-			}
+				player->itemamount += special->movecount;
 
 			S_StartSound(special, special->info->deathsound);
 
@@ -947,10 +936,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				player->pflags |= PF_CASTSHADOW; // you can't use this right now!
 			else
 				Obj_PlayerUsedRingShooter(special, player);
-			return;
-
-		case MT_SUPER_FLICKY:
-			Obj_SuperFlickyPlayerCollide(special, toucher);
 			return;
 
 		case MT_DASHRING:
@@ -2940,11 +2925,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 						if (inflictor)
 						{
 							K_DoPowerClash(target, inflictor);
-
-							if (inflictor->type == MT_SUPER_FLICKY)
-							{
-								Obj_BlockSuperFlicky(inflictor);
-							}
 						}
 						else if (source)
 							K_DoPowerClash(target, source);
@@ -3009,8 +2989,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				if (source && source != player->mo && source->player)
 				{
 					// Extend the invincibility if the hit was a direct hit.
-					if (inflictor == source && source->player->invincibilitytimer &&
-							!K_PowerUpRemaining(source->player, POWERUP_SMONITOR))
+					if (inflictor == source && source->player->invincibilitytimer )
 					{
 						tic_t kinvextend;
 

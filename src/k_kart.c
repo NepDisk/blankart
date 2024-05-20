@@ -59,7 +59,6 @@
 #include "k_specialstage.h"
 #include "k_roulette.h"
 #include "k_podium.h"
-#include "k_powerup.h"
 #include "k_tally.h"
 #include "music.h"
 #include "m_easing.h"
@@ -5684,17 +5683,6 @@ mobj_t *K_CreatePaperItem(fixed_t x, fixed_t y, fixed_t z, angle_t angle, SINT8 
 	// (which use a smaller sprite than normal items). So
 	// dropped power-ups have the backdrop baked into the
 	// sprite for now.
-	if (type < FIRSTPOWERUP)
-	{
-		mobj_t *backdrop = P_SpawnMobjFromMobj(drop, 0, 0, 0, MT_OVERLAY);
-
-		P_SetTarget(&backdrop->target, drop);
-		P_SetMobjState(backdrop, S_ITEMBACKDROP);
-
-		backdrop->dispoffset = 1;
-		P_SetTarget(&backdrop->tracer, drop);
-		backdrop->flags2 |= MF2_LINKDRAW;
-	}
 
 	P_SetScale(drop, drop->scale>>4);
 	drop->destscale = (3*drop->destscale)/2;
@@ -5733,12 +5721,6 @@ mobj_t *K_CreatePaperItem(fixed_t x, fixed_t y, fixed_t z, angle_t angle, SINT8 
 	{
 		drop->threshold = type;
 		drop->movecount = amount;
-	}
-
-	if (type < FIRSTPOWERUP)
-	{
-		// Pick up power-ups immediately
-		drop->flags |= MF_NOCLIPTHING;
 	}
 
 	if (gametyperules & GTR_CLOSERPLAYERS)
@@ -7120,7 +7102,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 				player->spheredigestion = spheredigestion;
 			}
 
-			if (!K_PowerUpRemaining(player, POWERUP_BARRIER) && (player->ebrakefor%6 == 0))
+			if (player->ebrakefor%6 == 0)
 				player->spheres--;
 		}
 		else
@@ -7228,23 +7210,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->gateBoost)
 		player->gateBoost--;
 
-	if (player->powerup.rhythmBadgeTimer > 0)
-		player->powerup.rhythmBadgeTimer--;
-
-	if (player->powerup.barrierTimer > 0)
-	{
-		player->powerup.barrierTimer--;
-	}
-
-	if (player->powerup.superTimer > 0)
-	{
-		player->powerup.superTimer--;
-	}
-
-	if (player->startboost > 0 && onground == true)
-	{
+	if (player->startboost > 0)
 		player->startboost--;
-	}
+
 	if (player->dropdashboost)
 		player->dropdashboost--;
 
@@ -7264,7 +7232,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 			player->spheres++;
 	}
 
-	if (player->invincibilitytimer || K_PowerUpRemaining(player, POWERUP_SMONITOR))
+	if (player->invincibilitytimer)
 		player->invincibilitytimer--;
 
 	if (!player->invincibilitytimer)
@@ -7453,11 +7421,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 			player->analoginput = true;
 		if (normalturn == KART_FULLTURN/2 && normalaim == KART_FULLTURN)
 			player->analoginput = false;
-	}
-
-	if (player->powerupVFXTimer > 0)
-	{
-		player->powerupVFXTimer--;
 	}
 
 	if (player->dotrickfx)
@@ -11057,17 +11020,8 @@ void K_UpdateMobjItemOverlay(mobj_t *part, SINT8 itemType, UINT8 itemCount)
 			part->frame = FF_FULLBRIGHT|FF_PAPERSPRITE;
 			break;
 		default:
-			if (itemType >= FIRSTPOWERUP)
-			{
-				part->sprite = SPR_PWRB;
-				// Not a papersprite. See K_CreatePaperItem for why.
-				part->frame = FF_FULLBRIGHT|(itemType - FIRSTPOWERUP);
-			}
-			else
-			{
-				part->sprite = SPR_ITEM;
-				part->frame = FF_FULLBRIGHT|FF_PAPERSPRITE|(itemType);
-			}
+			part->sprite = SPR_ITEM;
+			part->frame = FF_FULLBRIGHT|FF_PAPERSPRITE|(itemType);
 			break;
 	}
 }

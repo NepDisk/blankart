@@ -42,7 +42,6 @@ const char *K_GetItemPatch(UINT8 item, boolean tiny);
 void K_LoadKartHUDGraphics(void);
 void K_drawKartHUD(void);
 void K_drawKartFreePlay(void);
-void K_drawKartPowerUps(void);
 void K_drawSpectatorHUD(boolean director);
 void K_drawKartTimestamp(tic_t drawtime, INT32 TX, INT32 TY, INT32 splitflags, UINT8 mode);
 INT32 K_drawKartMicroTime(const char *todrawtext, INT32 workx, INT32 worky, INT32 splitflags);
@@ -61,8 +60,6 @@ extern patch_t *kp_capsuletarget_icon[2];
 extern patch_t *kp_capsuletarget_far[2][2];
 extern patch_t *kp_capsuletarget_far_text[2];
 extern patch_t *kp_capsuletarget_near[2][8];
-
-extern patch_t *kp_superflickytarget[2][4];
 
 extern patch_t *kp_spraycantarget_far[2][6];
 extern patch_t *kp_spraycantarget_near[2][6];

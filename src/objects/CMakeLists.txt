@@ -14,9 +14,7 @@ target_sources(SRB2SDL2 PRIVATE
 	audience.c
 	random-item.c
 	servant-hand.c
-	super-flicky.cpp
 	battle-ufo.cpp
-	powerup-aura.cpp
 	ark-arrow.c
 	dash-rings.c
 	sneaker-panel.c
@@ -34,7 +32,6 @@ target_sources(SRB2SDL2 PRIVATE
 	shadow.cpp
 	ball-switch.cpp
 	charge.c
-	mega-barrier.cpp
 	frost-thrower.cpp
 	ivoball.cpp
 	crate.cpp
@@ -47,7 +44,6 @@ target_sources(SRB2SDL2 PRIVATE
 	waterfall-particle.c
 	sealed-star.c
 	talk-point.cpp
-	powerup-spinner.cpp
 	adventure-air-booster.c
 	pulley.cpp
 )

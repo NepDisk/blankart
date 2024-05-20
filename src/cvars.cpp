@@ -812,9 +812,6 @@ consvar_t cv_votetime = UnsavedNetVar("votetime", "20").min_max(10, 3600);
 //
 void NG_Generic_OnChange(void);
 
-//Generic option for RR or Kart
-static CV_PossibleValue_t rrOrKart_cons_t[] = {{0, "Ring Racers"}, {1, "Kart"}, {0, NULL}};
-
 //Rings
 void NG_Rings_OnChange(void);
 consvar_t cv_ng_rings = UnsavedNetVar("ng_rings", "On").on_off().onchange(NG_Rings_OnChange);

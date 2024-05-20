@@ -106,7 +106,6 @@ static patch_t *kp_catcherminimap;
 static patch_t *kp_emeraldminimap[2];
 static patch_t *kp_capsuleminimap[3];
 static patch_t *kp_battleufominimap;
-static patch_t *kp_superflickyminimap;
 
 static patch_t *kp_ringsticker[2];
 static patch_t *kp_ringstickersplit[4];
@@ -225,8 +224,6 @@ patch_t *kp_capsuletarget_icon[2];
 patch_t *kp_capsuletarget_far[2][2];
 patch_t *kp_capsuletarget_far_text[2];
 patch_t *kp_capsuletarget_near[2][8];
-
-patch_t *kp_superflickytarget[2][4];
 
 patch_t *kp_spraycantarget_far[2][6];
 patch_t *kp_spraycantarget_near[2][6];
@@ -404,7 +401,6 @@ void K_LoadKartHUDGraphics(void)
 	HU_UpdatePatch(&kp_capsuleminimap[2], "MINICAP3");
 
 	HU_UpdatePatch(&kp_battleufominimap, "MINIBUFO");
-	HU_UpdatePatch(&kp_superflickyminimap, "FLKMAPA");
 
 	// Rings & Lives
 	HU_UpdatePatch(&kp_ringsticker[0], "RNGBACKA");
@@ -841,20 +837,6 @@ void K_LoadKartHUDGraphics(void)
 	{
 		buffer[7] = '0'+i;
 		HU_UpdatePatch(&kp_capsuletarget_near[1][i], "%s", buffer);
-	}
-
-	sprintf(buffer, "HUDFLKAx");
-	for (i = 0; i < 4; i++)
-	{
-		buffer[7] = '0'+i;
-		HU_UpdatePatch(&kp_superflickytarget[0][i], "%s", buffer);
-	}
-
-	sprintf(buffer, "H4PFLKAx");
-	for (i = 0; i < 4; i++)
-	{
-		buffer[7] = '0'+i;
-		HU_UpdatePatch(&kp_superflickytarget[1][i], "%s", buffer);
 	}
 
 	sprintf(buffer, "SPCNBFAx");
@@ -4598,13 +4580,6 @@ static void K_drawKartMinimap(void)
 			case MT_BATTLEUFO:
 				workingPic = kp_battleufominimap;
 				break;
-			case MT_SUPER_FLICKY:
-				workingPic = kp_superflickyminimap;
-				if (mobj_t* owner = Obj_SuperFlickyOwner(mobj); owner && owner->color)
-				{
-					colormap = R_GetTranslationColormap(TC_RAINBOW, static_cast<skincolornum_t>(owner->color), GTC_CACHE);
-				}
-				break;
 			default:
 				break;
 		}
@@ -6317,8 +6292,6 @@ void K_drawKartHUD(void)
 	{
 		K_drawMiniPing();
 	}
-
-	K_drawKartPowerUps();
 
 	if (K_DirectorIsAvailable(viewnum) == true && LUA_HudEnabled(hud_textspectator))
 	{

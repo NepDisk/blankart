@@ -78,64 +78,70 @@
 #define ROULETTE_SPEED_TIMEATTACK (9)
 #define ROULETTE_SPEED_VERSUS_SLOWEST (12)
 
+// Less ugly 2D arrays
+//Proto table
 static UINT8 K_KartItemOddsRace[NUMKARTRESULTS-1][8] =
 {
-	{ 0, 0, 2, 3, 4, 0, 0, 0 }, // Sneaker
-	{ 0, 0, 0, 0, 0, 3, 4, 5 }, // Rocket Sneaker
-	{ 0, 0, 0, 0, 2, 5, 5, 7 }, // Invincibility
-	{ 2, 3, 1, 0, 0, 0, 0, 0 }, // Banana
-	{ 1, 2, 0, 0, 0, 0, 0, 0 }, // Eggman Monitor
-	{ 5, 5, 2, 2, 0, 0, 0, 0 }, // Orbinaut
-	{ 0, 4, 2, 1, 0, 0, 0, 0 }, // Jawz
-	{ 0, 3, 3, 2, 0, 0, 0, 0 }, // Mine
-	{ 3, 0, 0, 0, 0, 0, 0, 0 }, // Land Mine
-	{ 0, 0, 2, 2, 0, 0, 0, 0 }, // Ballhog
-	{ 0, 0, 0, 0, 0, 2, 4, 0 }, // Self-Propelled Bomb
-	{ 0, 0, 0, 0, 2, 5, 0, 0 }, // Grow
-	{ 0, 0, 0, 0, 0, 2, 4, 2 }, // Shrink
-	{ 1, 0, 0, 0, 0, 0, 0, 0 }, // Lightning Shield
-	{ 0, 1, 2, 1, 0, 0, 0, 0 }, // Bubble Shield
-	{ 0, 0, 0, 0, 0, 1, 3, 5 }, // Flame Shield
-	{ 3, 0, 0, 0, 0, 0, 0, 0 }, // Hyudoro
-	{ 0, 0, 0, 0, 0, 0, 0, 0 }, // Pogo Spring
-	{ 2, 1, 1, 0, 0, 0, 0, 0 }, // Super Ring
-	{ 0, 0, 0, 0, 0, 0, 0, 0 }, // Kitchen Sink
-	{ 0, 0, 2, 3, 3, 1, 0, 0 }, // Sneaker x2
-	{ 0, 0, 0, 0, 4, 4, 4, 0 }, // Sneaker x3
-	{ 0, 1, 1, 0, 0, 0, 0, 0 }, // Banana x3
-	{ 0, 0, 1, 0, 0, 0, 0, 0 }, // Orbinaut x3
-	{ 0, 0, 0, 2, 0, 0, 0, 0 }, // Orbinaut x4
-	{ 0, 0, 1, 2, 1, 0, 0, 0 }, // Jawz x2
+				//P-Odds	 0  1  2  3  4  5  6  7
+			   /*Sneaker*/ { 0, 0, 2, 4, 6, 0, 0, 0 }, // Sneaker
+		/*Rocket Sneaker*/ { 0, 0, 0, 0, 0, 2, 4, 6 }, // Rocket Sneaker
+		 /*Invincibility*/ { 0, 0, 0, 0, 2, 4, 6, 9 }, // Invincibility
+				/*Banana*/ { 5, 3, 1, 0, 0, 0, 0, 0 }, // Banana
+		/*Eggman Monitor*/ { 1, 2, 0, 0, 0, 0, 0, 0 }, // Eggman Monitor
+			  /*Orbinaut*/ { 7, 4, 2, 2, 0, 0, 0, 0 }, // Orbinaut
+				  /*Jawz*/ { 0, 3, 2, 1, 1, 0, 0, 0 }, // Jawz
+				  /*Mine*/ { 0, 2, 3, 1, 0, 0, 0, 0 }, // Mine
+			 /*Land Mine*/ { 4, 0, 0, 0, 0, 0, 0, 0 }, // Land Mine
+			   /*Ballhog*/ { 0, 0, 2, 1, 0, 0, 0, 0 }, // Ballhog
+   /*Self-Propelled Bomb*/ { 0, 1, 2, 3, 4, 2, 2, 0 }, // Self-Propelled Bomb
+				  /*Grow*/ { 0, 0, 0, 1, 2, 3, 0, 0 }, // Grow
+				/*Shrink*/ { 0, 0, 0, 0, 0, 0, 2, 0 }, // Shrink
+		/*Thunder Shield*/ { 1, 2, 0, 0, 0, 0, 0, 0 }, // Thunder Shield
+		 /*Bubble Shield*/ { 0, 1, 2, 1, 0, 0, 0, 0 }, // Bubble Shield
+		  /*Flame Shield*/ { 0, 0, 0, 0, 0, 1, 3, 5 }, // Flame Shield
+			   /*Hyudoro*/ { 0, 0, 0, 1, 1, 0, 0, 0 }, // Hyudoro
+		   /*Pogo Spring*/ { 0, 0, 0, 0, 0, 0, 0, 0 }, // Pogo Spring
+			/*Super Ring*/ { 2, 1, 1, 0, 0, 0, 0, 0 }, // Super Ring
+		  /*Kitchen Sink*/ { 0, 0, 0, 0, 0, 0, 0, 0 }, // Kitchen Sink
+			/*Sneaker x2*/ { 0, 0, 2, 2, 1, 0, 0, 0 }, // Sneaker x2
+			/*Sneaker x3*/ { 0, 0, 0, 2, 6,10, 5, 0 }, // Sneaker x3
+			 /*Banana x3*/ { 0, 1, 1, 0, 0, 0, 0, 0 }, // Banana x3
+			/*Banana x10*/ { 0, 0, 0, 1, 0, 0, 0, 0 }, // Banana x10
+		   /*Orbinaut x3*/ { 0, 0, 1, 0, 0, 0, 0, 0 }, // Orbinaut x3
+		   /*Orbinaut x4*/ { 0, 0, 0, 1, 1, 0, 0, 0 }, // Orbinaut x4
+			   /*Jawz x2*/ { 0, 0, 1, 2, 0, 0, 0, 0 }  // Jawz x2
 };
-
-static UINT8 K_KartItemOddsBattle[NUMKARTRESULTS-1][2] =
+//prototable
+static UINT8 K_KartItemOddsBattle[NUMKARTRESULTS][2] =
 {
-	{ 0, 1 }, // Sneaker
-	{ 0, 0 }, // Rocket Sneaker
-	{ 0, 1 }, // Invincibility
-	{ 0, 0 }, // Banana
-	{ 0, 0 }, // Eggman Monitor
-	{ 2, 0 }, // Orbinaut
-	{ 3, 1 }, // Jawz
-	{ 2, 1 }, // Mine
-	{ 0, 0 }, // Land Mine
-	{ 2, 1 }, // Ballhog
-	{ 0, 0 }, // Self-Propelled Bomb
-	{ 1, 1 }, // Grow
-	{ 0, 0 }, // Shrink
-	{ 0, 0 }, // Lightning Shield
-	{ 1, 0 }, // Bubble Shield
-	{ 0, 0 }, // Flame Shield
-	{ 0, 0 }, // Hyudoro
-	{ 0, 0 }, // Pogo Spring
-	{ 0, 0 }, // Super Ring
-	{ 0, 0 }, // Kitchen Sink
-	{ 0, 0 }, // Sneaker x2
-	{ 0, 1 }, // Sneaker x3
-	{ 0, 0 }, // Banana x3
-	{ 2, 0 }, // Orbinaut x3
-	{ 2, 1 }, // Orbinaut x4
-	{ 2, 1 }, // Jawz x2
+				//P-Odds	 0  1
+			   /*Sneaker*/ { 2, 1 }, // Sneaker
+		/*Rocket Sneaker*/ { 0, 0 }, // Rocket Sneaker
+		 /*Invincibility*/ { 2, 1 }, // Invincibility
+				/*Banana*/ { 1, 0 }, // Banana
+		/*Eggman Monitor*/ { 1, 0 }, // Eggman Monitor
+			  /*Orbinaut*/ { 8, 0 }, // Orbinaut
+				  /*Jawz*/ { 8, 1 }, // Jawz
+				  /*Mine*/ { 6, 1 }, // Mine
+			 /*Land Mine*/ { 0, 0 }, // Land Mine
+			   /*Ballhog*/ { 2, 1 }, // Ballhog
+   /*Self-Propelled Bomb*/ { 0, 0 }, // Self-Propelled Bomb
+				  /*Grow*/ { 2, 1 }, // Grow
+				/*Shrink*/ { 0, 0 }, // Shrink
+		/*Thunder Shield*/ { 4, 0 }, // Thunder Shield
+		 /*Bubble Shield*/ { 1, 0 }, // Bubble Shield
+		  /*Flame Shield*/ { 0, 0 }, // Flame Shield
+			   /*Hyudoro*/ { 2, 0 }, // Hyudoro
+		   /*Pogo Spring*/ { 2, 0 }, // Pogo Spring
+			/*Super Ring*/ { 0, 0 }, // Super Ring
+		  /*Kitchen Sink*/ { 0, 0 }, // Kitchen Sink
+			/*Sneaker x2*/ { 0, 0 }, // Sneaker x2
+			/*Sneaker x3*/ { 1, 1 }, // Sneaker x3
+			 /*Banana x3*/ { 1, 0 }, // Banana x3
+			/*Banana x10*/ { 1, 1 }, // Banana x10
+		   /*Orbinaut x3*/ { 2, 0 }, // Orbinaut x3
+		   /*Orbinaut x4*/ { 1, 1 }, // Orbinaut x4
+			   /*Jawz x2*/ { 2, 1 }  // Jawz x2
 };
 
 static UINT8 K_KartItemOddsSpecial[NUMKARTRESULTS-1][4] =

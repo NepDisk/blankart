@@ -15,7 +15,6 @@
 #include "../k_objects.h"
 #include "../p_local.h"
 #include "../k_kart.h"
-#include "../k_powerup.h"
 #include "../m_random.h"
 
 #define CHARGEAURA_BURSTTIME (9)

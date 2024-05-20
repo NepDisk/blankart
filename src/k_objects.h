@@ -128,23 +128,6 @@ void Obj_ServantHandSpawning(player_t *player);
 void Obj_ServantHandThink(mobj_t *hand);
 void Obj_PointPlayersToXY(fixed_t x, fixed_t y);
 
-/* Super Flicky Controller */
-void Obj_SpawnSuperFlickySwarm(player_t *owner, tic_t time);
-void Obj_SuperFlickyControllerThink(mobj_t *controller);
-void Obj_EndSuperFlickySwarm(mobj_t *controller);
-void Obj_ExtendSuperFlickySwarm(mobj_t *controller, tic_t time);
-tic_t Obj_SuperFlickySwarmTime(mobj_t *controller);
-
-/* Super Flicky */
-void Obj_SuperFlickyThink(mobj_t *flicky);
-void Obj_WhipSuperFlicky(mobj_t *flicky);
-void Obj_BlockSuperFlicky(mobj_t *flicky);
-void Obj_SuperFlickyPlayerCollide(mobj_t *flicky, mobj_t *player);
-void Obj_SuperFlickyLanding(mobj_t *flicky);
-mobj_t *Obj_SuperFlickyOwner(const mobj_t *flicky);
-boolean Obj_IsSuperFlickyWhippable(const mobj_t *flicky, const mobj_t *target);
-boolean Obj_IsSuperFlickyTargettingYou(const mobj_t *flicky, mobj_t *player);
-
 /* Battle/Power-UP UFO */
 void Obj_BattleUFOLegThink(mobj_t *leg);
 void Obj_BattleUFOThink(mobj_t *ufo);
@@ -156,10 +139,6 @@ void Obj_SpawnBattleUFOFromSpawner(void);
 INT32 Obj_RandomBattleUFOSpawnerID(void);
 void Obj_BattleUFOBeamThink(mobj_t *beam);
 INT32 Obj_BattleUFOSpawnerID(const mobj_t *spawner);
-
-/* Power-Up Aura */
-void Obj_SpawnPowerUpAura(player_t* player);
-void Obj_PowerUpAuraThink(mobj_t* mobj);
 
 /* Ark Arrows */
 void Obj_ArkArrowSpawn(mobj_t *mobj);
@@ -263,10 +242,6 @@ void Obj_BallSwitchThink(mobj_t *mobj);
 void Obj_BallSwitchTouched(mobj_t *mobj, mobj_t *toucher);
 void Obj_BallSwitchDamaged(mobj_t *mobj, mobj_t *inflictor, mobj_t *source);
 
-/* Barrier Power-Up */
-void Obj_SpawnMegaBarrier(player_t *player);
-boolean Obj_MegaBarrierThink(mobj_t *mobj);
-
 /* DLZ Seasaw */
 void Obj_DLZSeasawSpawn(mobj_t *mo);
 void Obj_DLZSeasawThink(mobj_t *mo);
@@ -366,10 +341,6 @@ void Obj_SSCabotronStarMobjThink(mobj_t* mo);
 void Obj_TalkPointInit(mobj_t* mo);
 void Obj_TalkPointThink(mobj_t* mo);
 void Obj_TalkPointOrbThink(mobj_t* mo);
-
-/* Power-up Spinner */
-void Obj_SpawnPowerUpSpinner(mobj_t *source, INT32 powerup, tic_t duration);
-void Obj_TickPowerUpSpinner(mobj_t *mobj);
 
 /* Pulley */
 void Obj_PulleyThink(mobj_t *root);

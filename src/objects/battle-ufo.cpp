@@ -23,7 +23,6 @@
 #include "../p_local.h"
 #include "../k_battle.h"
 #include "../k_objects.h"
-#include "../k_powerup.h"
 #include "../k_kart.h"
 #include "../k_hud.h" // K_AddMessage
 
@@ -178,21 +177,8 @@ void Obj_BattleUFODeath(mobj_t *mobj, mobj_t *inflictor)
 {
 	UFO* ufo = static_cast<UFO*>(mobj);
 	const SINT8 flip = P_MobjFlip(ufo);
-	const kartitems_t pwrup = static_cast<kartitems_t>(P_RandomRange(PR_BATTLEUFO, FIRSTPOWERUP, LASTPOWERUP));
 
 	ufo->momz = -(8*mapobjectscale)/2;
-
-
-	mobj_t *drop = K_CreatePaperItem(
-		ufo->x,
-		ufo->y,
-		ufo->z + ufo->sprzoff() + (flip),
-		0,
-		flip,
-		pwrup,
-		BATTLE_POWERUP_TIME
-	);
-
 
 	if (ufo->spawner())
 	{

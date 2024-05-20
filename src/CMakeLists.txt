@@ -157,7 +157,6 @@ add_executable(SRB2SDL2 MACOSX_BUNDLE WIN32
 	k_serverstats.c
 	k_zvote.c
 	k_mapuser.c
-	k_powerup.cpp
 	k_dialogue.cpp
 	k_tally.cpp
 	k_bans.cpp

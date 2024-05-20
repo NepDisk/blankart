@@ -68,7 +68,6 @@
 #include "k_vote.h"
 #include "k_zvote.h"
 #include "k_bot.h"
-#include "k_powerup.h"
 #include "k_roulette.h"
 #include "k_bans.h"
 #include "k_director.h"
@@ -211,13 +210,6 @@ CV_PossibleValue_t kartdebugitem_cons_t[] =
 #define FOREACH( name, n ) { n, #name }
 	KART_ITEM_ITERATOR,
 #undef  FOREACH
-	{POWERUP_SMONITOR, "SMonitor"},
-	{POWERUP_BARRIER, "Barrier"},
-	{POWERUP_BUMPER, "Bumper"},
-	{POWERUP_BADGE, "Badge"},
-	{POWERUP_SUPERFLICKY, "SuperFlicky"},
-	{POWERUP_POINTS, "Points"},
-	{0}
 };
 
 CV_PossibleValue_t capsuletest_cons_t[] = {
@@ -1653,11 +1645,6 @@ void D_Cheat(INT32 playernum, INT32 cheat, ...)
 		case CHEAT_GIVEITEM:
 			COPY(WRITESINT8, int);
 			COPY(WRITEUINT8, unsigned int);
-			break;
-
-		case CHEAT_GIVEPOWERUP:
-			COPY(WRITEUINT8, unsigned int);
-			COPY(WRITEUINT16, unsigned int);
 			break;
 
 		case CHEAT_SCORE:
@@ -6253,22 +6240,6 @@ static void Got_Cheat(const UINT8 **cp, INT32 playernum)
 			break;
 		}
 
-		case CHEAT_GIVEPOWERUP: {
-			UINT8 powerup = READUINT8(*cp);
-			UINT16 time = READUINT16(*cp);
-
-			powerup = min(powerup, LASTPOWERUP);
-
-			// FIXME: we should have actual KITEM_ name array
-			const char *powerupname = cv_kartdebugitem.PossibleValue[
-				1 + NUMKARTITEMS + (powerup - FIRSTPOWERUP)].strvalue;
-
-			K_GivePowerUp(player, powerup, time);
-
-			CV_CheaterWarning(playernum, va("give powerup %s %d tics", powerupname, time));
-			break;
-		}
-
 		case CHEAT_SCORE: {
 			UINT32 score = READUINT32(*cp);
 
@@ -6651,18 +6622,7 @@ static void Command_KartGiveItem_f(void)
 				}
 			}
 
-			if (item >= FIRSTPOWERUP)
-			{
-				INT32 amt;
-
-				if (ac > 2)
-					amt = atoi(COM_Argv(2));
-				else
-					amt = BATTLE_POWERUP_TIME;
-
-				D_Cheat(localplayer, CHEAT_GIVEPOWERUP, item, amt);
-			}
-			else if (item < NUMKARTITEMS)
+			if (item < NUMKARTITEMS)
 			{
 				INT32 amt;
 
