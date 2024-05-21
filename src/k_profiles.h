@@ -118,17 +118,17 @@ extern "C" {
 //     option is reset to default
 #define PROFILEVER 3
 #define MAXPROFILES 16
-#define PROFILESFILE "ringprofiles.prf"
+#define PROFILESFILE "kartprofiles.prf"
 #define PROFILE_GUEST 0
 
 #define PROFILEDEFAULTNAME "GUEST"
 #define PROFILEDEFAULTPNAME "Guest"
-#define PROFILEDEFAULTSKIN "eggman"
+#define PROFILEDEFAULTSKIN "sonic"
 #define PROFILEDEFAULTCOLOR SKINCOLOR_NONE
 #define PROFILEDEFAULTFOLLOWER "none"
 #define PROFILEDEFAULTFOLLOWERCOLOR FOLLOWERCOLOR_MATCH
 
-#define PROFILEHEADER "Doctor Robotnik's Ring Racers Profiles"
+#define PROFILEHEADER "SRB3Kart Profiles"
 
 // Man I wish I had more than 16 friends!!
 

@@ -1466,8 +1466,8 @@ static boolean TextmapCount(size_t size)
 
 	// Check if namespace is valid.
 	tkn = M_TokenizerRead(0);
-	if (!fastcmp(tkn, "ringracers"))
-		CONS_Alert(CONS_WARNING, "Invalid namespace '%s', only 'ringracers' is supported. This map may have issues loading.\n", tkn);
+	if ((!fastcmp(tkn, "ringracers")) || (!fastcmp(tkn, "srb3kart")))
+		CONS_Alert(CONS_WARNING, "Invalid namespace '%s', only 'ringracers' or 'srb3kart' is supported. This map may have issues loading.\n", tkn);
 
 	while ((tkn = M_TokenizerRead(0)) && M_TokenizerGetEndPos() < size)
 	{

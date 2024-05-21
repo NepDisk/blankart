@@ -148,10 +148,10 @@ typedef LPVOID (WINAPI *p_MapViewOfFile) (HANDLE, DWORD, DWORD, DWORD, SIZE_T);
 
 // Locations for searching for bios.pk3
 #if defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)
-#define DEFAULTWADLOCATION1 "/usr/local/share/games/RingRacers"
-#define DEFAULTWADLOCATION2 "/usr/local/games/RingRacers"
-#define DEFAULTWADLOCATION3 "/usr/share/games/RingRacers"
-#define DEFAULTWADLOCATION4 "/usr/games/RingRacers"
+#define DEFAULTWADLOCATION1 "/usr/local/share/games/SRB3Kart"
+#define DEFAULTWADLOCATION2 "/usr/local/games/SRB3Kart"
+#define DEFAULTWADLOCATION3 "/usr/share/games/SRB3Kart"
+#define DEFAULTWADLOCATION4 "/usr/games/SRB3Kart"
 #define DEFAULTSEARCHPATH1 "/usr/local/games"
 #define DEFAULTSEARCHPATH2 "/usr/games"
 #define DEFAULTSEARCHPATH3 "/usr/local"
@@ -2207,9 +2207,9 @@ static const char *locateWad(void)
 	const char *envstr;
 	const char *WadPath;
 
-	I_OutputMsg("RINGRACERSWADDIR");
-	// does RINGRACERSWADDIR exist?
-	if (((envstr = I_GetEnv("RINGRACERSWADDIR")) != NULL) && isWadPathOk(envstr))
+	I_OutputMsg("SRB3KARTWADDIR");
+	// does SRB3KARTWADDIR exist?
+	if (((envstr = I_GetEnv("SRB3KARTWADDIR")) != NULL) && isWadPathOk(envstr))
 		return envstr;
 
 #ifndef NOCWD

@@ -100,8 +100,8 @@ char gamedatafilename[64] =
 #elif defined(DEVELOP)
 	"develop"
 #endif
-	"ringdata.dat";
-char timeattackfolder[64] = "ringracers";
+	"kartdata.dat";
+char timeattackfolder[64] = "srb3kart";
 char customversionstring[32] = "\0";
 
 static void G_DoCompleted(void);

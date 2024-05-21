@@ -147,9 +147,9 @@ void __set_fpscr(long); // in libgcc / kernel's startup.s?
 //#define DEFAULTSEARCHPATH3 "/pc/home/alam/srb2code/data"
 #elif defined (GP2X)
 #define DEFAULTWADLOCATION1 "/mnt/sd"
-#define DEFAULTWADLOCATION2 "/mnt/sd/RingRacers"
+#define DEFAULTWADLOCATION2 "/mnt/sd/SRB3KART"
 #define DEFAULTWADLOCATION3 "/tmp/mnt/sd"
-#define DEFAULTWADLOCATION4 "/tmp/mnt/sd/RingRacers"
+#define DEFAULTWADLOCATION4 "/tmp/mnt/sd/SRB3KART"
 #define DEFAULTSEARCHPATH1 "/mnt/sd"
 #define DEFAULTSEARCHPATH2 "/tmp/mnt/sd"
 #elif defined (_WII)
@@ -176,10 +176,10 @@ void __set_fpscr(long); // in libgcc / kernel's startup.s?
 #define DEFAULTSEARCHPATH1 "host0:/"
 #define DEFAULTSEARCHPATH2 "ms0:/PSP/GAME/SRB2PSP"
 #elif defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)
-#define DEFAULTWADLOCATION1 "/usr/local/share/games/RingRacers"
-#define DEFAULTWADLOCATION2 "/usr/local/games/RingRacers"
-#define DEFAULTWADLOCATION3 "/usr/share/games/RingRacers"
-#define DEFAULTWADLOCATION4 "/usr/games/RingRacers"
+#define DEFAULTWADLOCATION1 "/usr/local/share/games/SRB3KART"
+#define DEFAULTWADLOCATION2 "/usr/local/games/SRB3KART"
+#define DEFAULTWADLOCATION3 "/usr/share/games/SRB3KART"
+#define DEFAULTWADLOCATION4 "/usr/games/SRB3KART"
 #define DEFAULTSEARCHPATH1 "/usr/local/games"
 #define DEFAULTSEARCHPATH2 "/usr/games"
 #define DEFAULTSEARCHPATH3 "/usr/local"
@@ -188,21 +188,21 @@ void __set_fpscr(long); // in libgcc / kernel's startup.s?
 #ifdef __GNUC__
 #include <openxdk/debug.h>
 #endif
-#define DEFAULTWADLOCATION1 "c:\\ringracers"
-#define DEFAULTWADLOCATION2 "d:\\ringracers"
-#define DEFAULTWADLOCATION3 "e:\\ringracers"
-#define DEFAULTWADLOCATION4 "f:\\ringracers"
-#define DEFAULTWADLOCATION5 "g:\\ringracers"
-#define DEFAULTWADLOCATION6 "h:\\ringracers"
-#define DEFAULTWADLOCATION7 "i:\\ringracers"
+#define DEFAULTWADLOCATION1 "c:\\srb3kart"
+#define DEFAULTWADLOCATION2 "d:\\srb3kart"
+#define DEFAULTWADLOCATION3 "e:\\srb3kart"
+#define DEFAULTWADLOCATION4 "f:\\srb3kart"
+#define DEFAULTWADLOCATION5 "g:\\srb3kart"
+#define DEFAULTWADLOCATION6 "h:\\srb3kart"
+#define DEFAULTWADLOCATION7 "i:\\srb3kart"
 #elif defined (_WIN32_WCE)
 #define NOCWD
 #define NOHOME
-#define DEFAULTWADLOCATION1 "\\Storage Card\\RingRacers"
+#define DEFAULTWADLOCATION1 "\\Storage Card\\SRB3kart"
 #define DEFAULTSEARCHPATH1 "\\Storage Card"
 #elif defined (_WIN32)
-#define DEFAULTWADLOCATION1 "c:\\games\\ringracers"
-#define DEFAULTWADLOCATION2 "\\games\\ringracers"
+#define DEFAULTWADLOCATION1 "c:\\games\\srb3kart"
+#define DEFAULTWADLOCATION2 "\\games\\srb3kart"
 #define DEFAULTSEARCHPATH1 "c:\\games"
 #define DEFAULTSEARCHPATH2 "\\games"
 #endif
@@ -2926,10 +2926,10 @@ INT32 I_StartupSystem(void)
 	char DP[] ="      Dr. Robotnik's Ring Racers!\n";
 	debugPrint(DP);
 #endif
-	unlink("e:/Games/RingRacers/stdout.txt");
-	freopen("e:/Games/RingRacers/stdout.txt", "w+", stdout);
-	unlink("e:/Games/RingRacers/stderr.txt");
-	freopen("e:/Games/RingRacers/stderr.txt", "w+", stderr);
+	unlink("e:/Games/SRB3Kart/stdout.txt");
+	freopen("e:/Games/SRB3Kart/stdout.txt", "w+", stdout);
+	unlink("e:/Games/SRB3Kart/stderr.txt");
+	freopen("e:/Games/SRB3Kart/stderr.txt", "w+", stderr);
 #endif
 #ifdef _arch_dreamcast
 #ifdef _DEBUG

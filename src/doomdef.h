@@ -86,7 +86,7 @@ extern char logfilename[1024];
 #endif
 
 /* A mod name to further distinguish versions. */
-#define SRB2APPLICATION "RingRacers"
+#define SRB2APPLICATION "srb3kart"
 
 //#define DEVELOP // Disable this for release builds to remove excessive cheat commands and enable MD5 checking and stuff, all in one go. :3
 #ifdef DEVELOP
@@ -111,7 +111,7 @@ extern char logfilename[1024];
 #define VERSIONSTRINGW WSTRING (VERSIONSTRING)
 
 /* A custom URL protocol for server links. */
-#define SERVER_URL_PROTOCOL "ringracers://"
+#define SERVER_URL_PROTOCOL "srb3kart://"
 
 // Does this version require an added patch file?
 // Comment or uncomment this as necessary.
@@ -431,9 +431,9 @@ enum {
 
 // Name of local directory for config files and savegames
 #if (((defined (__unix__) && !defined (MSDOS)) || defined (UNIXCOMMON)) && !defined (__CYGWIN__)) && !defined (__APPLE__)
-#define DEFAULTDIR ".ringracers"
+#define DEFAULTDIR ".srb3kart"
 #else
-#define DEFAULTDIR "ringracers"
+#define DEFAULTDIR "srb3kart"
 #endif
 
 #include "g_state.h"

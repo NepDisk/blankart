@@ -287,8 +287,8 @@ static void CustomApplicationMain (int argc, char **argv)
     [self fixMenu:[NSApp mainMenu] withAppName:getApplicationName()];
 #endif
 
-    if (!getenv("RINGRACERSWADDIR"))
-        setenv("RINGRACERSWADDIR", [[[NSBundle mainBundle] resourcePath] UTF8String], 1);
+    if (!getenv("SRB3KARTWADDIR"))
+        setenv("SRB3KARTWADDIR", [[[NSBundle mainBundle] resourcePath] UTF8String], 1);
 
     /* Hand off to main application code */
     status = SDL_main (gArgc, gArgv);

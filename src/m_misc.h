@@ -54,10 +54,10 @@ void M_LegacySaveFrame(void);
 void M_StopMovie(void);
 
 // the file where game vars and settings are saved
-#define CONFIGFILENAME "ringconfig.cfg"
+#define CONFIGFILENAME "kartconfig.cfg"
 
 // The file where we'll save the last IPs we joined
-#define IPLOGFILE "ringsavedips.txt"
+#define IPLOGFILE "kartsavedips.txt"
 #define IPLOGFILESEP ";"
 #define NUMLOGIP 3
 #define MAX_LOGIP 255

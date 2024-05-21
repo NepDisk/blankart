@@ -13,13 +13,13 @@ cmake --preset ninja-arm64_osx_vcpkg-release -DVCPKG_OVERLAY_TRIPLETS=scripts/ -
 cmake --build --preset ninja-arm64_osx_vcpkg-release
 
 mkdir -p build/dist
-rm -rf "build/dist/Dr. Robotnik's Ring Racers.app" "build/dist/ringracers.app"
+rm -rf "build/dist/Dr. Robotnik's Ring Racers.app" "build/dist/srb3kart.app"
 
-cp -r build/ninja-arm64_osx_vcpkg-release/bin/ringracers.app build/dist/
+cp -r build/ninja-arm64_osx_vcpkg-release/bin/srb3kart.app build/dist/
 
 lipo -create \
-	-output "build/dist/ringracers.app/Contents/MacOS/ringracers" \
-	build/ninja-x64_osx_vcpkg-release/bin/ringracers.app/Contents/MacOS/ringracers \
-	build/ninja-arm64_osx_vcpkg-release/bin/ringracers.app/Contents/MacOS/ringracers
+	-output "build/dist/srb3kart.app/Contents/MacOS/srb3kart" \
+	build/ninja-x64_osx_vcpkg-release/bin/srb3kart.app/Contents/MacOS/srb3kart \
+	build/ninja-arm64_osx_vcpkg-release/bin/srb3kart.app/Contents/MacOS/srb3kart
 
-mv build/dist/ringracers.app "build/dist/Dr. Robotnik's Ring Racers.app"
+mv build/dist/srb3kart.app "build/dist/SRB3Kart.app"
