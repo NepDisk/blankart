@@ -545,6 +545,9 @@ void M_PlayMenuJam(void)
 	if (soundtest.playing)
 		return;
 
+	if (gamestate == GS_TITLESCREEN)
+		return;
+
 	const boolean profilemode = (
 		optionsmenu.profilemenu
 		&& !optionsmenu.resetprofilemenu
@@ -806,7 +809,8 @@ void M_StartControlPanel(void)
 			}
 
 			Music_Stop("level");
-			D_StartTitle();
+			if (!demo.inreplayhut)
+				D_StartTitle();
 
 			gameaction = ga_nothing;
 			paused = false;
@@ -814,8 +818,6 @@ void M_StartControlPanel(void)
 
 			modeattacking = ATTACKING_NONE;
 		}
-
-		Music_Stop("title");
 
 		if (cv_currprofile.value == -1) // Only ask once per session.
 		{
@@ -839,9 +841,6 @@ void M_StartControlPanel(void)
 
 			CV_StealthSetValue(&cv_currprofile, -1); // Make sure to reset that as it is set by PR_ApplyProfile which we kind of hack together to force it.
 
-			// Ambient ocean sounds
-			Music_Remap("menu_nocred", "_OCEAN");
-			Music_Play("menu_nocred");
 		}
 		else
 		{
@@ -862,7 +861,8 @@ void M_StartControlPanel(void)
 	}
 	else
 	{
-		M_OpenPauseMenu();
+		//M_OpenPauseMenu();
+		currentMenu = &PAUSE_MainDef;
 	}
 
 	CON_ToggleOff(); // move away console
@@ -1011,7 +1011,7 @@ void M_GoBack(INT32 choice)
 
 		M_SetupNextMenu(currentMenu->prevMenu, false);
 	}
-	else if (Playing())
+	else if (Playing() || gamestate == GS_TITLESCREEN)
 		M_ClearMenus(true);
 
 	if (!(behaviourflags & MBF_SOUNDLESS))

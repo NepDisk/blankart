@@ -5,6 +5,7 @@
 #include "../filesrch.h" // Addfile
 #include "../d_main.h"
 #include "../s_sound.h"
+#include "../music.h"
 #include "../v_video.h"
 #include "../z_zone.h"
 
@@ -282,6 +283,7 @@ boolean M_QuitReplayHut(void)
 {
 	// D_StartTitle does its own wipe, since GS_TIMEATTACK is now a complete gamestate.
 	menuactive = false;
+	Music_Stop("title");
 	D_StartTitle();
 
 	if (extrasmenu.demolist)

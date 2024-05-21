@@ -483,12 +483,6 @@ void M_DrawMenuForeground(void)
 		M_DrawMenuParty();
 	}
 
-	// draw non-green resolution border
-	if ((!menuactive || currentMenu != &PAUSE_PlaybackMenuDef) && // this obscures replay menu and I want to put in minimal effort to fix that
-		((vid.width % BASEVIDWIDTH != 0) || (vid.height % BASEVIDHEIGHT != 0)))
-	{
-		V_DrawFixedPatch(0, 0, FRACUNIT, 0, W_CachePatchName("WEIRDRES", PU_CACHE), NULL);
-	}
 }
 
 //
@@ -1231,11 +1225,9 @@ void M_DrawGenericMenu(void)
 //
 void M_DrawCenteredMenu(void)
 {
-	INT32 x = currentMenu->x, y = BASEVIDHEIGHT - (12*vid.dupy), w, i, cursory = 0;
+	INT32 x = currentMenu->x, y = BASEVIDHEIGHT - (currentMenu->y*vid.dupy), w, i, cursory = 0;
 
 	M_DrawMenuTooltips();
-
-
 
 	for (i = 0; i < currentMenu->numitems; i++)
 	{

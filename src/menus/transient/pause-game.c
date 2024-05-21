@@ -26,6 +26,39 @@
 // ESC pause menu
 // Since there's no descriptions to each item, we'll use the descriptions as the names of the patches we want to draw for each option :)
 
+
+static menuitem_t MPauseMenu[] =
+{
+	{IT_STRING | IT_ARROWS, "ADDONS", NULL,
+		NULL, {.routine = M_HandlePauseMenuAddons}, 0, 0},
+
+	{IT_STRING | IT_CALL, "CHANGE MAP", NULL,
+		NULL, {.routine = M_LevelSelectInit}, 0, -1},
+
+#ifdef HAVE_DISCORDRPC
+	{IT_STRING | IT_CALL, "DISCORD REQUESTS", NULL,
+		NULL, {.routine = M_DiscordRequests}, 0, 0},
+#endif
+
+	{IT_STRING | IT_CALL, "Resume Game", NULL,
+		NULL, {.routine = M_QuitPauseMenu}, 0, 0},
+
+	{IT_STRING | IT_ARROWS, "Spectate", NULL,
+		NULL, {.routine = M_HandleSpectateToggle}, 0, 0},
+
+	{IT_STRING | IT_CALL, "Player Setup", NULL,
+		NULL, {.routine = M_CharacterSelect}, 0, 0},
+
+	{IT_STRING | IT_CALL, "Options", NULL,
+		NULL, {.routine = M_InitOptions}, 0, 0},
+
+	{IT_STRING | IT_CALL, "Return to Title", NULL,
+		NULL, {.routine = M_EndGame}, 0, 0},
+
+	{IT_STRING | IT_CALL, "Quit Game", NULL,
+		NULL, {.routine = M_QuitSRB2}, 0, 0},
+};
+
 menuitem_t PAUSE_Main[] =
 {
 
@@ -81,21 +114,21 @@ menuitem_t PAUSE_Main[] =
 };
 
 menu_t PAUSE_MainDef = {
-	sizeof (PAUSE_Main) / sizeof (menuitem_t),
+	sizeof (MPauseMenu) / sizeof (menuitem_t),
 	NULL,
 	0,
-	PAUSE_Main,
+	MPauseMenu,
+	40, 72,
 	0, 0,
-	0, 0,
-	MBF_SOUNDLESS,
+	NULL,
 	NULL,
 	1, 10,	// For transition with some menus!
-	M_DrawPause,
-	NULL,
-	M_PauseTick,
+	M_DrawGenericMenu,
 	NULL,
 	NULL,
-	M_PauseInputs
+	NULL,
+	NULL,
+	NULL
 };
 
 struct pausemenu_s pausemenu;

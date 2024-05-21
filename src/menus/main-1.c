@@ -31,21 +31,22 @@
 
 menuitem_t MainMenu[] =
 {
-	{IT_STRING | IT_CALL, "Local Play", NULL,
-		NULL, {.routine = M_CharacterSelect}, 0, 0},
-
-	{IT_STRING | IT_CALL, "Online", NULL,
-		NULL, {.routine = M_MPOptSelectInit}, /*M_MPRoomSelectInit,*/ 0, 0},
-
-	{IT_STRING | IT_CALL, "Extras",
-		NULL, NULL,
+	{IT_STRING | IT_CALL, "Extras", NULL, NULL,
 		{.routine = M_InitExtras}, 0, 0},
 
-	{IT_STRING | IT_CALL, "Options",
-		NULL, NULL,
+	{IT_STRING | IT_CALL, "1 Player", NULL, NULL,
+		{.routine = M_CharacterSelect}, 0, 0},
+
+	{IT_STRING | IT_CALL, "Multiplayer", NULL, NULL,
+		{.routine = M_MPOptSelectInit}, /*M_MPRoomSelectInit,*/ 0, 0},
+
+	{IT_STRING | IT_CALL, "Options", NULL, NULL,
 		{.routine = M_InitOptions}, 0, 0},
 
-	{IT_STRING | IT_CALL, "Quit",NULL, NULL,
+	{IT_STRING | IT_CALL, "Addons", NULL, NULL,
+		{.routine = M_Addons}, 0, 0},
+
+	{IT_STRING | IT_CALL, "Quit Game", NULL, NULL,
 		{.routine = M_QuitSRB2}, 0, 0},
 };
 
@@ -55,10 +56,10 @@ menu_t MainDef = {
 	NULL,
 	0,
 	MainMenu,
-	BASEVIDWIDTH/2, 72,
+	BASEVIDWIDTH/2, 14,
 	0, 0,
+	0,
 	NULL,
-	"title",
 	1, 10,	// For transition with some menus!
 	M_DrawCenteredMenu,
 	NULL,
@@ -117,6 +118,10 @@ void M_QuitSRB2(INT32 choice)
 	// to others? ~toast 181223
 
 	(void)choice;
+
+	INT32 mrand = M_RandomKey(sizeof(quitsounds) / sizeof(INT32));
+	if (quitsounds[mrand])
+		S_StartSound(NULL, quitsounds[mrand]);
 
 	M_StartMessage(
 		"Exit Program",
