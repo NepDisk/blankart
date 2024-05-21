@@ -517,6 +517,8 @@ consvar_t cv_specialmusic = Player("specialmusic", "On").on_off();
 
 consvar_t cv_holdscorebutt = Player("holdscoreboardbutton", "On").on_off();
 
+consvar_t cv_translucenthud = Player("translucenthud", "10").values({{0, "MIN"}, {10, "MAX"}});
+
 //
 // Server local, also available on dedicated servers.
 // Usually saved, not sycned though...
