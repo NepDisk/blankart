@@ -137,8 +137,6 @@ extern consvar_t cv_perfstats;
 
 extern consvar_t cv_schedule;
 
-extern consvar_t cv_livestudioaudience;
-
 extern char timedemo_name[256];
 extern boolean timedemo_csv;
 extern char timedemo_csv_id[256];
@@ -289,9 +287,6 @@ typedef enum
 void Automate_Run(automateEvents_t type);
 void Automate_Set(automateEvents_t type, const char *command);
 void Automate_Clear(void);
-
-extern UINT32 livestudioaudience_timer;
-void LiveStudioAudience(void);
 
 void D_Cheat(INT32 playernum, INT32 cheat, ...);
 

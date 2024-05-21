@@ -2128,14 +2128,14 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 					}
 				}
 
-				S_StartSound(target, sfx_mbs60);
+				S_StartSound(target, sfx_s1c1);
 
 				P_AddBrokenPrison(target, inflictor, source);
 			}
 			break;
 
 		case MT_CDUFO:
-			S_StartSound(inflictor, sfx_mbs60);
+			S_StartSound(inflictor, sfx_cdfm19);
 
 			target->momz = -(3*mapobjectscale)/2;
 			target->fuse = 2*TICRATE;
@@ -3009,7 +3009,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 						source->player->invincibilitytimer += kinvextend;
 
 						if (P_IsDisplayPlayer(source->player))
-							S_StartSound(NULL, sfx_gsha7);
+							S_StartSound(NULL, sfx_cdfm65);
 					}
 
 					K_TryHurtSoundExchange(target, source);

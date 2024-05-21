@@ -736,7 +736,7 @@ void VS_BlendEye_Thinker(mobj_t *mobj)
 					mobj->rollangle = 0;
 					mobj->extravalue1 = mobj->reactiontime;
 					S_StopSoundByID(NULL, sfx_s3k69); // it's like poetry
-					S_StartSound(NULL, sfx_mbs53);
+					S_StartSound(NULL, sfx_s1a7);
 					if (mobj->tracer)
 					{
 						P_SetMobjState(mobj->tracer, mobj->tracer->info->spawnstate);
@@ -1527,7 +1527,7 @@ void VS_PuyoThinker(mobj_t *mobj)
 					target,
 					NULL
 				);
-				S_StartSound(NULL, sfx_mbs5b);
+				S_StartSound(NULL, sfx_kc67);
 				return;
 			}
 			z += mobj->scale;
@@ -1544,7 +1544,7 @@ void VS_PuyoThinker(mobj_t *mobj)
 				mobj->momz = 0;
 				mobj->flags |= MF_NOGRAVITY;
 				mobj->z = mobj->extravalue1;
-				S_StartSound(NULL, sfx_mbs42);
+				S_StartSound(NULL, sfx_kc55);
 				P_SetMobjState(mobj, S_BLENDEYE_PUYO_LAND_1);
 			}
 		}
@@ -1599,5 +1599,5 @@ void VS_PuyoDeath(mobj_t *mobj)
 
 		mobj->angle += ANGLE_135;
 	}
-	S_StartSound(NULL, ((mobj->tracer && mobj->tracer->type != MT_SPIKEDTARGET) ? sfx_mbs4c : sfx_mbs45));
+	S_StartSound(NULL, ((mobj->tracer && mobj->tracer->type != MT_SPIKEDTARGET) ? sfx_kc65 : sfx_kc43));
 }

@@ -270,8 +270,6 @@ const char *automate_names[AEV__MAX] =
 	"QueueEnd", // AEV_QUEUEEND
 };
 
-UINT32 livestudioaudience_timer = 90;
-
 /// \warning Keep this up-to-date if you add/remove/rename net text commands
 const char *netxcmdnames[MAXNETXCMD - 1] =
 {
@@ -4243,19 +4241,6 @@ void Automate_Clear(void)
 	}
 }
 
-void LiveStudioAudience(void)
-{
-	if (livestudioaudience_timer == 0)
-	{
-		S_StartSound(NULL, sfx_mbv91);
-		livestudioaudience_timer = 90;
-	}
-	else
-	{
-		livestudioaudience_timer--;
-	}
-}
-
 static void Command_MotD_f(void)
 {
 	size_t i, j;
@@ -7365,12 +7350,6 @@ void Schedule_OnChange(void)
 		scheduleTask_t *task = schedule[i];
 		task->timer = task->basetime;
 	}
-}
-
-void LiveStudioAudience_OnChange(void);
-void LiveStudioAudience_OnChange(void)
-{
-	livestudioaudience_timer = 90;
 }
 
 void Got_DiscordInfo(const UINT8 **p, INT32 playernum)

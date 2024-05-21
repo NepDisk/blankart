@@ -133,7 +133,7 @@ public:
 		UFO* ufo = static_cast<UFO*>(P_SpawnMobjFromMobj(spawner, 0, 0, 250*FRACUNIT - ofs, MT_BATTLEUFO));
 		
 		K_AddMessage("Crack the Combat UFO!", true, false);
-		S_StartSound(NULL, sfx_mbs54);
+		S_StartSound(NULL, sfx_kc42);
 
 		ufo->sprzoff(ofs * spawner->scale());
 

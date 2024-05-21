@@ -1177,9 +1177,6 @@ void G_DoLoadLevelEx(boolean resetplayer, gamestate_t newstate)
 			// Podium: writetextmap is finished. Yay!
 			HU_DoTitlecardCEcho(NULL, va("Congratulations,\\%s!\\Check the console!", cv_playername[0].string), true);
 
-			livestudioaudience_timer = 0;
-			LiveStudioAudience();
-
 			CONS_Printf("\n\n\x83""writetextmap: Find your TEXTMAPs in %s\n", srb2home);
 
 			roundqueue.writetextmap = false;
@@ -1250,7 +1247,7 @@ void G_StartTitleCard(void)
 	{
 		sfxenum_t kstart = sfx_kstart;
 		if (K_CheckBossIntro() == true)
-			kstart = sfx_ssa021;
+			kstart = sfx_s256;
 		else if (encoremode == true)
 			kstart = sfx_ruby2;
 		S_StartSound(NULL, kstart);

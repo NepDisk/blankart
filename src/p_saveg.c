@@ -6501,8 +6501,6 @@ static void P_NetArchiveMisc(savebuffer_t *save, boolean resending)
 	else
 		WRITEUINT8(save->p, 0x2e);
 
-	WRITEUINT32(save->p, livestudioaudience_timer);
-
 	// Only the server uses this, but it
 	// needs synched for remote admins anyway.
 	WRITEUINT32(save->p, schedule_len);
@@ -6692,8 +6690,6 @@ static boolean P_NetUnArchiveMisc(savebuffer_t *save, boolean reloading)
 	// Is it paused?
 	if (READUINT8(save->p) == 0x2f)
 		paused = true;
-
-	livestudioaudience_timer = READUINT32(save->p);
 
 	// Only the server uses this, but it
 	// needs synched for remote admins anyway.

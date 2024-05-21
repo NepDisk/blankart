@@ -339,8 +339,8 @@ void podiumData_s::Tick(void)
 		}
 		case PODIUM_ST_LEVEL_APPEAR:
 		{
-			S_StopSoundByNum(sfx_mbs5b);
-			S_StartSound(nullptr, (displayLevels >= rank.numLevels) ? sfx_mbs70 : sfx_mbs5b);
+			S_StopSoundByNum(sfx_kc60);
+			S_StartSound(nullptr, (displayLevels >= rank.numLevels) ? sfx_kc5e : sfx_kc60);
 
 			state = PODIUM_ST_LEVEL_PAUSE;
 			delay = TICRATE/2;

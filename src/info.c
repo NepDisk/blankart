@@ -13062,7 +13062,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,         // missilestate
 		S_NULL,         // deathstate
 		S_NULL,         // xdeathstate
-		sfx_mbs54,      // deathsound
+		sfx_itpick,      // deathsound
 		0,              // speed
 		48*FRACUNIT,    // radius
 		64*FRACUNIT,    // height
@@ -18461,7 +18461,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,       // attacksound
 		S_BLENDEYE_MAIN, // painstate
 		0,              // painchance
-		sfx_mbs60,      // painsound
+		sfx_s1bd,      // painsound
 		S_NULL,         // meleestate
 		S_NULL,         // missilestate
 		S_BLENDEYE_MAIN, // deathstate
@@ -18628,7 +18628,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,         // missilestate
 		S_BLENDEYE_PUYO_DIE, // deathstate
 		S_NULL,         // xdeathstate
-		sfx_mbs4c,      // deathsound
+		sfx_iceb,      // deathsound
 		0,              // speed
 		8*FRACUNIT,     // radius
 		12*FRACUNIT,    // height

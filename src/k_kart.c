@@ -3728,7 +3728,7 @@ void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 
 	if (state == TRIPSTATE_PASSED)
 	{
-		S_StartSound(player->mo, sfx_ssa015);
+		S_StartSound(player->mo, sfx_cdfm63);
 
 		if (player->roundconditions.tripwire_hyuu == false
 			&& player->hyudorotimer > 0)
@@ -8608,7 +8608,7 @@ static void K_KartDrift(player_t *player, boolean onground)
 					P_Thrust(player->mo, pushdir, player->speed / 6);
 				}
 
-				S_StartSound(player->mo, sfx_gshba);
+				S_StartSound(player->mo, sfx_kc6c);
 				player->trickcharge = 0;
 			}
 		}
@@ -8887,15 +8887,15 @@ void K_KartUpdatePosition(player_t *player)
 	{
 		if (!K_Cooperative() && player->positiondelay <= 0 && position < oldposition && P_IsDisplayPlayer(player) == true)
 		{
-			// Play sound when getting closer to 1st.
-			UINT32 soundpos = (max(0, position - 1) * MAXPLAYERS)/realplayers; // always 1-15 despite there being 16 players at max...
+			// Play sound when getting closer to 1st. MAXPLAYERS
+			UINT32 soundpos = (max(0, position - 1) * 3)/realplayers; // always 1-15 despite there being 16 players at max...
 #if MAXPLAYERS > 16
 			if (soundpos < 15)
 			{
 				soundpos = 15;
 			}
 #endif
-			S_ReducedVFXSound(player->mo, sfx_pass02 + soundpos, NULL); // ...which is why we can start at index 2 for a lower general pitch
+			S_ReducedVFXSound(player->mo, sfx_hoop1 + soundpos, NULL); // ...which is why we can start at index 2 for a lower general pitch
 		}
 
 		player->positiondelay = POS_DELAY_TIME + 4; // Position number growth

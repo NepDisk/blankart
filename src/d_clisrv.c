@@ -6148,11 +6148,6 @@ boolean TryRunTics(tic_t realtics)
 			if (Playing() && netgame && (gametic % TICRATE == 0))
 			{
 				Schedule_Run();
-
-				if (cv_livestudioaudience.value)
-				{
-					LiveStudioAudience();
-				}
 			}
 
 			gametic++;

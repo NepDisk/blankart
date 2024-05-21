@@ -711,8 +711,8 @@ boolean level_tally_t::IncrementLine(void)
 
 	if (playSounds == true && tickSound == 0)
 	{
-		S_StopSoundByNum(sfx_mbs5f);
-		S_StartSound(NULL, sfx_mbs5f);
+		S_StopSoundByNum(sfx_s1cd);
+		S_StartSound(NULL, sfx_s1cd);
 		tickSound = 3;
 	}
 
@@ -846,8 +846,8 @@ void level_tally_t::Tick(void)
 
 				if (playSounds == true)
 				{
-					S_StopSoundByNum(sfx_mbs5b);
-					S_StartSound(NULL, (lines >= lineCount) ? sfx_mbs70 : sfx_mbs5b);
+					S_StopSoundByNum(sfx_kc60);  //70 is bonus 5b is finish
+					S_StartSound(NULL, (lines >= lineCount) ? sfx_kc5e : sfx_kc60);
 				}
 
 				state = TALLY_ST_TEXT_PAUSE;

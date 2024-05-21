@@ -3525,12 +3525,12 @@ void A_AttractChase(mobj_t *actor)
 
 				if (actor->target->player->rings <= 10 && P_IsDisplayPlayer(actor->target->player))
 				{
-					S_ReducedVFXSoundAtVolume(actor->target, sfx_gshab, 
+					S_ReducedVFXSoundAtVolume(actor->target, sfx_cdfm66,
 						210 - 10*actor->target->player->rings
 					, NULL);
 
 					if (actor->target->player->rings == 0)
-						S_ReducedVFXSoundAtVolume(actor->target, sfx_gshad, 127, NULL);
+						S_ReducedVFXSoundAtVolume(actor->target, sfx_cdfm66, 127, NULL);
 				}
 
 				actor->target->player->ringvolume -= RINGVOLUMEUSEPENALTY;

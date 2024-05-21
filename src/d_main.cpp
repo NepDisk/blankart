@@ -1390,7 +1390,6 @@ static void IdentifyVersion(void)
 	// if you change the ordering of this or add/remove a file, be sure to update the md5
 	// checking in D_SRB2Main
 
-	D_AddFile(startupiwads, va(pandf,srb2waddir,"scripts.pk3"));
 	D_AddFile(startupiwads, va(pandf,srb2waddir,"gfx.pk3"));
 	D_AddFile(startupiwads, va(pandf,srb2waddir,"textures_general.pk3"));
 	D_AddFile(startupiwads, va(pandf,srb2waddir,"textures_segazones.pk3"));
@@ -1398,8 +1397,6 @@ static void IdentifyVersion(void)
 	D_AddFile(startupiwads, va(pandf,srb2waddir,"chars.pk3"));
 	D_AddFile(startupiwads, va(pandf,srb2waddir,"followers.pk3"));
 	D_AddFile(startupiwads, va(pandf,srb2waddir,"maps.pk3"));
-	D_AddFile(startupiwads, va(pandf,srb2waddir,"unlocks.pk3"));
-	D_AddFile(startupiwads, va(pandf,srb2waddir,"staffghosts.pk3"));
 	D_AddFile(startupiwads, va(pandf,srb2waddir,"shaders.pk3"));
 #ifdef USE_PATCH_FILE
 	D_AddFile(startupiwads, va(pandf,srb2waddir,"patch.pk3"));
@@ -1426,7 +1423,6 @@ static void IdentifyVersion(void)
 
 	MUSICTEST("sounds.pk3")
 	MUSICTEST("music.pk3")
-	MUSICTEST("altmusic.pk3")
 
 #undef MUSICTEST
 }
@@ -1721,7 +1717,6 @@ void D_SRB2Main(void)
 	// Check MD5s of autoloaded files
 	// Note: Do not add any files that ignore MD5!
 	W_VerifyFileMD5(mainwads, ASSET_HASH_BIOS_PK3);									// bios.pk3
-	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_SCRIPTS_PK3);					// scripts.pk3
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_GFX_PK3);						// gfx.pk3
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_TEXTURES_GENERAL_PK3);			// textures_general.pk3
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_TEXTURES_SEGAZONES_PK3);		// textures_segazones.pk3
@@ -1729,14 +1724,11 @@ void D_SRB2Main(void)
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_CHARS_PK3);					// chars.pk3
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_FOLLOWERS_PK3);				// followers.pk3
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_MAPS_PK3);						// maps.pk3
-	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_UNLOCKS_PK3);					// unlocks.pk3
-	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_STAFFGHOSTS_PK3);				// staffghosts.pk3
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_SHADERS_PK3);					// shaders.pk3
 #ifdef USE_PATCH_FILE
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_PATCH_PK3);					// patch.pk3
 #endif
 #else
-	mainwads++;	// scripts.pk3
 	mainwads++;	// gfx.pk3
 	mainwads++;	// textures_general.pk3
 	mainwads++;	// textures_segazones.pk3
@@ -1744,8 +1736,6 @@ void D_SRB2Main(void)
 	mainwads++;	// chars.pk3
 	mainwads++; // followers.pk3
 	mainwads++;	// maps.pk3
-	mainwads++; // unlocks.pk3
-	mainwads++; // staffghosts.pk3
 	mainwads++; // shaders.pk3
 #ifdef USE_PATCH_FILE
 	mainwads++; // patch.pk3

@@ -755,13 +755,6 @@ consvar_t cv_kartspeed = UnsavedNetVar("gamespeed", "Auto Gear").values(kartspee
 
 consvar_t cv_kartusepwrlv = UnsavedNetVar("usepwrlv", "Yes").yes_no();
 
-void LiveStudioAudience_OnChange(void);
-#ifdef DEVELOP
-	consvar_t cv_livestudioaudience = UnsavedNetVar("livestudioaudience", "On").on_off().onchange(LiveStudioAudience_OnChange);
-#else
-	consvar_t cv_livestudioaudience = UnsavedNetVar("livestudioaudience", "Off").on_off().onchange(LiveStudioAudience_OnChange);
-#endif
-
 consvar_t cv_maxplayers = NetVar("maxplayers", "8").min_max(1, MAXPLAYERS);
 
 // Scoring type options

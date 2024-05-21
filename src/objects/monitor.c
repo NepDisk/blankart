@@ -694,7 +694,7 @@ Obj_MonitorOnDeath
 
 	spawn_monitor_explosion(monitor);
 
-	S_StartSound(monitor, sfx_gshcc);
+	S_StartSound(monitor, sfx_s1b9);
 
 	if (!P_MobjWasRemoved(monitor_spot(monitor)))
 	{

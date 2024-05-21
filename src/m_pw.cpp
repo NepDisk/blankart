@@ -189,7 +189,7 @@ void f_bighead()
 	CV_SetValue(&cv_bighead, !cv_bighead.value);
 	if (cv_bighead.value)
 	{
-		S_StartSound(NULL, sfx_gshbb);
+		S_StartSound(NULL, sfx_s243);
 	}
 	else
 	{
@@ -229,7 +229,7 @@ void f_4thgear()
 	if (cv_4thgear.value)
 	{
 		M_StartMessage("Restraint device compromised!", "Local play sped up to ""\x85""4th Gear!""\x80""\nLet's see what you're made of!\n\n""\x86""No effect in netplay and attack modes.", NULL, MM_NOTHING, NULL, NULL);
-		S_StartSound(NULL, sfx_gshc4);
+		S_StartSound(NULL, sfx_cdpcm3);
 	}
 	else
 	{
@@ -243,7 +243,7 @@ void f_levelskull()
 	if (cv_levelskull.value)
 	{
 		M_StartMessage("It's over for humans!", "CPU difficulty raised to ""\x85""TRUE MAXIMUM!""\x80""\nThis isn't even remotely fair!", NULL, MM_NOTHING, NULL, NULL);
-		S_StartSound(NULL, sfx_gshdf);
+		S_StartSound(NULL, sfx_fizzle);
 	}
 	else
 	{

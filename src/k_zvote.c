@@ -310,7 +310,7 @@ static void Got_SetZVote(const UINT8 **cp, INT32 playernum)
 		return;
 	}
 
-	S_StartSound(NULL, sfx_gshad);
+	S_StartSound(NULL, sfx_s258);
 
 	g_midVote.votes[playernum] = true;
 }
