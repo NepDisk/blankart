@@ -12152,17 +12152,12 @@ void A_SSMineSearch(mobj_t *actor)
 
 void A_SSMineExplode(mobj_t *actor)
 {
-	INT32 locvar1 = var1;
-
-	tic_t delay;
 
 	if (LUA_CallAction(A_SSMINEEXPLODE, actor))
 		return;
 
 	if (actor->flags2 & MF2_DEBRIS)
 		return;
-
-	delay = K_MineExplodeAttack(actor, (3*actor->info->painchance)>>1, (boolean)locvar1);
 
 	skincolornum_t color = SKINCOLOR_KETCHUP;
 	if (!P_MobjWasRemoved(actor->target) && actor->target->player)
@@ -12179,15 +12174,9 @@ void A_SSMineFlash(mobj_t *actor)
 void A_LandMineExplode(mobj_t *actor)
 {
 	skincolornum_t colour = SKINCOLOR_KETCHUP;	// we spell words properly here
-	tic_t delay = actor->reactiontime;
 
 	if (LUA_CallAction(A_LANDMINEEXPLODE, actor))
 		return;
-
-	if (delay == 0)
-	{
-		delay = 8;
-	}
 
 	// we'll base the explosion "timer" off of some stupid variable like uh... cvmem!
 	// Yeah let's use cvmem since nobody uses that
