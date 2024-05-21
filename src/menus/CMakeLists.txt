@@ -3,6 +3,7 @@ target_sources(SRB2SDL2 PRIVATE
 	extras-addons.c
 	extras-challenges.c
 	extras-egg-tv.cpp
+	extras-replay-hut.c
 	extras-statistics.cpp
 	main-1.c
 	main-profile-select.c

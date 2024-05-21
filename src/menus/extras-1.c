@@ -45,7 +45,7 @@ menuitem_t EXTRAS_Main[] =
 		NULL, {.routine = M_Statistics}, 0, 0},
 
 	{IT_STRING | IT_CALL, NULL, NULL,
-		NULL, {.routine = M_EggTV}, 0, 0},
+		NULL, {.routine = M_ReplayHut}, 0, 0},
 
 	{IT_STRING | IT_CALL, NULL, NULL,
 		NULL, {.routine = M_SoundTest}, 0, 0},
@@ -112,7 +112,7 @@ void M_InitExtras(INT32 choice)
 	if (M_SecretUnlocked(SECRET_EGGTV, true))
 	{
 		EXTRAS_Main[extras_eggtv].status = IT_STRING | IT_CALL;
-		EXTRAS_Main[extras_eggtv].text = "Egg TV";
+		EXTRAS_Main[extras_eggtv].text = "Replay Hut";
 		EXTRAS_Main[extras_eggtv].tooltip = "Watch the replays you've saved throughout your many races & battles!";
 	}
 	else

@@ -1425,6 +1425,9 @@ void F_TitleScreenTicker(boolean run)
 
 	if (run)
 	{
+		if (Music_Playing("level"))
+			Music_Stop("level");
+
 		if (finalecount == 10 && curttmode == TTMODE_KART)
 		{
 			S_StartSound(NULL, sfx_s23e);

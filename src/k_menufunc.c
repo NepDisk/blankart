@@ -354,7 +354,7 @@ boolean M_Responder(event_t *ev)
 		return false;
 	}
 
-	if (gamestate == GS_MENU && ev->type == ev_gamepad_device_removed && G_GetPlayerForDevice(ev->device) != -1)
+	if (gamestate == GS_TITLESCREEN && ev->type == ev_gamepad_device_removed && G_GetPlayerForDevice(ev->device) != -1)
 	{
 		int i;
 		INT32 player = G_GetPlayerForDevice(ev->device);
@@ -698,6 +698,16 @@ menu_t *M_SpecificMenuRestore(menu_t *torestore)
 			}
 		}
 	}
+	else if (torestore == &EXTRAS_ReplayHutDef)
+	{
+		// Handle modifications to the folder while playing
+		M_ReplayHut(0);
+
+		if (demo.inreplayhut == false)
+		{
+			torestore = &EXTRAS_MainDef;
+		}
+	}
 	else if (torestore == &PLAY_MP_OptSelectDef)
 	{
 		// Ticker init
@@ -782,7 +792,7 @@ void M_StartControlPanel(void)
 	}
 	else if (!Playing())
 	{
-		if (gamestate != GS_MENU)
+		if (gamestate != GS_TITLESCREEN)
 		{
 			if (titlemapinaction)
 			{
@@ -792,7 +802,8 @@ void M_StartControlPanel(void)
 				SV_ResetServer();
 			}
 
-			G_SetGamestate(GS_MENU);
+			Music_Stop("level");
+			D_StartTitle();
 
 			gameaction = ga_nothing;
 			paused = false;

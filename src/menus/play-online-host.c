@@ -115,7 +115,7 @@ menu_t PLAY_MP_HostDef = {
 void M_PopupMasterServerRules(void)
 {
 #ifdef MASTERSERVER
-	if (cv_advertise.value && (serverrunning || gamestate == GS_MENU))
+	if (cv_advertise.value && (serverrunning || gamestate == GS_TITLESCREEN))
 	{
 		char *rules = GetMasterServerRules();
 

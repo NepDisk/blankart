@@ -104,7 +104,7 @@ void M_InitOptions(INT32 choice)
 	OPTIONS_MainDef.menuitems[mopt_server].status = IT_STRING | IT_TRANSTEXT;
 
 	// enable gameplay & server options under the right circumstances.
-	if (gamestate == GS_MENU
+	if (gamestate == GS_TITLESCREEN
 		|| ((server || IsPlayerAdmin(consoleplayer)) && K_CanChangeRules(false)))
 	{
 		OPTIONS_MainDef.menuitems[mopt_gameplay].status = IT_STRING | IT_CALL;
@@ -117,7 +117,7 @@ void M_InitOptions(INT32 choice)
 	OPTIONS_DataAdvancedDef.menuitems[daopt_addon].status = (M_SecretUnlocked(SECRET_ADDONS, true)
 		? (IT_STRING | IT_SUBMENU)
 		: (IT_NOTHING | IT_SPACE));
-	OPTIONS_DataDef.menuitems[dopt_erase].status = (gamestate == GS_MENU
+	OPTIONS_DataDef.menuitems[dopt_erase].status = (gamestate == GS_TITLESCREEN
 		? (IT_STRING | IT_SUBMENU)
 		: (IT_TRANSTEXT2 | IT_SPACE));
 

@@ -28,30 +28,45 @@
 #include "../z_zone.h"
 #include "../i_video.h" // I_FinishUpdate
 #include "../i_system.h" // I_Sleep
-#include "../m_cond.h" // M_GameTrulyStarted
 
 menuitem_t MainMenu[] =
 {
-	{IT_STRING | IT_CALL, "Local Play", "Play only on this computer.",
-		"MENUI002", {.routine = M_CharacterSelect}, 0, 0},
+	{IT_STRING | IT_CALL, "Local Play", NULL,
+		NULL, {.routine = M_CharacterSelect}, 0, 0},
 
-	{IT_STRING | IT_CALL, "Online", "Connect to other computers over the Internet.",
-		"MENUI009", {.routine = M_MPOptSelectInit}, /*M_MPRoomSelectInit,*/ 0, 0},
+	{IT_STRING | IT_CALL, "Online", NULL,
+		NULL, {.routine = M_MPOptSelectInit}, /*M_MPRoomSelectInit,*/ 0, 0},
 
 	{IT_STRING | IT_CALL, "Extras",
-		"Check out some bonus features.", "MENUI001",
+		NULL, NULL,
 		{.routine = M_InitExtras}, 0, 0},
 
 	{IT_STRING | IT_CALL, "Options",
-		"Configure your controls, settings, and preferences.", "MENUI010",
+		NULL, NULL,
 		{.routine = M_InitOptions}, 0, 0},
 
-	{IT_STRING | IT_CALL, "Quit",
-		"Exit \"Dr. Robotnik's Ring Racers\".", NULL,
+	{IT_STRING | IT_CALL, "Quit",NULL, NULL,
 		{.routine = M_QuitSRB2}, 0, 0},
 };
 
-menu_t MainDef = KARTGAMEMODEMENU(MainMenu, NULL);
+
+menu_t MainDef = {
+	sizeof (MainMenu) / sizeof (menuitem_t),
+	NULL,
+	0,
+	MainMenu,
+	BASEVIDWIDTH/2, 72,
+	0, 0,
+	NULL,
+	"title",
+	1, 10,	// For transition with some menus!
+	M_DrawCenteredMenu,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL
+};
 
 // Quit Game
 static INT32 quitsounds[] =

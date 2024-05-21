@@ -1987,7 +1987,7 @@ void HU_DrawSongCredits(void)
 	{
 		y = (BASEVIDHEIGHT - 13) * FRACUNIT;
 	}
-	else if (gamestate == GS_MENU)
+	else if (gamestate == GS_TITLESCREEN)
 	{
 		y = 30 * FRACUNIT;
 	}

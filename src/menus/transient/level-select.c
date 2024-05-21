@@ -299,7 +299,7 @@ boolean M_LevelListFromGametype(INT16 gt)
 
 		levellist.backMenu = currentMenu;
 
-		if (gamestate == GS_MENU)
+		if (gamestate == GS_TITLESCREEN)
 		{
 			const char *music;
 			void (*bgroutine)(void);

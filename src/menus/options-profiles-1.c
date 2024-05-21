@@ -123,7 +123,7 @@ void M_StartEditProfile(INT32 c)
 		OPTIONS_EditProfile[popt_profilepname].status = IT_STRING | IT_CVAR | IT_CV_STRING;
 		OPTIONS_EditProfile[popt_char].status = IT_STRING | IT_CALL;
 
-		if (gamestate != GS_MENU)	// If we're modifying things mid game, transtext some of those!
+		if (gamestate != GS_TITLESCREEN)	// If we're modifying things mid game, transtext some of those!
 		{
 			OPTIONS_EditProfile[popt_profilename].status |= IT_TRANSTEXT;
 			OPTIONS_EditProfile[popt_profilepname].status |= IT_TRANSTEXT;
@@ -209,7 +209,7 @@ void M_HandleProfileSelect(INT32 ch)
 				M_SetMenuDelay(pid);
 				return;
 			}
-			else if (creatable && optionsmenu.profilen == maxp && gamestate != GS_MENU)
+			else if (creatable && optionsmenu.profilen == maxp && gamestate != GS_TITLESCREEN)
 			{
 				S_StartSound(NULL, sfx_s3k7b);
 				M_StartMessage("Profiles", M_GetText("Cannot create a new profile\nmid-game. Return to the\ntitle screen first."), NULL, MM_NOTHING, NULL, NULL);

@@ -329,7 +329,7 @@ void M_CharacterSelectInit(void)
 			// (Make sure we don't overshoot it somehow if we deleted profiles or whatnot)
 			setup_player[i].profilen = min(cv_lastprofile[i].value, PR_GetNumProfiles());
 
-			if (gamestate != GS_MENU && i <= splitscreen)
+			if (gamestate != GS_TITLESCREEN && i <= splitscreen)
 			{
 				M_SetupMidGameGridPos(&setup_player[i], i);
 				setup_player[i].mdepth = CSSTEP_CHARS;
@@ -888,7 +888,7 @@ static boolean M_HandleCharacterGrid(setup_player_t *p, UINT8 num)
 	{
 		// for profiles / gameplay, exit out of the menu instantly,
 		// we don't want to go to the input detection menu.
-		if (optionsmenu.profile || gamestate != GS_MENU)
+		if (optionsmenu.profile || gamestate != GS_TITLESCREEN)
 		{
 			memset(setup_player, 0, sizeof(setup_player));	// Reset setup_player otherwise it does some VERY funky things.
 			M_SetMenuDelay(0);
@@ -1283,7 +1283,7 @@ boolean M_CharacterSelectHandler(INT32 choice)
 			switch (p->mdepth)
 			{
 				case CSSTEP_NONE: // Enter Game
-					if (gamestate == GS_MENU)	// do NOT handle that outside of GS_MENU.
+					if (gamestate == GS_TITLESCREEN)	// do NOT handle that outside of GS_TITLESCREEN.
 						playersChanged = M_HandlePressStart(p, i);
 					break;
 				case CSSTEP_PROFILE:
@@ -1427,7 +1427,7 @@ void M_CharacterSelectTick(void)
 	if (setupnext && setup_numplayers > 0)
 	{
 		// Selecting from the menu
-		if (gamestate == GS_MENU)
+		if (gamestate == GS_TITLESCREEN)
 		{
 			// in a profile; update the selected profile and then go back to the profile menu.
 			if (optionsmenu.profile)
