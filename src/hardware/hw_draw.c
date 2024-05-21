@@ -1155,6 +1155,7 @@ void HWR_DrawFill(INT32 x, INT32 y, INT32 w, INT32 h, INT32 color)
 	FOutVector v[4];
 	FSurfaceInfo Surf;
 	float fx, fy, fw, fh;
+	UINT8 alphalevel = ((color & V_ALPHAMASK) >> V_ALPHASHIFT);
 	RGBA_t *palette = HWR_GetTexturePalette();
 
 //  3--2
@@ -1235,8 +1236,22 @@ void HWR_DrawFill(INT32 x, INT32 y, INT32 w, INT32 h, INT32 color)
 
 	Surf.PolyColor = palette[color&0xFF];
 
+	if (alphalevel)
+	{
+		int transindex = min(max((10 - alphalevel), 0), 10);
+
+		if (alphalevel == 10)
+			Surf.PolyColor.s.alpha = softwaretranstogl_lo[V_GetHUDTranslucency(color)];
+		else if (alphalevel == 11)
+			Surf.PolyColor.s.alpha = softwaretranstogl[V_GetHUDTranslucency(color)];
+		else if (alphalevel == 12)
+			Surf.PolyColor.s.alpha = softwaretranstogl_hi[V_GetHUDTranslucency(color)];
+		else
+			Surf.PolyColor.s.alpha = softwaretranstogl[transindex];
+	}
+
 	HWD.pfnDrawPolygon(&Surf, v, 4,
-		PF_Modulated|PF_NoTexture|PF_NoDepthTest);
+		PF_Modulated|PF_NoTexture|PF_NoDepthTest|PF_Translucent);
 }
 
 #ifdef HAVE_PNG
