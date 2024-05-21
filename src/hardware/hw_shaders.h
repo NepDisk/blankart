@@ -155,16 +155,12 @@
 	"float light_y = clamp(floor(R_DoomColormap(lighting, z)), 0.0, 31.0);\n" \
 	"vec2 lighttable_coord = vec2((tex_pal_idx + 0.5) / 256.0, (light_y + 0.5) / 32.0);\n" \
 	"vec4 final_color = texture2D(lighttable_tex, lighttable_coord);\n" \
-	"float brightmap_mix = floor(texture2D(brightmap, gl_TexCoord[0].st).r);\n" \
-	"float light_gain = (255.0 - lighting) * brightmap_mix;\n" \
-	"float final_lighting = lighting + light_gain;\n" \
 	"final_color.a = texel.a * poly_color.a;\n" \
 	"gl_FragColor = final_color;\n" \
 
 #define GLSL_SOFTWARE_FRAGMENT_SHADER \
 	"#ifdef SRB2_PALETTE_RENDERING\n" \
 	"uniform sampler2D tex;\n" \
-	"uniform sampler2D brightmap;\n" \
 	"uniform sampler3D palette_lookup_tex;\n" \
 	"uniform sampler2D lighttable_tex;\n" \
 	"uniform vec4 poly_color;\n" \
@@ -222,7 +218,6 @@
 	GLSL_WALL_FUDGES \
 	"#ifdef SRB2_PALETTE_RENDERING\n" \
 	"uniform sampler2D tex;\n" \
-	"uniform sampler2D brightmap;\n" \
 	"uniform sampler3D palette_lookup_tex;\n" \
 	"uniform sampler2D lighttable_tex;\n" \
 	"uniform vec4 poly_color;\n" \
@@ -230,17 +225,7 @@
 	GLSL_DOOM_COLORMAP \
 	"void main(void) {\n" \
 		"vec4 texel = texture2D(tex, gl_TexCoord[0].st);\n" \
-		"float tex_pal_idx = texture3D(palette_lookup_tex, vec3((texel * 63.0 + 0.5) / 64.0))[0] * 255.0;\n" \
-		"float z = gl_FragCoord.z / gl_FragCoord.w;\n" \
-		"float light_y = clamp(floor(R_DoomColormap(lighting, z)), 0.0, 31.0);\n" \
-		"vec2 lighttable_coord = vec2((tex_pal_idx + 0.5) / 256.0, (light_y + 0.5) / 32.0);\n" \
-		"vec4 final_color = texture2D(lighttable_tex, lighttable_coord);\n" \
-		"float final_lighting = gl_Color.r * 255.0;\n" \
-		"float brightmap_mix = floor(texture2D(brightmap, gl_TexCoord[0].st).r);\n" \
-		"float light_gain = (255.0 - final_lighting) * brightmap_mix;\n" \
-		"final_lighting += light_gain;\n" \
-		"final_color.a = texel.a * poly_color.a;\n" \
-		"gl_FragColor = final_color;\n" \
+		GLSL_PALETTE_RENDERING \
 	"}\n" \
 	"#else\n" \
 	"uniform sampler2D tex;\n" \
@@ -289,7 +274,6 @@
 	"const float pi = 3.14159;\n" \
 	"#ifdef SRB2_PALETTE_RENDERING\n" \
 	"uniform sampler2D tex;\n" \
-	"uniform sampler2D brightmap;\n" \
 	"uniform sampler3D palette_lookup_tex;\n" \
 	"uniform sampler2D lighttable_tex;\n" \
 	"uniform vec4 poly_color;\n" \
