@@ -3928,6 +3928,9 @@ static void P_BouncePlayerMove(mobj_t *mo, TryMoveResult_t *result)
 	P_PlayerHitBounceLine(bestslideline, &result->normal);
 	mo->eflags |= MFE_JUSTBOUNCEDWALL;
 
+	if (mo->player)
+		mo->player->bumpUnstuck += 5;
+
 	// Combo avoidance!
 	if (mo->player && P_PlayerInPain(mo->player) && gametyperules & GTR_BUMPERS && mo->health == 1)
 	{
