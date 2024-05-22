@@ -26,6 +26,7 @@
 #include "hu_stuff.h"
 #include "g_game.h"
 #include "g_input.h"    // for device rumble
+#include "m_fixed.h"
 #include "m_random.h"
 #include "p_local.h"
 #include "p_mobj.h"
@@ -2873,8 +2874,14 @@ static void K_GetKartBoostPower(player_t *player)
 	if (player->flamedash) // Flame Shield dash
 	{
 		fixed_t dash = K_FlameShieldDashVar(player->flamedash);
-		speedboost = max(speedboost, dash); // + infinite top speed
-		accelboost = max(3*FRACUNIT,3*FRACUNIT);   // + 300% acceleration
+		fixed_t intermediate = 0;
+		fixed_t boost = 0;
+
+		intermediate = FixedDiv(FixedMul(FLOAT_TO_FIXED(.60), FRACUNIT*-1/2) - FRACUNIT/4,-FLOAT_TO_FIXED(.65)+FRACUNIT/2);
+		boost = FixedMul(FLOAT_TO_FIXED(.60),(FRACUNIT-FixedDiv(FRACUNIT,(dash+intermediate))));
+
+		speedboost = max(speedboost, boost); // + diminished top speed
+		accelboost = max(accelboost,3*FRACUNIT);   // + 300% acceleration
 	}
 
 	if (player->driftboost) // Drift Boost
@@ -9435,7 +9442,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 
 								if ((cmd->buttons & BT_ATTACK) && (player->itemflags & IF_HOLDREADY))
 								{
-									const INT32 incr = (gametyperules & GTR_CLOSERPLAYERS) ? 4 : 2;
+									const INT32 incr = (gametyperules & GTR_CLOSERPLAYERS) ? 5 : 4;
 									player->flamemeter += incr;
 
 									if (player->flamelength)
@@ -9451,7 +9458,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 
 										S_StopSoundByID(player->mo, sfx_fshld3);
 
-										player->flamedash += incr;
+										player->flamedash += (incr/2);
 
 										if (!onground)
 										{
