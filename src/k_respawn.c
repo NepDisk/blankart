@@ -868,7 +868,7 @@ static void K_HandleDropDash(player_t *player)
 		if ((buttons & BT_ACCELERATE) && (player->respawn.dropdash >= TICRATE/4))
 		{
 			S_StartSound(player->mo, sfx_s23c);
-			player->dropdashboost = 50;
+			player->startboost = 50;
 			K_SpawnDashDustRelease(player);
 		}
 

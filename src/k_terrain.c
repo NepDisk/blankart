@@ -480,7 +480,7 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		K_DoSneaker(player, 0);
 	}
 
-	// Trick panel
+	// Pogo panel
 	if (terrain->pogoPanel > 0 && !(mo->eflags & MFE_SPRUNG))
 	{
 		const fixed_t hscale = mapobjectscale + (mapobjectscale - player->mo->scale);
@@ -491,13 +491,17 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		if ((player->speed > maxspeed) && terrain->pogoPanel == 2) // Prevent overshooting jumps
 		{
 			P_InstaThrust(player->mo, pushangle, maxspeed);
-			player->pogospring = 2;
+
 		}
 		else if (player->speed < minspeed) // Push forward to prevent getting stuck
 		{
 			P_InstaThrust(player->mo, pushangle, minspeed);
-			player->pogospring = 1;
 		}
+
+		if (terrain->pogoPanel == 1)
+			player->pogospring = 1;
+		else if (terrain->pogoPanel == 2)
+			player->pogospring = 2;
 
 		K_DoPogoSpring(player->mo, 0, 1);
 	}

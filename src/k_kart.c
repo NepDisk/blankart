@@ -7269,7 +7269,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (P_IsObjectOnGround(player->mo) && player->pogospring)
 	{
 		if (P_MobjFlip(player->mo) * player->mo->momz <= 0) {
-			player->pogospring = false;
+			player->pogospring = 0;
 		}
 	}
 
@@ -8371,7 +8371,7 @@ static void K_KartDrift(player_t *player, boolean onground)
 	}
 
 	// We don't meet sliptide conditions!
-	if ((player->handleboost < (SLIPTIDEHANDLING/2))
+	if ((!player->sneakertimer)
 	|| (!player->cmd.turning)
 	|| (!player->aizdriftstrat)
 	|| (player->cmd.turning > 0) != (player->aizdriftstrat > 0))
