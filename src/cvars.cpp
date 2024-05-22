@@ -1,4 +1,3 @@
-
 // DR. ROBOTNIK'S RING RACERS
 //-----------------------------------------------------------------------------
 // Copyright (C) 2024 by James Robert Roman
@@ -307,7 +306,6 @@ consvar_t cv_addons_md5 = Player("addons_md5", "Name").values({{0, "Name"}, {1, 
 consvar_t cv_addons_search_case = Player("addons_search_case", "No").yes_no();
 consvar_t cv_addons_search_type = Player("addons_search_type", "Anywhere").values({{0, "Start"}, {1, "Anywhere"}});
 consvar_t cv_addons_showall = Player("addons_showall", "No").yes_no();
-consvar_t cv_allowguests = Player("allowguests", "On").on_off();
 consvar_t cv_alttitle = Player("alttitle", "Off").on_off();
 consvar_t cv_alwaysgrabmouse = GraphicsDriver("alwaysgrabmouse", "Off").on_off();
 
@@ -662,6 +660,8 @@ consvar_t cv_zvote_length = NetVar("zvote_length", "20").values(CV_Unsigned);
 consvar_t cv_zvote_quorum = NetVar("zvote_quorum", "0.6").floating_point().min_max(0, FRACUNIT);
 consvar_t cv_zvote_spectators = NetVar("zvote_spectator_votes", "Off").on_off();
 
+consvar_t cv_allowguests = NetVar("allowguests", "On").on_off();
+consvar_t cv_gamestochat = NetVar("gamestochat", "0").min_max(0, 99);
 
 //
 // Netvars that don't save...
@@ -1464,8 +1464,6 @@ consvar_t cv_chatwidth = Player("chatwidth", "150").min_max(64, 150);
 
 // old shit console chat. (mostly exists for stuff like terminal, not because I cared if anyone liked the old chat.)
 consvar_t cv_consolechat = Player("chatmode", "Yes").values({{0, "Yes"}, {2, "No"}});
-
-consvar_t cv_gamestochat = Player("gamestochat", "0").min_max(0, 99);
 
 void Mute_OnChange(void);
 consvar_t cv_mute = UnsavedNetVar("mute", "Off").on_off().onchange(Mute_OnChange);

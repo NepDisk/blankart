@@ -455,7 +455,7 @@ void Obj_PohbeeThinker(mobj_t *pohbee)
 {
 	mobj_t *gun = NULL;
 
-	K_SetItemCooldown(KITEM_SHRINK, 20*TICRATE);
+	K_SetItemCooldown(KITEM_SHRINK, 60*TICRATE);
 
 	pohbee->momx = pohbee->momy = pohbee->momz = 0;
 	pohbee->spritexscale = pohbee->spriteyscale = 2*FRACUNIT;
@@ -606,8 +606,10 @@ boolean Obj_ShrinkLaserCollide(mobj_t *gun, mobj_t *victim)
 	else
 	{
 		// Bullshit contact. Let 'em off for free.
-		if (scale < FRACUNIT/4)
+		if (scale < FRACUNIT/3)
 			return true;
+
+		scale = Easing_InSine(scale, 0, FRACUNIT);
 
 		if (prevTimer > 0)
 		{

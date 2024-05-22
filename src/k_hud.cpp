@@ -1403,6 +1403,9 @@ static void K_drawKartItem(void)
 	vector2_t rouletteCrop = {7, 7};
 	INT32 i;
 
+	boolean flashOnOne = false;
+	boolean flashOnTwo = false;
+
 	if (stplyr->itemRoulette.itemListLen > 0)
 	{
 		// Init with item roulette stuff.
@@ -1454,10 +1457,8 @@ static void K_drawKartItem(void)
 
 		if (stplyr->stealingtimer < 0)
 		{
-			if (leveltime & 2)
-				localpatch[1] = kp_hyudoro[offset];
-			else
-				localpatch[1] = kp_nodraw;
+			localpatch[1] = kp_hyudoro[offset];
+			flashOnTwo = true;
 		}
 		else if ((stplyr->stealingtimer > 0) && (leveltime & 2))
 		{
@@ -1465,10 +1466,8 @@ static void K_drawKartItem(void)
 		}
 		else if (stplyr->eggmanexplode > 1)
 		{
-			if (leveltime & 1)
-				localpatch[1] = kp_eggman[offset];
-			else
-				localpatch[1] = kp_nodraw;
+			localpatch[1] = kp_eggman[offset];
+			flashOnOne = true;
 		}
 		else if (stplyr->ballhogcharge > 0)
 		{
@@ -1478,27 +1477,21 @@ static void K_drawKartItem(void)
 			itembar = stplyr->ballhogcharge % BALLHOGINCREMENT;
 			maxl = BALLHOGINCREMENT;
 
-			if (leveltime & 1)
-				localpatch[1] = kp_ballhog[offset];
-			else
-				localpatch[1] = kp_nodraw;
+			localpatch[1] = kp_ballhog[offset];
+			flashOnOne = true;
 		}
 		else if (stplyr->rocketsneakertimer > 1)
 		{
 			itembar = stplyr->rocketsneakertimer;
 			maxl = (itemtime*3) - barlength;
 
-			if (leveltime & 1)
-				localpatch[1] = kp_rocketsneaker[offset];
-			else
-				localpatch[1] = kp_nodraw;
+			localpatch[1] = kp_rocketsneaker[offset];
+			flashOnOne = true;
 		}
 		else if (stplyr->sadtimer > 0)
 		{
-			if (leveltime & 2)
-				localpatch[1] = kp_sadface[offset];
-			else
-				localpatch[1] = kp_nodraw;
+			localpatch[1] = kp_sadface[offset];
+			flashOnTwo = true;
 		}
 		else if (stplyr->itemRoulette.reserved > 0)
 		{
@@ -1535,11 +1528,19 @@ static void K_drawKartItem(void)
 					break;
 			}
 
-			if ((stplyr->itemflags & IF_ITEMOUT) && !(leveltime & 1))
+			if ((stplyr->itemflags & IF_ITEMOUT))
+				flashOnOne = true;
+		}
+
+		if (!cv_reducevfx.value)
+		{
+			if (flashOnOne && !(leveltime & 1))
+				localpatch[1] = kp_nodraw;
+			else if (flashOnTwo && !(leveltime & 2))
 				localpatch[1] = kp_nodraw;
 		}
 
-		if (stplyr->karthud[khud_itemblink] && (leveltime & 1))
+		if (stplyr->karthud[khud_itemblink] && (leveltime & 1) && !(cv_reducevfx.value))
 		{
 			colormode[1] = TC_BLINK;
 
@@ -1648,6 +1649,13 @@ static void K_drawKartItem(void)
 		// A little goofy, but helps with ballhog charge conveyance—you're "loading" them.
 		UINT8 fakeitemamount = stplyr->itemamount - (stplyr->ballhogcharge / BALLHOGINCREMENT);
 
+		boolean transflag = V_HUDTRANS;
+
+		if (cv_reducevfx.value && (flashOnOne || flashOnTwo))
+		{
+			transflag = V_HUDTRANSHALF;
+		}
+
 		if (fakeitemamount >= numberdisplaymin && stplyr->itemRoulette.active == false)
 		{
 			UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
@@ -1658,7 +1666,7 @@ static void K_drawKartItem(void)
 
 			V_DrawFixedPatch(
 				fx<<FRACBITS, (fy<<FRACBITS) + rouletteOffset,
-				FRACUNIT, V_HUDTRANS|V_SLIDEIN|fflags,
+				FRACUNIT, transflag|V_SLIDEIN|fflags,
 				localpatch[1], (localcolor[1] ? R_GetTranslationColormap(colormode[1], localcolor[1], GTC_CACHE) : NULL)
 			);
 
@@ -1679,7 +1687,7 @@ static void K_drawKartItem(void)
 		{
 			V_DrawFixedPatch(
 				fx<<FRACBITS, (fy<<FRACBITS) + rouletteOffset,
-				FRACUNIT, V_HUDTRANS|V_SLIDEIN|fflags,
+				FRACUNIT, transflag|V_SLIDEIN|fflags,
 				localpatch[1], (localcolor[1] ? R_GetTranslationColormap(colormode[1], localcolor[1], GTC_CACHE) : NULL)
 			);
 		}
@@ -1816,7 +1824,7 @@ static void K_drawKartSlotMachine(void)
 		}
 	}
 
-	if (stplyr->karthud[khud_itemblink] && (leveltime & 1))
+	if (stplyr->karthud[khud_itemblink] && (leveltime & 1) && !cv_reducevfx.value)
 	{
 		colormode[1] = TC_BLINK;
 		localcolor[1] = SKINCOLOR_WHITE;
@@ -2163,6 +2171,12 @@ void K_DrawKartPositionNumXY(
 		boolean exit, boolean lastLap, boolean losing
 	)
 {
+	if (cv_reducevfx.value != 0)
+	{
+		// Reduce the flashing rate
+		counter /= 4;
+	}
+
 	counter /= 3; // Alternate colors every three frames
 
 	UINT8 *color = NULL;
@@ -5075,14 +5089,31 @@ static void K_drawKartStartBulbs(void)
 
 				bulbtic -= 14;
 
+				// Reduce VFX disables the bulb animation while still presenting this indicator
+
 				if (bulbtic > length)
 				{
 					bulbtic -= length;
-					patchnum = chillloop_animation[bulbtic % 2];
+
+					if (cv_reducevfx.value != 0)
+					{
+						patchnum = chillloop_animation[0];
+					}
+					else
+					{
+						patchnum = chillloop_animation[bulbtic % 2];
+					}
 				}
 				else
 				{
-					patchnum = loop_animation[bulbtic % 4];
+					if (cv_reducevfx.value != 0)
+					{
+						patchnum = loop_animation[0];
+					}
+					else
+					{
+						patchnum = loop_animation[bulbtic % 4];
+					}
 				}
 			}
 		}

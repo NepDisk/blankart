@@ -17,6 +17,7 @@
 #include "../f_finale.h"
 #include "../k_credits.h"
 #include "../m_pw.h"
+#include "../i_system.h"
 
 static void M_Credits(INT32 choice)
 {
@@ -24,6 +25,32 @@ static void M_Credits(INT32 choice)
 	restoreMenu = currentMenu;
 	M_ClearMenus(true);
 	F_StartCredits();
+}
+
+const char *manual_url = "https://kartkrew.org/rr-manual";
+
+static void M_ManualSelect(INT32 choice)
+{
+	if (choice != MA_YES)
+		return;
+
+	I_OpenURL(manual_url);
+}
+
+static void M_Manual(INT32 choice)
+{
+	(void)choice;
+	restoreMenu = currentMenu;
+
+	if (I_HasOpenURL())
+	{
+		M_StartMessage("Online Manual", va("This will open a page in your default browser:\n\x86%s", manual_url), M_ManualSelect, MM_YESNO, "Let's go!", "Not now...");
+	}
+	else
+	{
+		I_ClipboardCopy(manual_url, strlen(manual_url));
+		M_StartMessage("Online Manual", va("A URL has been copied to your clipboard:\n\x86%s", manual_url), NULL, MM_NOTHING, NULL, NULL);
+	}
 }
 
 menuitem_t EXTRAS_Main[] =
@@ -35,11 +62,14 @@ menuitem_t EXTRAS_Main[] =
 	{IT_STRING | IT_CALL, NULL, NULL,
 		NULL, {.routine = M_Addons}, 0, 0},
 
-	{IT_STRING | IT_CALL, "Tutorial", "Help Dr. Robotnik and Tails test out their new Ring Racers.",
-		NULL, {.routine = M_LevelSelectInit}, 0, GT_TUTORIAL},
-
 	{IT_STRING | IT_CALL, "Challenges", "View the requirements for some of the secret content you can unlock!",
 		NULL, {.routine = M_Challenges}, 0, 0},
+
+	{IT_STRING | IT_CALL, "Online Manual", "Learn everything there is to know about handling, items, and strategy.",
+		NULL, {.routine = M_Manual}, 0, 0},
+
+	{IT_STRING | IT_CALL, "Tutorial", "Help Dr. Robotnik and Tails test out their new Ring Racers.",
+		NULL, {.routine = M_LevelSelectInit}, 0, GT_TUTORIAL},
 
 	{IT_STRING | IT_CALL, "Statistics", "Look back on some of your greatest achievements such as your playtime and wins!",
 		NULL, {.routine = M_Statistics}, 0, 0},

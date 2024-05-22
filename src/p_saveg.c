@@ -613,6 +613,7 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].preventfailsafe);
 
 		WRITEUINT8(save->p, players[i].tripwireUnstuck);
+		WRITEUINT8(save->p, players[i].bumpUnstuck);
 
 		WRITEUINT8(save->p, players[i].handtimer);
 		WRITEANGLE(save->p, players[i].besthanddirection);
@@ -1226,6 +1227,7 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].preventfailsafe = READUINT8(save->p);
 
 		players[i].tripwireUnstuck = READUINT8(save->p);
+		players[i].bumpUnstuck = READUINT8(save->p);
 
 		players[i].handtimer = READUINT8(save->p);
 		players[i].besthanddirection = READANGLE(save->p);
@@ -4682,10 +4684,7 @@ static thinker_t* LoadMobjThinker(savebuffer_t *save, actionf_p1 thinker)
 	if (diff2 & MD2_RENDERFLAGS)
 		mobj->renderflags = READUINT32(save->p);
 	if (diff2 & MD2_TID)
-	{
-		INT16 tid = READINT16(save->p);
-		P_SetThingTID(mobj, tid);
-	}
+		mobj->tid = READINT16(save->p);
 	if (diff2 & MD2_SPRITESCALE)
 	{
 		mobj->spritexscale = READFIXED(save->p);
@@ -4806,6 +4805,9 @@ static thinker_t* LoadMobjThinker(savebuffer_t *save, actionf_p1 thinker)
 	{
 		mobj->owner = (mobj_t *)(size_t)READUINT32(save->p);
 	}
+
+	// link tid set earlier
+	P_AddThingTID(mobj);
 
 	// set sprev, snext, bprev, bnext, subsector
 	P_SetThingPosition(mobj);
