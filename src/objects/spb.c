@@ -144,95 +144,6 @@ static void SPBMantaRings(mobj_t *spb)
 	}
 }
 
-static void SpawnSPBDust(mobj_t *spb)
-{
-	// The easiest way to spawn a V shaped cone of dust from the SPB is simply to spawn 2 particles, and to both move them to the sides in opposite direction.
-	mobj_t *dust;
-	fixed_t sx;
-	fixed_t sy;
-	fixed_t sz = spb->floorz;
-	angle_t sa = spb->angle - ANG1*60;
-	INT32 i;
-
-	if (spb->eflags & MFE_VERTICALFLIP)
-	{
-		sz = spb->ceilingz;
-	}
-
-	if ((leveltime & 1) && abs(spb->z - sz) < FRACUNIT*64) // Only every other frame. Also don't spawn it if we're way above the ground.
-	{
-		// Determine spawning position next to the SPB:
-		for (i = 0; i < 2; i++)
-		{
-			sx = 96 * FINECOSINE(sa >> ANGLETOFINESHIFT);
-			sy = 96 * FINESINE(sa >> ANGLETOFINESHIFT);
-
-			dust = P_SpawnMobjFromMobj(spb, sx, sy, 0, MT_SPBDUST);
-			dust->z = sz;
-
-			dust->momx = spb->momx/2;
-			dust->momy = spb->momy/2;
-			dust->momz = spb->momz/2; // Give some of the momentum to the dust
-
-			P_SetScale(dust, spb->scale * 2);
-
-			dust->color = SKINCOLOR_RED;
-			dust->colorized = true;
-
-			dust->angle = spb->angle - FixedAngle(FRACUNIT*90 - FRACUNIT*180*i); // The first one will spawn to the right of the spb, the second one to the left.
-			P_Thrust(dust, dust->angle, 6*dust->scale);
-
-			K_MatchGenericExtraFlags(dust, spb);
-
-			sa += ANG1*120;	// Add 120 degrees to get to mo->angle + ANG1*60
-		}
-	}
-}
-
-// Spawns SPB slip tide. To be used when the SPB is turning.
-// Modified version of K_SpawnAIZDust. Maybe we could merge those to be cleaner?
-
-// dir should be either 1 or -1 to determine where to spawn the dust.
-
-static void SpawnSPBSliptide(mobj_t *spb, SINT8 dir)
-{
-	fixed_t newx;
-	fixed_t newy;
-	mobj_t *spark;
-	angle_t travelangle;
-	fixed_t sz = spb->floorz;
-
-	if (spb->eflags & MFE_VERTICALFLIP)
-	{
-		sz = spb->ceilingz;
-	}
-
-	travelangle = K_MomentumAngle(spb);
-
-	if ((leveltime & 1) && abs(spb->z - sz) < FRACUNIT*64)
-	{
-		newx = P_ReturnThrustX(spb, travelangle - (dir*ANGLE_45), 24*FRACUNIT);
-		newy = P_ReturnThrustY(spb, travelangle - (dir*ANGLE_45), 24*FRACUNIT);
-
-		spark = P_SpawnMobjFromMobj(spb, newx, newy, 0, MT_SPBDUST);
-		spark->z = sz;
-
-		P_SetMobjState(spark, S_KARTAIZDRIFTSTRAT);
-		P_SetTarget(&spark->target, spb);
-
-		spark->colorized = true;
-		spark->color = SKINCOLOR_RED;
-
-		spark->angle = travelangle + (dir * ANGLE_90);
-		P_SetScale(spark, (spark->destscale = spb->scale*3/2));
-
-		spark->momx = (6*spb->momx)/5;
-		spark->momy = (6*spb->momy)/5;
-
-		K_MatchGenericExtraFlags(spark, spb);
-	}
-}
-
 // Used for seeking and when SPB is trailing its target from way too close!
 static void SpawnSPBSpeedLines(mobj_t *spb)
 {
@@ -250,15 +161,6 @@ static void SpawnSPBSpeedLines(mobj_t *spb)
 	fast->colorized = true;
 
 	K_MatchGenericExtraFlags(fast, spb);
-}
-
-static fixed_t SPBDist(mobj_t *a, mobj_t *b)
-{
-	return P_AproxDistance(P_AproxDistance(
-		a->x - b->x,
-		a->y - b->y),
-		a->z - b->z
-	);
 }
 
 static void SPBTurn(
@@ -319,334 +221,91 @@ static void SetSPBSpeed(mobj_t *spb, fixed_t xySpeed, fixed_t zSpeed)
 	);
 }
 
-static boolean SPBSeekSoundPlaying(mobj_t *spb)
-{
-	return (S_SoundPlaying(spb, sfx_spbska)
-		|| S_SoundPlaying(spb, sfx_spbskb)
-		|| S_SoundPlaying(spb, sfx_spbskc));
-}
-
-static void SPBSeek(mobj_t *spb, mobj_t *bestMobj)
+static void SPBSeek(mobj_t *actor, mobj_t *bestMobj)
 {
 	const fixed_t desiredSpeed = SPB_DEFAULTSPEED;
 
-	waypoint_t *curWaypoint = NULL;
-	waypoint_t *destWaypoint = NULL;
-
 	fixed_t dist = INT32_MAX;
-	fixed_t activeDist = INT32_MAX;
-
-	fixed_t destX = spb->x;
-	fixed_t destY = spb->y;
-	fixed_t destZ = spb->z;
-	angle_t destAngle = spb->angle;
-	angle_t destPitch = 0U;
 
 	fixed_t xySpeed = desiredSpeed;
 	fixed_t zSpeed = desiredSpeed;
-	SINT8 sliptide = 0;
 
-	fixed_t steerDist = INT32_MAX;
-	mobj_t *steerMobj = NULL;
+	angle_t hang, vang;
 
-	boolean circling = false;
+	spb_lastplayer(actor) = -1; // Just make sure this is reset
 
-	size_t i;
-
-	spb_lastplayer(spb) = -1; // Just make sure this is reset
-
-	if (bestMobj == NULL
+		if (bestMobj == NULL
 		|| P_MobjWasRemoved(bestMobj) == true
 		|| bestMobj->health <= 0
 		|| (bestMobj->player != NULL && bestMobj->player->respawn.state != RESPAWNST_NONE))
-	{
-		// No one there? Completely STOP.
-		spb->momx = spb->momy = spb->momz = 0;
-
-		if (bestMobj == NULL)
 		{
-			spbplace = -1;
-		}
-
-		return;
-	}
-
-	// Found someone, now get close enough to initiate the slaughter...
-	P_SetTarget(&spb_chase(spb), bestMobj);
-
-	if (bestMobj->player != NULL)
-	{
-		spbplace = bestMobj->player->position;
-	}
-	else
-	{
-		spbplace = 1;
-	}
-
-	dist = SPBDist(spb, spb_chase(spb));
-	activeDist = FixedMul(SPB_ACTIVEDIST, spb_chase(spb)->scale);
-
-	if (spb_swapcount(spb) > SPB_MAXSWAPS + 1)
-	{
-		// Too much hot potato.
-		// Go past our target and explode instead.
-		if (spb->fuse == 0)
-		{
-			spb->fuse = 2*TICRATE;
-		}
-	}
-	else if (!cv_spbtest.value)
-	{
-		if (dist <= activeDist)
-		{
-			S_StopSound(spb);
-			S_StartSound(spb, spb->info->attacksound);
-
-			spb_mode(spb) = SPB_MODE_CHASE; // TARGET ACQUIRED
-			spb_swapcount(spb)++;
-
-			spb_modetimer(spb) = SPB_HOTPOTATO;
-			spb_intangible(spb) = SPB_FLASHING;
-
-			spb_speed(spb) = desiredSpeed;
+			// No one there? Completely STOP.
+			actor->momx = actor->momy = actor->momz = 0;
+			if (bestMobj == NULL)
+				spbplace = -1;
 			return;
 		}
-	}
 
-	if (SPBSeekSoundPlaying(spb) == false)
-	{
-		if (dist <= activeDist * 3)
-		{
-			S_StartSound(spb, sfx_spbskc);
-		}
-		else if (dist <= activeDist * 6)
-		{
-			S_StartSound(spb, sfx_spbskb);
-		}
+		// Found someone, now get close enough to initiate the slaughter...
+
+		// don't hurt players that have nothing to do with this:
+		spb_intangible(actor) = 1;
+
+		P_SetTarget(&actor->tracer, bestMobj);
+		if (bestMobj->player != NULL)
+			spbplace = bestMobj->player->position;
 		else
+			spbplace = 1;
+
+		dist = P_AproxDistance(P_AproxDistance(actor->x-actor->tracer->x, actor->y-actor->tracer->y), actor->z-actor->tracer->z);
+
+		hang = R_PointToAngle2(actor->x, actor->y, actor->tracer->x, actor->tracer->y);
+		vang = R_PointToAngle2(0, actor->z, dist, actor->tracer->z);
+
 		{
-			S_StartSound(spb, sfx_spbska);
-		}
-	}
+			// Smoothly rotate horz angle
+			angle_t input = hang - actor->angle;
+			boolean invert = (input > ANGLE_180);
+			if (invert)
+				input = InvAngle(input);
 
-	// Move along the waypoints until you get close enough
-	if (spb_curwaypoint(spb) == -1)
-	{
-		// Determine first waypoint.
-		curWaypoint = K_GetBestWaypointForMobj(spb, NULL);
-		spb_curwaypoint(spb) = (INT32)K_GetWaypointHeapIndex(curWaypoint);
-	}
-	else
-	{
-		curWaypoint = K_GetWaypointFromIndex( (size_t)spb_curwaypoint(spb) );
-	}
+			// Slow down when turning; it looks better and makes U-turns not unfair
+			xySpeed = FixedMul(spb_speed(actor), max(0, (((180<<FRACBITS) - AngleFixed(input)) / 90) - FRACUNIT));
 
-	if (bestMobj->player != NULL)
-	{
-		destWaypoint = bestMobj->player->nextwaypoint;
-	}
-	else if (bestMobj->type == MT_SPECIAL_UFO)
-	{
-		destWaypoint = K_GetSpecialUFOWaypoint(bestMobj);
-	}
-	else
-	{
-		destWaypoint = K_GetBestWaypointForMobj(bestMobj, NULL);
-	}
+			input = FixedAngle(AngleFixed(input)/4);
+			if (invert)
+				input = InvAngle(input);
 
-	if (curWaypoint != NULL)
-	{
-		fixed_t waypointDist = INT32_MAX;
-		fixed_t waypointRad = INT32_MAX;
+			actor->angle += input;
 
-		destX = curWaypoint->mobj->x;
-		destY = curWaypoint->mobj->y;
-		destZ = curWaypoint->mobj->z;
+			// Smoothly rotate vert angle
+			input = vang - actor->movedir;
+			invert = (input > ANGLE_180);
+			if (invert)
+				input = InvAngle(input);
 
-		waypointDist = R_PointToDist2(spb->x, spb->y, destX, destY) / mapobjectscale;
-		waypointRad = max(curWaypoint->mobj->radius / mapobjectscale, DEFAULT_WAYPOINT_RADIUS);
+			// Slow down when turning; might as well do it for momz, since we do it above too
+			zSpeed = FixedMul(spb_speed(actor), max(0, (((180<<FRACBITS) - AngleFixed(input)) / 90) - FRACUNIT));
 
-		if (waypointDist <= waypointRad)
-		{
-			boolean pathfindsuccess = false;
+			input = FixedAngle(AngleFixed(input)/4);
+			if (invert)
+				input = InvAngle(input);
 
-			if (destWaypoint != NULL)
-			{
-				// Go to next waypoint.
-				const boolean useshortcuts  = K_GetWaypointIsShortcut(destWaypoint); // If the player is on a shortcut, use shortcuts. No escape.
-				boolean huntbackwards = false;
-				path_t pathtoplayer = {0};
-
-				pathfindsuccess = K_PathfindToWaypoint(
-					curWaypoint, destWaypoint,
-					&pathtoplayer,
-					useshortcuts, huntbackwards
-				);
-
-				if (pathfindsuccess == true)
-				{
-					if (cv_spbtest.value)
-					{
-						if (pathtoplayer.numnodes > 1)
-						{
-							// Go to the next waypoint.
-							curWaypoint = (waypoint_t *)pathtoplayer.array[1].nodedata;
-						}
-						else if (destWaypoint->numnextwaypoints > 0)
-						{
-							// Run ahead.
-							curWaypoint = destWaypoint->nextwaypoints[0];
-						}
-						else
-						{
-							// Sort of wait at the player's dest waypoint.
-							circling = true;
-							curWaypoint = destWaypoint;
-						}
-					}
-					else
-					{
-						path_t reversepath = {0};
-						boolean reversesuccess = false;
-
-						huntbackwards = true;
-						reversesuccess = K_PathfindToWaypoint(
-							curWaypoint, destWaypoint,
-							&reversepath,
-							useshortcuts, huntbackwards
-						);
-
-						if (reversesuccess == true
-							&& reversepath.totaldist < pathtoplayer.totaldist)
-						{
-							// It's faster to go backwards than to chase forward.
-							// Keep curWaypoint the same, so the SPB waits around for them.
-							circling = true;
-						}
-						else if (pathtoplayer.numnodes > 1)
-						{
-							// Go to the next waypoint.
-							curWaypoint = (waypoint_t *)pathtoplayer.array[1].nodedata;
-						}
-						else if (spb->fuse > 0 && destWaypoint->numnextwaypoints > 0)
-						{
-							// Run ahead.
-							curWaypoint = destWaypoint->nextwaypoints[0];
-						}
-						else
-						{
-							// Sort of wait at the player's dest waypoint.
-							circling = true;
-							curWaypoint = destWaypoint;
-						}
-
-						if (reversesuccess == true)
-						{
-							Z_Free(reversepath.array);
-						}
-					}
-					Z_Free(pathtoplayer.array);
-				}
-			}
-
-			if (pathfindsuccess == true && curWaypoint != NULL)
-			{
-				// Update again
-				spb_curwaypoint(spb) = (INT32)K_GetWaypointHeapIndex(curWaypoint);
-				destX = curWaypoint->mobj->x;
-				destY = curWaypoint->mobj->y;
-				destZ = curWaypoint->mobj->z;
-			}
-			else
-			{
-				spb_curwaypoint(spb) = -1;
-				destX = spb_chase(spb)->x;
-				destY = spb_chase(spb)->y;
-				destZ = spb_chase(spb)->z;
-			}
-		}
-	}
-	else
-	{
-		spb_curwaypoint(spb) = -1;
-		destX = spb_chase(spb)->x;
-		destY = spb_chase(spb)->y;
-		destZ = spb_chase(spb)->z;
-	}
-
-	destAngle = R_PointToAngle2(spb->x, spb->y, destX, destY);
-	destPitch = R_PointToAngle2(0, spb->z, P_AproxDistance(spb->x - destX, spb->y - destY), destZ);
-
-	SPBTurn(desiredSpeed, destAngle, &xySpeed, &spb->angle, SPB_SEEKTURN, &sliptide);
-	SPBTurn(desiredSpeed, destPitch, &zSpeed, &spb_pitch(spb), SPB_SEEKTURN, NULL);
-
-	SetSPBSpeed(spb, xySpeed, zSpeed);
-
-	if (specialstageinfo.valid == false)
-	{
-		// see if a player is near us, if they are, try to hit them by slightly thrusting towards them, otherwise, bleh!
-		steerDist = 1536 * mapobjectscale;
-
-		for (i = 0; i < MAXPLAYERS; i++)
-		{
-			fixed_t ourDist = INT32_MAX;
-			INT32 ourDelta = INT32_MAX;
-
-			if (playeringame[i] == false || players[i].spectator == true)
-			{
-				// Not in-game
-				continue; 
-			}
-
-			if (players[i].mo == NULL || P_MobjWasRemoved(players[i].mo) == true)
-			{
-				// Invalid mobj
-				continue;
-			}
-
-			ourDelta = AngleDelta(spb->angle, R_PointToAngle2(spb->x, spb->y, players[i].mo->x, players[i].mo->y));
-			if (ourDelta > SPB_STEERDELTA)
-			{
-				// Check if the angle wouldn't make us LOSE speed.
-				continue;
-			}
-
-			ourDist = R_PointToDist2(spb->x, spb->y, players[i].mo->x, players[i].mo->y);
-			if (ourDist < steerDist)
-			{
-				steerDist = ourDist;
-				steerMobj = players[i].mo; // it doesn't matter if we override this guy now.
-			}
+			actor->movedir += input;
 		}
 
-		// different player from our main target, try and ram into em~!
-		if (steerMobj != NULL && steerMobj != spb_chase(spb))
+		actor->momx = FixedMul(FixedMul(xySpeed, FINECOSINE(actor->angle>>ANGLETOFINESHIFT)), FINECOSINE(actor->movedir>>ANGLETOFINESHIFT));
+		actor->momy = FixedMul(FixedMul(xySpeed, FINESINE(actor->angle>>ANGLETOFINESHIFT)), FINECOSINE(actor->movedir>>ANGLETOFINESHIFT));
+		actor->momz = FixedMul(zSpeed, FINESINE(actor->movedir>>ANGLETOFINESHIFT));
+
+		if (dist <= (3072*actor->tracer->scale)) // Close enough to target?
 		{
-			P_Thrust(spb, R_PointToAngle2(spb->x, spb->y, steerMobj->x, steerMobj->y), spb_speed(spb) / 4);
+			S_StartSound(actor, actor->info->attacksound); // Siren sound; might not need this anymore, but I'm keeping it for now just for debugging.
+			actor->flags &= ~MF_NOCLIPTHING;
+			spb_mode(actor) = 1; // TARGET ACQUIRED
+			spb_modetimer(actor) = 7*TICRATE;
+			spb_intangible(actor) = 0;
 		}
-	}
-
-	if (sliptide != 0)
-	{
-		// 1 if turning left, -1 if turning right.
-		// Angles work counterclockwise, remember!
-		SpawnSPBSliptide(spb, sliptide);
-	}
-	else
-	{
-		// if we're mostly going straight, then spawn the V dust cone!
-		SpawnSPBDust(spb);
-	}
-
-	// Always spawn speed lines while seeking
-	SpawnSPBSpeedLines(spb);
-
-	// Don't run this while we're circling around one waypoint intentionally.
-	if (circling == false)
-	{
-		// Spawn a trail of rings behind the SPB!
-		SPBMantaRings(spb);
-	}
 }
 
 static void SPBChase(mobj_t *spb, mobj_t *bestMobj)
@@ -666,8 +325,6 @@ static void SPBChase(mobj_t *spb, mobj_t *bestMobj)
 
 	mobj_t *chase = NULL;
 	player_t *chasePlayer = NULL;
-
-	spb_curwaypoint(spb) = -1; // Reset waypoint
 
 	chase = spb_chase(spb);
 

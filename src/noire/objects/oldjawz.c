@@ -188,7 +188,9 @@ void OBJ_JawzOldThink(mobj_t *mobj)
 	if (leveltime % TICRATE == 0)
 		S_StartSound(mobj, mobj->info->activesound);
 
-	if (gamespeed == 1 || gamespeed == 2)
+	if (gamespeed == 0)
+		distbarrier = FixedMul(distbarrier, FRACUNIT-FRACUNIT/4);
+	else if (gamespeed == 2)
 		distbarrier = FixedMul(distbarrier, FRACUNIT+FRACUNIT/4);
 
 	if ((gametyperules & GTR_CIRCUIT) && mobj->tracer)
