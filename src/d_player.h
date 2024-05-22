@@ -901,7 +901,6 @@ struct player_t
 	UINT8 handtimer;
 	angle_t besthanddirection;
 
-	INT16 incontrol; // -1 to -175 when spinning out or tumbling, 1 to 175 when not. Use to check for combo hits or emergency inputs.
 	UINT16 progressivethrust; // When getting beat up in GTR_BUMPERS, speed up the longer you've been out of control.
 	UINT8 ringvisualwarning; // Check with > 1, not >= 1! Set when put in debt, counts down and holds at 1 when still in debt.
 

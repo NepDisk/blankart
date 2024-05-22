@@ -531,7 +531,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].handtimer);
 		WRITEANGLE(save->p, players[i].besthanddirection);
 
-		WRITEINT16(save->p, players[i].incontrol);
 		WRITEUINT16(save->p, players[i].progressivethrust);
 		WRITEUINT8(save->p, players[i].ringvisualwarning);
 
@@ -1067,7 +1066,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].handtimer = READUINT8(save->p);
 		players[i].besthanddirection = READANGLE(save->p);
 
-		players[i].incontrol = READINT16(save->p);
 		players[i].progressivethrust = READUINT16(save->p);
 		players[i].ringvisualwarning = READUINT8(save->p);
 

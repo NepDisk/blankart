@@ -2856,7 +2856,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 		else
 		{
 			UINT8 type = (damagetype & DMG_TYPEMASK);
-			const boolean hardhit = (type == DMG_EXPLODE || type == DMG_KARMA); // This damage type can do evil stuff like ALWAYS combo
 			INT16 ringburst = 5;
 
 			// Check if the player is allowed to be damaged!
@@ -2881,9 +2880,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				{
 					sfx = sfx_invind;
 				}
-				else if (K_IsBigger(target, inflictor) == true &&
-					// SPB bypasses grow (K_IsBigger handles NULL check)
-					(type != DMG_EXPLODE || inflictor->type != MT_SPBEXPLOSION || !inflictor->movefactor))
+				else if (K_IsBigger(target, inflictor) == true)
 				{
 					sfx = sfx_grownd;
 				}
@@ -2934,19 +2931,11 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				}
 
 				{
-					// Check if we should allow wombo combos (hard hits by default, inverted by the presence of DMG_WOMBO).
-					boolean allowcombo = hardhit == !(damagetype & DMG_WOMBO);
-
-					if (allowcombo == false)
-					{
-						return false;
-					}
 
 					// DMG_EXPLODE excluded from flashtic checks to prevent dodging eggbox/SPB with weak spinout
-					if ((allowcombo == false) &&
-						player->flashing > 0 &&
+					if ((player->flashing > 0 &&
 						type != DMG_EXPLODE &&
-						P_FlashingException(player, inflictor) == false)
+						P_FlashingException(player, inflictor) == false))
 					{
 						// Post-hit invincibility
 						K_DoInstashield(player);
@@ -3119,20 +3108,20 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 			}
 
 
-				if (type != DMG_STING)
-					player->flashing = K_GetKartFlashing(player);
+			if (type != DMG_STING)
+				player->flashing = K_GetKartFlashing(player);
 
-				player->ringburst += ringburst;
+			player->ringburst += ringburst;
 
-				K_PopPlayerShield(player);
-				player->instashield = 15;
+			K_PopPlayerShield(player);
+			player->instashield = 15;
 
-				K_PlayPainSound(target, source);
+			K_PlayPainSound(target, source);
 
 			if (gametyperules & GTR_BUMPERS)
 				player->spheres = min(player->spheres + 10, 40);
 
-			if ((hardhit == true && !hitFromInvinc) || cv_kartdebughuddrop.value)
+			if ((type == DMG_EXPLODE || type == DMG_KARMA) || cv_kartdebughuddrop.value)
 			{
 				K_DropItems(player);
 			}

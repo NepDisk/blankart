@@ -252,8 +252,6 @@ static int player_get(lua_State *L)
 		lua_pushboolean(L, plr->analoginput);
 	else if (fastcmp(field,"markedfordeath"))
 		lua_pushboolean(L, plr->markedfordeath);
-	else if (fastcmp(field,"incontrol"))
-		lua_pushboolean(L, plr->incontrol);
 	else if (fastcmp(field,"progressivethrust"))
 		lua_pushboolean(L, plr->progressivethrust);
 	else if (fastcmp(field,"ringvisualwarning"))
@@ -754,8 +752,6 @@ static int player_set(lua_State *L)
 		plr->wipeoutslow = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"justbumped"))
 		plr->justbumped = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"incontrol"))
-		plr->incontrol = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"progressivethrust"))
 		plr->progressivethrust = luaL_checkboolean(L, 3);
 	else if (fastcmp(field,"ringvisualwarning"))
