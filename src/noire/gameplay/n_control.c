@@ -9,10 +9,68 @@
 
 #include "../n_control.h"
 
+// countersteer is how strong the controls are telling us we are turning
+// turndir is the direction the controls are telling us to turn, -1 if turning right and 1 if turning left
+static INT16 K_GetKartDriftValue(player_t *player, fixed_t countersteer)
+{
+	INT16 basedrift, driftangle;
+	fixed_t driftweight = player->kartweight*14; // 12
+
+	// If they aren't drifting or on the ground this doesn't apply
+	if (player->drift == 0 || !P_IsObjectOnGround(player->mo))
+		return 0;
+
+	if (player->pflags & PF_DRIFTEND)
+	{
+		return -266*player->drift; // Drift has ended and we are tweaking their angle back a bit
+	}
+
+	//basedrift = 90*player->kartstuff[k_drift]; // 450
+	//basedrift = 93*player->kartstuff[k_drift] - driftweight*3*player->kartstuff[k_drift]/10; // 447 - 303
+	basedrift = 83*player->drift - (driftweight - 14)*player->drift/5; // 415 - 303
+	driftangle = abs((252 - driftweight)*player->drift/5);
+
+	return basedrift + FixedMul(driftangle, countersteer);
+}
+
+//from sarb2kart itself.
+INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue)
+{
+	fixed_t p_topspeed = K_GetKartSpeed(player, false, false);
+	fixed_t p_curspeed = min(player->speed, p_topspeed * 2);
+	fixed_t p_maxspeed = p_topspeed * 3;
+	fixed_t adjustangle = FixedDiv((p_maxspeed>>16) - (p_curspeed>>16), (p_maxspeed>>16) + player->kartweight);
+
+	if (player->spectator)
+		return turnvalue;
+
+	if (player->drift != 0 && P_IsObjectOnGround(player->mo))
+	{
+		// If we're drifting we have a completely different turning value
+		if (!(player->pflags & PF_DRIFTEND))
+		{
+			// 800 is the max set in g_game.c with angleturn
+			fixed_t countersteer = FixedDiv(turnvalue*FRACUNIT, 800*FRACUNIT);
+			turnvalue = K_GetKartDriftValue(player, countersteer);
+		}
+		else
+			turnvalue = (INT16)(turnvalue + K_GetKartDriftValue(player, FRACUNIT));
+
+		return turnvalue;
+	}
+
+	turnvalue = FixedMul(turnvalue, adjustangle); // Weight has a small effect on turning
+
+	if (player->invincibilitytimer || player->sneakertimer || player->growshrinktimer > 0)
+		turnvalue = FixedMul(turnvalue, FixedDiv(5*FRACUNIT, 4*FRACUNIT));
+
+	return turnvalue;
+}
+
 // Old update Player angle taken from old kart commits
 void N_UpdatePlayerAngle(player_t* player)
 {
-	angle_t angleChange = N_GetKartTurnValue(player, player->cmd.turning) << TICCMD_REDUCE;
+	angle_t angleChange = K_GetKartTurnValue(player, player->cmd.turning) << TICCMD_REDUCE;
 	UINT8 i;
 
 	P_SetPlayerAngle(player, player->angleturn + angleChange);

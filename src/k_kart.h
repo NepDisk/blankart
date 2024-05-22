@@ -187,7 +187,6 @@ fixed_t K_GetNewSpeed(const player_t *player);
 fixed_t K_3dKartMovement(player_t *player, boolean onground, SINT8 forwardmove);
 boolean K_PlayerEBrake(const player_t *player);
 SINT8 K_Sliptiding(const player_t *player);
-fixed_t K_PlayerBaseFriction(const player_t *player, fixed_t original);
 void K_AdjustPlayerFriction(player_t *player, boolean onground);
 void K_MoveKartPlayer(player_t *player, boolean onground);
 void K_CheckSpectateStatus(boolean considermapreset);

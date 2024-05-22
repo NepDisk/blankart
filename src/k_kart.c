@@ -1198,6 +1198,7 @@ static fixed_t K_CheckOffroadCollide(mobj_t *mo)
 */
 static void K_UpdateOffroad(player_t *player)
 {
+	fixed_t offroad;
 	terrain_t *terrain = player->mo->terrain;
 	fixed_t offroadstrength = 0;
 
@@ -1218,13 +1219,18 @@ static void K_UpdateOffroad(player_t *player)
 	// If you are in offroad, a timer starts.
 	if (offroadstrength)
 	{
-		UINT8 offramp = (K_GetKartGameSpeedScalar(gamespeed) > FRACUNIT ? 2 : 1);
+		if (player->offroad == 0)
+			player->offroad = (TICRATE/2);
 
-		if (player->offroad < offroadstrength)
-			player->offroad += offroadstrength * offramp / TICRATE;
+		if (player->offroad > 0)
+		{
+			offroad = (offroadstrength) / (TICRATE/2);
 
-		if (player->offroad > offroadstrength)
-			player->offroad = offroadstrength;
+			player->offroad += offroad;
+		}
+
+		if (player->offroad > (offroadstrength))
+			player->offroad = (offroadstrength);
 
 		if (player->roundconditions.touched_offroad == false
 			&& !(player->exiting || (player->pflags & PF_NOCONTEST))
@@ -2819,16 +2825,11 @@ static fixed_t K_RingDurationBoost(const player_t *player)
 // This value is fine-tuned to feel like v1 again without reverting any of those changes.
 #define SLIPTIDEHANDLING 7*FRACUNIT/8
 
-// sets boostpower, speedboost, accelboost, and handleboost to whatever we need it to be
+// sets k_boostpower, k_speedboost, and k_accelboost to whatever we need it to be
 static void K_GetKartBoostPower(player_t *player)
 {
-	// Light weights have stronger boost stacking -- aka, better metabolism than heavies XD
-	const fixed_t maxmetabolismincrease = FRACUNIT/2;
-	const fixed_t metabolism = FRACUNIT - ((9-player->kartweight) * maxmetabolismincrease / 8);
-
 	fixed_t boostpower = FRACUNIT;
-	fixed_t speedboost = 0, accelboost = 0, handleboost = 0;
-	UINT8 numboosts = 0;
+	fixed_t speedboost = 0, accelboost = 0;
 
 	if (player->spinouttimer && player->wipeoutslow == 1) // Slow down after you've been bumped
 	{
@@ -2837,145 +2838,89 @@ static void K_GetKartBoostPower(player_t *player)
 	}
 
 	// Offroad is separate, it's difficult to factor it in with a variable value anyway.
-	if (K_ApplyOffroad(player) && player->offroad >= 0)
-		boostpower = FixedDiv(boostpower, FixedMul(player->offroad, K_GetKartGameSpeedScalar(gamespeed)) + FRACUNIT);
+	if (!(player->invincibilitytimer || player->hyudorotimer || player->sneakertimer)
+		&& player->offroad >= 0)
+		boostpower = FixedDiv(boostpower, player->offroad + FRACUNIT);
 
 	if (player->bananadrag > TICRATE)
 		boostpower = (4*boostpower)/5;
 
-	// Note: Handling will ONLY stack when sliptiding!
-	// > (NB 2023-03-06: This was previously unintentionally applied while drifting as well.)
-	// > (This only affected drifts where you were under the effect of multiple handling boosts.)
-	// > (Revisit if Growvinciblity or sneaker-panels + power items feel too heavy while drifting!)
-	// When you're not, it just uses the best instead of adding together, like the old behavior.
-#define ADDBOOST(s,a,h) { \
-	numboosts++; \
-	speedboost += FixedDiv(s, FRACUNIT + (metabolism * (numboosts-1))); \
-	accelboost += FixedDiv(a, FRACUNIT + (metabolism * (numboosts-1))); \
-	handleboost = max(h, handleboost); \
-}
+	// Banana drag/offroad dust
+	if (boostpower < FRACUNIT
+		&& player->mo && P_IsObjectOnGround(player->mo)
+		&& player->speed > 0
+		&& !player->spectator)
+	{
+		K_SpawnWipeoutTrail(player->mo);
+		if (leveltime % 6 == 0)
+			S_StartSound(player->mo, sfx_cdfm70);
+	}
 
 	if (player->sneakertimer) // Sneaker
 	{
-		UINT8 i;
-		for (i = 0; i < player->numsneakers; i++)
+		switch (gamespeed)
 		{
-			ADDBOOST(FRACUNIT/2, 8*FRACUNIT, SLIPTIDEHANDLING); // + 50% top speed, + 800% acceleration, +50% handling
+			case 0:
+				speedboost = max(speedboost, 53740+768);
+				break;
+			case 2:
+				speedboost = max(speedboost, 17294+768);
+				break;
+			default:
+				speedboost = max(speedboost, 32768);
+				break;
 		}
+		accelboost = max(accelboost, 8*FRACUNIT); // + 800%
 	}
 
 	if (player->invincibilitytimer) // Invincibility
 	{
-		ADDBOOST(3*FRACUNIT/8, 3*FRACUNIT, SLIPTIDEHANDLING/2); // + 37.5 + ?% top speed, + 300% acceleration, +25% handling
+		speedboost = max(speedboost, 3*FRACUNIT/8); // + 37.5%
+		accelboost = max(accelboost, 3*FRACUNIT); // + 300%
 	}
 
 	if (player->growshrinktimer > 0) // Grow
 	{
-		ADDBOOST(0, 0, SLIPTIDEHANDLING/2); // + 0% top speed, + 0% acceleration, +25% handling
+		speedboost = max(speedboost, FRACUNIT/5); // + 20%
 	}
 
 	if (player->flamedash) // Flame Shield dash
 	{
 		fixed_t dash = K_FlameShieldDashVar(player->flamedash);
-		ADDBOOST(
-			dash, // + infinite top speed
-			3*FRACUNIT, // + 300% acceleration
-			FixedMul(FixedDiv(dash, FRACUNIT/2), SLIPTIDEHANDLING/2) // + infinite handling
-		);
-	}
-
-	if (player->counterdash) // "Fake Flame" (bubble, voltage)
-	{
-		fixed_t dash = K_FlameShieldDashVar(player->counterdash);
-		ADDBOOST(
-			dash, // + infinite top speed
-			3*FRACUNIT, // + 300% acceleration
-			FixedMul(FixedDiv(dash, FRACUNIT/2), SLIPTIDEHANDLING/2) // + infinite handling
-		);
-	}
-
-	if (player->startboost) // Startup Boost
-	{
-		ADDBOOST(FRACUNIT, 4*FRACUNIT, SLIPTIDEHANDLING); // + 100% top speed, + 400% acceleration, +50% handling
-	}
-
-	if (player->dropdashboost) // Drop dash
-	{
-		ADDBOOST(FRACUNIT/3, 4*FRACUNIT, SLIPTIDEHANDLING); // + 33% top speed, + 400% acceleration, +50% handling
+		speedboost = max(speedboost, dash); // + infinite top speed
+		accelboost = max(3*FRACUNIT,3*FRACUNIT);   // + 300% acceleration
 	}
 
 	if (player->driftboost) // Drift Boost
 	{
-		// Rebuff Eggman's stat block corner
-		// const INT32 heavyAccel = ((9 - player->kartspeed) * 2) + (player->kartweight - 1);
-		// const fixed_t heavyAccelBonus = FRACUNIT + ((heavyAccel * maxmetabolismincrease * 2) / 24);
-
-		// hello commit from 18 months ago, The Situation Has Changed.
-		// We buffed rings so many times that weight needs a totally different class of change!
-		// I've left the old formulas in, in case I'm smoking dick, but this was sorely needed in TA especially.
-		const fixed_t herbalfolkmedicine = FRACUNIT + FRACUNIT*(player->kartweight-1)/12 + FRACUNIT*(8-player->kartspeed)/32;
-
-		fixed_t driftSpeed = FRACUNIT/4; // 25% base
-
-		if (player->strongdriftboost > 0)
-		{
-			// Purple/Rainbow drift boost
-			driftSpeed = FixedMul(driftSpeed, 4*FRACUNIT/3); // 25% -> 33%
-		}
-
-		// Bottom-left bonus
-		// driftSpeed = FixedMul(driftSpeed, heavyAccelBonus);
-
-		// Fucking bonus ever
-		driftSpeed = FixedMul(driftSpeed, herbalfolkmedicine);
-
-		ADDBOOST(driftSpeed, 4*FRACUNIT, 0); // + variable top speed, + 400% acceleration, +0% handling
-	}
-
-	if (player->gateBoost) // SPB Juicebox boost
-	{
-		ADDBOOST(3*FRACUNIT/4, 4*FRACUNIT, SLIPTIDEHANDLING/2); // + 75% top speed, + 400% acceleration, +25% handling
+		speedboost = max(speedboost, FRACUNIT/4); // + 25%
+		accelboost = max(accelboost, 4*FRACUNIT); // + 400%
 	}
 
 	if (player->ringboost) // Ring Boost
 	{
-		// This one's a little special: we add extra top speed per tic of ringboost stored up, to allow for Ring Box to really rocket away.
-		// (We compensate when decrementing ringboost to avoid runaway exponential scaling hell.)
-		fixed_t rb = FixedDiv(player->ringboost * FRACUNIT, max(FRACUNIT, K_RingDurationBoost(player)));
-		ADDBOOST(
-			FRACUNIT/4 + FixedMul(FRACUNIT / 1750, rb),
-			4*FRACUNIT,
-			Easing_InCubic(min(FRACUNIT, rb / (TICRATE*12)), 0, 2*SLIPTIDEHANDLING/5)
-		); // + 20% + ???% top speed, + 400% acceleration, +???% handling
+		speedboost = max(speedboost, FRACUNIT/5); // + 20% top speed
+		accelboost = max(accelboost, 4*FRACUNIT); // + 400% acceleration
 	}
 
-	if (player->eggmanexplode) // Ready-to-explode
+	if (player->startboost) // Startup Boost
 	{
-		ADDBOOST(6*FRACUNIT/20, FRACUNIT, 0); // + 30% top speed, + 100% acceleration, +0% handling
+		speedboost = max(speedboost, FRACUNIT/4); // + 25%
+		accelboost = max(accelboost, 6*FRACUNIT); // + 300%
 	}
 
-	// This should always remain the last boost stack
-	if (player->botvars.rubberband > FRACUNIT && K_PlayerUsesBotMovement(player) == true && cv_ng_botrubberbandboost.value)
-	{
-		ADDBOOST(player->botvars.rubberband - FRACUNIT, 0, 0);
-	}
+	// don't average them anymore, this would make a small boost and a high boost less useful
+	// just take the highest we want instead
 
 	player->boostpower = boostpower;
 
 	// value smoothing
 	if (speedboost > player->speedboost)
-	{
 		player->speedboost = speedboost;
-	}
 	else
-	{
-		player->speedboost += (speedboost - player->speedboost) / (TICRATE/2);
-	}
+		player->speedboost += (speedboost - player->speedboost)/(TICRATE/2);
 
 	player->accelboost = accelboost;
-	player->handleboost = handleboost;
-
-	player->numboosts = numboosts;
 }
 
 fixed_t K_GrowShrinkSpeedMul(const player_t *player)
@@ -3014,94 +2959,54 @@ fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed)
 	return finalspeed;
 }
 
-fixed_t K_GetKartSpeed(const player_t *player, boolean doboostpower, boolean dorubberband)
+fixed_t K_GetKartSpeed(const player_t *player, boolean doboostpower, boolean notused)
 {
-	const boolean mobjValid = (player->mo != NULL && P_MobjWasRemoved(player->mo) == false);
-	const fixed_t physicsScale = mobjValid ? K_GrowShrinkSpeedMul(player) : FRACUNIT;
-	fixed_t finalspeed = 0;
+	fixed_t k_speed = 150;
+	fixed_t g_cc = FRACUNIT;
+	fixed_t xspd = 3072;		// 4.6875 aka 3/64
+	UINT8 kartspeed = player->kartspeed;
+	fixed_t finalspeed;
 
-	if (K_PodiumSequence() == true)
+	if (doboostpower && !player->pogospring && !P_IsObjectOnGround(player->mo))
+		return (75*mapobjectscale); // air speed cap
+
+	switch (gamespeed)
 	{
-		// Make 1st reach their podium faster!
-		finalspeed = K_GetKartSpeedFromStat(max(1, 11 - (player->position * 3)));
-
-		// Ignore other speed boosts.
-		doboostpower = dorubberband = false;
-	}
-	else
-	{
-
-		finalspeed = K_GetKartSpeedFromStat(player->kartspeed);
-
-		if (player->spheres > 0)
-		{
-			fixed_t sphereAdd = (FRACUNIT/60); // 66% at max
-			finalspeed = FixedMul(finalspeed, FRACUNIT + (sphereAdd * player->spheres));
-		}
-
-		if (K_PlayerUsesBotMovement(player))
-		{
-			// Increase bot speed by 0-10% depending on difficulty
-			const fixed_t modifier = K_BotMapModifier();
-			fixed_t add = ((player->botvars.difficulty-1) * FixedMul(FRACUNIT / 10, modifier)) / (DIFFICULTBOT-1);
-			finalspeed = FixedMul(finalspeed, FRACUNIT + add);
-
-			if (player->bot && (player->botvars.rival || cv_levelskull.value))
-			{
-				// +10% top speed for the rival
-				finalspeed = FixedMul(finalspeed, cv_ng_rivaltopspeed.value*FRACUNIT/10);
-			}
-		}
+		case 0:
+			g_cc = 53248 + xspd; //  50cc =  81.25 + 4.69 =  85.94%
+			break;
+		case 2:
+			g_cc = 77824 + xspd; // 150cc = 118.75 + 4.69 = 123.44%
+			break;
+		default:
+			g_cc = 65536 + xspd; // 100cc = 100.00 + 4.69 = 104.69%
+			break;
 	}
 
-	finalspeed = FixedMul(finalspeed, mapobjectscale);
+	//if (G_BattleGametype() && player->kartstuff[k_bumper] <= 0)
+		//kartspeed = 1;
 
-	if (dorubberband == true && player->botvars.rubberband < FRACUNIT && K_PlayerUsesBotMovement(player) == true)
-	{
-		finalspeed = FixedMul(finalspeed, player->botvars.rubberband);
-	}
+	k_speed += kartspeed*3; // 153 - 177
 
-	if (doboostpower == true)
-	{
-		// Scale with the player.
-		finalspeed = FixedMul(finalspeed, physicsScale);
+	finalspeed = FixedMul(FixedMul(k_speed<<14, g_cc), player->mo->scale);
 
-		// Add speed boosts.
-		finalspeed = FixedMul(finalspeed, player->boostpower + player->speedboost);
-	}
-
-	if (player->outrun != 0)
-	{
-		// Milky Way's roads
-		finalspeed += FixedMul(player->outrun, physicsScale);
-	}
-
+	if (doboostpower)
+		return FixedMul(finalspeed, player->boostpower+player->speedboost);
 	return finalspeed;
 }
 
 fixed_t K_GetKartAccel(const player_t *player)
 {
-	fixed_t k_accel = 121;
-	UINT8 stat = (9 - player->kartspeed);
+	fixed_t k_accel = 32; // 36;
+	UINT8 kartspeed = player->kartspeed;
 
-	if (K_PodiumSequence() == true)
-	{
-		// Normalize to Metal's accel
-		stat = 1;
-	}
+	//if (G_BattleGametype() && player->kartstuff[k_bumper] <= 0)
+		//kartspeed = 1;
 
-	k_accel += 17 * stat; // 121 - 257
+	//k_accel += 3 * (9 - kartspeed); // 36 - 60
+	k_accel += 4 * (9 - kartspeed); // 32 - 64
 
-	if (K_PodiumSequence() == true)
-	{
-		k_accel = FixedMul(k_accel, FRACUNIT / 4);
-	}
-	else
-	{
-		k_accel = FixedMul(k_accel, (FRACUNIT + player->accelboost) / 4);
-	}
-
-	return k_accel;
+	return FixedMul(k_accel, FRACUNIT+player->accelboost);
 }
 
 UINT16 K_GetKartFlashing(const player_t *player)
@@ -8900,48 +8805,6 @@ static void K_AirFailsafe(player_t *player)
 
 		player->pflags &= ~PF_AIRFAILSAFE;
 	}
-}
-
-//
-// K_PlayerBaseFriction
-//
-fixed_t K_PlayerBaseFriction(const player_t *player, fixed_t original)
-{
-	const fixed_t factor = FixedMul(
-		FixedDiv(FRACUNIT - original, FRACUNIT - ORIG_FRICTION),
-		K_GetKartGameSpeedScalar(gamespeed)
-	);
-	fixed_t frict = original;
-
-	if (player->dashpadcooldown == 0) // attempt to fix Hot Shelter
-	{
-		if (K_PodiumSequence() == true)
-		{
-			frict -= FixedMul(FRACUNIT >> 4, factor);
-		}
-		else if (K_PlayerUsesBotMovement(player) == true)
-		{
-			const fixed_t speedPercent = min(FRACUNIT, FixedDiv(player->speed, K_GetKartSpeed(player, false, false)));
-			const fixed_t extraFriction = FixedMul(FixedMul(FRACUNIT >> 5, factor), speedPercent);
-
-			// A bit extra friction to help them without drifting.
-			// Remove this line once they can drift.
-			frict -= extraFriction;
-
-			// Bots gain more traction as they rubberband.
-			const fixed_t traction_value = FixedMul(player->botvars.rubberband, max(FRACUNIT, K_BotMapModifier()));
-			if (traction_value > FRACUNIT)
-			{
-				const fixed_t traction_mul = traction_value - FRACUNIT;
-				frict -= FixedMul(extraFriction, traction_mul);
-			}
-		}
-	}
-
-	if (frict > FRACUNIT) { frict = FRACUNIT; }
-	if (frict < 0) { frict = 0; }
-
-	return frict;
 }
 
 //
