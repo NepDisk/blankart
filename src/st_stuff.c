@@ -1583,7 +1583,7 @@ void ST_Drawer(void)
 		if (maxFade == FRACUNIT)
 			st_translucency = cv_translucenthud.value;
 		else
-			st_translucency = FixedMul(10, maxFade);
+			st_translucency = FixedMul(cv_translucenthud.value, maxFade);
 	}
 
 	// Check for a valid level title
