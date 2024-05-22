@@ -24,7 +24,6 @@
 #include "p_maputl.h"
 #include "w_wad.h"
 #include "r_fps.h"
-#include "k_kart.h" // K_PlayerEBrake
 
 // Noire:
 #include "noire/n_cvar.h"

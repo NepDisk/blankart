@@ -394,7 +394,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].instashield);
 		WRITEUINT8(save->p, players[i].wipeoutslow);
 		WRITEUINT8(save->p, players[i].justbumped);
-		WRITEUINT8(save->p, players[i].noEbrakeMagnet);
 
 		WRITEUINT8(save->p, players[i].justDI);
 		WRITEUINT8(save->p, players[i].flipDI);
@@ -493,8 +492,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].dashRingPushTics);
 
 		WRITEUINT8(save->p, players[i].pullup);
-
-		WRITEUINT32(save->p, players[i].ebrakefor);
 
 		WRITEUINT32(save->p, players[i].roundscore);
 		WRITEUINT8(save->p, players[i].emeralds);
@@ -936,7 +933,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].instashield = READUINT8(save->p);
 		players[i].wipeoutslow = READUINT8(save->p);
 		players[i].justbumped = READUINT8(save->p);
-		players[i].noEbrakeMagnet = READUINT8(save->p);
 
 		players[i].justDI = READUINT8(save->p);
 		players[i].flipDI = (boolean)READUINT8(save->p);
@@ -1035,8 +1031,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].dashRingPushTics = READUINT8(save->p);
 
 		players[i].pullup = READUINT8(save->p);
-
-		players[i].ebrakefor = READUINT32(save->p);
 
 		players[i].roundscore = READUINT32(save->p);
 		players[i].emeralds = READUINT8(save->p);

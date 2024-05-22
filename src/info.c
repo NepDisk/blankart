@@ -553,9 +553,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	"DBNC", // Drift boost clip's sparks
 	"DBST", // Drift boost plume
 
-	"SDDS", // Spindash dust
-	"SDWN", // Spindash wind
-	"EBRK", // Soft Landing / Ebrake aura stuff.
 	"HMTR", // Down Lines
 	"HBUB", // HOLD! Bubble
 
@@ -3070,13 +3067,6 @@ state_t states[NUMSTATES] =
 	{SPR_WTRL, FF_TRANS50|FF_PAPERSPRITE|13, 2, {NULL}, 0, 0, S_NULL}, // S_WATERTRAILUNDERLAY6
 	{SPR_WTRL, FF_TRANS50|FF_PAPERSPRITE|14, 2, {NULL}, 0, 0, S_NULL}, // S_WATERTRAILUNDERLAY7
 	{SPR_WTRL, FF_TRANS50|FF_PAPERSPRITE|15, 2, {NULL}, 0, 0, S_NULL}, // S_WATERTRAILUNDERLAY8
-
-	// Soft Landing
-	{SPR_EBRK, 0|FF_ADD|FF_FLOORSPRITE|FF_FULLBRIGHT, 4, {NULL}, 0, 0, S_SOFTLANDING2}, // S_SOFTLANDING1
-	{SPR_EBRK, 1|FF_ADD|FF_FLOORSPRITE|FF_FULLBRIGHT, 4, {NULL}, 0, 0, S_SOFTLANDING3}, // S_SOFTLANDING2
-	{SPR_EBRK, 2|FF_ADD|FF_FLOORSPRITE|FF_FULLBRIGHT, 4, {NULL}, 0, 0, S_SOFTLANDING4}, // S_SOFTLANDING3
-	{SPR_EBRK, 3|FF_ADD|FF_FLOORSPRITE|FF_FULLBRIGHT, 4, {NULL}, 0, 0, S_SOFTLANDING5}, // S_SOFTLANDING4
-	{SPR_EBRK, 4|FF_ADD|FF_FLOORSPRITE|FF_FULLBRIGHT, 4, {NULL}, 0, 0, S_NULL}, 		// S_SOFTLANDING5
 
 	// Downwards Lines
 	{SPR_HMTR, 0|FF_ADD|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DOWNLINE2}, 	// S_DOWNLINE1
@@ -17257,33 +17247,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,              // display offset
 		100,            // mass
 		1,              // damage
-		sfx_None,       // activesound
-		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOGRAVITY|MF_SCENERY|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_SOFTLANDING
-		-1,             // doomednum
-		S_SOFTLANDING1, // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		12*FRACUNIT,    // radius
-		24*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		0,              // damage
 		sfx_None,       // activesound
 		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOGRAVITY|MF_SCENERY|MF_DONTENCOREMAP, // flags
 		S_NULL          // raisestate

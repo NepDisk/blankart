@@ -166,7 +166,6 @@ INT16 N_GetKartTurnValue(const player_t* player, INT16 turnvalue)
 	currentSpeed = R_PointToDist2(0, 0, player->mo->momx, player->mo->momy);
 
 	if ((currentSpeed <= 0)											// Not moving
-		&& ((player->cmd.buttons & BT_EBRAKEMASK) != BT_EBRAKEMASK) // not e-braking
 		&& (player->respawn.state == RESPAWNST_NONE))				// Not respawning
 	{
 		return 0;

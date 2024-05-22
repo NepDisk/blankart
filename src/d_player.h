@@ -630,7 +630,6 @@ struct player_t
 	UINT8 instashield;		// Instashield no-damage animation timer
 	UINT8 wipeoutslow;		// Timer before you slowdown when getting wiped out
 	UINT8 justbumped;		// Prevent players from endlessly bumping into each other
-	UINT8 noEbrakeMagnet;	// Briefly disable 2.2 responsive ebrake if you're bumped by another player.
 	UINT8 justDI;			// Turn-lockout timer to briefly prevent unintended turning after DI, resets when actionable or no input
 	boolean flipDI;			// Bananas flip the DI direction. Was a bug, but it made bananas much more interesting.
 
@@ -735,8 +734,6 @@ struct player_t
 	UINT8 dashRingPushTics; // Timer during which the player displays effects and has no gravity after being thrust by a dash ring
 
 	boolean pullup; // True if the player is attached to a pullup hook
-
-	tic_t ebrakefor;	// Ebrake timer, used for visuals.
 
 	UINT16 faultflash; // Used for misc FAULT visuals
 

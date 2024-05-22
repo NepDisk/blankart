@@ -9939,38 +9939,6 @@ void P_SceneryThinker(mobj_t *mobj)
 
 	P_CycleMobjState(mobj);
 
-	// Flicker softlanding mobj, this just prevents us from needing like 20 states.
-	if (mobj->type == MT_SOFTLANDING)
-	{
-		mobj->renderflags |= RF_NOSPLATBILLBOARD|RF_OBJECTSLOPESPLAT;
-		if (mobj->tics & 1)
-			mobj->renderflags |= RF_DONTDRAW;
-		else
-			mobj->renderflags &= ~RF_DONTDRAW;
-
-		if (!P_MobjWasRemoved(mobj->target))
-		{
-			// Cast like a shadow on the ground
-			P_MoveOrigin(mobj, mobj->target->x, mobj->target->y, mobj->target->floorz);
-			mobj->standingslope = mobj->target->standingslope;
-
-			if (!P_IsObjectOnGround(mobj->target) && mobj->target->momz < -24 * mapobjectscale)
-			{
-				// Going down, falling through hoops
-				mobj_t *ghost = P_SpawnGhostMobj(mobj);
-
-				ghost->z = mobj->target->z;
-				ghost->momz = -(mobj->target->momz);
-				ghost->standingslope = NULL;
-
-				ghost->renderflags = mobj->renderflags;
-				ghost->fuse = 16;
-				ghost->extravalue1 = 1;
-				ghost->extravalue2 = 0;
-			}
-		}
-	}
-
 	if (mobj->type == MT_RANDOMAUDIENCE)
 	{
 		Obj_AudienceThink(mobj, !!(mobj->flags2 & MF2_AMBUSH), !!(mobj->flags2 & MF2_DONTRESPAWN));

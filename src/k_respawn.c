@@ -10,6 +10,7 @@
 /// \brief Respawning logic
 
 #include "k_respawn.h"
+#include "d_ticcmd.h"
 #include "doomdef.h"
 #include "d_player.h"
 #include "k_kart.h"
@@ -558,7 +559,7 @@ static void K_MovePlayerToRespawnPoint(player_t *player)
 
 	if (player->respawn.init == false
 		&& player->respawn.fromRingShooter == false
-		&& K_PressingEBrake(player) == true)
+		&& (player->cmd.buttons & BT_BRAKE))
 	{
 		// Manual drop!
 		player->respawn.state = RESPAWNST_DROP;

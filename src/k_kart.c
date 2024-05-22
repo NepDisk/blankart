@@ -819,7 +819,6 @@ static void K_PlayerJustBumped(player_t *player)
 	}
 
 	player->justbumped = bumptime;
-	player->noEbrakeMagnet = ebraketime;
 
 	// If spinouttimer is not set yet but could be set later,
 	// this lets the bump still trigger wipeout friction. If
@@ -961,14 +960,12 @@ boolean K_KartBouncing(mobj_t *mobj1, mobj_t *mobj2)
 	if (mobj1->player && mobj1->player->justbumped && !K_JustBumpedException(mobj2))
 	{
 		mobj1->player->justbumped = bumptime;
-		mobj1->player->noEbrakeMagnet = ebraketime;
 		return false;
 	}
 
 	if (mobj2->player && mobj2->player->justbumped && !K_JustBumpedException(mobj1))
 	{
 		mobj2->player->justbumped = bumptime;
-		mobj2->player->noEbrakeMagnet = ebraketime;
 		return false;
 	}
 
@@ -2598,17 +2595,6 @@ boolean K_WaterSkip(mobj_t *mobj)
 
 	switch (mobj->type)
 	{
-		case MT_PLAYER:
-		{
-
-			if (K_PlayerEBrake(mobj->player))
-			{
-				return false;
-			}
-
-			// Allow
-			break;
-		}
 
 		case MT_ORBINAUT:
 		case MT_JAWZ:
@@ -3086,9 +3072,7 @@ SINT8 K_GetForwardMove(const player_t *player)
 	}
 
 	if (player->spinouttimer != 0
-		|| player->icecube.frozen
-		|| K_PressingEBrake(player) == true
-		|| K_PlayerEBrake(player) == true)
+		|| player->icecube.frozen)
 	{
 		return 0;
 	}
@@ -6511,11 +6495,6 @@ static void K_UpdateTripwire(player_t *player)
 	}
 }
 
-boolean K_PressingEBrake(const player_t *player)
-{
-	return ((K_GetKartButtons(player) & BT_EBRAKEMASK) == BT_EBRAKEMASK);
-}
-
 /**	\brief	Decreases various kart timers and powers per frame. Called in P_PlayerThink in p_user.c
 
 	\param	player	player object passed from P_PlayerThink
@@ -6803,8 +6782,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 				player->spheredigestion = spheredigestion;
 			}
 
-			if (player->ebrakefor%6 == 0)
-				player->spheres--;
 		}
 		else
 		{
@@ -7096,9 +7073,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->justbumped > 0)
 		player->justbumped--;
 
-	if (player->noEbrakeMagnet > 0)
-		player->noEbrakeMagnet--;
-
 	UINT16 normalturn = abs(cmd->turning);
 	UINT16 normalaim = abs(cmd->throwdir);
 
@@ -7292,10 +7266,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (cmd->buttons & BT_DRIFT)
 	{
-		if (K_PressingEBrake(player) == false)
-		{
 			player->pflags |= PF_DRIFTINPUT;
-		}
 	}
 	else
 	{
@@ -7322,8 +7293,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	// look really strange.
 	if (player->spectator == false && !(player->pflags & PF_NOCONTEST))
 	{
-		K_KartEbrakeVisuals(player);
-
 		Obj_ServantHandSpawning(player);
 	}
 
@@ -8185,8 +8154,6 @@ static void K_KartDrift(player_t *player, boolean onground)
 	{
 		if (player->driftcharge < 0 || player->driftcharge >= dsone)
 		{
-			angle_t pushdir = K_MomentumAngle(player->mo);
-
 			S_StartSound(player->mo, sfx_s23c);
 			K_SpawnDashDustRelease(player);
 
@@ -8197,18 +8164,12 @@ static void K_KartDrift(player_t *player, boolean onground)
 			if (player->driftcharge < 0)
 			{
 				// Stage 0: Yellow sparks
-				if (!onground)
-					P_Thrust(player->mo, pushdir, player->speed / 8);
-
 				if (player->driftboost < 15)
 					player->driftboost = 15;
 			}
 			else if (player->driftcharge >= dsone && player->driftcharge < dstwo)
 			{
 				// Stage 1: Red sparks
-				if (!onground)
-					P_Thrust(player->mo, pushdir, player->speed / 4);
-
 				if (player->driftboost < 20)
 					player->driftboost = 20;
 
@@ -8216,9 +8177,6 @@ static void K_KartDrift(player_t *player, boolean onground)
 			else if (player->driftcharge < dsthree)
 			{
 				// Stage 2: Blue sparks
-				if (!onground)
-					P_Thrust(player->mo, pushdir, player->speed / 3);
-
 				if (player->driftboost < 50)
 					player->driftboost = 50;
 
@@ -8226,9 +8184,6 @@ static void K_KartDrift(player_t *player, boolean onground)
 			else if (player->driftcharge >= dsthree)
 			{
 				// Stage 3: Rainbow sparks
-				if (!onground)
-					P_Thrust(player->mo, pushdir, player->speed / 2);
-
 				if (player->driftboost < 125)
 					player->driftboost = 125;
 			}
@@ -8654,31 +8609,6 @@ static INT32 K_FlameShieldMax(player_t *player)
 	return min(FLAMESHIELD_MAX, (FLAMESHIELD_MAX / 16) + (disttofinish / distv)); // Ditto for this minimum, old value was 1/16
 }
 
-boolean K_PlayerEBrake(const player_t *player)
-{
-	if (player->respawn.state != RESPAWNST_NONE
-		&& (player->respawn.init == true || player->respawn.fromRingShooter == true))
-	{
-		return false;
-	}
-
-	if (Obj_PlayerRingShooterFreeze(player) == true)
-	{
-		return false;
-	}
-
-	if (K_PressingEBrake(player) == true
-		&& (player->drift == 0 || P_IsObjectOnGround(player->mo) == false)
-		&& P_PlayerInPain(player) == false
-		&& player->justbumped == 0
-		&& player->nocontrol == 0)
-	{
-		return true;
-	}
-
-	return false;
-}
-
 SINT8 K_Sliptiding(const player_t *player)
 {
 	/*
@@ -8686,88 +8616,6 @@ SINT8 K_Sliptiding(const player_t *player)
 		return 0;
 	*/
 	return player->drift ? 0 : player->aizdriftstrat;
-}
-
-// Ebraking visuals for mo
-// we use mo->hprev for the hold bubble. If another hprev exists for some reason, remove it.
-
-void K_KartEbrakeVisuals(player_t *p)
-{
-	mobj_t *wave;
-
-	if (!P_IsObjectOnGround(p->mo))
-		return;
-
-	if (K_PlayerEBrake(p) == true)
-	{
-		if (p->ebrakefor % 20 == 0)
-		{
-			wave = P_SpawnMobj(p->mo->x, p->mo->y, p->mo->floorz, MT_SOFTLANDING);
-			P_InstaScale(wave, p->mo->scale);
-			P_SetTarget(&wave->target, p->mo);
-			P_SetTarget(&wave->owner, p->mo);
-			wave->renderflags |= RF_REDUCEVFX;
-		}
-
-		// sound
-		if (!S_SoundPlaying(p->mo, sfx_s3kd9s) && (leveltime > starttime || P_IsDisplayPlayer(p)))
-			S_ReducedVFXSound(p->mo, sfx_s3kd9s, p);
-
-		// HOLD! bubble.
-		if (!p->ebrakefor)
-		{
-			if (p->mo->hprev && !P_MobjWasRemoved(p->mo->hprev))
-			{
-				// for some reason, there's already an hprev. Remove it.
-				P_RemoveMobj(p->mo->hprev);
-			}
-
-			P_SetTarget(&p->mo->hprev, P_SpawnMobj(p->mo->x, p->mo->y, p->mo->z, MT_HOLDBUBBLE));
-			p->mo->hprev->renderflags |= (RF_DONTDRAW & ~K_GetPlayerDontDrawFlag(p));
-			if (encoremode)
-			{
-				// Don't render this text/digit mirrored.
-				p->mo->hprev->renderflags ^= RF_HORIZONTALFLIP;
-			}
-
-		}
-
-		// Update HOLD bubble.
-		if (p->mo->hprev && !P_MobjWasRemoved(p->mo->hprev))
-		{
-			P_MoveOrigin(p->mo->hprev, p->mo->x, p->mo->y, p->mo->z);
-			p->mo->hprev->angle = p->mo->angle;
-			p->mo->hprev->fuse = TICRATE/2;
-			K_FlipFromObject(p->mo->hprev, p->mo);
-			P_SetTarget(&p->mo->hprev->owner, p->mo);
-			p->mo->hprev->renderflags |= RF_REDUCEVFX;
-			p->mo->hprev->sprzoff = p->mo->sprzoff;
-
-			p->mo->hprev->colorized = false;
-			p->mo->hprev->spritexoffset = 0;
-			p->mo->hprev->spriteyoffset = 0;
-		}
-
-		p->ebrakefor++;
-	}
-	else if (p->ebrakefor)	// cancel effects
-	{
-		// reset scale
-		p->mo->spritexscale = FRACUNIT;
-		p->mo->spriteyscale = FRACUNIT;
-
-		// reset shake
-		p->mo->spritexoffset = 0;
-
-		// remove the bubble instantly unless it's in the !? state
-		if (p->mo->hprev && !P_MobjWasRemoved(p->mo->hprev) && (p->mo->hprev->frame & FF_FRAMEMASK) != 5)
-		{
-			P_RemoveMobj(p->mo->hprev);
-			P_SetTarget(&p->mo->hprev, NULL);
-		}
-
-		p->ebrakefor = 0;
-	}
 }
 
 static void K_AirFailsafe(player_t *player)

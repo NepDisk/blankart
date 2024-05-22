@@ -35,8 +35,6 @@ typedef enum
 	BT_RESPAWN		  = 1<<6,	// Respawn
 	BT_VOTE			  = 1<<7,	// Vote
 
-	BT_EBRAKEMASK	= (BT_ACCELERATE|BT_BRAKE),
-
 	// free: 1<<8 to 1<<12
 
 	// Lua garbage, replace with freeslottable buttons some day
