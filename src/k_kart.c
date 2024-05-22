@@ -2945,7 +2945,6 @@ fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed)
 
 fixed_t K_GetKartSpeed(const player_t *player, boolean doboostpower, boolean notused)
 {
-	fixed_t k_speed = 150;
 	UINT8 kartspeed = player->kartspeed;
 	fixed_t finalspeed = K_GetKartSpeedFromStat(kartspeed);
 
@@ -8422,7 +8421,7 @@ void K_KartUpdatePosition(player_t *player)
 				soundpos = 15;
 			}
 #endif
-			S_ReducedVFXSound(player->mo, sfx_hoop1 + soundpos, NULL); // ...which is why we can start at index 2 for a lower general pitch
+			S_ReducedVFXSound(player->mo, sfx_hoop3 - soundpos, NULL); // ...which is why we can start at index 2 for a lower general pitch
 		}
 
 		player->positiondelay = POS_DELAY_TIME + 4; // Position number growth
