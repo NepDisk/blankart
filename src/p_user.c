@@ -2119,11 +2119,14 @@ void P_MovePlayer(player_t *player)
 	P_3dMovement(player);
 
 	// Kart frames
-	if (player->squishedtimer)
+	if (player->squishedtimer > 0)
 	{
-		player->mo->spriteyscale = (player->mo->scale - player->mo->height) / 2;
+		player->mo->spriteyscale = (FRACUNIT / 4);
 		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
 		P_ResetPitchRoll(player->mo);
+		if (player->squishedtimer == 1)
+			player->mo->spriteyscale = FRACUNIT;
+
 	}
 	else if (player->icecube.frozen)
 	{
