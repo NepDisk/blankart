@@ -7168,15 +7168,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->instashield)
 		player->instashield--;
 
-	if (player->justDI)
-	{
-		player->justDI--;
-
-		// return turning if player is fully actionable, no matter when!
-		if (!P_PlayerInPain(player))
-			player->justDI = 0;
-	}
-
 	if (player->eggmanexplode)
 	{
 		if (player->spectator)
@@ -9894,99 +9885,6 @@ boolean K_IsSPBInGame(void)
 	}
 
 	return false;
-}
-
-void K_HandleDirectionalInfluence(player_t *player)
-{
-	fixed_t strength = FRACUNIT >> 1; // 1.0 == 45 degrees
-
-	ticcmd_t *cmd = NULL;
-	angle_t sideAngle = ANGLE_MAX;
-
-	INT16 inputX, inputY;
-	INT16 inputLen;
-
-	fixed_t diX, diY;
-	fixed_t diLen;
-
-	fixed_t dot, invDot;
-
-	fixed_t finalX, finalY;
-	fixed_t finalLen;
-	fixed_t speed;
-
-	if (player->playerstate != PST_LIVE || player->spectator)
-	{
-		// ded
-		return;
-	}
-
-	// DI attempted!!
-	player->justDI = 30;
-
-	cmd = &player->cmd;
-
-	inputX = cmd->throwdir;
-	inputY = -cmd->turning;
-
-	if (player->flipDI == true)
-	{
-		// Bananas flip the DI direction.
-		// Otherwise, DIing bananas is a little brain-dead easy :p
-		inputX = -inputX;
-		inputY = -inputY;
-	}
-
-	if (inputX == 0 && inputY == 0)
-	{
-		// No DI input, no need to do anything else.
-		return;
-	}
-
-	inputLen = FixedHypot(inputX, inputY);
-	if (inputLen > KART_FULLTURN)
-	{
-		inputLen = KART_FULLTURN;
-	}
-
-	// Shallow inputs = less angle change.
-	strength = FixedMul(strength, (inputLen * FRACUNIT) / KART_FULLTURN);
-
-	sideAngle = player->mo->angle - ANGLE_90;
-
-	diX = FixedMul(inputX, FINECOSINE(player->mo->angle >> ANGLETOFINESHIFT)) + FixedMul(inputY, FINECOSINE(sideAngle >> ANGLETOFINESHIFT));
-	diY = FixedMul(inputX, FINESINE(player->mo->angle >> ANGLETOFINESHIFT)) + FixedMul(inputY, FINESINE(sideAngle >> ANGLETOFINESHIFT));
-	diLen = FixedHypot(diX, diY);
-
-	// Normalize
-	if (diLen > 0)
-	{
-		diX = FixedDiv(diX, diLen);
-		diY = FixedDiv(diY, diLen);
-	}
-
-	// Now that we got the DI direction, we can
-	// actually preform the velocity redirection.
-
-	speed = FixedHypot(player->mo->momx, player->mo->momy);
-	finalX = FixedDiv(player->mo->momx, speed);
-	finalY = FixedDiv(player->mo->momy, speed);
-
-	dot = FixedMul(diX, finalX) + FixedMul(diY, finalY);
-	invDot = FRACUNIT - abs(dot);
-
-	finalX += FixedMul(FixedMul(diX, invDot), strength);
-	finalY += FixedMul(FixedMul(diY, invDot), strength);
-	finalLen = FixedHypot(finalX, finalY);
-
-	if (finalLen > 0)
-	{
-		finalX = FixedDiv(finalX, finalLen);
-		finalY = FixedDiv(finalY, finalLen);
-	}
-
-	player->mo->momx = FixedMul(speed, finalX);
-	player->mo->momy = FixedMul(speed, finalY);
 }
 
 void K_UpdateMobjItemOverlay(mobj_t *part, SINT8 itemType, UINT8 itemCount)

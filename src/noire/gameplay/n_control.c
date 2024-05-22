@@ -150,12 +150,6 @@ INT16 N_GetKartTurnValue(const player_t* player, INT16 turnvalue)
 		return 0;
 	}
 
-	if (player->justDI > 0)
-	{
-		// No turning until you let go after DI-ing.
-		return 0;
-	}
-
 	if (Obj_PlayerRingShooterFreeze(player) == true)
 	{
 		// No turning while using Ring Shooter

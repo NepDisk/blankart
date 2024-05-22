@@ -2118,11 +2118,6 @@ void P_MovePlayer(player_t *player)
 
 	P_3dMovement(player);
 
-	if (cmd->turning == 0)
-	{
-		player->justDI = 0;
-	}
-
 	// Kart frames
 	if (player->squishedtimer)
 	{

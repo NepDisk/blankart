@@ -248,10 +248,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->wipeoutslow);
 	else if (fastcmp(field,"justbumped"))
 		lua_pushinteger(L, plr->justbumped);
-	else if (fastcmp(field,"justdi"))
-		lua_pushinteger(L, plr->justDI);
-	else if (fastcmp(field,"flipdi"))
-		lua_pushboolean(L, plr->flipDI);
 	else if (fastcmp(field,"analoginput"))
 		lua_pushboolean(L, plr->analoginput);
 	else if (fastcmp(field,"markedfordeath"))
@@ -758,10 +754,6 @@ static int player_set(lua_State *L)
 		plr->wipeoutslow = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"justbumped"))
 		plr->justbumped = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"justdi"))
-		plr->justDI = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"flipdi"))
-		plr->flipDI = luaL_checkboolean(L, 3);
 	else if (fastcmp(field,"incontrol"))
 		plr->incontrol = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"progressivethrust"))
