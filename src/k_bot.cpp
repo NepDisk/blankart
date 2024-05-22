@@ -562,12 +562,6 @@ const botcontroller_t *K_GetBotController(const mobj_t *mobj)
 		{
 			continue;
 		}
-
-		botcontroller_t *roverController = &rover->master->frontsector->botController;
-		if (roverController->trick != 0 || roverController->flags != 0)
-		{
-			ret = roverController;
-		}
 	}
 
 	return ret;
@@ -1155,47 +1149,6 @@ static void K_DrawPredictionDebug(botprediction_t *predict, const player_t *play
 }
 
 /*--------------------------------------------------
-	static void K_BotTrick(const player_t *player, ticcmd_t *cmd, const botcontroller_t *botController)
-
-		Determines inputs for trick panels.
-
-	Input Arguments:-
-		player - Player to generate the ticcmd for.
-		cmd - The player's ticcmd to modify.
-		botController - Bot controller struct.
-
-	Return:-
-		None
---------------------------------------------------*/
-static void K_BotTrick(const player_t *player, ticcmd_t *cmd, const botcontroller_t *botController)
-{
-	// Trick panel state -- do nothing until a controller line is found, in which case do a trick.
-	if (botController == nullptr)
-	{
-		return;
-	}
-
-	if (player->trickpanel == TRICKSTATE_READY)
-	{
-		switch (botController->trick)
-		{
-			case TMBOTTR_LEFT:
-				cmd->turning = KART_FULLTURN;
-				break;
-			case TMBOTTR_RIGHT:
-				cmd->turning = -KART_FULLTURN;
-				break;
-			case TMBOTTR_UP:
-				cmd->throwdir = KART_FULLTURN;
-				break;
-			case TMBOTTR_DOWN:
-				cmd->throwdir = -KART_FULLTURN;
-				break;
-		}
-	}
-}
-
-/*--------------------------------------------------
 	static INT32 K_HandleBotTrack(const player_t *player, ticcmd_t *cmd, botprediction_t *predict)
 
 		Determines inputs for standard track driving.
@@ -1536,13 +1489,6 @@ static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 
 	// Actual gameplay behaviors below this block!
 	const botcontroller_t *botController = K_GetBotController(player->mo);
-	if (player->trickpanel != TRICKSTATE_NONE)
-	{
-		K_BotTrick(player, cmd, botController);
-
-		// Don't do anything else.
-		return;
-	}
 
 	if (botController != nullptr && (botController->flags & TMBOT_NOCONTROL) == TMBOT_NOCONTROL)
 	{

@@ -530,15 +530,6 @@ typedef enum
 
 typedef enum
 {
-	TMBOTTR_NONE = 0,
-	TMBOTTR_LEFT = 1,
-	TMBOTTR_RIGHT = 2,
-	TMBOTTR_UP = 3,
-	TMBOTTR_DOWN = 4,
-} textmapbottrick_t;
-
-typedef enum
-{
 	TMLOOP_ALPHA = 0,
 	TMLOOP_BETA  = 1,
 } textmaploopendpointtype_t;
@@ -1122,7 +1113,7 @@ struct friction_t
 };
 
 // Friction defines.
-#define ORIG_FRICTION          (0xF5 << (FRACBITS-8)) ///< Original value.
+#define ORIG_FRICTION          (62914) ///< Original value.
 
 void T_Friction(friction_t *f);
 

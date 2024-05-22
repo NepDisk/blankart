@@ -92,16 +92,6 @@ INT16 N_GetKartTurnValue(const player_t* player, INT16 turnvalue)
 		return 0;
 	}
 
-	// Staff ghosts - direction-only trickpanel behavior
-	if (G_CompatLevel(0x000A) || K_PlayerUsesBotMovement(player))
-	{
-		if (player->trickpanel == TRICKSTATE_READY || player->trickpanel == TRICKSTATE_FORWARD)
-		{
-			// Forward trick or rising from trickpanel
-			return 0;
-		}
-	}
-
 	if (player->justDI > 0)
 	{
 		// No turning until you let go after DI-ing.
@@ -163,179 +153,16 @@ INT16 N_GetKartTurnValue(const player_t* player, INT16 turnvalue)
 	// Weight has a small effect on turning
 	turnfixed = FixedMul(turnfixed, weightadjust);
 
-	// Side trick
-	if (player->trickpanel == TRICKSTATE_LEFT || player->trickpanel == TRICKSTATE_RIGHT)
-	{
-		turnfixed /= 2;
-	}
-
-	// 2.2 - Presteering allowed in trickpanels
-	if (!G_CompatLevel(0x000A) && !K_PlayerUsesBotMovement(player))
-	{
-		if (player->trickpanel == TRICKSTATE_READY || player->trickpanel == TRICKSTATE_FORWARD)
-		{
-			// Forward trick or rising from trickpanel
-			turnfixed /= 2;
-			if (player->tricklock)
-				turnfixed /= (player->tricklock/2 + 1);
-		}
-	}
-
 
 	return (turnfixed / FRACUNIT);
 }
-
-//
-// N_DoPogoSpring
-//
-// Copy-pasted version of K_DoPogoSpring from Kart as-is with bare minimum modifications to work with RR
-void N_DoPogoSpring(mobj_t* mo, fixed_t vertispeed, UINT8 sound)
-{
-	const fixed_t vscale = mapobjectscale + (mo->scale - mapobjectscale);
-
-	if (mo->player && mo->player->spectator)
-		return;
-
-	if (mo->eflags & MFE_SPRUNG)
-		return;
-
-	mo->standingslope = NULL;
-	mo->terrain = NULL; //Clear terrain
-
-	mo->eflags |= MFE_SPRUNG;
-
-	if (mo->eflags & MFE_VERTICALFLIP)
-		vertispeed *= -1;
-
-	if (vertispeed == 0)
-	{
-		fixed_t thrust;
-
-		if (mo->player)
-		{
-			thrust = 3 * mo->player->speed / 2;
-			if (thrust < 48 << FRACBITS)
-				thrust = 48 << FRACBITS;
-			if (thrust > 72 << FRACBITS)
-				thrust = 72 << FRACBITS;
-			if (mo->player->pogoSpringJumped && mo->player->pogoMaxSpeed == 0) // If its not speedcapped
-			{
-				if (mo->player->sneakertimer //|| mo->player->kartstuff[k_paneltimer]
-				)
-					thrust = FixedMul(thrust, 5 * FRACUNIT / 4);
-				else if (mo->player->invincibilitytimer)
-					thrust = FixedMul(thrust, 9 * FRACUNIT / 8);
-			}
-		}
-		else
-		{
-			thrust = FixedDiv(3 * P_AproxDistance(mo->momx, mo->momy) / 2, 5 * FRACUNIT / 2);
-			if (thrust < 16 << FRACBITS)
-				thrust = 16 << FRACBITS;
-			if (thrust > 32 << FRACBITS)
-				thrust = 32 << FRACBITS;
-		}
-
-		mo->momz = P_MobjFlip(mo) * FixedMul(FINESINE(ANGLE_22h >> ANGLETOFINESHIFT), FixedMul(thrust, vscale));
-	}
-	else
-		mo->momz = FixedMul(vertispeed, vscale);
-
-	if (mo->eflags & MFE_UNDERWATER)
-		mo->momz = (117 * mo->momz) / 200;
-
-	if (sound)
-		S_StartSound(mo, (sound == 1 ? sfx_kc2f : sfx_kpogos));
-}
-
-//
-// N_DoPogoSpring
-//
-// Copy-pasted version of K_DoPogoSpring from Kart with more modifications to match RR closer.
-/*
-void N_DoPogoSpring(mobj_t* mo, fixed_t vertispeed, UINT8 sound)
-{
-	fixed_t thrust = 0; // Define thrust up here...
-	boolean applyMomz = true;
-
-	if (mo->player && mo->player->spectator)
-		return;
-
-	if (mo->eflags & MFE_SPRUNG)
-		return;
-
-	mo->standingslope = NULL;
-	mo->terrain = NULL; // Clear terrain
-
-	mo->eflags |= MFE_SPRUNG;
-
-	// if (mo->eflags & MFE_VERTICALFLIP) //We do not need this as we are doing P_MobjFlip below
-	//	vertispeed *= -1;
-
-	//Handle vertispeed depending on its value...
-	if (vertispeed == 0)
-	{
-
-	}
-	else if (vertispeed < 0)
-	{
-		vertispeed = -vertispeed; //Make it positive
-		applyMomz = false;
-	}
-	else
-	{
-		vertispeed = FixedMul(vertispeed, mapobjectscale);
-	}
-
-	thrust = vertispeed * P_MobjFlip(mo); // Flip it for ceiling gravity
-
-	if (mo->player)
-	{
-		thrust = 3 * mo->player->speed / 2;
-		if (thrust < 48 << FRACBITS)
-			thrust = 48 << FRACBITS;
-		if (thrust > 72 << FRACBITS)
-			thrust = 72 << FRACBITS;
-		if (mo->player->pogoSpringJumped) // If its not speedcapped
-		{
-			if (mo->player->sneakertimer)
-				thrust = FixedMul(thrust, 5 * FRACUNIT / 4);
-			else if (mo->player->invincibilitytimer)
-				thrust = FixedMul(thrust, 9 * FRACUNIT / 8);
-		}
-	}
-	else
-	{
-		thrust = FixedDiv(3 * P_AproxDistance(mo->momx, mo->momy) / 2, 5 * FRACUNIT / 2);
-		if (thrust < 16 << FRACBITS)
-			thrust = 16 << FRACBITS;
-		if (thrust > 32 << FRACBITS)
-			thrust = 32 << FRACBITS;
-	}
-
-	mo->momz = FixedMul(FINESINE(ANGLE_22h >> ANGLETOFINESHIFT), FixedMul(thrust, mapobjectscale));
-
-	if (applyMomz)
-	{
-		mo->momz = FixedMul(thrust, mapobjectscale);
-
-		if (mo->eflags & MFE_UNDERWATER)
-			mo->momz = (117 * mo->momz) / 200;
-	}
-
-	if (sound)
-		S_StartSound(mo, (sound == 1 ? sfx_kc2f : sfx_kpogos));
-}*/
 
 void N_PogoSidemove(player_t *player)
 {
 	fixed_t movepushside = 0;
 	angle_t movepushangle = 0, movepushsideangle = 0;
 	fixed_t sidemove[2] = {2<<FRACBITS>>16, 4<<FRACBITS>>16};
-	fixed_t side = 0;
-
-	if (!player->pogoSpringJumped)
-		return;
+	fixed_t side = player->pogosidemove;
 
 	if (player->drift != 0)
 		movepushangle = player->mo->angle-(ANGLE_45/5)*player->drift;
@@ -359,7 +186,7 @@ void N_PogoSidemove(player_t *player)
 	else if (side < -MAXPLMOVE)
 		side = -MAXPLMOVE;
 
-	if (side !=0 && (!player->pogoSpringJumped))
+	if (side !=0 && (!player->pogospring))
 		side = 0;
 
 	// Sideways movement

@@ -1544,13 +1544,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_MAGICIANBOXTOP",
 	"S_MAGICIANBOXBOTTOM",
 
-	"S_CHARGEAURA",
-	"S_CHARGEFALL",
-	"S_CHARGEFLICKER",
-	"S_CHARGESPARK",
-	"S_CHARGERELEASE",
-	"S_CHARGEEXTRA",
-
 	"S_SERVANTHAND",
 
 	"S_HORNCODE",
@@ -2081,16 +2074,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_TRIPWIREBOOST_BOTTOM",
 	"S_TRIPWIREBOOST_BLAST_TOP",
 	"S_TRIPWIREBOOST_BLAST_BOTTOM",
-
-	"S_TRICKINDICATOR_OVERLAY",
-	"S_TRICKINDICATOR_UNDERLAY",
-	"S_TRICKINDICATOR_OVERLAY_ARROW",
-	"S_TRICKINDICATOR_UNDERLAY_ARROW",
-	"S_TRICKINDICATOR_UNDERLAY_ARROW2",
-
-	"S_SIDETRICK",
-	"S_BACKTRICK",
-	"S_FORWARDTRICK",
 
 	// DEZ Ring Shooter
 	"S_TIREGRABBER",
@@ -3388,13 +3371,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_MONITOR_SHARD",
 	"MT_MAGICIANBOX",
 
-	"MT_CHARGEAURA",
-	"MT_CHARGEFALL",
-	"MT_CHARGEFLICKER",
-	"MT_CHARGESPARK",
-	"MT_CHARGERELEASE",
-	"MT_CHARGEEXTRA",
-
 	"MT_SERVANTHAND",
 
 	"MT_HORNCODE",
@@ -3476,10 +3452,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_BATTLEBUMPER_BLAST",
 
 	"MT_TRIPWIREBOOST",
-
-	"MT_TRICKINDICATOR",
-	"MT_SIDETRICK",
-	"MT_FORWARDTRICK",
 
 	"MT_TIREGRABBER",
 	"MT_RINGSHOOTER",
@@ -3922,7 +3894,6 @@ const char *const PLAYERFLAG_LIST[] = {
 	"BRAKEDRIFT", // Helper for brake-drift spark spawning
 
 	"AIRFAILSAFE", // Whenever or not try the air boost
-	"TRICKDELAY", // Prevent tricks until control stick is neutral
 
 	"HITFINISHLINE", // Already hit the finish line this tic
 	"WRONGWAY", // Moving the wrong way with respect to waypoints?
@@ -4261,7 +4232,6 @@ const char *const KARTHUD_LIST[] = {
 	"TAUNTVOICES",
 	"TAUNTHORNS",
 	"YOUGOTEM",
-	"TRICKCOOL"
 };
 
 const char *const HUDITEMS_LIST[] = {
@@ -4997,23 +4967,10 @@ struct int_const_s const INT_CONST[] = {
 	{"TRIPWIRE_BLASTER",TRIPWIRE_BLASTER},
 	{"TRIPWIRE_CONSUME",TRIPWIRE_CONSUME},
 
-	// trickstate_t
-	{"TRICKSTATE_NONE",TRICKSTATE_NONE},
-	{"TRICKSTATE_READY",TRICKSTATE_READY},
-	{"TRICKSTATE_FORWARD",TRICKSTATE_FORWARD},
-	{"TRICKSTATE_RIGHT",TRICKSTATE_RIGHT},
-	{"TRICKSTATE_LEFT",TRICKSTATE_LEFT},
-	{"TRICKSTATE_BACK",TRICKSTATE_BACK},
-
 	// misc
 	{"BALLHOGINCREMENT",BALLHOGINCREMENT},
 	{"ACCEL_KICKSTART",ACCEL_KICKSTART},
 	{"TRIPWIRETIME",TRIPWIRETIME},
-
-	// trick stuff
-	{"TRICKMOMZRAMP",TRICKMOMZRAMP},
-	{"TRICKLAG",TRICKLAG},
-	{"TRICKDELAY",TRICKDELAY},
 
 	{NULL,0}
 };

@@ -42,9 +42,7 @@ void Obj_TrickBalloonTouchSpecial(mobj_t* special, mobj_t* toucher)
 
 		if (toucher->player && toucher->player)
 		{
-			toucher->player->trickpanel = 1;
-			toucher->player->pflags |= PF_TRICKDELAY;
-			toucher->player->tricktime = 0;
+			toucher->player->pogospring = 1;
 		}
 
 		K_DoPogoSpring(toucher, vspeed, 0);
@@ -61,9 +59,7 @@ void Obj_TrickBalloonTouchSpecial(mobj_t* special, mobj_t* toucher)
 
 		if (toucher->player && toucher->player)
 		{
-			toucher->player->trickpanel = 1;
-			toucher->player->pflags |= PF_TRICKDELAY;
-			toucher->player->tricktime = 0;
+			toucher->player->pogospring = 1;
 		}
 
 		K_DoPogoSpring(toucher, vspeed, 0);

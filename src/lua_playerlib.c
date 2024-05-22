@@ -264,8 +264,6 @@ static int player_get(lua_State *L)
 		lua_pushboolean(L, plr->progressivethrust);
 	else if (fastcmp(field,"ringvisualwarning"))
 		lua_pushboolean(L, plr->ringvisualwarning);
-	else if (fastcmp(field,"dotrickfx"))
-		lua_pushboolean(L, plr->dotrickfx);
 	else if (fastcmp(field,"stingfx"))
 		lua_pushboolean(L, plr->stingfx);
 	else if (fastcmp(field,"bumperinflate"))
@@ -330,8 +328,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->eggmanTransferDelay);
 	else if (fastcmp(field,"speedpunt"))
 		lua_pushinteger(L, plr->speedpunt);
-	else if (fastcmp(field,"trickcharge"))
-		lua_pushinteger(L, plr->trickcharge);
 	else if (fastcmp(field,"finalfailsafe"))
 		lua_pushinteger(L, plr->finalfailsafe);
 	else if (fastcmp(field,"lastsafelap"))
@@ -434,18 +430,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->confirmVictimDelay);
 	else if (fastcmp(field,"glancedir"))
 		lua_pushinteger(L, plr->glanceDir);
-	else if (fastcmp(field,"trickpanel"))
-		lua_pushinteger(L, plr->trickpanel);
-	else if (fastcmp(field,"tricktime"))
-		lua_pushinteger(L, plr->tricktime);
-	else if (fastcmp(field,"trickboostpower"))
-		lua_pushfixed(L, plr->trickboostpower);
-	else if (fastcmp(field,"trickboostdecay"))
-		lua_pushinteger(L, plr->trickboostdecay);
-	else if (fastcmp(field,"trickboost"))
-		lua_pushinteger(L, plr->trickboost);
-	else if (fastcmp(field,"tricklock"))
-		lua_pushinteger(L, plr->tricklock);
 	else if (fastcmp(field,"dashringpulltics"))
 		lua_pushinteger(L, plr->dashRingPullTics);
 	else if (fastcmp(field,"dashringpushtics"))
@@ -792,8 +776,6 @@ static int player_set(lua_State *L)
 		plr->markedfordeath = luaL_checkboolean(L, 3);
 	else if (fastcmp(field,"markedfordeath"))
 		plr->markedfordeath = luaL_checkboolean(L, 3);
-	else if (fastcmp(field,"dotrickfx"))
-		plr->dotrickfx = luaL_checkboolean(L, 3);
 	else if (fastcmp(field,"stingfx"))
 		plr->stingfx = luaL_checkboolean(L, 3);
 	else if (fastcmp(field,"bumperinflate"))
@@ -856,8 +838,6 @@ static int player_set(lua_State *L)
 		plr->eggmanTransferDelay = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"speedpunt"))
 		plr->speedpunt = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"trickcharge"))
-		plr->trickcharge = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"finalfailsafe"))
 		plr->finalfailsafe = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"lastsafelap"))
@@ -960,18 +940,6 @@ static int player_set(lua_State *L)
 		plr->confirmVictimDelay = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"glancedir"))
 		plr->glanceDir = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"trickpanel"))
-		plr->trickpanel = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"tricktime"))
-		plr->tricktime = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"trickboostpower"))
-		plr->trickboostpower = luaL_checkfixed(L, 3);
-	else if (fastcmp(field,"trickboostdecay"))
-		plr->trickboostdecay = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"trickboost"))
-		plr->trickboost = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"tricklock"))
-		plr->tricklock = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"dashringpulltics"))
 		plr->dashRingPullTics = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"dashringpushtics"))

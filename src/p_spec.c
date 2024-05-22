@@ -2555,7 +2555,6 @@ static void K_UpdateBotControllers(INT32 *args)
 	{
 		sector_t *const sec = sectors + secnum;
 
-		sec->botController.trick = args[1];
 		sec->botController.flags = args[2];
 		sec->botController.forceAngle = FixedAngle(args[3] * FRACUNIT);
 	}

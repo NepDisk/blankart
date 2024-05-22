@@ -182,7 +182,6 @@ void K_DoIngameRespawn(player_t *player)
 	player->ringboost = 0;
 	player->driftboost = player->strongdriftboost = 0;
 	player->gateBoost = 0;
-	player->trickcharge = 0;
 
 	P_ResetPlayer(player);
 

@@ -481,24 +481,25 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 	}
 
 	// Trick panel
-	if (terrain->trickPanel > 0 && !(mo->eflags & MFE_SPRUNG))
+	if (terrain->pogoPanel > 0 && !(mo->eflags & MFE_SPRUNG))
 	{
-		const fixed_t hscale = mapobjectscale + (mapobjectscale - mo->scale);
+		const fixed_t hscale = mapobjectscale + (mapobjectscale - player->mo->scale);
 		const fixed_t minspeed = 24*hscale;
-		fixed_t speed = FixedHypot(mo->momx, mo->momy);
-		fixed_t upwards = 16 * terrain->trickPanel;
+		const fixed_t maxspeed = 28*hscale;
+		angle_t pushangle = K_MomentumAngle(player->mo);
 
-		K_DoPogoSpring(mo, upwards, 1);
-
-		// Reduce speed
-		speed /= 2;
-
-		if (speed < minspeed)
+		if ((player->speed > maxspeed) && terrain->pogoPanel == 2) // Prevent overshooting jumps
 		{
-			speed = minspeed;
+			P_InstaThrust(player->mo, pushangle, maxspeed);
+			player->pogospring = 2;
+		}
+		else if (player->speed < minspeed) // Push forward to prevent getting stuck
+		{
+			P_InstaThrust(player->mo, pushangle, minspeed);
+			player->pogospring = 1;
 		}
 
-		P_InstaThrust(mo, mo->angle, speed);
+		K_DoPogoSpring(player->mo, 0, 1);
 	}
 
 	// Speed pad
@@ -552,7 +553,6 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			P_InstaThrust(player->mo, thrustAngle, max(thrustSpeed, 2*playerSpeed));
 
 			player->dashpadcooldown = TICRATE/3;
-			player->trickpanel = TRICKSTATE_NONE;
 			player->floorboost = 2;
 
 			S_StartSound(player->mo, sfx_cdfm62);
@@ -597,7 +597,7 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			}
 		}
 
-		if (slope && !terrain->springDoKartPogo)
+		if (slope)
 		{
 			const angle_t fa = (slope->zangle >> ANGLETOFINESHIFT);
 
@@ -607,18 +607,11 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			angle = slope->xydirection;
 		}
 
-		P_DoSpringExMaxMin(
-			player->mo,
-			mapobjectscale,
-			FixedMul(terrain->springStrength, co),
-			FixedMul(terrain->springStrength, si),
-			angle,
-			terrain->springStarColor,
-			terrain->springMaxSpeed,
-			terrain->springMinSpeed,
-			terrain->springDoKartPogo
-		);
-		
+		P_DoSpringEx(player->mo, mapobjectscale,
+				FixedMul(terrain->springStrength, co),
+				FixedMul(terrain->springStrength, si),
+				angle, terrain->springStarColor);
+
 		sector->soundorg.z = player->mo->z;
 		S_StartSound(&sector->soundorg, sfx_s3kb1);
 	}
@@ -1551,13 +1544,10 @@ static void K_TerrainDefaults(terrain_t *terrain)
 	terrain->friction = 0;
 	terrain->offroad = 0;
 	terrain->damageType = -1;
-	terrain->trickPanel = 0;
+	terrain->pogoPanel = 0;
 	terrain->speedPad = 0;
 	terrain->speedPadAngle = 0;
 	terrain->springStrength = 0;
-	terrain->springMinSpeed = 0;
-	terrain->springMaxSpeed = 0;
-	terrain->springDoKartPogo = 0;
 	terrain->springStarColor = SKINCOLOR_NONE;
 	terrain->flags = TRF_REMAP;
 }
@@ -1579,7 +1569,7 @@ boolean K_TerrainHasAffect(terrain_t *terrain, boolean badonly)
 		return false;
 
 	return (terrain->friction != 0
-	|| terrain->trickPanel != 0
+	|| terrain->pogoPanel != 0
 	|| terrain->speedPad != 0
 	|| terrain->springStrength != 0
 	|| terrain->flags != 0);
@@ -1648,9 +1638,9 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	{
 		terrain->damageType = (INT16)get_number(val);
 	}
-	else if (stricmp(param, "trickPanel") == 0)
+	else if (stricmp(param, "pogoPanel") == 0)
 	{
-		terrain->trickPanel = FLOAT_TO_FIXED(atof(val));
+		terrain->pogoPanel = FLOAT_TO_FIXED(atof(val));
 	}
 	else if (stricmp(param, "speedPad") == 0)
 	{
@@ -1676,18 +1666,6 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 			terrain->springStrength =
 				FLOAT_TO_FIXED(15.625 * pow(1.6, fval));
 		}
-	}
-	else if (stricmp(param, "springDoKartPogo") == 0) //NOIRE: Add new terrain properties for springs...
-	{
-		terrain->springDoKartPogo = (UINT8)get_number(val);
-	}
-	else if (stricmp(param, "springMinSpeed") == 0)
-	{
-		terrain->springMinSpeed = get_number(val);
-	}
-	else if (stricmp(param, "springMaxSpeed") == 0)
-	{
-		terrain->springMaxSpeed = get_number(val);
 	}
 	else if (stricmp(param, "springStarColor") == 0)
 	{

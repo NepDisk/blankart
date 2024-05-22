@@ -238,10 +238,6 @@ private:
 
 	bool can_change() const
 	{
-		if (viewplayer()->trickpanel != TRICKSTATE_NONE)
-		{
-			return false;
-		}
 
 		if (cooldown > 0)
 		{

@@ -1812,8 +1812,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			P_AddPlayerScore(target->player, -2);
 		}
 
-		K_PlayerResetPogo(target->player); //NOIRE: Replicate pogoSpring behaviour by resetting its state.
-		target->player->trickpanel = TRICKSTATE_NONE;
+		target->player->pogospring = 0;
 
 		ACS_RunPlayerDeathScript(target->player);
 	}
@@ -2583,7 +2582,6 @@ static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source,
 		P_SetTarget(&field, NULL); \
 	}
 
-	PlayerPointerRemove(player->trickIndicator);
 
 #undef PlayerPointerRemove
 

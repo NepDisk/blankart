@@ -31,7 +31,6 @@ target_sources(SRB2SDL2 PRIVATE
 	wpzothers.c
 	shadow.cpp
 	ball-switch.cpp
-	charge.c
 	frost-thrower.cpp
 	ivoball.cpp
 	crate.cpp

@@ -211,10 +211,8 @@ private:
 		// special flag sets trick panel state
 		if (trick_bit()) // tyron 2023-10-30 spooky no look UDMF fix
 		{
+			pmo->player->pogospring = 1;
 			K_DoPogoSpring(pmo, 32*FRACUNIT, 0);
-			pmo->player->trickpanel = TRICKSTATE_READY;
-			// jartha note: trickdelay does not exist, maybe it got replaced at some point?
-			//pmo->player->trickdelay = 8;
 		}
 
 		pmo->momz = hook()->momz;

@@ -156,11 +156,6 @@ void N_GetKartBoostPower(player_t *player)
 		ADDBOOST(FRACUNIT/4, 6*FRACUNIT, 0);
 	}
 
-		if (player->trickboost)	// Trick pannel up-boost
-	{
-		ADDBOOST(player->trickboostpower, 5*FRACUNIT, 0);	// <trickboostpower>% speed, 500% accel, 0% handling
-	}
-
 	if (player->gateBoost) // SPB Juicebox boost
 	{
 		ADDBOOST(3*FRACUNIT/4, 4*FRACUNIT, 0); // + 75% top speed, + 400% acceleration, +25% handling
@@ -181,13 +176,6 @@ void N_GetKartBoostPower(player_t *player)
 	if (player->eggmanexplode) // Ready-to-explode
 	{
 		ADDBOOST(6*FRACUNIT/20, FRACUNIT, 0); // + 30% top speed, + 100% acceleration, +0% handling
-	}
-
-	if (player->trickcharge)
-	{
-		// NB: This is an acceleration-only boost.
-		// If this is applied earlier in the chain, it will diminish real speed boosts.
-		ADDBOOST(0, FRACUNIT, 0); // 0% speed 100% accel 20% handle
 	}
 
 	// This should always remain the last boost stack

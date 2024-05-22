@@ -117,7 +117,7 @@ typedef enum
 	PF_BRAKEDRIFT		= 1<<21, // Helper for brake-drift spark spawning
 
 	PF_AIRFAILSAFE		= 1<<22, // Whenever or not try the air boost
-	PF_TRICKDELAY		= 1<<23, // Prevent tricks until control stick is neutral
+	//					= 1<<23,
 
 	PF_HITFINISHLINE	= 1<<26, // Already hit the finish line this tic
 	PF_WRONGWAY			= 1<<27, // Moving the wrong way with respect to waypoints?
@@ -253,16 +253,6 @@ typedef enum
 
 typedef enum
 {
-	TRICKSTATE_NONE = 0,
-	TRICKSTATE_READY,
-	TRICKSTATE_FORWARD,
-	TRICKSTATE_RIGHT,
-	TRICKSTATE_LEFT,
-	TRICKSTATE_BACK,
-} trickstate_t;
-
-typedef enum
-{
 	// Unsynced, HUD or clientsided effects
 	// Item box
 	khud_itemblink,		// Item flashing after roulette, serves as a mashing indicator
@@ -298,19 +288,11 @@ typedef enum
 	// Battle
 	khud_yougotem, 		// "You Got Em" gfx when hitting someone as a karma player via a method that gets you back in the game instantly
 
-	// Tricks
-	khud_trickcool,
-
 	NUMKARTHUD
 } karthudtype_t;
 
 // QUICKLY GET RING TOTAL, INCLUDING RINGS CURRENTLY IN THE PICKUP ANIMATION
 #define RINGTOTAL(p) (p->rings + p->pickuprings)
-
-// CONSTANTS FOR TRICK PANELS
-#define TRICKMOMZRAMP (30)
-#define TRICKLAG (9)
-#define TRICKDELAY (TICRATE/4)
 
 #define TRIPWIRETIME (15)
 
@@ -669,6 +651,10 @@ struct player_t
 
 	fixed_t offroad;		// In Super Mario Kart, going offroad has lee-way of about 1 second before you start losing speed
 
+	UINT8 brakestop; //Breakstop
+	UINT8 pogospring;		// Pogo spring bounce effect
+	fixed_t pogosidemove;		// Used to store sidemove for pogo
+
 	UINT16 springstars;		// Spawn stars around a player when they hit a spring
 	UINT16 springcolor;		// Color of spring stars
 	UINT8 dashpadcooldown;	// Separate the vanilla SA-style dash pads from using flashing
@@ -744,13 +730,6 @@ struct player_t
 
 	UINT8 confirmVictim;		// Player ID that you dealt damage to
 	UINT8 confirmVictimDelay;	// Delay before playing the sound
-
-	UINT8 trickpanel; 	// Trick panel state - see trickstate_t
-	UINT8 tricktime;	// Increases while you're tricking. You can't input any trick until it's reached a certain threshold
-	fixed_t trickboostpower;	// Save the rough speed multiplier. Used for upwards tricks.
-	UINT8 trickboostdecay;		// used to know how long you've waited
-	UINT8 trickboost;			// Trick boost. This one is weird and has variable speed. Dear god.
-	UINT8 tricklock;			// Input safety for 2.2 lenient tricks.
 
 	UINT8 dashRingPullTics; // Timer during which the player is pulled towards a dash ring
 	UINT8 dashRingPushTics; // Timer during which the player displays effects and has no gravity after being thrust by a dash ring
@@ -907,8 +886,6 @@ struct player_t
 
 	UINT16 speedpunt;
 
-	UINT16 trickcharge; // Landed normally from a trick panel? Get the benefits package!
-
 	UINT8 finalfailsafe; // When you can't Ringshooter, force respawn as a last ditch effort!
 	UINT8 freeRingShooterCooldown; // Can't use a free Ring Shooter again too soon after respawning.
 
@@ -917,7 +894,6 @@ struct player_t
 
 	fixed_t topAccel; // Reduced on straight wall collisions to give players extra recovery time
 
-	mobj_t *trickIndicator;
 	mobj_t *hand;
 
 	SINT8 pitblame; // Index of last player that hit you, resets after being in control for a bit. If you deathpit, credit the old attacker!
@@ -937,7 +913,6 @@ struct player_t
 	boolean analoginput; // Has an input been recorded that requires analog usage? For input display.
 
 	boolean markedfordeath;
-	boolean dotrickfx;
 	boolean stingfx;
 	UINT8 bumperinflate;
 
@@ -962,12 +937,6 @@ struct player_t
 
 	tic_t darkness_start;
 	tic_t darkness_end;
-
-	//NOIRE: Re-declare pogoSpring stuff. If the game affords to declare one trillion variables for hardcoded lua, we can do this too.
-	// REVIEW: Should pogo shit be a player state, like Tricks?
-	boolean pogoSpringJumped; //Replication of Kart's pogoSpring, but just a boolean as most of the logic is now in k_terrain.c. Will be set to false in the same places as pogoSpring did, and when grounded.
-	fixed_t pogoMaxSpeed; // Maximum speed to use when pogoSpringJumped is true. ( Zero to not apply )
-	fixed_t pogoMinSpeed; // Minimum speed to use when pogoSpringJumped is true. ( Zero to not apply )
 };
 
 // WARNING FOR ANYONE ABOUT TO ADD SOMETHING TO THE PLAYER STRUCT, G_PlayerReborn WANTS YOU TO SUFFER

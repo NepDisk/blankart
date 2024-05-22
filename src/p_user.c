@@ -426,11 +426,10 @@ void P_ResetPlayer(player_t *player)
 	player->onconveyor = 0;
 
 	//player->drift = player->driftcharge = 0;
-	player->trickpanel = TRICKSTATE_NONE;
 	player->glanceDir = 0;
 	player->turbine = 0;
 	Obj_EndBungee(player);
-	K_PlayerResetPogo(player); //NOIRE: Reset pogo status, as this method is called in some places its important and should be done.
+	player->pogospring = 0; //NOIRE: Reset pogo status, as this method is called in some places its important and should be done.
 							   //But This method also gets called K_HandleLapIncrement, so make sure that just by passing the finish line pogo stuff doesn't break...
 	if (player->mo != NULL && P_MobjWasRemoved(player->mo) == false)
 	{
@@ -1983,22 +1982,41 @@ static void P_3dMovement(player_t *player)
 	//}
 
 	// Do not let the player control movement if not onground.
-	onground = P_IsObjectOnGround(player->mo) || player->pogoSpringJumped; //NOIRE: Readd the extra condition that Kart had for springs
+	// SRB2Kart: pogo spring and speed bumps are supposed to control like you're on the ground
+	onground = (P_IsObjectOnGround(player->mo) || player->pogospring);
 
-	K_AdjustPlayerFriction(player);
+	player->aiming = player->cmd.aiming<<FRACBITS;
 
 	// Forward movement
-	// If the player isn't on the ground, there is no change in speed
-	// Smiley Face
-	if (onground)
+	if (!((player->exiting || mapreset) || (P_PlayerInPain(player) && !onground)))
 	{
-		movepushforward = K_3dKartMovement(player);
+		movepushforward = K_3dKartMovement(player, onground, player->cmd.forwardmove);
+
+		// allow very small movement while in air for gameplay
+		if (!onground)
+			movepushforward >>= 2; // proper air movement
 
 		if (player->mo->movefactor != FRACUNIT) // Friction-scaled acceleration...
 			movepushforward = FixedMul(movepushforward, player->mo->movefactor);
 
+		if (player->cmd.buttons & BT_BRAKE && !player->cmd.forwardmove) // SRB2kart - braking isn't instant
+			movepushforward /= 64;
+
+		if (player->cmd.forwardmove > 0)
+			player->brakestop = 0;
+		else if (player->brakestop < 6) // Don't start reversing with brakes until you've made a stop first
+		{
+			if (player->speed < 8*FRACUNIT)
+				player->brakestop++;
+			movepushforward = 0;
+		}
+
 		totalthrust.x += P_ReturnThrustX(player->mo, movepushangle, movepushforward);
 		totalthrust.y += P_ReturnThrustY(player->mo, movepushangle, movepushforward);
+	}
+	else if (!(player->spinouttimer))
+	{
+		K_MomentumToFacing(player);
 	}
 
 	if ((totalthrust.x || totalthrust.y)
@@ -2030,36 +2048,6 @@ static void P_3dMovement(player_t *player)
 
 	player->mo->momx += totalthrust.x;
 	player->mo->momy += totalthrust.y;
-
-	if (!onground)
-	{
-		const fixed_t airspeedcap = (50*mapobjectscale);
-		const fixed_t speed = R_PointToDist2(0, 0, player->mo->momx, player->mo->momy);
-
-		// If you're going too fast in the air, ease back down to a certain speed.
-		// Helps lots of jumps from breaking when using speed items, since you can't move in the air.
-		if (speed > airspeedcap)
-		{
-			fixed_t div = 32*FRACUNIT;
-			fixed_t newspeed;
-
-			// Make rubberbanding bots slow down faster
-			if (K_PlayerUsesBotMovement(player) && player->dashpadcooldown == 0)
-			{
-				fixed_t rubberband = player->botvars.rubberband - FRACUNIT;
-
-				if (rubberband > 0)
-				{
-					div = FixedDiv(div, FRACUNIT + (rubberband * 2));
-				}
-			}
-
-			newspeed = speed - FixedDiv((speed - airspeedcap), div);
-
-			player->mo->momx = FixedMul(FixedDiv(player->mo->momx, speed), newspeed);
-			player->mo->momy = FixedMul(FixedDiv(player->mo->momy, speed), newspeed);
-		}
-	}
 
 	// Time to ask three questions:
 	// 1) Are we over topspeed?
@@ -2190,22 +2178,9 @@ void P_MovePlayer(player_t *player)
 	}
 	else
 	{
-		if (player->trickpanel > TRICKSTATE_READY)
-		{
-			if (player->trickpanel <= TRICKSTATE_RIGHT) // right/forward
-			{
-				player->drawangle += ANGLE_22h;
-			}
-			else //if (player->trickpanel >= TRICKSTATE_LEFT) // left/back
-			{
-				player->drawangle -= ANGLE_22h;
-			}
-		}
-		else
-		{
 			K_KartMoveAnimation(player);
 
-			if (player->pogoSpringJumped) // NOIRE Springs: Replicate pogo spring shit
+			if (player->pogospring) // NOIRE Springs: Replicate pogo spring shit
 				player->drawangle += ANGLE_22h;
 			else // Else vanilla behavior
 				player->drawangle = player->mo->angle;
@@ -2220,10 +2195,11 @@ void P_MovePlayer(player_t *player)
 
 				player->drawangle += a;
 			}
-		}
 
 		player->mo->rollangle = 0;
 	}
+
+	player->mo->movefactor = FRACUNIT; // We're not going to do any more with this, so let's change it back for the next frame.
 
 	//{ SRB2kart
 
@@ -3853,7 +3829,6 @@ void P_PlayerThink(player_t *player)
 			P_SetTarget(&field, NULL); \
 
 		PlayerPointerErase(player->followmobj);
-		PlayerPointerErase(player->trickIndicator);
 		PlayerPointerErase(player->hand);
 		PlayerPointerErase(player->ringShooter);
 		PlayerPointerErase(player->hoverhyudoro);

@@ -342,7 +342,6 @@ struct pslope_t
 // Per-sector bot controller override
 struct botcontroller_t
 {
-	UINT8 trick;
 	UINT32 flags;
 	angle_t forceAngle;
 };

@@ -121,8 +121,6 @@ void K_RemoveGrowShrink(player_t *player);
 void K_SquishPlayer(player_t *player, mobj_t *inflictor, mobj_t *source);
 boolean K_IsBigger(mobj_t *compare, mobj_t *other);
 void K_SpinPlayer(player_t *player, mobj_t *inflictor, mobj_t *source, INT32 type);
-void K_InitTrickIndicator(player_t *player);
-void K_UpdateTrickIndicator(player_t *player);
 INT32 K_ExplodePlayer(player_t *player, mobj_t *inflictor, mobj_t *source);
 void K_DebtStingPlayer(player_t *player, mobj_t *source);
 void K_GiveBumpersToPlayer(player_t *player, player_t *victim, UINT8 amount);
@@ -186,11 +184,11 @@ boolean K_KartKickstart(const player_t *player);
 UINT16 K_GetKartButtons(const player_t *player);
 SINT8 K_GetForwardMove(const player_t *player);
 fixed_t K_GetNewSpeed(const player_t *player);
-fixed_t K_3dKartMovement(const player_t *player);
+fixed_t K_3dKartMovement(player_t *player, boolean onground, SINT8 forwardmove);
 boolean K_PlayerEBrake(const player_t *player);
 SINT8 K_Sliptiding(const player_t *player);
 fixed_t K_PlayerBaseFriction(const player_t *player, fixed_t original);
-void K_AdjustPlayerFriction(player_t *player);
+void K_AdjustPlayerFriction(player_t *player, boolean onground);
 void K_MoveKartPlayer(player_t *player, boolean onground);
 void K_CheckSpectateStatus(boolean considermapreset);
 UINT8 K_GetInvincibilityItemFrame(void);
@@ -234,8 +232,6 @@ void K_BumperInflate(player_t *player);
 boolean K_ThunderDome(void);
 
 boolean K_PlayerCanUseItem(player_t *player);
-
-void K_PlayerResetPogo(player_t* player); // For NOIRE Spring pogo stuff...
 
 #ifdef __cplusplus
 } // extern "C"

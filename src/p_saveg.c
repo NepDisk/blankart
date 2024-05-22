@@ -88,7 +88,7 @@ typedef enum
 	HAND = 0x0400,
 	// = 0x0800,
 	// = 0x1000,
-	TRICKINDICATOR = 0x2000,
+	// = 0x2000,
 	BARRIER = 0x4000,
 } player_saveflags;
 
@@ -325,9 +325,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		if (players[i].hoverhyudoro)
 			flags |= HOVERHYUDORO;
 
-		if (players[i].trickIndicator)
-			flags |= TRICKINDICATOR;
-
 		if (players[i].hand)
 			flags |= HAND;
 
@@ -350,9 +347,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 
 		if (flags & HOVERHYUDORO)
 			WRITEUINT32(save->p, players[i].hoverhyudoro->mobjnum);
-
-		if (flags & TRICKINDICATOR)
-			WRITEUINT32(save->p, players[i].trickIndicator->mobjnum);
 
 		if (flags & HAND)
 			WRITEUINT32(save->p, players[i].hand->mobjnum);
@@ -421,6 +415,9 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEINT32(save->p, players[i].underwatertilt);
 
 		WRITEFIXED(save->p, players[i].offroad);
+
+		WRITEUINT8(save->p, players[i].pogospring);
+		WRITEFIXED(save->p, players[i].pogosidemove);
 
 		WRITEUINT16(save->p, players[i].springstars);
 		WRITEUINT16(save->p, players[i].springcolor);
@@ -492,13 +489,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].confirmVictim);
 		WRITEUINT8(save->p, players[i].confirmVictimDelay);
 
-		WRITEUINT8(save->p, players[i].trickpanel);
-		WRITEUINT8(save->p, players[i].tricktime);
-		WRITEUINT32(save->p, players[i].trickboostpower);
-		WRITEUINT8(save->p, players[i].trickboostdecay);
-		WRITEUINT8(save->p, players[i].trickboost);
-		WRITEUINT8(save->p, players[i].tricklock);
-
 		WRITEUINT8(save->p, players[i].dashRingPullTics);
 		WRITEUINT8(save->p, players[i].dashRingPushTics);
 
@@ -527,7 +517,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].tripwireReboundDelay);
 
 		WRITEUINT16(save->p, players[i].speedpunt);
-		WRITEUINT16(save->p, players[i].trickcharge);
 
 		WRITEUINT8(save->p, players[i].finalfailsafe);
 
@@ -554,8 +543,7 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 
 		WRITEUINT8(save->p, players[i].analoginput);
 
-		WRITEUINT8(save->p, players[i].markedfordeath);
-		WRITEUINT8(save->p, players[i].dotrickfx);
+		WRITEUINT8(save->p, players[i].markedfordeath);;
 		WRITEUINT8(save->p, players[i].stingfx);
 		WRITEUINT8(save->p, players[i].bumperinflate);
 
@@ -767,11 +755,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		// darkness
 		WRITEUINT32(save->p, players[i].darkness_start);
 		WRITEUINT32(save->p, players[i].darkness_end);
-
-		//Pogo
-		WRITEUINT32(save->p, players[i].pogoSpringJumped);
-		WRITEFIXED(save->p, players[i].pogoMaxSpeed);
-		WRITEFIXED(save->p, players[i].pogoMinSpeed);
 	}
 
 	TracyCZoneEnd(__zone);
@@ -906,9 +889,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		if (flags & HOVERHYUDORO)
 			players[i].hoverhyudoro = (mobj_t *)(size_t)READUINT32(save->p);
 
-		if (flags & TRICKINDICATOR)
-			players[i].trickIndicator = (mobj_t *)(size_t)READUINT32(save->p);
-
 		if (flags & HAND)
 			players[i].hand = (mobj_t *)(size_t)READUINT32(save->p);
 
@@ -977,6 +957,9 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].underwatertilt = READINT32(save->p);
 
 		players[i].offroad = READFIXED(save->p);
+
+		players[i].pogospring = READUINT8(save->p);
+		players[i].pogosidemove = READFIXED(save->p);
 
 		players[i].springstars = READUINT16(save->p);
 		players[i].springcolor = READUINT16(save->p);
@@ -1048,13 +1031,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].confirmVictim = READUINT8(save->p);
 		players[i].confirmVictimDelay = READUINT8(save->p);
 
-		players[i].trickpanel = READUINT8(save->p);
-		players[i].tricktime = READUINT8(save->p);
-		players[i].trickboostpower = READUINT32(save->p);
-		players[i].trickboostdecay = READUINT8(save->p);
-		players[i].trickboost = READUINT8(save->p);
-		players[i].tricklock = READUINT8(save->p);
-
 		players[i].dashRingPullTics = READUINT8(save->p);
 		players[i].dashRingPushTics = READUINT8(save->p);
 
@@ -1083,7 +1059,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].tripwireReboundDelay = READUINT8(save->p);
 
 		players[i].speedpunt = READUINT16(save->p);
-		players[i].trickcharge = READUINT16(save->p);
 
 		players[i].finalfailsafe = READUINT8(save->p);
 
@@ -1111,7 +1086,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].analoginput = READUINT8(save->p);
 
 		players[i].markedfordeath = READUINT8(save->p);
-		players[i].dotrickfx = READUINT8(save->p);
 		players[i].stingfx = READUINT8(save->p);
 		players[i].bumperinflate = READUINT8(save->p);
 
@@ -1338,10 +1312,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		// darkness
 		players[i].darkness_start = READUINT32(save->p);
 		players[i].darkness_end = READUINT32(save->p);
-
-		players[i].pogoSpringJumped = READUINT32(save->p);
-		players[i].pogoMaxSpeed = READFIXED(save->p);
-		players[i].pogoMinSpeed = READFIXED(save->p);
 
 		//players[i].viewheight = P_GetPlayerViewHeight(players[i]); // scale cannot be factored in at this point
 	}
@@ -2077,8 +2047,7 @@ static void ArchiveSectors(savebuffer_t *save)
 			diff4 |= SD_STRINGARGS;
 		if (ss->activation != spawnss->activation)
 			diff5 |= SD_ACTIVATION;
-		if (ss->botController.trick != spawnss->botController.trick
-			|| ss->botController.flags != spawnss->botController.flags
+		if (ss->botController.flags != spawnss->botController.flags
 			|| ss->botController.forceAngle != spawnss->botController.forceAngle)
 		{
 			diff5 |= SD_BOTCONTROLLER;
@@ -2199,7 +2168,6 @@ static void ArchiveSectors(savebuffer_t *save)
 				WRITEUINT32(save->p, ss->activation);
 			if (diff5 & SD_BOTCONTROLLER)
 			{
-				WRITEUINT8(save->p, ss->botController.trick);
 				WRITEUINT32(save->p, ss->botController.flags);
 				WRITEANGLE(save->p, ss->botController.forceAngle);
 			}
@@ -2361,7 +2329,6 @@ static void UnArchiveSectors(savebuffer_t *save)
 			sectors[i].activation = READUINT32(save->p);
 		if (diff5 & SD_BOTCONTROLLER)
 		{
-			sectors[i].botController.trick = READUINT8(save->p);
 			sectors[i].botController.flags = READUINT32(save->p);
 			sectors[i].botController.forceAngle = READANGLE(save->p);
 		}
@@ -5812,11 +5779,6 @@ static void P_RelinkPointers(void)
 		{
 			if (!RelinkMobj(&players[i].hoverhyudoro))
 				CONS_Debug(DBG_GAMELOGIC, "hoverhyudoro not found on player %d\n", i);
-		}
-		if (players[i].trickIndicator)
-		{
-			if (!RelinkMobj(&players[i].trickIndicator))
-				CONS_Debug(DBG_GAMELOGIC, "trickIndicator not found on player %d\n", i);
 		}
 		if (players[i].hand)
 		{

@@ -214,8 +214,6 @@ static patch_t *kp_nametagstem;
 static patch_t *kp_bossbar[8];
 static patch_t *kp_bossret[4];
 
-static patch_t *kp_trickcool[2];
-
 patch_t *kp_autoroulette;
 patch_t *kp_autoring;
 
@@ -765,9 +763,6 @@ void K_LoadKartHUDGraphics(void)
 
 	HU_UpdatePatch(&kp_nametagstem, "K_NAMEST");
 
-	HU_UpdatePatch(&kp_trickcool[0], "K_COOL1");
-	HU_UpdatePatch(&kp_trickcool[1], "K_COOL2");
-
 	HU_UpdatePatch(&kp_autoroulette, "A11YITEM");
 	HU_UpdatePatch(&kp_autoring, "A11YRING");
 
@@ -1040,9 +1035,6 @@ INT32 ITEM2_X, ITEM2_Y;
 INT32 LAPS2_X, LAPS2_Y;
 INT32 POSI2_X, POSI2_Y;
 
-// trick "cool"
-INT32 TCOOL_X, TCOOL_Y;
-
 // This version of the function was prototyped in Lua by Nev3r ... a HUGE thank you goes out to them!
 void K_ObjectTracking(trackingResult_t *result, const vector3_t *point, boolean reverse)
 {
@@ -1242,10 +1234,6 @@ static void K_initKartHUD(void)
 	WANT_X = BASEVIDWIDTH - 55;		// 270
 	WANT_Y = BASEVIDHEIGHT- 71;		// 176
 
-	// trick COOL
-	TCOOL_X = (BASEVIDWIDTH)/2;
-	TCOOL_Y = (BASEVIDHEIGHT)/2 -10;
-
 	if (r_splitscreen)	// Splitscreen
 	{
 		ITEM_X = 5;
@@ -1288,8 +1276,6 @@ static void K_initKartHUD(void)
 
 			MINI_X = (3*BASEVIDWIDTH/4);
 			MINI_Y = (3*BASEVIDHEIGHT/4);
-
-			TCOOL_X = (BASEVIDWIDTH)/4;
 
 			if (r_splitscreen > 2) // 4P-only
 			{
@@ -5369,33 +5355,6 @@ static void K_drawLapStartAnim(void)
 	}
 }
 
-// stretch for "COOOOOL" popup.
-// I can't be fucked to find out any math behind this so have a table lmao
-static fixed_t stretch[6][2] = {
-	{FRACUNIT/4, FRACUNIT*4},
-	{FRACUNIT/2, FRACUNIT*2},
-	{FRACUNIT, FRACUNIT},
-	{FRACUNIT*4, FRACUNIT/2},
-	{FRACUNIT*8, FRACUNIT/4},
-	{FRACUNIT*4, FRACUNIT/2},
-};
-
-static void K_drawTrickCool(void)
-{
-
-	tic_t timer = TICRATE - stplyr->karthud[khud_trickcool];
-	UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
-
-	if (timer <= 6)
-	{
-		V_DrawStretchyFixedPatch(TCOOL_X<<FRACBITS, TCOOL_Y<<FRACBITS, stretch[timer-1][0], stretch[timer-1][1], V_HUDTRANS|V_SPLITSCREEN, (K_UseColorHud()) ? kc_trickcool[splitscreen ? 1 : 0] : kp_trickcool[splitscreen ? 1 : 0], (K_UseColorHud()) ? colormap : NULL );
-	}
-	else if (leveltime & 1)
-	{
-		V_DrawFixedPatch(TCOOL_X<<FRACBITS, (TCOOL_Y<<FRACBITS) - (timer-10)*FRACUNIT/2, FRACUNIT, V_HUDTRANS|V_SPLITSCREEN, (K_UseColorHud()) ? kc_trickcool[splitscreen ? 1 : 0] : kp_trickcool[splitscreen ? 1 : 0], (K_UseColorHud()) ? colormap : NULL );
-	}
-}
-
 void K_drawKartFreePlay(void)
 {
 	if (!LUA_HudEnabled(hud_freeplay))
@@ -6262,11 +6221,7 @@ void K_drawKartHUD(void)
 			;
 		else if (stplyr->karthud[khud_lapanimation] && !r_splitscreen)
 			K_drawLapStartAnim();
-	}
-
-	// trick panel cool trick
-	if (stplyr->karthud[khud_trickcool])
-		K_drawTrickCool();
+	};
 
 	if ((freecam || stplyr->spectator) && LUA_HudEnabled(hud_textspectator))
 	{
