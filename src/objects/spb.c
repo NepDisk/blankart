@@ -104,46 +104,6 @@ void Obj_SPBThrown(mobj_t *spb, fixed_t finalspeed)
 	Obj_SPBEradicateCapsules();
 }
 
-static void SPBMantaRings(mobj_t *spb)
-{
-	fixed_t vScale = INT32_MAX;
-	fixed_t spacing = INT32_MAX;
-	fixed_t finalDist = INT32_MAX;
-
-	const fixed_t floatHeight = 24 * spb->scale;
-	fixed_t floorDist = INT32_MAX;
-
-	if (modeattacking & ATTACKING_SPB)
-		return; // no one else to use 'em
-
-	if (leveltime % SPB_MANTA_VRATE == 0)
-	{
-		spb_manta_vscale(spb) = max(spb_manta_vscale(spb) - 1, SPB_MANTA_VMAX);
-	}
-
-	spacing = FixedMul(SPB_MANTA_SPACING, spb->scale);
-	spacing = FixedMul(spacing, K_GetKartGameSpeedScalar(gamespeed));
-
-	vScale = FixedDiv(spb_manta_vscale(spb) * FRACUNIT, 100 * FRACUNIT);
-	finalDist = FixedMul(spacing, vScale);
-
-	floorDist = abs(P_GetMobjFeet(spb) - P_GetMobjGround(spb));
-
-	spb_manta_totaldist(spb) += P_AproxDistance(spb->momx, spb->momy);
-
-	if (spb_manta_totaldist(spb) > finalDist
-		&& floorDist <= floatHeight)
-	{
-		spb_manta_totaldist(spb) = 0;
-
-		Obj_MantaRingCreate(
-			spb,
-			spb_owner(spb),
-			cv_spbtest.value ? NULL : spb_chase(spb)
-		);
-	}
-}
-
 // Used for seeking and when SPB is trailing its target from way too close!
 static void SpawnSPBSpeedLines(mobj_t *spb)
 {
@@ -475,9 +435,6 @@ static void SPBChase(mobj_t *spb, mobj_t *bestMobj)
 	SetSPBSpeed(spb, xySpeed, zSpeed);
 	spb->momx += cx;
 	spb->momy += cy;
-
-	// Spawn a trail of rings behind the SPB!
-	SPBMantaRings(spb);
 
 	// Red speed lines for when it's gaining on its target. A tell for when you're starting to lose too much speed!
 	if (R_PointToDist2(0, 0, spb->momx, spb->momy) > (16 * R_PointToDist2(0, 0, chase->momx, chase->momy)) / 15 // Going faster than the target

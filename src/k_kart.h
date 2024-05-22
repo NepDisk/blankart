@@ -172,7 +172,6 @@ boolean K_WaterRun(mobj_t *mobj);
 boolean K_WaterSkip(mobj_t *mobj);
 void K_SpawnWaterRunParticles(mobj_t *mobj);
 void K_ApplyTripWire(player_t *player, tripwirestate_t state);
-fixed_t K_GrowShrinkSpeedMul(const player_t *player);
 fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed);
 fixed_t K_GetKartSpeed(const player_t *player, boolean doboostpower, boolean dorubberbanding);
 fixed_t K_GetKartAccel(const player_t *player);

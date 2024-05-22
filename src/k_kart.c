@@ -2916,52 +2916,13 @@ static void K_GetKartBoostPower(player_t *player)
 	player->accelboost = accelboost;
 }
 
-fixed_t K_GrowShrinkSpeedMul(const player_t *player)
-{
-	fixed_t scaleDiff = player->mo->scale - mapobjectscale;
-	fixed_t playerScale = FixedDiv(player->mo->scale, mapobjectscale);
-	fixed_t speedMul = FRACUNIT;
-
-	if (scaleDiff > 0)
-	{
-		// Grown
-		// Change x2 speed into x1.5
-		speedMul = FixedDiv(FixedMul(playerScale, GROW_PHYSICS_SCALE), GROW_SCALE);
-	}
-	else if (scaleDiff < 0)
-	{
-		// Shrunk
-		// Change x0.5 speed into x0.75
-		speedMul = FixedDiv(FixedMul(playerScale, SHRINK_PHYSICS_SCALE), SHRINK_SCALE);
-	}
-
-	return speedMul;
-}
-
 // Returns kart speed from a stat. Boost power and scale are NOT taken into account, no player or object is necessary.
 fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed)
 {
-	const fixed_t xspd = (3*FRACUNIT)/64;
-	fixed_t g_cc = K_GetKartGameSpeedScalar(gamespeed) + xspd;
-	fixed_t k_speed = 148;
-	fixed_t finalspeed;
-
-	k_speed += kartspeed*4; // 152 - 184
-
-	finalspeed = FixedMul(k_speed<<14, g_cc);
-	return finalspeed;
-}
-
-fixed_t K_GetKartSpeed(const player_t *player, boolean doboostpower, boolean notused)
-{
-	fixed_t k_speed = 150;
+	const fixed_t xspd = 3072;
 	fixed_t g_cc = FRACUNIT;
-	fixed_t xspd = 3072;		// 4.6875 aka 3/64
-	UINT8 kartspeed = player->kartspeed;
+	fixed_t k_speed = 150;
 	fixed_t finalspeed;
-
-	if (doboostpower && !player->pogospring && !P_IsObjectOnGround(player->mo))
-		return (75*mapobjectscale); // air speed cap
 
 	switch (gamespeed)
 	{
@@ -2976,12 +2937,25 @@ fixed_t K_GetKartSpeed(const player_t *player, boolean doboostpower, boolean not
 			break;
 	}
 
+	k_speed += kartspeed*3; // 153 - 177
+
+	finalspeed = FixedMul(k_speed<<14, g_cc);
+	return finalspeed;
+}
+
+fixed_t K_GetKartSpeed(const player_t *player, boolean doboostpower, boolean notused)
+{
+	fixed_t k_speed = 150;
+	UINT8 kartspeed = player->kartspeed;
+	fixed_t finalspeed = K_GetKartSpeedFromStat(kartspeed);
+
+	if (doboostpower && !player->pogospring && !P_IsObjectOnGround(player->mo))
+		return (75*mapobjectscale); // air speed cap
+
 	//if (G_BattleGametype() && player->kartstuff[k_bumper] <= 0)
 		//kartspeed = 1;
 
-	k_speed += kartspeed*3; // 153 - 177
-
-	finalspeed = FixedMul(FixedMul(k_speed<<14, g_cc), player->mo->scale);
+	finalspeed = FixedMul(finalspeed, player->mo->scale);
 
 	if (doboostpower)
 		return FixedMul(finalspeed, player->boostpower+player->speedboost);
