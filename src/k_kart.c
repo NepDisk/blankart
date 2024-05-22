@@ -8138,10 +8138,6 @@ static void K_KartDrift(player_t *player, boolean onground)
 			S_StartSound(player->mo, sfx_s23c);
 			K_SpawnDashDustRelease(player);
 
-			// Airtime means we're not gaining speed. Get grounded!
-			if (!onground)
-				player->mo->momz -= player->speed/2;
-
 			if (player->driftcharge < 0)
 			{
 				// Stage 0: Yellow sparks
