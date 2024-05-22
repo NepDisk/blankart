@@ -1983,7 +1983,7 @@ static void P_3dMovement(player_t *player)
 	// Forward movement
 	if (!((player->exiting || mapreset) || (P_PlayerInPain(player) && !onground)))
 	{
-		movepushforward = K_3dKartMovement(player, onground, player->cmd.forwardmove);
+		movepushforward = K_3dKartMovement(player, onground, K_GetForwardMove(player));
 
 		// allow very small movement while in air for gameplay
 		if (!onground)
@@ -1992,7 +1992,7 @@ static void P_3dMovement(player_t *player)
 		if (player->mo->movefactor != FRACUNIT) // Friction-scaled acceleration...
 			movepushforward = FixedMul(movepushforward, player->mo->movefactor);
 
-		if (player->cmd.buttons & BT_BRAKE && !player->cmd.forwardmove) // SRB2kart - braking isn't instant
+		if (player->cmd.buttons & BT_BRAKE && !K_GetForwardMove(player)) // SRB2kart - braking isn't instant
 			movepushforward /= 64;
 
 		if (player->cmd.forwardmove > 0)
