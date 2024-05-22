@@ -1985,8 +1985,6 @@ static void P_3dMovement(player_t *player)
 	// SRB2Kart: pogo spring and speed bumps are supposed to control like you're on the ground
 	onground = (P_IsObjectOnGround(player->mo) || player->pogospring);
 
-	player->aiming = player->cmd.aiming<<FRACBITS;
-
 	// Forward movement
 	if (!((player->exiting || mapreset) || (P_PlayerInPain(player) && !onground)))
 	{
