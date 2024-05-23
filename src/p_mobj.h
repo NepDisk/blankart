@@ -451,6 +451,8 @@ struct mobj_t
 	INT32 po_movecount; // Polyobject carrying (NOT savegame, NOT Lua)
 
 	// WARNING: New fields must be added separately to savegame and Lua.
+
+	mobj_t *watertrail[4];
 };
 
 //
