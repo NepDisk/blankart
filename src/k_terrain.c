@@ -481,12 +481,15 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 	}
 
 	// Pogo panel
-	if (terrain->pogoPanel > 0 && !(mo->eflags & MFE_SPRUNG))
+	if (terrain->pogoPanel > 0)
 	{
 		const fixed_t hscale = mapobjectscale + (mapobjectscale - player->mo->scale);
 		const fixed_t minspeed = 24*hscale;
 		const fixed_t maxspeed = 28*hscale;
 		angle_t pushangle = K_MomentumAngle(player->mo);
+
+		if (player->mo->eflags & MFE_SPRUNG)
+			return;
 
 		if ((player->speed > maxspeed) && terrain->pogoPanel == 2) // Prevent overshooting jumps
 		{
@@ -503,7 +506,7 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		else if (terrain->pogoPanel == 2)
 			player->pogospring = 2;
 
-		K_DoPogoSpring(player->mo, 0, 1);
+		K_DoPogoSpring(player->mo, 32<<FRACBITS, 1);
 	}
 
 	// Speed pad
@@ -1644,7 +1647,7 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	}
 	else if (stricmp(param, "pogoPanel") == 0)
 	{
-		terrain->pogoPanel = FLOAT_TO_FIXED(atof(val));
+		terrain->pogoPanel = (UINT8)get_number(val);
 	}
 	else if (stricmp(param, "speedPad") == 0)
 	{

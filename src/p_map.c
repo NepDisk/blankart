@@ -432,12 +432,9 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 
 		if (spring->type == MT_POGOSPRING)
 		{
-			if (spring->reactiontime == 0)
-			{
-				object->eflags &= ~MFE_SPRUNG; // needed to permit the following
-				object->player->pogospring = 1;
-				K_DoPogoSpring(object, 32<<FRACBITS, 2);
-			}
+			object->eflags &= ~MFE_SPRUNG; // needed to permit the following
+			object->player->pogospring = 1;
+			K_DoPogoSpring(object, 32<<FRACBITS, 2);
 
 			if (!spring->fuse)
 			{

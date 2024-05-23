@@ -13159,12 +13159,6 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj)
 		Obj_InitHyudoroCenter(mobj, NULL);
 		break;
 	}
-	case MT_POGOSPRING:
-	{
-		// Start as tumble version.
-		mobj->reactiontime++;
-		break;
-	}
 	case MT_LOOPCENTERPOINT:
 	{
 		Obj_InitLoopCenter(mobj);

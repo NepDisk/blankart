@@ -1978,6 +1978,8 @@ static void P_3dMovement(player_t *player)
 		K_MomentumToFacing(player);
 	}
 
+	N_PogoSidemove(player);
+
 	if ((totalthrust.x || totalthrust.y)
 		&& player->mo->standingslope != NULL
 		&& (!(player->mo->standingslope->flags & SL_NOPHYSICS))
