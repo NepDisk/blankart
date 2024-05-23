@@ -2596,7 +2596,11 @@ boolean K_WaterSkip(mobj_t *mobj)
 
 	switch (mobj->type)
 	{
-
+		case MT_PLAYER:
+		{
+			// Allow
+			break;
+		}
 		case MT_ORBINAUT:
 		case MT_JAWZ:
 		case MT_BALLHOG:
