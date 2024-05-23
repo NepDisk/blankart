@@ -385,7 +385,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT32(save->p, players[i].lastairtime);
 		WRITEUINT16(save->p, players[i].bigwaypointgap);
 		WRITEUINT8(save->p, players[i].startboost);
-		WRITEUINT8(save->p, players[i].dropdashboost);
 
 		WRITEUINT16(save->p, players[i].flashing);
 		WRITEUINT16(save->p, players[i].spinouttimer);
@@ -920,7 +919,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].lastairtime = READUINT32(save->p);
 		players[i].bigwaypointgap = READUINT16(save->p);
 		players[i].startboost = READUINT8(save->p);
-		players[i].dropdashboost = READUINT8(save->p);
 
 		players[i].flashing = READUINT16(save->p);
 		players[i].spinouttimer = READUINT16(save->p);
@@ -6420,12 +6418,10 @@ static void P_NetArchiveMisc(savebuffer_t *save, boolean resending)
 	WRITEUINT8(save->p, thwompsactive);
 	WRITEUINT8(save->p, lastLowestLap);
 	WRITESINT8(save->p, spbplace);
-	WRITEUINT8(save->p, rainbowstartavailable);
 	WRITEUINT8(save->p, inDuel);
 
 	WRITEUINT32(save->p, introtime);
 	WRITEUINT32(save->p, starttime);
-	WRITEUINT8(save->p, numbulbs);
 
 	WRITEUINT32(save->p, timelimitintics);
 	WRITEUINT32(save->p, extratimeintics);
@@ -6612,12 +6608,10 @@ static boolean P_NetUnArchiveMisc(savebuffer_t *save, boolean reloading)
 	thwompsactive = (boolean)READUINT8(save->p);
 	lastLowestLap = READUINT8(save->p);
 	spbplace = READSINT8(save->p);
-	rainbowstartavailable = (boolean)READUINT8(save->p);
 	inDuel = (boolean)READUINT8(save->p);
 
 	introtime = READUINT32(save->p);
 	starttime = READUINT32(save->p);
-	numbulbs = READUINT8(save->p);
 
 	timelimitintics = READUINT32(save->p);
 	extratimeintics = READUINT32(save->p);

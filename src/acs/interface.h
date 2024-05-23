@@ -173,13 +173,13 @@ void ACS_RunLapScript(mobj_t *mo, line_t *line);
 
 
 /*--------------------------------------------------
-	void ACS_RunPositionScript(void);
+	void ACS_RunRaceStartScript(void);
 
 		Runs the map's special script for when the level
-		goes past the POSITION period.
+		goes past the Race Start period.
 --------------------------------------------------*/
 
-void ACS_RunPositionScript(void);
+void ACS_RunRaceStartScript(void);
 
 
 /*--------------------------------------------------

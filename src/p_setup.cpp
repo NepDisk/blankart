@@ -8721,7 +8721,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 
 	// The waypoint data that's in PU_LEVEL needs to be reset back to 0/NULL now since PU_LEVEL was cleared
 	K_ClearWaypoints();
-	K_ClearFinishBeamLine();
 
 	// Load the waypoints please!
 	if (gametyperules & GTR_CIRCUIT && gamestate != GS_TITLESCREEN)
@@ -8732,11 +8731,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 			{
 				CONS_Alert(CONS_ERROR, "Waypoints were not able to be setup! Player positions will not work correctly.\n");
 			}
-		}
-
-		if (K_GenerateFinishBeamLine() == false)
-		{
-			CONS_Alert(CONS_ERROR, "No valid finish line beam setup could be found.\n");
 		}
 	}
 

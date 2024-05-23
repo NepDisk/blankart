@@ -18,6 +18,7 @@
 // too short than one file that's too massive.
 
 #include "k_kart.h"
+#include "doomstat.h"
 #include "k_battle.h"
 #include "k_pwrlv.h"
 #include "k_color.h"
@@ -71,7 +72,6 @@
 #include "noire/n_cvar.h"
 #include "noire/n_object.h"
 #include "noire/n_boosts.h"
-#include "noire/n_soc.h"
 
 // SOME IMPORTANT VARIABLES DEFINED IN DOOMDEF.H:
 // gamespeed is cc (0 for easy, 1 for normal, 2 for hard)
@@ -149,8 +149,7 @@ void K_TimerReset(void)
 	starttime = introtime = 0;
 	memset(&g_darkness, 0, sizeof g_darkness);
 	memset(&g_musicfade, 0, sizeof g_musicfade);
-	numbulbs = 1;
-	inDuel = rainbowstartavailable = false;
+	inDuel = false;
 	linecrossed = 0;
 	timelimitintics = extratimeintics = secretextratime = 0;
 	g_pointlimit = 0;
@@ -260,55 +259,17 @@ void K_TimerInit(void)
 				numPlayers++;
 			}
 
-			if (cv_kartdebugstart.value > 0)
-				numPlayers = cv_kartdebugstart.value;
-
 			if (numPlayers < 2)
 			{
 				domodeattack = true;
 			}
-			else
-			{
-				numbulbs = 5;
 
-				if (!N_UseLegacyStart())
-					rainbowstartavailable = true;
+			// 1v1 activates DUEL rules!
+			inDuel = (numPlayers == 2);
 
-				// 1v1 activates DUEL rules!
-				inDuel = (numPlayers == 2);
-
-				if (!inDuel)
-				{
-					introtime = (108) + 5; // 108 for rotation, + 5 for white fade
-					numbulbs += (numPlayers-2); // Extra POSITION!! time
-				}
-			}
+			introtime = (108) + 5; // 108 for rotation, + 5 for white fade
 		}
-
-		starttime = introtime;
-		if (!(gametyperules & GTR_NOPOSITION) && !N_UseLegacyStart())
-		{
-			// Start countdown time + buffer time
-			starttime += ((3*TICRATE) + ((2*TICRATE) + (numbulbs * bulbtime)));
-		}
-		else if (N_UseLegacyStart())
-		{
-			numbulbs = 0;
-			starttime = 6*TICRATE + (3*TICRATE/4);
-
-		}
-	}
-
-	if (cv_kartdebugstart.value == -1 ? M_NotFreePlay() == false : cv_kartdebugstart.value == 0)
-	{
-		starttime = 0;
-		introtime = 0;
-	}
-
-	if (G_TimeAttackStart())
-	{
-		starttime = 15*TICRATE; // Longest permitted start. No half-laps in reverse.
-		// (Changed on finish line cross later, don't worry.)
+		starttime = 6*TICRATE + (3*TICRATE/4);
 	}
 
 	K_SpawnItemCapsules();
@@ -1350,7 +1311,7 @@ void K_SpawnDashDustRelease(player_t *player)
 	if (!P_IsObjectOnGround(player->mo))
 		return;
 
-	if (!player->speed && !player->startboost && !player->dropdashboost)
+	if (!player->speed && !player->startboost)
 		return;
 
 	travelangle = player->mo->angle;
@@ -6860,9 +6821,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->startboost > 0)
 		player->startboost--;
 
-	if (player->dropdashboost)
-		player->dropdashboost--;
-
 	if (player->speedpunt)
 		player->speedpunt--;
 
@@ -6973,16 +6931,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->ringboost = 0;
 		player->driftboost = player->strongdriftboost = 0;
 		player->gateBoost = 0;
-	}
-
-	if (player->pflags & PF_FAULT && player->nocontrol) // Hold player on respawn platform, no fair skipping long POSITION areas
-	{
-		if (rainbowstartavailable && ((leveltime <= starttime) || (leveltime - starttime < 10*TICRATE)))
-		{
-			player->nocontrol = TICRATE/2;
-			player->mo->renderflags |= RF_DONTDRAW;
-			player->mo->flags |= MF_NOCLIPTHING;
-		}
 	}
 
 	player->topAccel = min(player->topAccel + TOPACCELREGEN, MAXTOPACCEL);
@@ -7297,8 +7245,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		P_DamageMobj(player->mo, NULL, NULL, 1, DMG_INSTAKILL);
 	}
 
-	if (N_UseLegacyStart())
-		N_LegacyStart(player);
+	N_LegacyStart(player);
 
 }
 

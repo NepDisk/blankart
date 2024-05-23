@@ -258,9 +258,6 @@ UINT8 ammoremovaltics = 2*TICRATE;
 tic_t introtime = 3;
 tic_t starttime = 3;
 
-const tic_t bulbtime = TICRATE/2;
-UINT8 numbulbs = 1;
-
 INT32 hyudorotime = 14*TICRATE;
 INT32 stealtime = TICRATE/2;
 INT32 sneakertime = TICRATE + (TICRATE/3);
@@ -317,7 +314,6 @@ tic_t mapreset; // Map reset delay when enough players have joined an empty game
 boolean thwompsactive; // Thwomps activate on lap 2
 UINT8 lastLowestLap; // Last lowest lap, for activating race lap executors
 SINT8 spbplace; // SPB exists, give the person behind better items
-boolean rainbowstartavailable; // Boolean, keeps track of if the rainbow start was gotten
 tic_t linecrossed; // For Time Attack
 boolean inDuel; // Boolean, keeps track of if it is a 1v1
 
@@ -1780,6 +1776,12 @@ void G_Ticker(boolean run)
 	UINT32 i;
 	INT32 buf;
 	ticcmd_t *cmd;
+	UINT32 ra_timeskip = ((modeattacking == ATTACKING_TIME || modeattacking == ATTACKING_SPB) && !demo.playback && leveltime < starttime - TICRATE*4) ? 0 : (starttime - TICRATE*4 - 1);
+	// starttime - TICRATE*4 is where we want RA to start when we PLAY IT, so we will loop the main thinker on RA start to get it to this point,
+	// the reason this is done is to ensure that ghosts won't look out of synch with other map elements (objects, moving platforms...)
+	// when we REPLAY, don't skip, let the camera spin, do its thing etc~
+
+	// also the -1 is to ensure that the thinker runs in the loop below.
 
 	// see also SCR_DisplayMarathonInfo
 	if ((marathonmode & (MA_INIT|MA_INGAME)) == MA_INGAME && gamestate == GS_LEVEL)
@@ -1911,12 +1913,16 @@ void G_Ticker(boolean run)
 	switch (gamestate)
 	{
 		case GS_LEVEL:
-			if (demo.attract)
-				F_AttractDemoTicker();
-			P_Ticker(run); // tic the game
-			F_TextPromptTicker();
-			AM_Ticker();
-			HU_Ticker();
+
+			for (; ra_timeskip < starttime - TICRATE*4; ra_timeskip++)
+			{
+				if (demo.attract)
+					F_AttractDemoTicker();
+				P_Ticker(run); // tic the game
+				F_TextPromptTicker();
+				AM_Ticker();
+				HU_Ticker();
+			}
 			break;
 
 		case GS_INTERMISSION:

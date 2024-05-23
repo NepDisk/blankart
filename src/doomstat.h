@@ -521,7 +521,6 @@ struct mapheader_t
 	UINT32 typeoflevel;					///< Combination of typeoflevel flags.
 	UINT8 numlaps;						///< Number of laps in circuit mode, unless overridden.
 	UINT8 lapspersection;				///< Number of laps per section in hybrid section-circuit maps.
-	boolean legacystart;				///< Should map use SRB2Kart style race start
 	fixed_t gravity;					///< Map-wide gravity.
 	char relevantskin[SKINNAMESIZE+1];	///< Skin to use for tutorial (if not provided, uses Eggman.)
 
@@ -787,9 +786,6 @@ extern UINT16 nightslinktics;
 extern tic_t introtime;
 extern tic_t starttime;
 
-extern const tic_t bulbtime;
-extern UINT8 numbulbs;
-
 extern INT32 hyudorotime;
 extern INT32 stealtime;
 extern INT32 sneakertime;
@@ -864,7 +860,6 @@ extern tic_t mapreset;
 extern boolean thwompsactive;
 extern UINT8 lastLowestLap;
 extern SINT8 spbplace;
-extern boolean rainbowstartavailable;
 extern tic_t linecrossed;
 extern boolean inDuel;
 

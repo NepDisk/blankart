@@ -128,7 +128,6 @@ void K_GivePointsToPlayer(player_t *player, player_t *victim, UINT8 amount);
 void K_MineFlashScreen(mobj_t *source);
 void K_SpawnMineExplosion(mobj_t *source, skincolornum_t color);
 void K_SpawnLandMineExplosion(mobj_t *source, skincolornum_t color);
-void K_RunFinishLineBeam(void);
 UINT16 K_DriftSparkColor(player_t *player, INT32 charge);
 void K_SpawnBoostTrail(player_t *player);
 void K_SpawnSparkleTrail(mobj_t *mo);

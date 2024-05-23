@@ -95,7 +95,6 @@ extern consvar_t cv_kartdebugitem, cv_kartdebugamount, cv_kartdebugdistribution,
 extern consvar_t cv_kartdebugnodes, cv_kartdebugcolorize, cv_kartdebugdirector;
 extern consvar_t cv_reducevfx, cv_screenshake;
 extern consvar_t cv_kartdebugwaypoints, cv_kartdebugbots;
-extern consvar_t cv_kartdebugstart;
 extern consvar_t cv_debugrank;
 extern consvar_t cv_battletest;
 

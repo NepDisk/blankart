@@ -19,7 +19,6 @@
 #include "doomdef.h"
 #include "d_player.h"
 #include "g_game.h"
-#include "noire/n_soc.h"
 #include "r_main.h"
 #include "p_local.h"
 #include "k_bot.h"
@@ -1516,75 +1515,7 @@ static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 		destangle = R_PointToAngle2(player->mo->x, player->mo->y, predict->x, predict->y);
 		turnamt = K_HandleBotTrack(player, cmd, predict, destangle);
 	}
-	else if (leveltime <= starttime && finishBeamLine != nullptr && !N_UseLegacyStart())
-	{
-		// Handle POSITION!!
-		const fixed_t distBase = 480*mapobjectscale;
-		const fixed_t distAdjust = 128*mapobjectscale;
-
-		const fixed_t closeDist = distBase + (distAdjust * (9 - player->kartweight));
-		const fixed_t farDist = closeDist + (distAdjust * 2);
-
-		const tic_t futureSight = (TICRATE >> 1);
-
-		fixed_t distToFinish = K_DistanceOfLineFromPoint(
-			finishBeamLine->v1->x, finishBeamLine->v1->y,
-			finishBeamLine->v2->x, finishBeamLine->v2->y,
-			player->mo->x, player->mo->y
-		) - (K_BotSpeedScaled(player, player->speed) * futureSight);
-
-		if (distToFinish < closeDist)
-		{
-			// We're too close, we need to start backing up.
-			turnamt = K_HandleBotReverse(player, cmd, predict, destangle);
-		}
-		else if (distToFinish < farDist)
-		{
-			INT32 bullyTurn = INT32_MAX;
-
-			// We're in about the right place, let's do whatever we want to.
-
-			// Look for characters to bully.
-			bullyTurn = K_PositionBully(player);
-			if (bullyTurn == INT32_MAX)
-			{
-				// No one to bully, just go for a spindash as anyone.
-				if (predict == nullptr)
-				{
-					// Create a prediction.
-					predict = K_CreateBotPrediction(player);
-				}
-
-				if (predict != nullptr)
-				{
-					K_NudgePredictionTowardsObjects(predict, player);
-					destangle = R_PointToAngle2(player->mo->x, player->mo->y, predict->x, predict->y);
-					turnamt = K_HandleBotTrack(player, cmd, predict, destangle);
-				}
-			}
-			else
-			{
-				turnamt = bullyTurn;
-			}
-		}
-		else
-		{
-			// Too far away, we need to just drive up.
-			if (predict == nullptr)
-			{
-				// Create a prediction.
-				predict = K_CreateBotPrediction(player);
-			}
-
-			if (predict != nullptr)
-			{
-				K_NudgePredictionTowardsObjects(predict, player);
-				destangle = R_PointToAngle2(player->mo->x, player->mo->y, predict->x, predict->y);
-				turnamt = K_HandleBotTrack(player, cmd, predict, destangle);
-			}
-		}
-	}
-	else if (leveltime <= starttime && N_UseLegacyStart())
+	else if (leveltime <= starttime)
 	{
 
 		if (leveltime >= starttime-TICRATE-TICRATE/7)

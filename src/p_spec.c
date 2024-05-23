@@ -57,9 +57,6 @@
 // Not sure if this is necessary, but it was in w_wad.c, so I'm putting it here too -Shadow Hog
 #include <errno.h>
 
-// Noire
-#include "noire/n_soc.h"
-
 mobj_t *skyboxviewpnts[16]; // array of MT_SKYBOX viewpoint mobjs
 mobj_t *skyboxcenterpnts[16]; // array of MT_SKYBOX centerpoint mobjs
 
@@ -1937,37 +1934,6 @@ static void K_HandleLapIncrement(player_t *player)
 	{
 		if (K_IgnoreFinishLine(player))
 			return;
-		if (!G_TimeAttackStart() && leveltime < starttime && !(gametyperules & GTR_ROLLINGSTART) && !N_UseLegacyStart())
-		{
-			// freeze 'em until fault penalty is over
-			P_ResetPlayer(player);
-			player->pflags |= PF_VOID;
-			player->mo->renderflags |= RF_DONTDRAW;
-			player->mo->flags |= MF_NOCLIPTHING;
-			player->nocontrol = UINT16_MAX;
-			player->mo->momx = 0;
-			player->mo->momy = 0;
-			player->mo->momz = 0;
-			K_StripItems(player);
-			player->faultflash = TICRATE/3;
-			player->karthud[khud_fault] = 1;
-			ClearFakePlayerSkin(player);
-			S_StartSound(player->mo, sfx_s3k8a);
-			P_MoveOrigin(player->mo, player->mo->old_x, player->mo->old_y, player->mo->z);
-
-			if (player->roundconditions.faulted == false)
-			{
-				player->roundconditions.faulted = true;
-				player->roundconditions.checkthisframe = true;
-			}
-
-			if (P_IsDisplayPlayer(player))
-			{
-				S_StartSound(player->mo, sfx_s3kb2);
-			}
-
-			return;
-		}
 
 		if (((numbosswaypoints > 0) ? (player->cheatchecknum >= (numcheatchecks - (numcheatchecks/2))) : (player->cheatchecknum == numcheatchecks)) || (player->laps == 0))
 		{
@@ -2042,14 +2008,6 @@ static void K_HandleLapIncrement(player_t *player)
 				if (demo.recording)
 					demo_extradata[player-players] |= DXD_START;
 				Music_Stop("position");
-			}
-
-			if (rainbowstartavailable == true)
-			{
-				S_StartSound(player->mo, sfx_s23c);
-				player->startboost = 125;
-
-				rainbowstartavailable = false;
 			}
 
 			if (player->laps == 1 && (modeattacking & ATTACKING_SPB))

@@ -292,11 +292,11 @@ void ACS_RunLapScript(mobj_t *mo, line_t *line)
 }
 
 /*--------------------------------------------------
-	void ACS_RunPositionScript(void)
+	void ACS_RunRaceStartScript(void)
 
 		See header file for description.
 --------------------------------------------------*/
-void ACS_RunPositionScript(void)
+void ACS_RunRaceStartScript(void)
 {
 	Environment *env = &ACSEnv;
 

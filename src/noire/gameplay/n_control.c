@@ -312,7 +312,7 @@ void N_LegacyStart(player_t *player)
 	{
 		player->mo->scalespeed = mapobjectscale/12;
 		player->mo->destscale = mapobjectscale + (FixedMul(mapobjectscale, player->boostcharge*131));
-		if ((player->pflags & PF_SHRINKME) && !modeattacking && !player->bot)
+		if (K_PlayerShrinkCheat(player) && (modeattacking == ATTACKING_NONE) && !player->bot)
 			player->mo->destscale = (6*player->mo->destscale)/8;
 	}
 
@@ -328,7 +328,7 @@ void N_LegacyStart(player_t *player)
 		// Get an instant boost!
 		else if (player->boostcharge <= 50)
 		{
-			player->dropdashboost = (50-player->boostcharge)+20;
+			player->startboost = (50-player->boostcharge)+20;
 
 			if (player->boostcharge <= 36)
 			{
@@ -354,11 +354,10 @@ void N_LegacyStart(player_t *player)
 		// You overcharged your engine? Those things are expensive!!!
 		else if (player->boostcharge > 50)
 		{
-			player->spinouttimer = 40;
 			player->nocontrol = 40;
 			//S_StartSound(player->mo, sfx_kc34);
 			S_StartSound(player->mo, sfx_s3k83);
-			//player->pflags |= PF_SKIDDOWN; // cheeky pflag reuse
+			player->pflags |= PF_FAULT; // cheeky pflag reuse
 		}
 
 		player->boostcharge = 0;

@@ -183,7 +183,6 @@ boolean P_InQuicksand(const mobj_t *mo);
 boolean P_PlayerHitFloor(player_t *player, boolean fromAir, angle_t oldPitch, angle_t oldRoll);
 
 void P_SetObjectMomZ(mobj_t *mo, fixed_t value, boolean relative);
-void P_StartPositionMusic(boolean exact);
 void P_EndingMusic(void);
 void P_InvincGrowMusic(void);
 mobj_t *P_SpawnGhostMobj(mobj_t *mobj);

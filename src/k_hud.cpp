@@ -82,14 +82,7 @@ static patch_t *kp_splitspheresticker;
 static patch_t *kp_splitkarmabomb;
 static patch_t *kp_timeoutsticker;
 
-static patch_t *kp_prestartbulb[15];
-static patch_t *kp_prestartletters[7];
-
-static patch_t *kp_prestartbulb_split[15];
-static patch_t *kp_prestartletters_split[7];
-
 static patch_t *kp_startcountdown[20];
-static patch_t *kp_racefault[6];
 static patch_t *kp_racefinish[6];
 
 static patch_t *kp_positionnum[NUMPOSNUMS][NUMPOSFRAMES];
@@ -272,40 +265,6 @@ void K_LoadKartHUDGraphics(void)
 	HU_UpdatePatch(&kp_splitkarmabomb, "K_SPTKRM");
 	HU_UpdatePatch(&kp_timeoutsticker, "K_STTOUT");
 
-	// Pre-start countdown bulbs
-	sprintf(buffer, "K_BULBxx");
-	for (i = 0; i < 15; i++)
-	{
-		buffer[6] = '0'+((i+1)/10);
-		buffer[7] = '0'+((i+1)%10);
-		HU_UpdatePatch(&kp_prestartbulb[i], "%s", buffer);
-	}
-
-	sprintf(buffer, "K_SBLBxx");
-	for (i = 0; i < 15; i++)
-	{
-		buffer[6] = '0'+((i+1)/10);
-		buffer[7] = '0'+((i+1)%10);
-		HU_UpdatePatch(&kp_prestartbulb_split[i], "%s", buffer);
-	}
-
-	// Pre-start position letters
-	HU_UpdatePatch(&kp_prestartletters[0], "K_PL_P");
-	HU_UpdatePatch(&kp_prestartletters[1], "K_PL_O");
-	HU_UpdatePatch(&kp_prestartletters[2], "K_PL_S");
-	HU_UpdatePatch(&kp_prestartletters[3], "K_PL_I");
-	HU_UpdatePatch(&kp_prestartletters[4], "K_PL_T");
-	HU_UpdatePatch(&kp_prestartletters[5], "K_PL_N");
-	HU_UpdatePatch(&kp_prestartletters[6], "K_PL_EX");
-
-	HU_UpdatePatch(&kp_prestartletters_split[0], "K_SPL_P");
-	HU_UpdatePatch(&kp_prestartletters_split[1], "K_SPL_O");
-	HU_UpdatePatch(&kp_prestartletters_split[2], "K_SPL_S");
-	HU_UpdatePatch(&kp_prestartletters_split[3], "K_SPL_I");
-	HU_UpdatePatch(&kp_prestartletters_split[4], "K_SPL_T");
-	HU_UpdatePatch(&kp_prestartletters_split[5], "K_SPL_N");
-	HU_UpdatePatch(&kp_prestartletters_split[6], "K_SPL_EX");
-
 	// Starting countdown
 	HU_UpdatePatch(&kp_startcountdown[0], "K_CNT3A");
 	HU_UpdatePatch(&kp_startcountdown[1], "K_CNT2A");
@@ -328,16 +287,6 @@ void K_LoadKartHUDGraphics(void)
 	HU_UpdatePatch(&kp_startcountdown[17], "K_SMC1B");
 	HU_UpdatePatch(&kp_startcountdown[18], "K_SMCGOB");
 	HU_UpdatePatch(&kp_startcountdown[19], "K_SDUEL2");
-
-	// Fault
-	HU_UpdatePatch(&kp_racefault[0], "K_FAULTA");
-	HU_UpdatePatch(&kp_racefault[1], "K_FAULTB");
-	// Splitscreen
-	HU_UpdatePatch(&kp_racefault[2], "K_SMFLTA");
-	HU_UpdatePatch(&kp_racefault[3], "K_SMFLTB");
-	// 2P splitscreen
-	HU_UpdatePatch(&kp_racefault[4], "K_2PFLTA");
-	HU_UpdatePatch(&kp_racefault[5], "K_2PFLTB");
 
 	// Finish
 	HU_UpdatePatch(&kp_racefinish[0], "K_FINA");
@@ -4784,12 +4733,6 @@ static void K_drawKartFinish(boolean finish)
 		kptodraw = kp_racefinish;
 		minsplitstationary = 2;
 	}
-	else
-	{
-		timer = stplyr->karthud[khud_fault];
-		kptodraw = kp_racefault;
-		minsplitstationary = 1;
-	}
 
 	if (!timer || timer > 2*TICRATE)
 		return;
@@ -4830,210 +4773,46 @@ static void K_drawKartFinish(boolean finish)
 	}
 }
 
-static void K_drawKartStartBulbs(void)
-{
-	const UINT8 start_animation[14] = {
-		1, 2, 3, 4, 5, 6, 7, 8,
-		7, 6,
-		9, 10, 11, 12
-	};
-
-	const UINT8 loop_animation[4] = {
-		12, 13, 12, 14
-	};
-
-	const UINT8 chillloop_animation[2] = {
-		11, 12
-	};
-
-	const UINT8 letters_order[10] = {
-		0, 1, 2, 3, 4, 3, 1, 5, 6, 6
-	};
-
-	const UINT8 letters_transparency[40] = {
-		0, 2, 4, 6, 8,
-		10, 10, 10, 10, 10,
-		10, 10, 10, 10, 10,
-		10, 10, 10, 10, 10,
-		10, 10, 10, 10, 10,
-		10, 10, 10, 10, 10,
-		10, 10, 10, 10, 10,
-		10, 8, 6, 4, 2
-	};
-
-	fixed_t spacing = 24*FRACUNIT;
-
-	fixed_t startx = (BASEVIDWIDTH/2)*FRACUNIT;
-	fixed_t starty = 48*FRACUNIT;
-	fixed_t x, y;
-
-	UINT8 numperrow = numbulbs/2;
-	UINT8 i;
-
-	if (r_splitscreen >= 1)
-	{
-		spacing /= 2;
-		starty /= 3;
-
-		if (r_splitscreen > 1)
-		{
-			startx /= 2;
-		}
-	}
-
-	startx += (spacing/2);
-
-	if (numbulbs <= 10)
-	{
-		// No second row
-		numperrow = numbulbs;
-	}
-	else
-	{
-		if (numbulbs & 1)
-		{
-			numperrow++;
-		}
-
-		starty -= (spacing/2);
-	}
-
-	startx -= (spacing/2) * numperrow;
-
-	x = startx;
-	y = starty;
-
-	for (i = 0; i < numbulbs; i++)
-	{
-		UINT8 patchnum = 0;
-		INT32 bulbtic = (leveltime - introtime - TICRATE) - (bulbtime * i);
-
-		if (i == numperrow)
-		{
-			y += spacing;
-			x = startx + (spacing/2);
-		}
-
-		if (bulbtic > 0)
-		{
-			if (bulbtic < 14)
-			{
-				patchnum = start_animation[bulbtic];
-			}
-			else
-			{
-				const INT32 length = (bulbtime * 3);
-
-				bulbtic -= 14;
-
-				if (bulbtic > length)
-				{
-					bulbtic -= length;
-					patchnum = chillloop_animation[bulbtic % 2];
-				}
-				else
-				{
-					patchnum = loop_animation[bulbtic % 4];
-				}
-			}
-		}
-
-		V_DrawFixedPatch(x, y, FRACUNIT, V_SNAPTOTOP|V_SPLITSCREEN,
-			(r_splitscreen ? kp_prestartbulb_split[patchnum] : kp_prestartbulb[patchnum]), NULL);
-		x += spacing;
-	}
-
-	x = 70*FRACUNIT;
-	y = starty;
-
-	if (r_splitscreen == 1)
-	{
-		x = 106*FRACUNIT;
-	}
-	else if (r_splitscreen > 1)
-	{
-		x = 28*FRACUNIT;
-	}
-
-	if (timeinmap < 16)
-		return; // temporary for current map start behaviour
-
-	for (i = 0; i < 10; i++)
-	{
-		UINT8 patchnum = letters_order[i];
-		INT32 transflag = letters_transparency[(leveltime - i) % 40];
-		patch_t *patch = (r_splitscreen ? kp_prestartletters_split[patchnum] : kp_prestartletters[patchnum]);
-
-		if (transflag >= 10)
-			;
-		else
-		{
-			if (transflag != 0)
-				transflag = transflag << FF_TRANSSHIFT;
-
-			V_DrawFixedPatch(x, y, FRACUNIT, V_SNAPTOTOP|V_SPLITSCREEN|transflag, patch, NULL);
-		}
-
-		if (i < 9)
-		{
-			x += (SHORT(patch->width)) * FRACUNIT/2;
-
-			patchnum = letters_order[i+1];
-			patch = (r_splitscreen ? kp_prestartletters_split[patchnum] : kp_prestartletters[patchnum]);
-			x += (SHORT(patch->width)) * FRACUNIT/2;
-
-			if (r_splitscreen)
-				x -= FRACUNIT;
-		}
-	}
-}
-
 static void K_drawKartStartCountdown(void)
 {
 	INT32 pnum = 0;
 
-	if (leveltime >= introtime && leveltime < starttime-(3*TICRATE))
-	{
-		if (numbulbs > 1)
-			K_drawKartStartBulbs();
-	}
-	else
-	{
+	if (leveltime < starttime-(3*TICRATE))
+		return;
 
-		if (leveltime >= starttime-(2*TICRATE)) // 2
-			pnum++;
-		if (leveltime >= starttime-TICRATE) // 1
-			pnum++;
+	if (leveltime >= starttime-(2*TICRATE)) // 2
+		pnum++;
+	if (leveltime >= starttime-TICRATE) // 1
+		pnum++;
 
-		if (leveltime >= starttime) // GO!
+	if (leveltime >= starttime) // GO!
+	{
+		UINT8 i;
+		UINT8 numplayers = 0;
+
+		pnum++;
+
+		for (i = 0; i < MAXPLAYERS; i++)
 		{
-			UINT8 i;
-			UINT8 numplayers = 0;
+			if (playeringame[i] && !players[i].spectator)
+				numplayers++;
 
-			pnum++;
-
-			for (i = 0; i < MAXPLAYERS; i++)
-			{
-				if (playeringame[i] && !players[i].spectator)
-					numplayers++;
-
-				if (numplayers > 2)
-					break;
-			}
-
-			if (inDuel == true)
-			{
-				pnum++; // DUEL
-			}
+			if (numplayers > 2)
+				break;
 		}
 
-		if ((leveltime % (2*5)) / 5) // blink
-			pnum += 5;
-		if (r_splitscreen) // splitscreen
-			pnum += 10;
-
-		V_DrawScaledPatch(STCD_X - (SHORT(kp_startcountdown[pnum]->width)/2), STCD_Y - (SHORT(kp_startcountdown[pnum]->height)/2), V_SPLITSCREEN, kp_startcountdown[pnum]);
+		if (inDuel == true)
+		{
+			pnum++; // DUEL
+		}
 	}
+
+	if ((leveltime % (2*5)) / 5) // blink
+		pnum += 5;
+	if (r_splitscreen) // splitscreen
+		pnum += 10;
+
+	V_DrawScaledPatch(STCD_X - (SHORT(kp_startcountdown[pnum]->width)/2), STCD_Y - (SHORT(kp_startcountdown[pnum]->height)/2), V_SPLITSCREEN, kp_startcountdown[pnum]);
 }
 
 static void K_drawKartFirstPerson(void)
@@ -6184,16 +5963,8 @@ void K_drawKartHUD(void)
 		}
 	}
 
-	// Draw the countdowns after everything else.
-	if (stplyr->lives <= 0 && stplyr->playerstate == PST_DEAD)
-	{
-		;
-	}
-	else if (stplyr->karthud[khud_fault] != 0 && stplyr->karthud[khud_finish] == 0)
-	{
-		K_drawKartFinish(false);
-	}
-	else if (starttime != introtime
+
+	if (starttime != introtime
 	&& leveltime >= introtime
 	&& leveltime < starttime+TICRATE)
 	{

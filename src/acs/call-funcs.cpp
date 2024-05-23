@@ -1853,11 +1853,11 @@ bool CallFunc_GrandPrix(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::W
 }
 
 /*--------------------------------------------------
-	bool CallFunc_PositionStart(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+	bool CallFunc_RaceStart(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
 
-		Returns if the map is in POSITION!!
+		Returns if the map is in Race Start!!
 --------------------------------------------------*/
-bool CallFunc_PositionStart(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+bool CallFunc_RaceStart(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
 {
 	(void)argV;
 	(void)argC;

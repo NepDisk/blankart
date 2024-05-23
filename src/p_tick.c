@@ -16,7 +16,7 @@
 #include "d_main.h"
 #include "g_game.h"
 #include "g_input.h"
-#include "noire/n_soc.h"
+#include "g_state.h"
 #include "p_local.h"
 #include "z_zone.h"
 #include "s_sound.h"
@@ -568,9 +568,6 @@ static void P_RunThinkers(void)
 		}
 		ps_thlist_times[i] = I_GetPreciseTime() - ps_thlist_times[i];
 	}
-
-	if (gametyperules & GTR_CIRCUIT)
-		K_RunFinishLineBeam();
 
 	if (gametyperules & GTR_PAPERITEMS)
 		K_RunPaperItemSpawners();
@@ -1129,57 +1126,51 @@ void P_Ticker(boolean run)
 			}
 		}
 
-		if (musiccountdown > 0)
+		if (gamestate != GS_TITLESCREEN)
 		{
-			// Music is controlled by completion sequence
-		}
-		else if (K_CheckBossIntro() == true)
-		{
-			// Bosses have a punchy start, so no position.
-			if (leveltime == 1)
+			if (musiccountdown > 0)
 			{
-				P_StartLevelMusic();
+				// Music is controlled by completion sequence
 			}
-		}
-		else if (leveltime < starttime + TICRATE)
-		{
-			if (leveltime == (starttime + (TICRATE/2)))
+			else if (K_CheckBossIntro() == true)
 			{
-				// Plays the music after the starting countdown.
-				P_StartLevelMusic();
-			}
-			else if (starttime != introtime)
-			{
-				// Start countdown/music handling
-				if (leveltime == starttime-(3*TICRATE))
+				// Bosses have a punchy start, so no position.
+				if (leveltime == 1)
 				{
-					S_StartSound(NULL, sfx_s3ka7); // 3,
+					P_StartLevelMusic();
 				}
-				else if ((leveltime == starttime-(2*TICRATE))
+			}
+			else if (leveltime < starttime + TICRATE)
+			{
+				if (leveltime == (starttime + (TICRATE/2)))
+				{
+					// Plays the music after the starting countdown.
+					P_StartLevelMusic();
+				}
+				else if (starttime != introtime)
+				{
+					// Start countdown/music handling
+					if ((leveltime == starttime-(3*TICRATE))
+					|| (leveltime == starttime-(2*TICRATE))
 					|| (leveltime == starttime-TICRATE))
-				{
-					S_StartSound(NULL, sfx_s3ka7); // 2, 1,
-				}
-				else if (leveltime == starttime)
-				{
-					S_StartSound(NULL, sfx_s3kad); // GO!
-				}
-
-				// POSITION!! music
-				if ((!N_UseLegacyStart() && modeattacking == ATTACKING_NONE) || !P_UseContinuousLevelMusic())
-				{
-					P_StartPositionMusic(true); // exact times only
+						S_StartSound(NULL, sfx_s3ka7);
+					else if (leveltime == starttime)
+					{
+						S_StartSound(NULL, sfx_s3kad); // GO!
+					}
 				}
 			}
-		}
 
-		if (modeattacking != ATTACKING_NONE && P_UseContinuousLevelMusic())
-		{
-			if (leveltime == 4)
+			if (modeattacking != ATTACKING_NONE && P_UseContinuousLevelMusic())
 			{
-				P_StartLevelMusic();
+				if (leveltime == 6*TICRATE + (3*TICRATE/4))
+				{
+					P_StartLevelMusic();
+				}
 			}
 		}
+
+
 
 		ps_lua_thinkframe_time = I_GetPreciseTime();
 		LUA_HookThinkFrame();
@@ -1204,7 +1195,7 @@ void P_Ticker(boolean run)
 
 		if (starttime > introtime && leveltime == starttime)
 		{
-			ACS_RunPositionScript();
+			ACS_RunRaceStartScript();
 		}
 
 		if ((gametyperules & GTR_OVERTIME) && !battleprisons &&

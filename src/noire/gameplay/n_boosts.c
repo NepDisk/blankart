@@ -151,11 +151,6 @@ void N_GetKartBoostPower(player_t *player)
 		ADDBOOST(FRACUNIT, 4*FRACUNIT, 0);
 	}
 
-	if (player->dropdashboost) // Drop dash
-	{
-		ADDBOOST(FRACUNIT/4, 6*FRACUNIT, 0);
-	}
-
 	if (player->gateBoost) // SPB Juicebox boost
 	{
 		ADDBOOST(3*FRACUNIT/4, 4*FRACUNIT, 0); // + 75% top speed, + 400% acceleration, +25% handling

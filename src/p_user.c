@@ -554,40 +554,6 @@ void P_PlayDeathSound(mobj_t *source)
 }
 
 //
-// P_StartPositionMusic
-//
-// Consistently sets starting music!
-//
-void P_StartPositionMusic(boolean exact)
-{
-	if (encoremode)
-	{
-		if (exact
-			? (leveltime != 1)
-			: (leveltime  < 1))
-			return;
-
-		Music_Remap("position", "encore");
-	}
-	else
-	{
-		if (exact
-			? (leveltime != introtime)
-			: (leveltime  < introtime))
-			return;
-
-		Music_Remap("position",
-			(mapheaderinfo[gamemap-1]->positionmus[0]
-				? mapheaderinfo[gamemap-1]->positionmus
-				: "postn"
-			));
-	}
-
-	Music_Play("position");
-	Music_DelayEnd("position", (starttime + (TICRATE/2)) - leveltime);
-}
-
-//
 // P_EndingMusic
 //
 // Consistently sets ending music!
