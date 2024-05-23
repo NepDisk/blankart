@@ -25,6 +25,7 @@
 #include "g_input.h"	// gc_
 #include "i_threads.h"
 #include "mserv.h"
+#include "k_credits.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -336,6 +337,7 @@ typedef enum
 	mopt_gameplay,
 	mopt_server,
 	mopt_data,
+	mopt_credits,
 	mopt_manual,
 } mopt_e;
 
@@ -1207,7 +1209,6 @@ typedef enum
 	extras_eggtv,
 	extras_stereo,
 	extras_password,
-	extras_credits,
 } extras_e;
 
 void M_InitExtras(INT32 choice); // init for the struct
@@ -1290,9 +1291,7 @@ char *M_AddonsHeaderPath(void);
 extern consvar_t cv_dummyaddonsearch;
 extern consvar_t cv_dummyextraspassword;
 
-#ifdef TODONEWMANUAL
 void M_Manual(INT32 choice);
-#endif
 void M_HandleImageDef(INT32 choice);
 
 // K_MENUDRAW.C
@@ -1316,7 +1315,8 @@ void M_DrawMenuBackground(void);
 void M_DrawMenuForeground(void);
 void M_Drawer(void);
 void M_DrawGenericMenu(void);
-void M_DrawCenteredMenu(void);
+void M_DrawGenericMenuEx(void);
+void M_DrawCenteredMenuEx(void);
 void M_DrawKartGamemodeMenu(void);
 void M_FlipKartGamemodeMenu(boolean slide);
 void M_DrawHorizontalMenu(void);

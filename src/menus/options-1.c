@@ -21,57 +21,65 @@
 // Noire
 #include "../noire/n_menu.h"
 
+static void M_Credits(INT32 choice)
+{
+	(void)choice;
+	restoreMenu = currentMenu;
+	M_ClearMenus(true);
+	F_StartCredits();
+}
+
 // options menu --  see mopt_e
 menuitem_t OPTIONS_Main[] =
 {
 
 	{IT_STRING | IT_CALL, "Profile Setup", "Remap keys & buttons.",
-		NULL, {.routine = M_ProfileSelectInit}, 0, 0},
+		NULL, {.routine = M_ProfileSelectInit}, 10, 0},
 
 	{IT_STRING | IT_CALL, "Video Options", "Change the resolution.",
-		NULL, {.routine = M_VideoOptions}, 0, 0},
+		NULL, {.routine = M_VideoOptions}, 30, 0},
 
 	{IT_STRING | IT_CALL, "Sound Options", "Adjust the volume.",
-		NULL, {.routine = M_SoundOptions}, 0, 0},
+		NULL, {.routine = M_SoundOptions}, 40, 0},
 
 	{IT_STRING | IT_SUBMENU, "HUD Options", "Tweak the Heads-Up Display.",
-		NULL, {.submenu = &OPTIONS_HUDDef}, 0, 0},
+		NULL, {.submenu = &OPTIONS_HUDDef}, 60, 0},
 
 	{IT_STRING | IT_CALL, "Gameplay Options", "Modify game mechanics.",
-		NULL, {.routine = M_GameplayOptions}, 0, 0},
+		NULL, {.routine = M_GameplayOptions}, 70, 0},
 
 	{IT_STRING | IT_CALL, "Server Options", "Update server settings.",
-		NULL, {.routine = M_ServerOptions}, 0, 0},
+		NULL, {.routine = M_ServerOptions}, 80, 0},
 
 	{IT_STRING | IT_SUBMENU, "Data Options", "Video recording, file saving, Discord status.",
-		NULL, {.submenu = &OPTIONS_DataDef}, 0, 0},
+		NULL, {.submenu = &OPTIONS_DataDef}, 100, 0},
 
-#ifdef TODONEWMANUAL
 	{IT_STRING | IT_CALL, "Tricks & Secrets", "Those who bother reading a game manual always get the edge over those who don't!",
-		NULL, {.routine = M_Manual}, 0, 0},
-#endif
+		NULL, {.routine = M_Manual}, 120, 0},
+
+	{IT_STRING | IT_CALL, "Credits", "It's important to know who makes the video games you play.",
+		NULL, {.routine = M_Credits}, 130, 0},
 
 	{IT_STRING | IT_SUBMENU, "Noire Options", "Tweak options not related to gameplay for noire client.",
-		NULL, {.submenu = &OPTIONS_NoireDef}, 0, 0},
+		NULL, {.submenu = &OPTIONS_NoireDef}, 140, 0},
 };
 
-// For options menu, the 'extra1' field will determine the background colour to use for... the background! (What a concept!)
 menu_t OPTIONS_MainDef = {
 	sizeof (OPTIONS_Main) / sizeof (menuitem_t),
 	&MainDef,
 	0,
 	OPTIONS_Main,
+	60, 30,
 	0, 0,
-	SKINCOLOR_SLATE, 0,
-	MBF_DRAWBGWHILEPLAYING,
+	0,
 	NULL,
-	2, 5,
-	M_DrawOptions,
-	M_DrawOptionsCogs,
-	M_OptionsTick,
+	0,0,
+	M_DrawGenericMenuEx,
 	NULL,
 	NULL,
-	M_OptionsInputs
+	NULL,
+	NULL,
+	NULL
 };
 
 struct optionsmenu_s optionsmenu;
@@ -114,14 +122,11 @@ void M_InitOptions(INT32 choice)
 	}
 
 	// Data Options
-	OPTIONS_DataAdvancedDef.menuitems[daopt_addon].status = (M_SecretUnlocked(SECRET_ADDONS, true)
-		? (IT_STRING | IT_SUBMENU)
-		: (IT_NOTHING | IT_SPACE));
+	OPTIONS_DataAdvancedDef.menuitems[daopt_addon].status = (IT_STRING | IT_SUBMENU);
 	OPTIONS_DataDef.menuitems[dopt_erase].status = (gamestate == GS_TITLESCREEN
 		? (IT_STRING | IT_SUBMENU)
 		: (IT_TRANSTEXT2 | IT_SPACE));
 
-	M_ResetOptions();
 
 	// So that pause doesn't go to the main menu...
 	OPTIONS_MainDef.prevMenu = currentMenu;

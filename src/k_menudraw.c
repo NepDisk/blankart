@@ -11,6 +11,7 @@
 /// \file  k_menudraw.c
 /// \brief SRB2Kart's menu drawer functions
 
+#include <string.h>
 #ifdef __GNUC__
 #include <unistd.h>
 #endif
@@ -485,17 +486,77 @@ void M_DrawMenuForeground(void)
 
 }
 
+// Thanks to hayaUnderscore for creating this code used in SRB2Kart Saturn
+static void M_DrawSplitText(INT32 x, INT32 y, INT32 option,INT32 alpha)
+{
+	char* icopy = strdup(currentMenu->menuitems[itemOn].tooltip);
+	char** clines = NULL;
+	INT16 num_lines = 0;
+
+	if (icopy == NULL) return;
+
+	char* token = strtok(icopy, "\n");
+
+	while (token != NULL)
+	{
+		char* line = strdup(token);
+
+		if (line == NULL) return;
+
+		clines = (char**)realloc(clines, (num_lines + 1) * sizeof(char*));
+		clines[num_lines] = line;
+		num_lines++;
+
+		token = strtok(NULL, "\n");
+	}
+
+	free(icopy);
+
+	INT16 yoffset;
+	yoffset = (((5*10 - num_lines*10)));
+
+	// Draw BG first,,,
+	for (int i = 0; i < num_lines; i++)
+	{
+		V_DrawFill(0, (y + yoffset - 6)+5, vid.width, 11, 159|V_SNAPTOBOTTOM|V_SNAPTOLEFT);
+		yoffset += 11;
+	}
+
+	yoffset = (((5*10 - num_lines*10)));
+
+	// THEN the text
+	for (int i = 0; i < num_lines; i++)
+	{
+        V_DrawCenteredThinString(x, y + yoffset, option, clines[i]);
+		V_DrawCenteredThinString(x, y + yoffset, option|V_YELLOWMAP|((9 - alpha) << V_ALPHASHIFT), clines[i]);
+		yoffset += 10;
+        // Remember to free the memory for each line when you're done with it.
+        free((void*)clines[i]);
+    }
+
+	free(clines);
+}
+
 //
 // M_DrawMenuTooltips
 //
-// Draw a banner across the top of the screen, with a description of the current option displayed
+// Draw a banner across the bottom of the screen, with a description of the current option displayed
 //
+INT16 lastitemon = 0;
+INT32 alphatimer = 0;
 static void M_DrawMenuTooltips(void)
 {
 	if (currentMenu->menuitems[itemOn].tooltip != NULL)
 	{
-		V_DrawFixedPatch(0, 0, FRACUNIT, 0, W_CachePatchName("MENUHINT", PU_CACHE), NULL);
-		V_DrawCenteredThinString(BASEVIDWIDTH/2, 12, 0, currentMenu->menuitems[itemOn].tooltip);
+		if (lastitemon != itemOn)
+		{
+			alphatimer = 9;
+			lastitemon = itemOn;
+		}
+
+		M_DrawSplitText(BASEVIDWIDTH / 2, BASEVIDHEIGHT-50, V_SNAPTOBOTTOM, alphatimer);
+		if (alphatimer > 0 && renderisnewtic)
+			alphatimer--;
 	}
 }
 
@@ -1219,13 +1280,13 @@ void M_DrawGenericMenu(void)
 }
 
 //
-// M_DrawGenericMenu
+// M_DrawGenericMenuEx
 //
-// Default, generic text-based list menu, used for Options
+// Generic text-based list menu, used for Options using regular DrawString font
 //
-void M_DrawCenteredMenu(void)
+void M_DrawGenericMenuEx(void)
 {
-	INT32 x = currentMenu->x, y = BASEVIDHEIGHT - (currentMenu->y*vid.dupy), w, i, cursory = 0;
+	INT32 x = currentMenu->x, y = currentMenu->y, w, i, cursory = 0;
 
 	M_DrawMenuTooltips();
 
@@ -1269,9 +1330,9 @@ void M_DrawCenteredMenu(void)
 					cursory = y;
 
 				if ((currentMenu->menuitems[i].status & IT_DISPLAY)==IT_STRING)
-					V_DrawCenteredString(x, y, 0, currentMenu->menuitems[i].text);
+					V_DrawString(x, y, 0, currentMenu->menuitems[i].text);
 				else
-					V_DrawCenteredString(x, y, highlightflags, currentMenu->menuitems[i].text);
+					V_DrawString(x, y, highlightflags, currentMenu->menuitems[i].text);
 
 				// Cvar specific handling
 				switch (currentMenu->menuitems[i].status & IT_TYPE)
@@ -1295,23 +1356,23 @@ void M_DrawCenteredMenu(void)
 									if (itemOn == i)
 									{
 										xoffs += 8;
-										V_DrawCenteredString(x + (skullAnimCounter/5) + 6, y + 12, highlightflags, "\x1D");
+										V_DrawString(x + (skullAnimCounter/5) + 6, y + 12, highlightflags, "\x1D");
 									}
 
-									V_DrawCenteredString(x + xoffs + 8, y + 12, 0, cv->string);
+									V_DrawString(x + xoffs + 8, y + 12, 0, cv->string);
 
 									y += 16;
 								}
 								break;
 							default:
 								w = V_MenuStringWidth(cv->string, 0);
-								V_DrawCenteredString(BASEVIDWIDTH - x - w, y,
+								V_DrawString(BASEVIDWIDTH - x - w, y,
 									((cv->flags & CV_CHEAT) && !CV_IsSetToDefault(cv) ? warningflags : highlightflags), cv->string);
 								if (i == itemOn)
 								{
-									V_DrawCenteredString(BASEVIDWIDTH - x - 10 - w - (skullAnimCounter/5), y,
+									V_DrawString(BASEVIDWIDTH - x - 10 - w - (skullAnimCounter/5), y,
 											highlightflags, "\x1C"); // left arrow
-									V_DrawCenteredString(BASEVIDWIDTH - x + 2 + (skullAnimCounter/5), y,
+									V_DrawString(BASEVIDWIDTH - x + 2 + (skullAnimCounter/5), y,
 											highlightflags, "\x1D"); // right arrow
 								}
 								break;
@@ -1321,7 +1382,7 @@ void M_DrawCenteredMenu(void)
 					y += STRINGHEIGHT;
 					break;
 			case IT_STRING2:
-				V_DrawCenteredString(x, y, 0, currentMenu->menuitems[i].text);
+				V_DrawString(x, y, 0, currentMenu->menuitems[i].text);
 				/* FALLTHRU */
 			case IT_DYLITLSPACE:
 				y += SMALLLINEHEIGHT;
@@ -1337,21 +1398,21 @@ void M_DrawCenteredMenu(void)
 					y = currentMenu->y+currentMenu->menuitems[i].mvar1;
 				/* FALLTHRU */
 			case IT_TRANSTEXT2:
-				V_DrawCenteredString(x, y, V_TRANSLUCENT, currentMenu->menuitems[i].text);
+				V_DrawString(x, y, V_TRANSLUCENT, currentMenu->menuitems[i].text);
 				y += SMALLLINEHEIGHT;
 				break;
 			case IT_QUESTIONMARKS:
 				if (currentMenu->menuitems[i].mvar1)
 					y = currentMenu->y+currentMenu->menuitems[i].mvar1;
 
-				V_DrawCenteredString(x, y, V_TRANSLUCENT|V_OLDSPACING, M_CreateSecretMenuOption(currentMenu->menuitems[i].text));
+				V_DrawString(x, y, V_TRANSLUCENT|V_OLDSPACING, M_CreateSecretMenuOption(currentMenu->menuitems[i].text));
 				y += SMALLLINEHEIGHT;
 				break;
 			case IT_HEADERTEXT: // draws 16 pixels to the left, in yellow text
 				if (currentMenu->menuitems[i].mvar1)
 					y = currentMenu->y+currentMenu->menuitems[i].mvar1;
 
-				V_DrawCenteredString(x-16, y, highlightflags, currentMenu->menuitems[i].text);
+				V_DrawString(x-16, y, highlightflags, currentMenu->menuitems[i].text);
 				y += SMALLLINEHEIGHT;
 				break;
 		}
@@ -1369,9 +1430,200 @@ void M_DrawCenteredMenu(void)
 	}
 	else
 	{
-		V_DrawScaledPatch(x - V_StringWidth(currentMenu->menuitems[itemOn].text, 0)/2 - 24, cursory, 0,
+		V_DrawScaledPatch(currentMenu->x - 24, cursory, 0,
 			W_CachePatchName("M_CURSOR", PU_CACHE));
-		V_DrawCenteredString(currentMenu->x, cursory, highlightflags, currentMenu->menuitems[itemOn].text);
+		V_DrawString(currentMenu->x, cursory, highlightflags, currentMenu->menuitems[itemOn].text);
+	}
+}
+
+//
+// M_DrawCenteredMenuEx
+//
+// Generic text-based list menu, used for the titlescreen menus
+//
+void M_DrawCenteredMenuEx(void)
+{
+	INT32 x = currentMenu->x, y = currentMenu->y, w, i, cursory = 0;
+	INT32 flags = 0;
+
+	// Allow setting flags
+	switch (currentMenu->extra1)
+	{
+			case 1:
+				flags |= V_SNAPTOTOP;
+				break;
+			case 2:
+				flags |= V_SNAPTORIGHT;
+				break;
+			case 3:
+				flags |= V_SNAPTOBOTTOM;
+				break;
+			case 4:
+				flags |= V_SNAPTOLEFT;
+
+	}
+
+	switch (currentMenu->extra2)
+	{
+			case 1:
+				flags |= V_SNAPTOTOP;
+				break;
+			case 2:
+				flags |= V_SNAPTORIGHT;
+				break;
+			case 3:
+				flags |= V_SNAPTOBOTTOM;
+				break;
+			case 4:
+				flags |= V_SNAPTOLEFT;
+
+	}
+
+	M_DrawMenuTooltips();
+
+	for (i = 0; i < currentMenu->numitems; i++)
+	{
+		if (i == itemOn)
+			cursory = y;
+
+		switch (currentMenu->menuitems[i].status & IT_DISPLAY)
+		{
+			case IT_PATCH:
+				if (currentMenu->menuitems[i].patch && currentMenu->menuitems[i].patch[0])
+				{
+					if (currentMenu->menuitems[i].status & IT_CENTER)
+					{
+						patch_t *p;
+						p = W_CachePatchName(currentMenu->menuitems[i].patch, PU_CACHE);
+						V_DrawScaledPatch((BASEVIDWIDTH - SHORT(p->width))/2, y, 0, p);
+					}
+					else
+					{
+						V_DrawScaledPatch(x, y, 0,
+							W_CachePatchName(currentMenu->menuitems[i].patch, PU_CACHE));
+					}
+				}
+				/* FALLTHRU */
+			case IT_NOTHING:
+			case IT_DYBIGSPACE:
+				y = currentMenu->y + currentMenu->menuitems[i].mvar1;//+= LINEHEIGHT;
+				break;
+#if 0
+			case IT_BIGSLIDER:
+				M_DrawThermo(x, y, currentMenu->menuitems[i].itemaction.cvar);
+				y += LINEHEIGHT;
+				break;
+#endif
+			case IT_STRING:
+				if (currentMenu->menuitems[i].mvar1)
+					y = currentMenu->y+currentMenu->menuitems[i].mvar1;
+				if (i == itemOn)
+					cursory = y;
+
+				if ((currentMenu->menuitems[i].status & IT_DISPLAY)==IT_STRING)
+					V_DrawCenteredString(x, y, flags, currentMenu->menuitems[i].text);
+				else
+					V_DrawCenteredString(x, y, highlightflags|flags, currentMenu->menuitems[i].text);
+
+				// Cvar specific handling
+				switch (currentMenu->menuitems[i].status & IT_TYPE)
+					case IT_CVAR:
+					{
+						consvar_t *cv = currentMenu->menuitems[i].itemaction.cvar;
+						switch (currentMenu->menuitems[i].status & IT_CVARTYPE)
+						{
+#if 0
+							case IT_CV_SLIDER:
+								M_DrawSlider(x, y, cv, (i == itemOn));
+							case IT_CV_NOPRINT: // color use this
+							case IT_CV_INVISSLIDER: // monitor toggles use this
+								break;
+#endif
+							case IT_CV_STRING:
+								{
+									M_DrawTextBox(x, y + 4, MAXSTRINGLENGTH, 1);
+
+									INT32 xoffs = 0;
+									if (itemOn == i)
+									{
+										xoffs += 8;
+										V_DrawCenteredString(x + (skullAnimCounter/5) + 6, y + 12, highlightflags|flags, "\x1D");
+									}
+
+									V_DrawCenteredString(x + xoffs + 8, y + 12, flags, cv->string);
+
+									y += 16;
+								}
+								break;
+							default:
+								w = V_MenuStringWidth(cv->string, 0);
+								V_DrawCenteredString(BASEVIDWIDTH - x - w, y,
+									((cv->flags & CV_CHEAT) && !CV_IsSetToDefault(cv) ? warningflags|flags : highlightflags|flags), cv->string);
+								if (i == itemOn)
+								{
+									V_DrawCenteredString(BASEVIDWIDTH - x - 10 - w - (skullAnimCounter/5), y,
+											highlightflags|flags, "\x1C"); // left arrow
+									V_DrawCenteredString(BASEVIDWIDTH - x + 2 + (skullAnimCounter/5), y,
+											highlightflags|flags, "\x1D"); // right arrow
+								}
+								break;
+						}
+						break;
+					}
+					y += STRINGHEIGHT;
+					break;
+			case IT_STRING2:
+				V_DrawCenteredString(x, y, flags, currentMenu->menuitems[i].text);
+				/* FALLTHRU */
+			case IT_DYLITLSPACE:
+				y += SMALLLINEHEIGHT;
+				break;
+			case IT_GRAYPATCH:
+				if (currentMenu->menuitems[i].patch && currentMenu->menuitems[i].patch[0])
+					V_DrawMappedPatch(x, y, flags,
+						W_CachePatchName(currentMenu->menuitems[i].patch,PU_CACHE), graymap);
+				y += LINEHEIGHT;
+				break;
+			case IT_TRANSTEXT:
+				if (currentMenu->menuitems[i].mvar1)
+					y = currentMenu->y+currentMenu->menuitems[i].mvar1;
+				/* FALLTHRU */
+			case IT_TRANSTEXT2:
+				V_DrawCenteredString(x, y, V_TRANSLUCENT|flags, currentMenu->menuitems[i].text);
+				y += SMALLLINEHEIGHT;
+				break;
+			case IT_QUESTIONMARKS:
+				if (currentMenu->menuitems[i].mvar1)
+					y = currentMenu->y+currentMenu->menuitems[i].mvar1;
+
+				V_DrawCenteredString(x, y, V_TRANSLUCENT|V_OLDSPACING|flags, M_CreateSecretMenuOption(currentMenu->menuitems[i].text));
+				y += SMALLLINEHEIGHT;
+				break;
+			case IT_HEADERTEXT: // draws 16 pixels to the left, in yellow text
+				if (currentMenu->menuitems[i].mvar1)
+					y = currentMenu->y+currentMenu->menuitems[i].mvar1;
+
+				V_DrawCenteredString(x-16, y, highlightflags|flags, currentMenu->menuitems[i].text);
+				y += SMALLLINEHEIGHT;
+				break;
+		}
+	}
+
+	if ((currentMenu->menuitems[itemOn].status & IT_DISPLAY) == 0)
+		cursory = 300;	// Put the cursor off screen if we can't even display that option and we're on it, it makes no sense otherwise...
+
+	// DRAW THE SKULL CURSOR
+	if (((currentMenu->menuitems[itemOn].status & IT_DISPLAY) == IT_PATCH)
+		|| ((currentMenu->menuitems[itemOn].status & IT_DISPLAY) == IT_NOTHING))
+	{
+		V_DrawScaledPatch(currentMenu->x + SKULLXOFF, cursory - 5, flags,
+			W_CachePatchName("M_CURSOR", PU_CACHE));
+	}
+	else
+	{
+		V_DrawScaledPatch(x - V_StringWidth(currentMenu->menuitems[itemOn].text, 0)/2 - 24, cursory, flags,
+			W_CachePatchName("M_CURSOR", PU_CACHE));
+		V_DrawCenteredString(currentMenu->x, cursory, highlightflags|flags, currentMenu->menuitems[itemOn].text);
 	}
 }
 
@@ -4335,7 +4587,7 @@ void M_DrawMPServerBrowser(void)
 		{"Core Servers", "BG_MPS1"},
 		{"Modded Servers", "BG_MPS2"},
 	};
-	int mode = M_SecretUnlocked(SECRET_ADDONS, true) ? (mpmenu.room ? 2 : 1) : 0;
+	int mode = (mpmenu.room ? 2 : 1);
 
 	patch_t *text1 = W_CachePatchName("MENUBGT1", PU_CACHE);
 	patch_t *text2 = W_CachePatchName("MENUBGT2", PU_CACHE);
@@ -7128,7 +7380,6 @@ static void M_DrawChallengeTile(INT16 i, INT16 j, INT32 x, INT32 y, UINT8 *flash
 				categoryid = '5';
 				break;
 			case SECRET_ONLINE:
-			case SECRET_ADDONS:
 			case SECRET_EGGTV:
 			case SECRET_SOUNDTEST:
 			case SECRET_ALTTITLE:
@@ -7215,9 +7466,6 @@ static void M_DrawChallengeTile(INT16 i, INT16 j, INT32 x, INT32 y, UINT8 *flash
 
 			case SECRET_ONLINE:
 				iconid = 10;
-				break;
-			case SECRET_ADDONS:
-				iconid = 12;
 				break;
 			case SECRET_EGGTV:
 				iconid = 11;
@@ -7747,14 +7995,6 @@ static void M_DrawChallengePreview(INT32 x, INT32 y)
 			V_DrawFixedPatch(-3*FRACUNIT, (y-40)*FRACUNIT,
 				FRACUNIT,
 				0, W_CachePatchName("EGGASTLA", PU_CACHE),
-				NULL);
-			break;
-		}
-		case SECRET_ADDONS:
-		{
-			V_DrawFixedPatch(28*FRACUNIT, (BASEVIDHEIGHT-28)*FRACUNIT,
-				FRACUNIT,
-				0, W_CachePatchName("M_ICOADD", PU_CACHE),
 				NULL);
 			break;
 		}

@@ -199,10 +199,7 @@ void M_OpenPauseMenu(void)
 			PAUSE_Main[mpause_switchmap].status = IT_STRING | IT_CALL;
 			PAUSE_Main[mpause_restartmap].status = IT_STRING | IT_CALL;
 
-			if (M_SecretUnlocked(SECRET_ADDONS, true))
-			{
-				PAUSE_Main[mpause_addons].status = IT_STRING | IT_ARROWS;
-			}
+			PAUSE_Main[mpause_addons].status = IT_STRING | IT_ARROWS;
 
 			if (netgame)
 			{

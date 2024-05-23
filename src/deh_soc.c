@@ -2454,8 +2454,6 @@ static INT16 parseunlockabletype(char *type)
 		return SECRET_SPBATTACK;
 	else if (fastcmp(type, "ONLINE"))
 		return SECRET_ONLINE;
-	else if (fastcmp(type, "ADDONS"))
-		return SECRET_ADDONS;
 	else if (fastcmp(type, "EGGTV"))
 		return SECRET_EGGTV;
 	else if (fastcmp(type, "SOUNDTEST"))

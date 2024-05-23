@@ -1311,11 +1311,6 @@ void M_SetNetUnlocked(void)
 
 				break;
 			}
-			case SECRET_ADDONS:
-			{
-				netUnlocked[i] = true;
-				break;
-			}
 			default:
 			{
 				// Most stuff isn't given to dedis for free
@@ -1693,8 +1688,7 @@ boolean M_CheckCondition(condition_t *cn, player_t *player)
 		}
 
 		case UC_ADDON:
-			return ((gamedata->everloadedaddon == true)
-				&& M_SecretUnlocked(SECRET_ADDONS, true));
+			return ((gamedata->everloadedaddon == true));
 		case UC_CREDITS:
 			return (gamedata->everfinishedcredits == true);
 		case UC_REPLAY:
@@ -2227,7 +2221,7 @@ static const char *M_GetConditionString(condition_t *cn)
 			if (cn->extrainfo1 == GDGT_MAX)
 				work = "";
 			else if (cn->extrainfo1 != GDGT_RACE && cn->extrainfo1 != GDGT_BATTLE // Base gametypes
-				&& (cn->extrainfo1 != GDGT_CUSTOM || M_SecretUnlocked(SECRET_ADDONS, true) == false) // Custom is visible at 0 if addons are unlocked
+				&& (cn->extrainfo1 != GDGT_CUSTOM) // Custom is visible at 0 if addons are unlocked
 				&& gamedata->roundsplayed[cn->extrainfo1] == 0)
 					work = " ???";
 			else switch (cn->extrainfo1)
@@ -2559,8 +2553,6 @@ static const char *M_GetConditionString(condition_t *cn)
 		}
 
 		case UC_ADDON:
-			if (!M_SecretUnlocked(SECRET_ADDONS, true))
-				return NULL;
 			return "load a custom addon";
 		case UC_CREDITS:
 			return "watch the developer credits all the way from start to finish";

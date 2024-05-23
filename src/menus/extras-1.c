@@ -18,14 +18,6 @@
 #include "../k_credits.h"
 #include "../m_pw.h"
 
-static void M_Credits(INT32 choice)
-{
-	(void)choice;
-	restoreMenu = currentMenu;
-	M_ClearMenus(true);
-	F_StartCredits();
-}
-
 menuitem_t EXTRAS_Main[] =
 {
 	// The following has NULL strings for text and tooltip.
@@ -52,9 +44,6 @@ menuitem_t EXTRAS_Main[] =
 
 	{IT_STRING | IT_CVAR | IT_CV_STRING, "Password", "If you don't know any passwords, come back later!",
 		NULL, {.cvar = &cv_dummyextraspassword}, 0, 0},
-
-	{IT_STRING | IT_CALL, "Credits", "It's important to know who makes the video games you play.",
-		NULL, {.routine = M_Credits}, 0, 0},
 };
 
 // the extras menu essentially reuses the options menu stuff
@@ -84,21 +73,9 @@ struct extrasmenu_s extrasmenu;
 void M_InitExtras(INT32 choice)
 {
 	// Addons
-	if (M_SecretUnlocked(SECRET_ADDONS, true))
-	{
-		EXTRAS_Main[extras_addons].status = IT_STRING | IT_CALL;
-		EXTRAS_Main[extras_addons].text = "Addons";
-		EXTRAS_Main[extras_addons].tooltip = "Add files to customize your experience.";
-	}
-	else
-	{
-		EXTRAS_Main[extras_addons].status = IT_STRING | IT_TRANSTEXT;
-		EXTRAS_Main[extras_addons].text = EXTRAS_Main[extras_addons].tooltip = "???";
-		if (EXTRAS_MainDef.lastOn == extras_addons)
-		{
-			EXTRAS_MainDef.lastOn = extras_challenges;
-		}
-	}
+	EXTRAS_Main[extras_addons].status = IT_STRING | IT_CALL;
+	EXTRAS_Main[extras_addons].text = "Addons";
+	EXTRAS_Main[extras_addons].tooltip = "Add files to customize your experience.";
 
 	// Tutorial
 	{

@@ -9345,7 +9345,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									{
 										K_ThrowKartItem(player, (player->throwdir > 0), MT_BUBBLESHIELDTRAP, -1, 0, 0);
 										if (player->throwdir == -1)
-										{		
+										{
 											P_InstaThrust(player->mo, player->mo->angle, player->speed + (80 * mapobjectscale));
 											player->fakeBoost += TICRATE/2;
 										}
@@ -9427,7 +9427,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 											player->mo, player->mo->angle,
 											FixedMul((50*player->mo->scale), K_GetKartGameSpeedScalar(gamespeed))
 										);
-										
+
 										player->fakeBoost = TICRATE/3;
 
 										S_StopSoundByID(player->mo, sfx_fshld1);
@@ -9586,6 +9586,16 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	}
 
 	K_KartDrift(player, (onground || player->pogospring));
+
+
+	// Quick Turning
+	// You can't turn your kart when you're not moving.
+	// So now it's time to burn some rubber!
+	if (player->speed < 2 && leveltime > starttime && player->cmd.buttons & BT_ACCELERATE && player->cmd.buttons & BT_BRAKE && player->cmd.turning != 0)
+	{
+		if (leveltime % 8 == 0)
+			S_StartSound(player->mo, sfx_s224);
+	}
 
 	// Squishing
 	// If a Grow player or a sector crushes you, get flattened instead of being killed.

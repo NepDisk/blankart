@@ -50,18 +50,17 @@ menuitem_t MainMenu[] =
 		{.routine = M_QuitSRB2}, 0, 0},
 };
 
-
 menu_t MainDef = {
 	sizeof (MainMenu) / sizeof (menuitem_t),
 	NULL,
 	0,
 	MainMenu,
-	BASEVIDWIDTH/2, 14,
-	0, 0,
+	BASEVIDWIDTH/2, BASEVIDHEIGHT - 57,
+	3, 0,
 	0,
 	NULL,
-	1, 10,	// For transition with some menus!
-	M_DrawCenteredMenu,
+	0, 0,	// For transition with some menus!
+	M_DrawCenteredMenuEx,
 	NULL,
 	NULL,
 	NULL,

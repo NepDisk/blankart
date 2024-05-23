@@ -33,7 +33,7 @@ static INT16 K_GetKartDriftValue(player_t *player, fixed_t countersteer)
 	return basedrift + FixedMul(driftangle, countersteer);
 }
 
-//from sarb2kart itself.
+//from sarb2kart itself but modifed for v2
 INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue)
 {
 	fixed_t p_topspeed = K_GetKartSpeed(player, false, false);
@@ -43,6 +43,39 @@ INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue)
 
 	if (player->spectator)
 		return turnvalue;
+
+	if (player->mo == NULL || P_MobjWasRemoved(player->mo))
+	{
+		return 0;
+	}
+
+	if (player->spectator || objectplacing)
+	{
+		return turnvalue;
+	}
+
+	if (leveltime < introtime)
+	{
+		return 0;
+	}
+
+	if (player->respawn.state == RESPAWNST_MOVE)
+	{
+		// No turning during respawn
+		return 0;
+	}
+
+	if (Obj_PlayerRingShooterFreeze(player) == true)
+	{
+		// No turning while using Ring Shooter
+		return 0;
+	}
+
+	if (!((player->mo && player->speed > 0)  || (leveltime > starttime && (player->cmd.buttons & BT_ACCELERATE && player->cmd.buttons & BT_BRAKE))))
+	{
+		// No turning during starttime. Also do rubberburnturn here.
+		return 0;
+	}
 
 	if (player->drift != 0 && P_IsObjectOnGround(player->mo))
 	{

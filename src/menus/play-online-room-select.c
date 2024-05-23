@@ -85,7 +85,7 @@ void M_MPRoomSelectInit(INT32 choice)
 	mpmenu.slide = 0;
 
 #ifndef TESTERS
-	if ((modifiedgame == true) || (M_SecretUnlocked(SECRET_ADDONS, true) == false))
+	if (modifiedgame == true)
 	{
 		M_ServersMenu(0);
 		return;
