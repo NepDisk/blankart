@@ -12,6 +12,7 @@
 /// \file  p_saveg.c
 /// \brief Archiving: SaveGame I/O
 
+#include "d_ticcmd.h"
 #include "doomdef.h"
 #include "byteptr.h"
 #include "d_main.h"
@@ -236,6 +237,13 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEINT32(save->p, players[i].awayview.tics);
 
 		WRITEUINT8(save->p, players[i].playerstate);
+
+		for (j = 0; j < MAXPREDICTTICS; j++)
+		{
+			WRITEINT16(save->p, players[i].lturn_max[j]);
+			WRITEINT16(save->p, players[i].rturn_max[j]);
+		}
+
 		WRITEUINT32(save->p, players[i].pflags);
 		WRITEUINT8(save->p, players[i].panim);
 		WRITEUINT8(save->p, players[i].spectator);
@@ -792,6 +800,13 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].awayview.tics = READINT32(save->p);
 
 		players[i].playerstate = READUINT8(save->p);
+
+		for (j = 0; j < MAXPREDICTTICS; j++)
+		{
+			players[i].lturn_max[j] = READINT16(save->p);
+			players[i].rturn_max[j] = READINT16(save->p);
+		}
+
 		players[i].pflags = READUINT32(save->p);
 		players[i].panim = READUINT8(save->p);
 		players[i].spectator = READUINT8(save->p);

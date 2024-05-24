@@ -3136,25 +3136,29 @@ static void K_drawKartSpeedometer(boolean gametypeinfoshown)
 		fy += 15;
 	}
 
-	if (stplyr->mo) // Keep the same speed value as when you crossed the finish line!
+	if (!stplyr->exiting) // Keep the same speed value as when you crossed the finish line!
 	{
 		switch (cv_kartspeedometer.value)
 		{
 			case 1: // Sonic Drift 2 style percentage
 			default:
-				convSpeed = (stplyr->speed * 100) / K_GetKartSpeed(stplyr, false, true); // Based on top speed!
+				if (stplyr->mo)
+					convSpeed = (stplyr->speed * 100) / K_GetKartSpeed(stplyr, false, true); // Based on top speed!
 				labeln = 0;
 				break;
 			case 2: // Kilometers
-				convSpeed = FixedDiv(FixedMul(stplyr->speed, 142371), mapobjectscale) / FRACUNIT; // 2.172409058
+				if (stplyr->mo)
+					convSpeed = FixedDiv(FixedMul(stplyr->speed, 142371), mapobjectscale) / FRACUNIT; // 2.172409058
 				labeln = 1;
 				break;
 			case 3: // Miles
-				convSpeed = FixedDiv(FixedMul(stplyr->speed, 88465), mapobjectscale) / FRACUNIT; // 1.349868774
+				if (stplyr->mo)
+					convSpeed = FixedDiv(FixedMul(stplyr->speed, 88465), mapobjectscale) / FRACUNIT; // 1.349868774
 				labeln = 2;
 				break;
 			case 4: // Fracunits
-				convSpeed = FixedDiv(stplyr->speed, mapobjectscale) / FRACUNIT; // 1.0. duh.
+				if (stplyr->mo)
+					convSpeed = FixedDiv(stplyr->speed, mapobjectscale) / FRACUNIT; // 1.0. duh.
 				labeln = 3;
 				break;
 		}
