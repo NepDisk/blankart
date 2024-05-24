@@ -2078,7 +2078,7 @@ void P_MovePlayer(player_t *player)
 	// MOVEMENT CODE	//
 	//////////////////////
 
-	N_UpdatePlayerAngle(player);
+	KV1_UpdatePlayerAngle(player);
 
 	ticruned++;
 	if (!(cmd->flags & TICCMD_RECEIVED))
@@ -2573,7 +2573,7 @@ void P_DemoCameraMovement(camera_t *cam, UINT8 num)
 		cam->reset_aiming = false;
 	}
 
-	turning = cmd->turning << TICCMD_REDUCE;
+	turning = cmd->driftturn << TICCMD_REDUCE;
 	if (encoremode)
 	{
 		turning = -turning;
@@ -2891,7 +2891,7 @@ boolean P_MoveChaseCamera(player_t *player, camera_t *thiscam, boolean resetcall
 		else if (leveltime <= introtime)
 			focusangle = mo->angle; // Can't turn yet. P_UpdatePlayerAngle will ignore angle in stale ticcmds, chasecam should too.
 		else
-			focusangle = player->cmd.angle << TICCMD_REDUCE;
+			focusangle = mo->angle;
 		focusaiming = 0;
 	}
 	else
@@ -4440,7 +4440,8 @@ void P_CheckRaceGriefing(player_t *player, boolean dopunishment)
 void P_SetPlayerAngle(player_t *player, angle_t angle)
 {
 	P_ForceLocalAngle(player, angle);
-	player->angleturn = angle;
+	player->cmd.angleturn = angle;
+	player->mo->angle = angle;
 }
 
 void P_ForceLocalAngle(player_t *player, angle_t angle)

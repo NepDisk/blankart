@@ -227,7 +227,7 @@ void K_CheckEmeralds(player_t *player)
 	{
 		K_StartRoundWinCamera(
 			player->mo,
-			player->angleturn + ANGLE_180,
+			player->cmd.angleturn + ANGLE_180,
 			400*mapobjectscale,
 			6*TICRATE,
 			FRACUNIT/16

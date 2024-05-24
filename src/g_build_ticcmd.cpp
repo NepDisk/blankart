@@ -40,6 +40,8 @@
 #include "tables.h"
 #include "m_random.h" // monkey input
 
+#include "noire/n_control.h"
+
 extern "C" consvar_t cv_1pswap;
 
 namespace
@@ -82,6 +84,8 @@ class TiccmdBuilder
 	UINT8 viewnum = G_PartyPosition(g_localplayers[forplayer()]);
 	UINT8 pid = swap_ssplayer() - 1;
 	JoyStickVector2 joystickvector;
+	fixed_t angleturn[3] = {KART_FULLTURN/2, KART_FULLTURN, KART_FULLTURN/4}; // + slow turn
+
 
 	UINT8 forplayer() const { return ssplayer - 1; }
 	player_t* player() const { return &players[g_localplayers[forplayer()]]; }
@@ -163,51 +167,24 @@ class TiccmdBuilder
 		auto clamp = [](auto val, int range) { return std::clamp(static_cast<int>(val), -(range), range); };
 
 		cmd->forwardmove = clamp(cmd->forwardmove, MAXPLMOVE);
-		cmd->turning = clamp(cmd->turning, KART_FULLTURN);
+		cmd->angleturn = clamp(cmd->angleturn, KART_FULLTURN);
+		cmd->driftturn = clamp(cmd->driftturn, KART_FULLTURN);
 		cmd->throwdir = clamp(cmd->throwdir, KART_FULLTURN);
+
+		if (player()->mo)
+			cmd->angleturn = K_GetKartTurnValue(player(), cmd->angleturn);
+
+		cmd->angleturn *= realtics;
+
+		// SRB2kart - no additional angle if not moving
+		if (K_PlayerCanTurn(player()))
+			localangle[ssplayer-1] += (cmd->angleturn<<16);
+
+		cmd->angleturn = (INT16)(localangle[ssplayer-1] >> 16);
 
 		// Send leveltime when this tic was generated to the server for control lag calculations.
 		// Only do this when in a level. Also do this after the hook, so that it can't overwrite this.
 		cmd->latency = (leveltime & TICCMD_LATENCYMASK);
-	}
-
-	// Turning was removed from G_BuildTiccmd to prevent easy client hacking.
-	// This brings back the camera prediction that was lost.
-	void angle_prediction()
-	{
-		// Chasecam stops in these situations, so local cam should stop too.
-		// Otherwise it'll jerk when it resumes.
-		if (player()->playerstate == PST_DEAD)
-		{
-			return;
-		}
-
-		if (player()->mo != NULL && P_MobjIsFrozen(player()->mo))
-		{
-			return;
-		}
-
-		angle_t angleChange = 0;
-
-//#if 0
-		// Left here in case it needs unsealing later. This tried to replicate an old localcam function, but this behavior was unpopular in tests.
-		if (player()->pflags & PF_DRIFTEND)
-		{
-			localangle[forplayer()] = player()->mo->angle;
-		}
-		else
-//#endif
-		{
-			int p = g_localplayers[forplayer()];
-
-			for (int i = 0; i <= r_splitscreen; ++i)
-			{
-				if (displayplayers[i] == p)
-				{
-					localangle[i] += angleChange;
-				}
-			}
-		}
 	}
 
 	bool typing_input()
@@ -353,7 +330,8 @@ class TiccmdBuilder
 
 		if (joystickvector.xaxis != 0)
 		{
-			cmd->turning -= (joystickvector.xaxis * KART_FULLTURN) / JOYAXISRANGE;
+			cmd->angleturn = (INT16)(cmd->angleturn - (((joystickvector.xaxis * angleturn[1]) >> 10))); // ANALOG!
+			cmd->driftturn = (INT16)(cmd->driftturn - (((joystickvector.xaxis * angleturn[1]) >> 10)));
 		}
 
 		if (spectator_analog_input())
@@ -370,8 +348,8 @@ class TiccmdBuilder
 		// ugly with the current abstractions, though, and there's a fortunate trick here:
 		// if you can input full strength turns on both axes, either you're using a fucking
 		// square gate, or you're not on an analog device.
-		if (cv_litesteer[ssplayer - 1].value && joystickvector.yaxis >= JOYAXISRANGE && abs(cmd->turning) == KART_FULLTURN) // >= beacuse some analog devices can go past JOYAXISRANGE (?!)
-			cmd->turning /= 2;
+		if (cv_litesteer[ssplayer - 1].value && joystickvector.yaxis >= JOYAXISRANGE && abs(cmd->driftturn) == KART_FULLTURN) // >= beacuse some analog devices can go past JOYAXISRANGE (?!)
+			cmd->driftturn /= 2;
 	}
 
 	void common_button_input()
@@ -454,11 +432,8 @@ public:
 			regular_input();
 		}
 
-		cmd->angle = localangle[viewnum] >> TICCMD_REDUCE;
-
 		hook();
 
-		angle_prediction();
 	}
 };
 
@@ -467,4 +442,5 @@ public:
 void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 {
 	TiccmdBuilder(cmd, realtics, ssplayer);
+
 }

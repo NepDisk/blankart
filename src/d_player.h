@@ -551,8 +551,6 @@ struct player_t
 	// camera tilt
 	angle_t tilt;
 
-	angle_t angleturn;
-
 	// Mouse aiming, where the guy is looking at!
 	// It is updated with cmd->aiming.
 	angle_t aiming;
@@ -561,6 +559,9 @@ struct player_t
 	angle_t drawangle;
 	angle_t old_drawangle; // interp
 	angle_t old_drawangle2;
+
+	INT16 lturn_max[MAXPREDICTTICS]; // What's the expected turn value for full-left for a number of frames back (to account for netgame latency)?
+	INT16 rturn_max[MAXPREDICTTICS]; // Ditto but for full-right
 
 	// Bit flags.
 	// See pflags_t, above.

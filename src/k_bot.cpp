@@ -425,9 +425,6 @@ boolean K_PlayerUsesBotMovement(const player_t *player)
 	if (K_PodiumSequence() == true)
 		return true;
 
-	if (player->exiting)
-		return true;
-
 	if (player->bot)
 		return true;
 
@@ -927,7 +924,7 @@ static botprediction_t *K_CreateBotPrediction(const player_t *player)
 
 	const precise_t time = I_GetPreciseTime();
 
-	const INT16 handling = N_GetKartTurnValue(player, KART_FULLTURN); // Reduce prediction based on how fast you can turn
+	const INT16 handling = K_GetKartTurnValue(player, KART_FULLTURN); // Reduce prediction based on how fast you can turn
 
 	const tic_t futuresight = (TICRATE * KART_FULLTURN) / std::max<INT16>(1, handling); // How far ahead into the future to try and predict
 	const fixed_t speed = K_BotSpeedScaled(player, P_AproxDistance(player->mo->momx, player->mo->momy));
@@ -1395,7 +1392,7 @@ static void K_BotPodiumTurning(const player_t *player, ticcmd_t *cmd)
 		player->currentwaypoint->mobj->x, player->currentwaypoint->mobj->y
 	);
 	const INT32 delta = AngleDeltaSigned(destAngle, player->mo->angle);
-	const INT16 handling = N_GetKartTurnValue(player, KART_FULLTURN);
+	const INT16 handling = K_GetKartTurnValue(player, KART_FULLTURN);
 	fixed_t mul = FixedDiv(delta, (angle_t)(handling << TICCMD_REDUCE));
 
 	if (mul > FRACUNIT)
@@ -1408,7 +1405,7 @@ static void K_BotPodiumTurning(const player_t *player, ticcmd_t *cmd)
 		mul = -FRACUNIT;
 	}
 
-	cmd->turning = FixedMul(mul, KART_FULLTURN);
+	cmd->driftturn = FixedMul(mul, KART_FULLTURN);
 }
 
 /*--------------------------------------------------
@@ -1445,6 +1442,8 @@ static void K_BuildBotPodiumTiccmd(const player_t *player, ticcmd_t *cmd)
 
 		Build ticcmd for bots with a style of BOT_STYLE_NORMAL
 --------------------------------------------------*/
+
+// FIXME: Turning on bots is currently broken and need to be programmed to use new(old) turning system.
 static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 {
 	precise_t t = 0;
@@ -1454,6 +1453,7 @@ static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 
 	angle_t destangle = 0;
 	INT32 turnamt = 0;
+	UINT8 i;
 
 	if (!(gametyperules & GTR_BOTS) // No bot behaviors
 		|| K_GetNumWaypoints() == 0 // No waypoints
@@ -1584,7 +1584,8 @@ static void K_BuildBotTiccmdNormal(const player_t *player, ticcmd_t *cmd)
 		if (abs(player->botvars.turnconfirm) >= BOTTURNCONFIRM)
 		{
 			// You're commiting to your turn, you're allowed!
-			cmd->turning = turnamt;
+			cmd->driftturn = turnamt;
+			cmd->angleturn = turnamt;
 		}
 	}
 

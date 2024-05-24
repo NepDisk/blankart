@@ -625,7 +625,7 @@ void OP_ObjectplaceMovement(player_t *player)
 {
 	ticcmd_t *cmd = &player->cmd;
 
-	player->drawangle = player->mo->angle = player->angleturn;
+	player->drawangle = player->mo->angle = player->cmd.angleturn;
 
 	ticruned++;
 	if (!(cmd->flags & TICCMD_RECEIVED))

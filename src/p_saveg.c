@@ -229,7 +229,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, playerconsole[i]);
 		WRITEINT32(save->p, splitscreen_invitations[i]);
 
-		WRITEANGLE(save->p, players[i].angleturn);
 		WRITEANGLE(save->p, players[i].aiming);
 		WRITEANGLE(save->p, players[i].drawangle);
 		WRITEANGLE(save->p, players[i].viewrollangle);
@@ -786,7 +785,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		playerconsole[i] = READUINT8(save->p);
 		splitscreen_invitations[i] = READINT32(save->p);
 
-		players[i].angleturn = READANGLE(save->p);
 		players[i].aiming = READANGLE(save->p);
 		players[i].drawangle = players[i].old_drawangle = READANGLE(save->p);
 		players[i].viewrollangle = READANGLE(save->p);

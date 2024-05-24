@@ -757,7 +757,7 @@ INT32 G_MapNumber(const char * name)
   * \param aiming Pointer to the vertical angle to clip.
   * \return The clipped angle.
   */
-INT32 G_ClipAimingPitch(INT32 *aiming)
+INT16 G_ClipAimingPitch(INT32 *aiming)
 {
 	INT32 limitangle;
 
@@ -768,7 +768,7 @@ INT32 G_ClipAimingPitch(INT32 *aiming)
 	else if (*aiming < -limitangle)
 		*aiming = -limitangle;
 
-	return (*aiming);
+	return (INT16)((*aiming)>>16);
 }
 
 INT16 G_SoftwareClipAimingPitch(INT32 *aiming)
@@ -1003,8 +1003,8 @@ ticcmd_t *G_MoveTiccmd(ticcmd_t* dest, const ticcmd_t* src, const size_t n)
 	for (i = 0; i < n; i++)
 	{
 		dest[i].forwardmove = src[i].forwardmove;
-		dest[i].turning = (INT16)SHORT(src[i].turning);
-		dest[i].angle = (INT16)SHORT(src[i].angle);
+		dest[i].driftturn = (INT16)SHORT(src[i].driftturn);
+		dest[i].angleturn = (INT16)SHORT(src[i].angleturn);
 		dest[i].throwdir = (INT16)SHORT(src[i].throwdir);
 		dest[i].aiming = (INT16)SHORT(src[i].aiming);
 		dest[i].buttons = (UINT16)SHORT(src[i].buttons);
@@ -1758,7 +1758,7 @@ void G_FixCamera(UINT8 view)
 
 	// The order of displayplayers can change, which would
 	// invalidate localangle.
-	localangle[view - 1] = player->angleturn;
+	localangle[view - 1] = player->cmd.angleturn;
 
 	P_ResetCamera(player, &camera[view - 1]);
 
@@ -2203,8 +2203,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	splitscreenindex = players[player].splitscreenindex;
 	spectator = players[player].spectator;
 
-	playerangleturn = players[player].angleturn;
-
 	skincolor = players[player].skincolor;
 	skin = players[player].skin;
 
@@ -2445,7 +2443,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->jointime = jointime;
 	p->splitscreenindex = splitscreenindex;
 	p->spectator = spectator;
-	p->angleturn = playerangleturn;
 	p->lastsafelap = lastsafelap;
 	p->lastsafecheatcheck = lastsafecheatcheck;
 	p->bigwaypointgap = bigwaypointgap;

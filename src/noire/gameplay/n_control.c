@@ -8,10 +8,29 @@
 //-----------------------------------------------------------------------------
 
 #include "../n_control.h"
+#include "../../k_respawn.h"
+
+
+boolean K_PlayerCanTurn(const player_t* player)
+{
+	if (player->mo && player->speed > 0) // Moving
+		return true;
+
+	if (leveltime > starttime && (player->cmd.buttons & BT_ACCELERATE && player->cmd.buttons & BT_BRAKE)) // Rubber-burn turn
+		return true;
+
+	//if (player->respawn.state == RESPAWNST_NONE) // Respawning
+		//return true;
+
+	if (player->spectator || objectplacing) // Not a physical player
+		return true;
+
+	return false;
+}
 
 // countersteer is how strong the controls are telling us we are turning
 // turndir is the direction the controls are telling us to turn, -1 if turning right and 1 if turning left
-static INT16 K_GetKartDriftValue(player_t *player, fixed_t countersteer)
+static INT16 K_GetKartDriftValue(const player_t *player, fixed_t countersteer)
 {
 	INT16 basedrift, driftangle;
 	fixed_t driftweight = player->kartweight*14; // 12
@@ -25,8 +44,6 @@ static INT16 K_GetKartDriftValue(player_t *player, fixed_t countersteer)
 		return -266*player->drift; // Drift has ended and we are tweaking their angle back a bit
 	}
 
-	//basedrift = 90*player->kartstuff[k_drift]; // 450
-	//basedrift = 93*player->kartstuff[k_drift] - driftweight*3*player->kartstuff[k_drift]/10; // 447 - 303
 	basedrift = 83*player->drift - (driftweight - 14)*player->drift/5; // 415 - 303
 	driftangle = abs((252 - driftweight)*player->drift/5);
 
@@ -34,7 +51,7 @@ static INT16 K_GetKartDriftValue(player_t *player, fixed_t countersteer)
 }
 
 //from sarb2kart itself but modifed for v2
-INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue)
+INT16 K_GetKartTurnValue(const player_t *player, INT16 turnvalue)
 {
 	fixed_t p_topspeed = K_GetKartSpeed(player, false, false);
 	fixed_t p_curspeed = min(player->speed, p_topspeed * 2);
@@ -43,39 +60,6 @@ INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue)
 
 	if (player->spectator)
 		return turnvalue;
-
-	if (player->mo == NULL || P_MobjWasRemoved(player->mo))
-	{
-		return 0;
-	}
-
-	if (player->spectator || objectplacing)
-	{
-		return turnvalue;
-	}
-
-	if (leveltime < introtime)
-	{
-		return 0;
-	}
-
-	if (player->respawn.state == RESPAWNST_MOVE)
-	{
-		// No turning during respawn
-		return 0;
-	}
-
-	if (Obj_PlayerRingShooterFreeze(player) == true)
-	{
-		// No turning while using Ring Shooter
-		return 0;
-	}
-
-	if (!((player->mo && player->speed > 0)  || (leveltime > starttime && (player->cmd.buttons & BT_ACCELERATE && player->cmd.buttons & BT_BRAKE))))
-	{
-		// No turning during starttime. Also do rubberburnturn here.
-		return 0;
-	}
 
 	if (player->drift != 0 && P_IsObjectOnGround(player->mo))
 	{
@@ -100,145 +84,76 @@ INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue)
 	return turnvalue;
 }
 
-// Old update Player angle taken from old kart commits
-void N_UpdatePlayerAngle(player_t* player)
+void KV1_UpdatePlayerAngle(player_t* player)
 {
-	angle_t angleChange = K_GetKartTurnValue(player, player->cmd.turning) << TICCMD_REDUCE;
+	INT16 angle_diff, max_left_turn, max_right_turn;
+	boolean add_delta = true;
+
+	// Kart: store the current turn range for later use
+	if (K_PlayerCanTurn(player))
+	{
+		player->lturn_max[leveltime%MAXPREDICTTICS] = K_GetKartTurnValue(player, KART_FULLTURN)+1;
+		player->rturn_max[leveltime%MAXPREDICTTICS] = K_GetKartTurnValue(player, -KART_FULLTURN)-1;
+	} else {
+		player->lturn_max[leveltime%MAXPREDICTTICS] = player->rturn_max[leveltime%MAXPREDICTTICS] = 0;
+	}
+
+	if (leveltime >= starttime)
+	{
+		// KART: Don't directly apply angleturn! It may have been either A) forged by a malicious client, or B) not be a smooth turn due to a player dropping frames.
+		// Instead, turn the player only up to the amount they're supposed to turn accounting for latency. Allow exactly 1 extra turn unit to try to keep old replays synced.
+		angle_diff = player->cmd.angleturn - (player->mo->angle>>16);
+		max_left_turn = player->lturn_max[(leveltime + MAXPREDICTTICS - player->cmd.latency) % MAXPREDICTTICS];
+		max_right_turn = player->rturn_max[(leveltime + MAXPREDICTTICS - player->cmd.latency) % MAXPREDICTTICS];
+
+		CONS_Printf("----------------\nangle diff: %d - turning options: %d to %d - ", angle_diff, max_left_turn, max_right_turn);
+
+		if (angle_diff > max_left_turn)
+			angle_diff = max_left_turn;
+		else if (angle_diff < max_right_turn)
+			angle_diff = max_right_turn;
+		else
+		{
+			// Try to keep normal turning as accurate to 1.0.1 as possible to reduce replay desyncs.
+			player->mo->angle = player->cmd.angleturn<<16;
+			add_delta = false;
+		}
+		CONS_Printf("applied turn: %d\n", angle_diff);
+
+		if (add_delta) {
+			player->mo->angle += angle_diff<<16;
+			player->mo->angle &= ~0xFFFF; // Try to keep the turning somewhat similar to how it was before?
+			CONS_Printf("leftover turn (%s): %5d or %4d%%\n",
+							player_names[player-players],
+							(INT16) (player->cmd.angleturn - (player->mo->angle>>16)),
+							(INT16) (player->cmd.angleturn - (player->mo->angle>>16)) * 100 / (angle_diff ? angle_diff : 1));
+		}
+	}
+}
+
+void P_UpdateBotAngle(player_t *player)
+{
+	angle_t angleChange = K_GetKartTurnValue(player, player->cmd.driftturn) << TICCMD_REDUCE;
 	UINT8 i;
 
-	P_SetPlayerAngle(player, player->angleturn + angleChange);
-	player->mo->angle = player->angleturn;
 
-	if (!cv_allowmlook.value || player->spectator == false)
-	{
-		player->aiming = 0;
-	}
-	else
-	{
-		player->aiming += (player->cmd.aiming << TICCMD_REDUCE);
-		player->aiming = G_ClipAimingPitch((INT32*) &player->aiming);
-	}
+	player->cmd.angleturn += angleChange;
+	player->mo->angle = player->cmd.angleturn;
+
+	player->aiming += (player->cmd.aiming << TICCMD_REDUCE);
+	player->aiming = G_ClipAimingPitch((INT32 *)&player->aiming);
 
 	for (i = 0; i <= r_splitscreen; i++)
 	{
 		if (player == &players[displayplayers[i]])
 		{
 			localaiming[i] = player->aiming;
+			// SRB2kart - no additional angle if not moving
+			if (K_PlayerCanTurn(player))
+				localangle[i] += (player->cmd.angleturn<<16);
 			break;
 		}
 	}
-}
-
-// countersteer is how strong the controls are telling us we are turning
-// turndir is the direction the controls are telling us to turn, -1 if turning right and 1 if turning left
-INT16 N_GetKartDriftValue(const player_t* player, fixed_t countersteer)
-{
-	INT16 basedrift, driftadjust;
-	fixed_t driftweight = player->kartweight * 14; // 12
-
-	if (player->drift == 0 || !P_IsObjectOnGround(player->mo))
-	{
-		// If they aren't drifting or on the ground, this doesn't apply
-		return 0;
-	}
-
-	if (player->pflags & PF_DRIFTEND)
-	{
-		// Drift has ended and we are tweaking their angle back a bit
-		return -266 * player->drift;
-	}
-
-	basedrift = (83 * player->drift) - (((driftweight - 14) * player->drift) / 5); // 415 - 303
-	driftadjust = abs((252 - driftweight) * player->drift / 5);
-
-	return basedrift + (FixedMul(driftadjust * FRACUNIT, countersteer) / FRACUNIT);
-}
-
-INT16 N_GetKartTurnValue(const player_t* player, INT16 turnvalue)
-{
-	fixed_t p_maxspeed;
-	fixed_t p_speed;
-	fixed_t weightadjust;
-	fixed_t turnfixed = turnvalue * FRACUNIT;
-	fixed_t currentSpeed = 0;
-
-	if (player->mo == NULL || P_MobjWasRemoved(player->mo))
-	{
-		return 0;
-	}
-
-	if (player->spectator || objectplacing)
-	{
-		return turnvalue;
-	}
-
-	if (leveltime < introtime)
-	{
-		return 0;
-	}
-
-	if (player->respawn.state == RESPAWNST_MOVE)
-	{
-		// No turning during respawn
-		return 0;
-	}
-
-	if (Obj_PlayerRingShooterFreeze(player) == true)
-	{
-		// No turning while using Ring Shooter
-		return 0;
-	}
-
-
-	currentSpeed = R_PointToDist2(0, 0, player->mo->momx, player->mo->momy);
-
-	if ((currentSpeed <= 0)											// Not moving
-		&& (player->respawn.state == RESPAWNST_NONE))				// Not respawning
-	{
-		return 0;
-	}
-
-	p_maxspeed = K_GetKartSpeed(player, false, false);
-	p_speed = min(FixedHypot(player->mo->momx, player->mo->momy), (p_maxspeed * 2));
-	weightadjust = FixedDiv((p_maxspeed * 3) - p_speed, (p_maxspeed * 3) + (player->kartweight * FRACUNIT));
-
-	if (K_PlayerUsesBotMovement(player))
-	{
-		turnfixed = FixedMul(turnfixed, 5 * FRACUNIT / 4); // Base increase to turning
-		turnfixed = FixedMul(turnfixed, K_BotRubberband(player));
-	}
-
-	if (player->drift != 0 && P_IsObjectOnGround(player->mo))
-	{
-		if (player->pflags & PF_DRIFTEND)
-		{
-			// Sal: K_GetKartDriftValue is short-circuited to give a weird additive magic number,
-			// instead of an entirely replaced turn value. This gaslit me years ago when I was doing a
-			// code readability pass, where I missed that fact because it also returned early.
-			turnfixed += N_GetKartDriftValue(player, FRACUNIT) * FRACUNIT;
-			return (turnfixed / FRACUNIT);
-
-		}
-		else
-		{
-			// If we're drifting we have a completely different turning value
-			fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN * FRACUNIT);
-			return N_GetKartDriftValue(player, countersteer);
-
-		}
-
-	}
-
-	if (player->handleboost > 0)
-	{
-		turnfixed = FixedMul(turnfixed, FRACUNIT + player->handleboost);
-	}
-
-	// Weight has a small effect on turning
-	turnfixed = FixedMul(turnfixed, weightadjust);
-
-
-	return (turnfixed / FRACUNIT);
 }
 
 void N_PogoSidemove(player_t *player)
@@ -256,11 +171,11 @@ void N_PogoSidemove(player_t *player)
 	movepushsideangle = movepushangle-ANGLE_90;
 
 	// let movement keys cancel each other out
-	if (player->cmd.turning < 0)
+	if (player->cmd.driftturn < 0)
 	{;
 		side += sidemove[1];
 	}
-	else if (player->cmd.turning > 0 )
+	else if (player->cmd.driftturn > 0 )
 	{
 		side -= sidemove[1];
 	}

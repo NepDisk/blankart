@@ -1837,11 +1837,11 @@ void K_KartMoveAnimation(player_t *player)
 	{
 		player->pflags &= ~PF_GAINAX;
 
-		if (player->cmd.turning < -minturn)
+		if (player->cmd.driftturn < -minturn)
 		{
 			turndir = -1;
 		}
-		else if (player->cmd.turning > minturn)
+		else if (player->cmd.driftturn > minturn)
 		{
 			turndir = 1;
 		}
@@ -2772,10 +2772,6 @@ static fixed_t K_RingDurationBoost(const player_t *player)
 
 	return ret;
 }
-
-// v2 almost broke sliptiding when it fixed turning bugs!
-// This value is fine-tuned to feel like v1 again without reverting any of those changes.
-#define SLIPTIDEHANDLING 7*FRACUNIT/8
 
 // sets k_boostpower, k_speedboost, and k_accelboost to whatever we need it to be
 static void K_GetKartBoostPower(player_t *player)
@@ -4076,8 +4072,8 @@ static void K_SpawnDriftSparks(player_t *player)
 			}
 		}
 
-		if ((player->drift > 0 && player->cmd.turning > 0) // Inward drifts
-			|| (player->drift < 0 && player->cmd.turning < 0))
+		if ((player->drift > 0 && player->cmd.driftturn > 0) // Inward drifts
+			|| (player->drift < 0 && player->cmd.driftturn < 0))
 		{
 			if ((player->drift < 0 && (i & 1))
 				|| (player->drift > 0 && !(i & 1)))
@@ -4090,8 +4086,8 @@ static void K_SpawnDriftSparks(player_t *player)
 				size--;
 			}
 		}
-		else if ((player->drift > 0 && player->cmd.turning < 0) // Outward drifts
-			|| (player->drift < 0 && player->cmd.turning > 0))
+		else if ((player->drift > 0 && player->cmd.driftturn < 0) // Outward drifts
+			|| (player->drift < 0 && player->cmd.driftturn > 0))
 		{
 			if ((player->drift < 0 && (i & 1))
 				|| (player->drift > 0 && !(i & 1)))
@@ -7005,7 +7001,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->justbumped > 0)
 		player->justbumped--;
 
-	UINT16 normalturn = abs(cmd->turning);
+	UINT16 normalturn = abs(cmd->driftturn);
 	UINT16 normalaim = abs(cmd->throwdir);
 
 	if (normalturn != 0 || normalaim != 0)
@@ -8116,14 +8112,14 @@ static void K_KartDrift(player_t *player, boolean onground)
 	else if (player->speed > minspeed
 		&& (player->drift == 0 || (player->pflags & PF_DRIFTEND)))
 	{
-		if (player->cmd.turning > 0)
+		if (player->cmd.driftturn > 0)
 		{
 			// Starting left drift
 			player->drift = 1;
 			player->driftcharge = 0;
 			player->pflags &= ~PF_DRIFTEND;
 		}
-		else if (player->cmd.turning < 0)
+		else if (player->cmd.driftturn < 0)
 		{
 			// Starting right drift
 			player->drift = -1;
@@ -8152,10 +8148,10 @@ static void K_KartDrift(player_t *player, boolean onground)
 				if (player->drift > 5)
 					player->drift = 5;
 
-				if (player->cmd.turning > 0) // Inward
-					driftadditive += abs(player->cmd.turning)/100;
-				if (player->cmd.turning < 0) // Outward
-					driftadditive -= abs(player->cmd.turning)/75;
+				if (player->cmd.driftturn > 0) // Inward
+					driftadditive += abs(player->cmd.driftturn)/100;
+				if (player->cmd.driftturn < 0) // Outward
+					driftadditive -= abs(player->cmd.driftturn)/75;
 			}
 			else if (player->drift <= -1) // Drifting to the right
 			{
@@ -8163,10 +8159,10 @@ static void K_KartDrift(player_t *player, boolean onground)
 				if (player->drift < -5)
 					player->drift = -5;
 
-				if (player->cmd.turning < 0) // Inward
-					driftadditive += abs(player->cmd.turning)/100;
-				if (player->cmd.turning > 0) // Outward
-					driftadditive -= abs(player->cmd.turning)/75;
+				if (player->cmd.driftturn < 0) // Inward
+					driftadditive += abs(player->cmd.driftturn)/100;
+				if (player->cmd.driftturn > 0) // Outward
+					driftadditive -= abs(player->cmd.driftturn)/75;
 			}
 
 			// Disable drift-sparks until you're going fast enough
@@ -8231,9 +8227,9 @@ static void K_KartDrift(player_t *player, boolean onground)
 
 	// We don't meet sliptide conditions!
 	if ((!player->sneakertimer)
-	|| (!player->cmd.turning)
+	|| (!player->cmd.driftturn)
 	|| (!player->aizdriftstrat)
-	|| (player->cmd.turning > 0) != (player->aizdriftstrat > 0))
+	|| (player->cmd.driftturn > 0) != (player->aizdriftstrat > 0))
 	{
 			if (!player->drift)
 				player->aizdriftstrat = 0;
@@ -9536,7 +9532,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	// Quick Turning
 	// You can't turn your kart when you're not moving.
 	// So now it's time to burn some rubber!
-	if (player->speed < 2 && leveltime > starttime && player->cmd.buttons & BT_ACCELERATE && player->cmd.buttons & BT_BRAKE && player->cmd.turning != 0)
+	if (player->speed < 2 && leveltime > starttime && player->cmd.buttons & BT_ACCELERATE && player->cmd.buttons & BT_BRAKE && player->cmd.driftturn != 0)
 	{
 		if (leveltime % 8 == 0)
 			S_StartSound(player->mo, sfx_s224);

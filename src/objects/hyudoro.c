@@ -77,7 +77,7 @@ get_look_angle (mobj_t *thing)
 {
 	player_t *player = thing->player;
 
-	return player ? player->angleturn : thing->angle;
+	return player ? player->cmd.angleturn : thing->angle;
 }
 
 static boolean

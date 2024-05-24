@@ -28,7 +28,7 @@ extern "C" {
 typedef enum
 {
 	BT_ACCELERATE	  = 1,		// Accelerate
-	BT_DRIFT		  = 1<<2,	// Drift (direction is cmd->turning)
+	BT_DRIFT		  = 1<<2,	// Drift (direction is cmd->driftturn)
 	BT_BRAKE		  = 1<<3,	// Brake
 	BT_ATTACK		  = 1<<4,	// Use Item
 	BT_LOOKBACK		  = 1<<5,	// Look Backward
@@ -67,8 +67,8 @@ typedef enum
 struct ticcmd_t
 {
 	SINT8 forwardmove; // -MAXPLMOVE to MAXPLMOVE (50)
-	INT16 turning; // Turn speed
-	INT16 angle; // Predicted angle, use me if you can!
+	INT16 driftturn; // Drift Turn speed
+	INT16 angleturn; // Turn angle
 	INT16 throwdir; // Aiming direction
 	INT16 aiming; // vertical aiming, see G_BuildTicCmd
 	UINT16 buttons;

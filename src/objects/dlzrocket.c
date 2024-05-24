@@ -130,9 +130,9 @@ void Obj_playerDLZRocket(player_t *p)
 		SINT8 turndir = 0;
 		P_SetPlayerAngle(p->mo->player, p->dlzrocketangle);
 
-		if (p->cmd.turning > 0)
+		if (p->cmd.driftturn > 0)
 			turndir = 1;
-		else if (p->cmd.turning < 0)
+		else if (p->cmd.driftturn < 0)
 			turndir = -1;
 
 		p->dlzrocketangle += turndir*DLZROCKETTURNSPEED;

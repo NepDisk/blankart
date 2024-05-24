@@ -549,7 +549,7 @@ void D_ResetTiccmdAngle(UINT8 ss, angle_t angle)
 
 	for (i = 0; i < MAXGENTLEMENDELAY; ++i)
 	{
-		localcmds[ss][i].angle = angle >> TICCMD_REDUCE;
+		localcmds[ss][i].angleturn = angle >> TICCMD_REDUCE;
 	}
 }
 
@@ -1461,7 +1461,7 @@ static void CL_ReloadReceivedSavegame(void)
 
 	for (i = 0; i <= r_splitscreen; i++)
 	{
-		P_ForceLocalAngle(&players[displayplayers[i]], players[displayplayers[i]].angleturn);
+		P_ForceLocalAngle(&players[displayplayers[i]], players[displayplayers[i]].cmd.angleturn);
 	}
 
 	for (i = 0; i < MAXSPLITSCREENPLAYERS; i++)
@@ -3545,7 +3545,7 @@ static void Got_AddPlayer(const UINT8 **p, INT32 playernum)
 			DEBFILE("spawning me\n");
 		}
 
-		P_ForceLocalAngle(newplayer, newplayer->angleturn);
+		P_ForceLocalAngle(newplayer, newplayer->cmd.angleturn);
 
 		D_SendPlayerConfig(splitscreenplayer);
 		addedtogame = true;
@@ -4671,7 +4671,7 @@ static void HandlePacketFromAwayNode(SINT8 node)
 static boolean CheckForSpeedHacks(UINT8 p)
 {
 	if (netcmds[maketic%BACKUPTICS][p].forwardmove > MAXPLMOVE || netcmds[maketic%BACKUPTICS][p].forwardmove < -MAXPLMOVE
-		|| netcmds[maketic%BACKUPTICS][p].turning > KART_FULLTURN || netcmds[maketic%BACKUPTICS][p].turning < -KART_FULLTURN
+		|| netcmds[maketic%BACKUPTICS][p].driftturn > KART_FULLTURN || netcmds[maketic%BACKUPTICS][p].driftturn < -KART_FULLTURN
 		|| netcmds[maketic%BACKUPTICS][p].throwdir > KART_FULLTURN || netcmds[maketic%BACKUPTICS][p].throwdir < -KART_FULLTURN)
 	{
 		CONS_Alert(CONS_WARNING, M_GetText("Illegal movement value received from node %d\n"), playernode[p]);
@@ -4776,7 +4776,7 @@ static void FuzzTiccmd(ticcmd_t* target)
 	if (cv_fuzz.value)
 	{
 		target->forwardmove = P_RandomRange(PR_FUZZ, -MAXPLMOVE, MAXPLMOVE);
-		target->turning = P_RandomRange(PR_FUZZ, -KART_FULLTURN, KART_FULLTURN);
+		target->driftturn = P_RandomRange(PR_FUZZ, -KART_FULLTURN, KART_FULLTURN);
 		target->throwdir = P_RandomRange(PR_FUZZ, -KART_FULLTURN, KART_FULLTURN);
 		target->buttons = P_RandomRange(PR_FUZZ, 0, 255);
 

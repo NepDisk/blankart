@@ -3136,7 +3136,7 @@ static void K_drawKartSpeedometer(boolean gametypeinfoshown)
 		fy += 15;
 	}
 
-	if (!stplyr->exiting) // Keep the same speed value as when you crossed the finish line!
+	if (stplyr->mo) // Keep the same speed value as when you crossed the finish line!
 	{
 		switch (cv_kartspeedometer.value)
 		{
@@ -4852,13 +4852,13 @@ static void K_drawKartFirstPerson(void)
 			splitflags |= (stplyr->mo->frame & FF_TRANSMASK);
 	}
 
-	if (stplyr->cmd.turning > steerThreshold) // strong left turn
+	if (stplyr->cmd.driftturn > steerThreshold) // strong left turn
 		target = 2;
-	else if (stplyr->cmd.turning < -steerThreshold) // strong right turn
+	else if (stplyr->cmd.driftturn < -steerThreshold) // strong right turn
 		target = -2;
-	else if (stplyr->cmd.turning > 0) // weak left turn
+	else if (stplyr->cmd.driftturn > 0) // weak left turn
 		target = 1;
-	else if (stplyr->cmd.turning < 0) // weak right turn
+	else if (stplyr->cmd.driftturn < 0) // weak right turn
 		target = -1;
 	else // forward
 		target = 0;
@@ -4881,8 +4881,8 @@ static void K_drawKartFirstPerson(void)
 	x <<= FRACBITS;
 	y <<= FRACBITS;
 
-	if (tn != stplyr->cmd.turning/50)
-		tn -= (tn - (stplyr->cmd.turning/50))/8;
+	if (tn != stplyr->cmd.driftturn/50)
+		tn -= (tn - (stplyr->cmd.driftturn/50))/8;
 
 	if (dr != stplyr->drift*16)
 		dr -= (dr - (stplyr->drift*16))/8;

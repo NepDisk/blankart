@@ -582,9 +582,9 @@ void G_ReadDemoTiccmd(ticcmd_t *cmd, INT32 playernum)
 	if (ziptic & ZT_FWD)
 		oldcmd[playernum].forwardmove = READSINT8(demobuf.p);
 	if (ziptic & ZT_TURNING)
-		oldcmd[playernum].turning = READINT16(demobuf.p);
+		oldcmd[playernum].driftturn = READINT16(demobuf.p);
 	if (ziptic & ZT_ANGLE)
-		oldcmd[playernum].angle = READINT16(demobuf.p);
+		oldcmd[playernum].angleturn = READINT16(demobuf.p);
 	if (ziptic & ZT_THROWDIR)
 		oldcmd[playernum].throwdir = READINT16(demobuf.p);
 	if (ziptic & ZT_BUTTONS)
@@ -636,17 +636,17 @@ void G_WriteDemoTiccmd(ticcmd_t *cmd, INT32 playernum)
 		ziptic |= ZT_FWD;
 	}
 
-	if (cmd->turning != oldcmd[playernum].turning)
+	if (cmd->driftturn != oldcmd[playernum].driftturn)
 	{
-		WRITEINT16(demobuf.p,cmd->turning);
-		oldcmd[playernum].turning = cmd->turning;
+		WRITEINT16(demobuf.p,cmd->driftturn);
+		oldcmd[playernum].driftturn = cmd->driftturn;
 		ziptic |= ZT_TURNING;
 	}
 
-	if (cmd->angle != oldcmd[playernum].angle)
+	if (cmd->angleturn != oldcmd[playernum].angleturn)
 	{
-		WRITEINT16(demobuf.p,cmd->angle);
-		oldcmd[playernum].angle = cmd->angle;
+		WRITEINT16(demobuf.p,cmd->angleturn);
+		oldcmd[playernum].angleturn = cmd->angleturn;
 		ziptic |= ZT_ANGLE;
 	}
 

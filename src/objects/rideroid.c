@@ -271,7 +271,7 @@ void Obj_RideroidThink(mobj_t *mo)
 	// increase speed as we go unless we're turning harshly.
 	if (p->rideroidspeed*mapobjectscale < maxspd)
 	{
-		if (abs(p->cmd.turning < 400))
+		if (abs(p->cmd.driftturn < 400))
 			p->rideroidspeed += (p->ringboost ? 2 : 1);	// acceleration is also higher with a ring boost.
 	}
 	else
@@ -335,14 +335,14 @@ void Obj_RideroidThink(mobj_t *mo)
 	Obj_updateRideroidPos(mo);
 
 	// turning left/right
-	if (p->cmd.turning)
+	if (p->cmd.driftturn)
 	{
 		fixed_t savemomx = pmo->momx;
 		fixed_t savemomy = pmo->momy;
 		SINT8 dir = 0;
 		INT32 a;
 
-		if (p->cmd.turning < -400)
+		if (p->cmd.driftturn < -400)
 		{
 			a = (INT32)(mo->angle) - ANG1*90;
 			P_Thrust(pmo, mo->angle - ANGLE_90, 2*mapobjectscale);
@@ -354,7 +354,7 @@ void Obj_RideroidThink(mobj_t *mo)
 			dir = 1;
 
 		}
-		else if (p->cmd.turning > 400)
+		else if (p->cmd.driftturn > 400)
 		{
 			a = (INT32)(mo->angle) + ANG1*90;
 			P_Thrust(pmo, mo->angle + ANGLE_90, 2*mapobjectscale);
@@ -436,7 +436,7 @@ void Obj_RideroidThink(mobj_t *mo)
 		p->rdaddmomz = min(RIDEROIDMAXADD*mapobjectscale/7, p->rdaddmomz + mapobjectscale/16);
 
 		if (p->rideroidspeed > RIDEROIDSPEED/2
-		&& abs(p->cmd.turning) > 400
+		&& abs(p->cmd.driftturn) > 400
 		&& leveltime & 1)
 			p->rideroidspeed -= 1;
 
@@ -450,7 +450,7 @@ void Obj_RideroidThink(mobj_t *mo)
 		p->rdaddmomz = max(-RIDEROIDMAXADD*mapobjectscale/7, p->rdaddmomz - mapobjectscale/16);
 
 		if (p->rideroidspeed > RIDEROIDSPEED/2
-		&& abs(p->cmd.turning) > 400
+		&& abs(p->cmd.driftturn) > 400
 		&& leveltime & 1)
 			p->rideroidspeed -= 1;
 	}

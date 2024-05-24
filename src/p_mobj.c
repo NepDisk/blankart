@@ -6638,7 +6638,7 @@ static void P_TracerAngleThink(mobj_t *mobj)
 	// mobj->cvmem - Failure timer
 
 	if (mobj->player)
-		looking = mobj->player->angleturn;
+		looking = mobj->player->cmd.angleturn;
 	else
 		looking = mobj->angle;
 
@@ -8873,7 +8873,7 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 				break;
 			}
 
-			if (abs(player->cmd.turning) > 100)
+			if (abs(player->cmd.driftturn) > 100)
 			{
 				INT32 lastsign = 0;
 				if (mobj->lastlook > 0)
@@ -8881,15 +8881,15 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 				else if (mobj->lastlook < 0)
 					lastsign = -1;
 
-				if ((player->cmd.turning > 0 && lastsign < 0)
-					|| (player->cmd.turning < 0 && lastsign > 0))
+				if ((player->cmd.driftturn > 0 && lastsign < 0)
+					|| (player->cmd.driftturn < 0 && lastsign > 0))
 				{
 					mobj->movecount += (TICRATE/2);
 					mobj->cvmem = 8*lastsign;
 					S_StartSound(mobj, sfx_s3k7a);
 				}
 
-				mobj->lastlook = player->cmd.turning;
+				mobj->lastlook = player->cmd.driftturn;
 			}
 
 			mobj->movecount++;

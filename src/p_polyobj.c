@@ -1156,7 +1156,7 @@ static void Polyobj_rotateThings(polyobj_t *po, vector2_t origin, angle_t delta,
 					if ((turnplayers && mo->player) || (turnothers && !mo->player)) {
 						mo->angle += delta;
 						if (mo->player)
-							P_SetPlayerAngle(mo->player, mo->player->angleturn + delta);
+							P_SetPlayerAngle(mo->player, mo->player->cmd.angleturn + delta);
 					}
 				}
 			}

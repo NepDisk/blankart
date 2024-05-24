@@ -123,7 +123,7 @@ ticcmd_t *G_CopyTiccmd(ticcmd_t* dest, const ticcmd_t* src, const size_t n);
 ticcmd_t *G_MoveTiccmd(ticcmd_t* dest, const ticcmd_t* src, const size_t n);
 
 // clip the console player aiming to the view
-INT32 G_ClipAimingPitch(INT32 *aiming);
+INT16 G_ClipAimingPitch(INT32 *aiming);
 INT16 G_SoftwareClipAimingPitch(INT32 *aiming);
 void G_FinalClipAimingPitch(INT32 *aiming, player_t *player, boolean skybox);
 
