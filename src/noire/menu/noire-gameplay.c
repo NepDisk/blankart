@@ -263,6 +263,11 @@ void NG_Generic_OnChange(void)
 void NG_Rings_OnChange(void)
 {
 	if (con_startup) return;
+	if (dedicated)
+	{
+		CONS_Printf("This value only works locally, set cvars manually instead for dedicated\n");
+		return;
+	}
 
 	if(cv_ng_rings.value)
 	{
