@@ -213,11 +213,11 @@ boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 				//                                    ^ remove all of P_DamageMobj and start over
 				P_PlayRinglossSound(t2);
 				P_PlayerRingBurst(t2->player, 5);
-				P_DamageMobj(t2, t1, t1->target, 1, DMG_WOMBO | DMG_NORMAL);
+				P_DamageMobj(t2, t1, t1->target, 1, DMG_NORMAL);
 			}
 			else
 			{
-				P_DamageMobj(t2, t1, t1->target, 1, DMG_WOMBO | DMG_WIPEOUT);
+				P_DamageMobj(t2, t1, t1->target, 1, DMG_WIPEOUT);
 			}
 			K_KartBouncing(t2, t1);
 			S_StartSound(t2, sfx_s3k7b);

@@ -22,7 +22,7 @@
 #define jawz_owner(o) ((o)->target)
 #define jawz_chase(o) ((o)->tracer)
 
-static player_t *K_FindOldJawzTarget(mobj_t *actor, player_t *source)
+player_t *K_FindOldJawzTarget(mobj_t *actor, player_t *source)
 {
 	fixed_t best = -1;
 	player_t *wtarg = NULL;

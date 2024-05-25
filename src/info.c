@@ -13,6 +13,7 @@
 /// \brief Thing frame/state LUT
 
 // Data.
+#include "info.h"
 #include "doomdef.h"
 #include "doomstat.h"
 #include "sounds.h"
@@ -2379,26 +2380,26 @@ state_t states[NUMSTATES] =
 	{SPR_BHBM, FF_FULLBRIGHT|14, 1, {NULL}, 0, 0, S_BALLHOGBOOM16},			// S_BALLHOGBOOM15
 	{SPR_BHBM, FF_FULLBRIGHT|15, 1, {NULL}, 0, 0, S_NULL},					// S_BALLHOGBOOM16
 
-	{SPR_SPBM, 0, 1, {NULL}, 0, 0,  S_SPB2}, // S_SPB1
-	{SPR_SPBM, 1, 1, {NULL}, 0, 0,  S_SPB3}, // S_SPB2
-	{SPR_SPBM, 0, 1, {NULL}, 0, 0,  S_SPB4}, // S_SPB3
-	{SPR_SPBM, 2, 1, {NULL}, 0, 0,  S_SPB5}, // S_SPB4
-	{SPR_SPBM, 0, 1, {NULL}, 0, 0,  S_SPB6}, // S_SPB5
-	{SPR_SPBM, 3, 1, {NULL}, 0, 0,  S_SPB7}, // S_SPB6
-	{SPR_SPBM, 0, 1, {NULL}, 0, 0,  S_SPB8}, // S_SPB7
-	{SPR_SPBM, 4, 1, {NULL}, 0, 0,  S_SPB9}, // S_SPB8
-	{SPR_SPBM, 0, 1, {NULL}, 0, 0, S_SPB10}, // S_SPB9
-	{SPR_SPBM, 5, 1, {NULL}, 0, 0, S_SPB11}, // S_SPB10
-	{SPR_SPBM, 0, 1, {NULL}, 0, 0, S_SPB12}, // S_SPB11
-	{SPR_SPBM, 6, 1, {NULL}, 0, 0, S_SPB13}, // S_SPB12
-	{SPR_SPBM, 0, 1, {NULL}, 0, 0, S_SPB14}, // S_SPB13
-	{SPR_SPBM, 7, 1, {NULL}, 0, 0, S_SPB15}, // S_SPB14
-	{SPR_SPBM, 0, 1, {NULL}, 0, 0, S_SPB16}, // S_SPB15
-	{SPR_SPBM, 8, 1, {NULL}, 0, 0, S_SPB17}, // S_SPB16
-	{SPR_SPBM, 0, 1, {NULL}, 0, 0, S_SPB18}, // S_SPB17
-	{SPR_SPBM, 8, 1, {NULL}, 0, 0, S_SPB19}, // S_SPB18
-	{SPR_SPBM, 0, 1, {NULL}, 0, 0, S_SPB20}, // S_SPB19
-	{SPR_SPBM, 8, 1, {NULL}, 0, 0,  S_SPB1}, // S_SPB20
+	{SPR_SPBM, 0, 1, {A_SPBChase}, 0, 0,  S_SPB2}, // S_SPB1
+	{SPR_SPBM, 1, 1, {A_SPBChase}, 0, 0,  S_SPB3}, // S_SPB2
+	{SPR_SPBM, 0, 1, {A_SPBChase}, 0, 0,  S_SPB4}, // S_SPB3
+	{SPR_SPBM, 2, 1, {A_SPBChase}, 0, 0,  S_SPB5}, // S_SPB4
+	{SPR_SPBM, 0, 1, {A_SPBChase}, 0, 0,  S_SPB6}, // S_SPB5
+	{SPR_SPBM, 3, 1, {A_SPBChase}, 0, 0,  S_SPB7}, // S_SPB6
+	{SPR_SPBM, 0, 1, {A_SPBChase}, 0, 0,  S_SPB8}, // S_SPB7
+	{SPR_SPBM, 4, 1, {A_SPBChase}, 0, 0,  S_SPB9}, // S_SPB8
+	{SPR_SPBM, 0, 1, {A_SPBChase}, 0, 0, S_SPB10}, // S_SPB9
+	{SPR_SPBM, 5, 1, {A_SPBChase}, 0, 0, S_SPB11}, // S_SPB10
+	{SPR_SPBM, 0, 1, {A_SPBChase}, 0, 0, S_SPB12}, // S_SPB11
+	{SPR_SPBM, 6, 1, {A_SPBChase}, 0, 0, S_SPB13}, // S_SPB12
+	{SPR_SPBM, 0, 1, {A_SPBChase}, 0, 0, S_SPB14}, // S_SPB13
+	{SPR_SPBM, 7, 1, {A_SPBChase}, 0, 0, S_SPB15}, // S_SPB14
+	{SPR_SPBM, 0, 1, {A_SPBChase}, 0, 0, S_SPB16}, // S_SPB15
+	{SPR_SPBM, 8, 1, {A_SPBChase}, 0, 0, S_SPB17}, // S_SPB16
+	{SPR_SPBM, 0, 1, {A_SPBChase}, 0, 0, S_SPB18}, // S_SPB17
+	{SPR_SPBM, 8, 1, {A_SPBChase}, 0, 0, S_SPB19}, // S_SPB18
+	{SPR_SPBM, 0, 1, {A_SPBChase}, 0, 0, S_SPB20}, // S_SPB19
+	{SPR_SPBM, 8, 1, {A_SPBChase}, 0, 0,  S_SPB1}, // S_SPB20
 	{SPR_SPBM, 8, 175, {NULL}, 0, 0, S_NULL}, // S_SPB_DEAD
 
 	{SPR_TRIS, FF_FULLBRIGHT|FF_ANIMATE|FF_PAPERSPRITE|FF_ADD,  9, {NULL},  2, 3, S_MANTA2}, // S_MANTA1

@@ -12,6 +12,7 @@
 /// \file  p_mobj.c
 /// \brief Moving object handling. Spawn functions
 
+#include "d_player.h"
 #include "dehacked.h"
 #include "doomdef.h"
 #include "g_game.h"
@@ -9491,11 +9492,6 @@ static boolean P_FuseThink(mobj_t *mobj)
 		}
 		P_RemoveMobj(mobj);
 		return false;
-	case MT_SPB:
-	{
-		Obj_SPBExplode(mobj);
-		break;
-	}
 	case MT_SERVANTHAND:
 	{
 		if (P_MobjWasRemoved(mobj->target)

@@ -275,7 +275,10 @@ actionpointer_t actionpointers[] =
 	{{A_ChangeHeight},           "A_CHANGEHEIGHT"},
 
 	// SRB2Kart
+	{{A_ItemPop},            	 "A_ITEMPOP"},
+	{{A_JawzChase},            	 "A_JAWZCHASE"},
 	{{A_JawzExplode},            "A_JAWZEXPLODE"},
+	{{A_SPBChase},            	 "A_SPBCHASE"},
 	{{A_SSMineSearch},           "A_SSMINESEARCH"},
 	{{A_SSMineExplode},          "A_SSMINEEXPLODE"},
 	{{A_SSMineFlash},            "A_SSMINEFLASH"},
@@ -4537,7 +4540,6 @@ struct int_const_s const INT_CONST[] = {
 	//// Masks
 	{"DMG_STEAL",DMG_STEAL},
 	{"DMG_CANTHURTSELF",DMG_CANTHURTSELF},
-	{"DMG_WOMBO", DMG_WOMBO},
 	{"DMG_DEATHMASK",DMG_DEATHMASK},
 	{"DMG_TYPEMASK",DMG_TYPEMASK},
 

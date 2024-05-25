@@ -90,7 +90,7 @@ boolean K_BananaBallhogCollide(mobj_t *t1, mobj_t *t2)
 		}
 		else
 		{
-			P_DamageMobj(t2, t1, t1->target, 1, DMG_NORMAL|DMG_WOMBO);
+			P_DamageMobj(t2, t1, t1->target, 1, DMG_NORMAL);
 		}
 	}
 	else if (t2->type == MT_BANANA || t2->type == MT_BANANA_SHIELD
@@ -304,7 +304,7 @@ static inline BlockItReturn_t PIT_SSMineExplode(mobj_t *thing)
 		return BMIT_CONTINUE;
 	}
 
-	P_DamageMobj(thing, grenade, grenade->target, 1, (explodespin ? DMG_NORMAL : DMG_EXPLODE));
+	P_DamageMobj(thing, grenade,grenade->target, 1, (explodespin ? DMG_NORMAL : DMG_EXPLODE));
 
 	return BMIT_CONTINUE;
 }
@@ -536,7 +536,7 @@ static inline BlockItReturn_t PIT_LightningShieldAttack(mobj_t *thing)
 	}
 #endif
 
-	P_DamageMobj(thing, lightningSource, lightningSource, 1, DMG_VOLTAGE|DMG_CANTHURTSELF|DMG_WOMBO);
+	P_DamageMobj(thing, lightningSource, lightningSource, 1, DMG_VOLTAGE|DMG_CANTHURTSELF);
 	return BMIT_CONTINUE;
 }
 
@@ -748,7 +748,7 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 			|| (t1->player->bubbleblowup > 0);
 	};
 
-	if (forEither(shouldWipeout, doDamage(DMG_WIPEOUT | DMG_WOMBO)))
+	if (forEither(shouldWipeout, doDamage(DMG_WIPEOUT)))
 	{
 		return true;
 	}
@@ -764,7 +764,7 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 				&& (t1->player->flashing == 0));
 		};
 
-		if (forEither(shouldSteal, doDamage(DMG_WIPEOUT | DMG_STEAL | DMG_WOMBO)))
+		if (forEither(shouldSteal, doDamage(DMG_WIPEOUT | DMG_STEAL)))
 		{
 			return true;
 		}
@@ -795,7 +795,7 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 
 			if (t2->player->rings <= 0 && t2->health == 1) // no bumpers
 			{
-				P_DamageMobj(t2, t1, t1, 1, DMG_STING|DMG_WOMBO);
+				P_DamageMobj(t2, t1, t1, 1, DMG_STING);
 				stung = true;
 			}
 

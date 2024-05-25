@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 
-
+player_t *K_FindOldJawzTarget(mobj_t *actor, player_t *source);
 void OBJ_JawzOldThink(mobj_t *actor);
 void Obj_JawzOldThrown(mobj_t *th, fixed_t finalSpeed, SINT8 dir);
 void Obj_OrbinautOldThrown(mobj_t *th, fixed_t finalSpeed, SINT8 dir);

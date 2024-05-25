@@ -1988,7 +1988,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 					// special behavior for SPB capsules
 					if (target->threshold == KITEM_SPB)
 					{
-						K_ThrowKartItem(player, true, MT_SPB, 1, 0, 0);
+						K_ThrowKartItem(player, true, MT_SPB, 1, 0);
 						break;
 					}
 				}
@@ -2856,6 +2856,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 		else
 		{
 			UINT8 type = (damagetype & DMG_TYPEMASK);
+			const boolean hardhit = (type == DMG_EXPLODE || type == DMG_KARMA); // This damage type can do evil stuff like ALWAYS combo
 			INT16 ringburst = 5;
 
 			// Check if the player is allowed to be damaged!
@@ -2902,12 +2903,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				if (invincible)
 				{
 
-					// Damage during hitlag should be a no-op
-					// for invincibility states because there
-					// are no flashing tics. If the damage is
-					// from a constant source, a deadlock
-					// would occur.
-
 					if (player->timeshit > player->timeshitprev)
 					{
 						S_StartSound(target, sfx);
@@ -2933,9 +2928,9 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				{
 
 					// DMG_EXPLODE excluded from flashtic checks to prevent dodging eggbox/SPB with weak spinout
-					if ((player->flashing > 0 &&
+					if ((player->flashing > 0)  &&
 						type != DMG_EXPLODE &&
-						P_FlashingException(player, inflictor) == false))
+						P_FlashingException(player, inflictor) == false)
 					{
 						// Post-hit invincibility
 						K_DoInstashield(player);
@@ -2945,6 +2940,13 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 					{
 						return false;
 					}
+
+					if ((player->spinouttimer > 0) && type != DMG_EXPLODE)
+					{
+						K_DoInstashield(player);
+						return false;
+					}
+
 				}
 			}
 
@@ -2962,8 +2964,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				damage = 0;
 			}
 
-			boolean hitFromInvinc = false;
-
 			// Sting and stumble shouldn't be rewarding Battle hits.
 			if (type == DMG_STING)
 			{
@@ -2976,11 +2976,9 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				if (source && source != player->mo && source->player)
 				{
 					// Extend the invincibility if the hit was a direct hit.
-					if (inflictor == source && source->player->invincibilitytimer )
+					if (inflictor == source && source->player->invincibilitytimer)
 					{
 						tic_t kinvextend;
-
-						hitFromInvinc = true;
 
 						if (gametyperules & GTR_CLOSERPLAYERS)
 							kinvextend = 2*TICRATE;
@@ -2996,7 +2994,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 						source->player->invincibilitytimer += kinvextend;
 
 						if (P_IsDisplayPlayer(source->player))
-							S_StartSound(NULL, sfx_cdfm65);
+							S_StartSound(NULL, sfx_lose);
 					}
 
 					K_TryHurtSoundExchange(target, source);
@@ -3075,16 +3073,9 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 			switch (type)
 			{
 				case DMG_STING:
-					if (cv_ng_ringsting.value)
-					{
-						K_DebtStingPlayer(player, source);
-						K_KartPainEnergyFling(player);
-					}
+					K_DebtStingPlayer(player, source);
+					K_KartPainEnergyFling(player);
 					ringburst = 0;
-					break;
-				case DMG_SQUISH:
-					K_SquishPlayer(player, inflictor, source);
-					ringburst = 5;
 					break;
 				case DMG_EXPLODE:
 				case DMG_KARMA:
@@ -3093,6 +3084,9 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				case DMG_WIPEOUT:
 					K_SpinPlayer(player, inflictor, source, KSPIN_WIPEOUT);
 					K_KartPainEnergyFling(player);
+					break;
+				case DMG_SQUISH:
+					K_SquishPlayer(player, inflictor, source);
 					break;
 				case DMG_VOLTAGE:
 				case DMG_NORMAL:
@@ -3107,21 +3101,23 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				ringburst = 0;
 			}
 
+			if (type)
+			{
+				if (type != DMG_STING)
+					player->flashing = K_GetKartFlashing(player);
 
-			if (type != DMG_STING)
-				player->flashing = K_GetKartFlashing(player);
+				player->ringburst += ringburst;
 
-			player->ringburst += ringburst;
+				K_PopPlayerShield(player);
+				player->instashield = 15;
 
-			K_PopPlayerShield(player);
-			player->instashield = 15;
-
-			K_PlayPainSound(target, source);
+				K_PlayPainSound(target, source);
+			}
 
 			if (gametyperules & GTR_BUMPERS)
 				player->spheres = min(player->spheres + 10, 40);
 
-			if ((type == DMG_EXPLODE || type == DMG_KARMA) || cv_kartdebughuddrop.value)
+			if ((hardhit == true) || cv_kartdebughuddrop.value)
 			{
 				K_DropItems(player);
 			}
@@ -3129,6 +3125,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 			{
 				K_DropHnextList(player);
 			}
+
 		}
 	}
 	else

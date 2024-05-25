@@ -3756,71 +3756,31 @@ fixed_t K_DefaultPlayerRadius(player_t *player)
 			player->mo->info->radius);
 }
 
-static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, INT32 flags2, fixed_t speed, SINT8 dir)
+static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, INT32 flags2, fixed_t speed)
 {
 	mobj_t *th;
 	fixed_t x, y, z;
-	fixed_t topspeed = K_GetKartSpeed(source->player, false, false);
 	fixed_t finalspeed = speed;
 	mobj_t *throwmo;
 
-	if (source->player != NULL)
+	if (source->player && source->player->speed > K_GetKartSpeed(source->player, false, false))
 	{
-		const angle_t delta = AngleDelta(source->angle, an);
-		 // Correct for angle difference when applying missile speed boosts. (Don't boost backshots!)
-		const fixed_t deltaFactor = FixedDiv(AngleFixed(ANGLE_180 - delta), 180 * FRACUNIT);
+		angle_t input = source->angle - an;
+		boolean invert = (input > ANGLE_180);
+		if (invert)
+			input = InvAngle(input);
 
-		if (source->player->speed > topspeed)
-		{
-			// Multiply speed to be proportional to your own, boosted maxspeed.
-			// (Dramatic "railgun" effect when fast players fire missiles.)
-			finalspeed = max(speed, FixedMul(
-				speed,
-				FixedMul(
-					FixedDiv(source->player->speed, topspeed),
-					deltaFactor
-				)
-			));
-		}
-
-		// ...and add player speed on top, to make sure you're never traveling faster than an item you throw.
-		finalspeed += FixedMul(source->player->speed, deltaFactor);
-
-	}
-
-	if (dir == -1)
-	{
-		fixed_t nerf = FRACUNIT;
-
-		// Backwards nerfs
-		switch (type)
-		{
-			case MT_ORBINAUT:
-				// These items orbit in place.
-				// Look for a tight radius...
-				nerf = FRACUNIT/4;
-				break;
-
-			case MT_BALLHOG:
-				nerf = FRACUNIT/8;
-				break;
-
-			default:
-				break;
-		}
-
-		if (finalspeed != FRACUNIT)
-		{
-			// Scale to gamespeed for consistency
-			finalspeed = FixedMul(finalspeed, FixedDiv(nerf, K_GetKartGameSpeedScalar(gamespeed)));
-		}
+		finalspeed = max(speed, FixedMul(speed, FixedMul(
+			FixedDiv(source->player->speed, K_GetKartSpeed(source->player, false,false)), // Multiply speed to be proportional to your own, boosted maxspeed.
+			(((180<<FRACBITS) - AngleFixed(input)) / 180) // multiply speed based on angle diff... i.e: don't do this for firing backward :V
+			)));
 	}
 
 	x = source->x + source->momx + FixedMul(finalspeed, FINECOSINE(an>>ANGLETOFINESHIFT));
 	y = source->y + source->momy + FixedMul(finalspeed, FINESINE(an>>ANGLETOFINESHIFT));
-	z = P_GetZAt(source->standingslope, x, y, source->z); // spawn on the ground please
+	z = source->z; // spawn on the ground please
 
-	th = P_SpawnMobj(x, y, z, type); // this will never return null because collision isn't processed here
+	th = P_SpawnMobj(x, y, z, type);
 
 	K_FlipFromObject(th, source);
 
@@ -3832,6 +3792,24 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 
 	P_SetTarget(&th->target, source);
 
+	P_SetScale(th, source->scale);
+	th->destscale = source->destscale;
+
+	if (P_IsObjectOnGround(source))
+	{
+		// floorz and ceilingz aren't properly set to account for FOFs and Polyobjects on spawn
+		// This should set it for FOFs
+		P_MoveOrigin(th, th->x, th->y, th->z);
+		// spawn on the ground if the player is on the ground
+		if (P_MobjFlip(source) < 0)
+		{
+			th->z = th->ceilingz - th->height;
+			th->eflags |= MFE_VERTICALFLIP;
+		}
+		else
+			th->z = th->floorz;
+	}
+
 	th->angle = an;
 
 	th->momx = FixedMul(finalspeed, FINECOSINE(an>>ANGLETOFINESHIFT));
@@ -3841,13 +3819,30 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 	switch (type)
 	{
 		case MT_ORBINAUT:
-				Obj_OrbinautOldThrown(th, finalspeed, dir);
+			if (source && source->player)
+				th->color = source->player->skincolor;
+			else
+				th->color = SKINCOLOR_GREY;
+			th->movefactor = finalspeed;
 			break;
 		case MT_JAWZ:
-				Obj_JawzOldThrown(th, finalspeed, dir);
-			break;
+			if (source && source->player)
+			{
+				INT32 lasttarg = source->player->lastjawztarget;
+				th->cvmem = source->player->skincolor;
+				if ((lasttarg >= 0 && lasttarg < MAXPLAYERS)
+					&& playeringame[lasttarg]
+					&& !players[lasttarg].spectator
+					&& players[lasttarg].mo)
+				{
+					P_SetTarget(&th->tracer, players[lasttarg].mo);
+				}
+			}
+			else
+				th->cvmem = SKINCOLOR_KETCHUP;
+			/* FALLTHRU */
 		case MT_SPB:
-			Obj_SPBThrown(th, finalspeed);
+			th->movefactor = finalspeed;
 			break;
 		case MT_BUBBLESHIELDTRAP:
 			P_SetScale(th, ((5*th->destscale)>>2)*4);
@@ -3855,68 +3850,8 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 			S_StartSound(th, sfx_s3kbfl);
 			S_StartSound(th, sfx_cdfm35);
 			break;
-		case MT_BALLHOG:
-			// Contra spread shot scale up
-			th->destscale = th->destscale << 1;
-			th->scalespeed = abs(th->destscale - th->scale) / (2*TICRATE);
-			break;
 		default:
 			break;
-	}
-
-	// I'm calling P_SetOrigin to update the floorz if this
-	// object can run on water. However, P_CanRunOnWater
-	// requires that the object is already on the ground, so
-	// floorz needs to be set beforehand too.
-	th->floorz = source->floorz;
-	th->ceilingz = source->ceilingz;
-
-	// Get floorz and ceilingz
-	P_SetOrigin(th, x, y, z);
-
-	if (P_MobjWasRemoved(th))
-		return NULL;
-
-	if ((P_IsObjectFlipped(th)
-			? th->ceilingz - source->ceilingz
-			: th->floorz - source->floorz) > P_GetThingStepUp(th, x, y))
-	{
-		// Assuming this is on the boundary of a sector and
-		// the wall is too tall... I'm not bothering with
-		// trying to find where the line is. Just nudge this
-		// object back a bit so it (hopefully) doesn't
-		// teleport on top of the ledge.
-
-		const fixed_t r = abs(th->radius - source->radius);
-
-		x = source->x - FixedMul(r, FSIN(an));
-		y = source->y - FixedMul(r, FCOS(an));
-		z = P_GetZAt(source->standingslope, x, y, source->z);
-
-		P_SetOrigin(th, x, y, z);
-
-		if (P_MobjWasRemoved(th))
-			return NULL;
-	}
-
-	if (P_IsObjectOnGround(source))
-	{
-		// If the player is on the ground, make sure the
-		// missile spawns on the ground, so it smoothly
-		// travels down stairs.
-
-		// FIXME: This needs a more elegant solution because
-		// if multiple stairs are crossed, the height
-		// difference in the end is too great (this affects
-		// slopes too).
-
-		const fixed_t tz = P_IsObjectFlipped(th) ? th->ceilingz - th->height : th->floorz;
-
-		if (abs(tz - z) <= P_GetThingStepUp(th, x, y))
-		{
-			z = tz;
-			th->z = z;
-		}
 	}
 
 	if (type != MT_BUBBLESHIELDTRAP)
@@ -3929,7 +3864,7 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 		P_SetTarget(&throwmo->target, source);
 	}
 
-	return th;
+	return NULL;
 }
 
 UINT16 K_DriftSparkColor(player_t *player, INT32 charge)
@@ -4411,7 +4346,7 @@ static mobj_t *K_FindLastTrailMobj(player_t *player)
 	return trail;
 }
 
-mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, INT32 defaultDir, INT32 altthrow, angle_t angleOffset)
+mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, INT32 defaultDir, INT32 altthrow)
 {
 	mobj_t *mo;
 	INT32 dir;
@@ -4423,23 +4358,30 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 	if (!player)
 		return NULL;
 
+	// Figure out projectile speed by game speed
+	if (missile)
+	{
+		// Use info->speed for missiles
+		PROJSPEED = FixedMul(mobjinfo[mapthing].speed, K_GetKartGameSpeedScalar(gamespeed));
+	}
+	else
+	{
+		// Use pre-determined speed for tossing
+		PROJSPEED = FixedMul(82 * FRACUNIT, K_GetKartGameSpeedScalar(gamespeed));
+	}
+
+	// Scale to map scale
+	// Intentionally NOT player scale, that doesn't work.
+	PROJSPEED = FixedMul(PROJSPEED, mapobjectscale);
+
 	if (altthrow)
 	{
 		if (altthrow == 2) // Kitchen sink throwing
 		{
-#if 0
-			if (player->throwdir == 1)
-				dir = 3;
-			else if (player->throwdir == -1)
-				dir = 1;
-			else
-				dir = 2;
-#else
 			if (player->throwdir == 1)
 				dir = 2;
 			else
 				dir = 1;
-#endif
 		}
 		else
 		{
@@ -4459,46 +4401,52 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 			dir = defaultDir;
 	}
 
-	// Figure out projectile speed by game speed
-	if (missile)
-	{
-		// Use info->speed for missiles
-		PROJSPEED = FixedMul(mobjinfo[mapthing].speed, K_GetKartGameSpeedScalar(gamespeed));
-	}
-	else
-	{
-		// Use pre-determined speed for tossing
-		PROJSPEED = FixedMul(82 * FRACUNIT, K_GetKartGameSpeedScalar(gamespeed));
-	}
-
-	// Scale to map scale
-	// Intentionally NOT player scale, that doesn't work.
-	PROJSPEED = FixedMul(PROJSPEED, mapobjectscale);
-
 	if (missile) // Shootables
 	{
-		if (dir < 0 && mapthing != MT_SPB)
+		if (mapthing == MT_BALLHOG) // Messy
 		{
-			// Shoot backward
-			mo = K_SpawnKartMissile(player->mo, mapthing, (player->mo->angle + ANGLE_180) + angleOffset, 0, PROJSPEED, dir);
+			if (dir == -1)
+			{
+				// Shoot backward
+				mo = K_SpawnKartMissile(player->mo, mapthing, (player->mo->angle + ANGLE_180) - 0x06000000, 0, PROJSPEED/8);
+				K_SpawnKartMissile(player->mo, mapthing, (player->mo->angle + ANGLE_180) - 0x03000000, 0, PROJSPEED/8);
+				K_SpawnKartMissile(player->mo, mapthing, player->mo->angle + ANGLE_180, 0, PROJSPEED/8);
+				K_SpawnKartMissile(player->mo, mapthing, (player->mo->angle + ANGLE_180) + 0x03000000, 0, PROJSPEED/8);
+				K_SpawnKartMissile(player->mo, mapthing, (player->mo->angle + ANGLE_180) + 0x06000000, 0, PROJSPEED/8);
+			}
+			else
+			{
+				// Shoot forward
+				mo = K_SpawnKartMissile(player->mo, mapthing, player->mo->angle - 0x06000000, 0, PROJSPEED);
+				K_SpawnKartMissile(player->mo, mapthing, player->mo->angle - 0x03000000, 0, PROJSPEED);
+				K_SpawnKartMissile(player->mo, mapthing, player->mo->angle, 0, PROJSPEED);
+				K_SpawnKartMissile(player->mo, mapthing, player->mo->angle + 0x03000000, 0, PROJSPEED);
+				K_SpawnKartMissile(player->mo, mapthing, player->mo->angle + 0x06000000, 0, PROJSPEED);
+			}
 		}
 		else
 		{
-			// Shoot forward
-			mo = K_SpawnKartMissile(player->mo, mapthing, player->mo->angle + angleOffset, 0, PROJSPEED, dir);
+			if (dir == -1 && mapthing != MT_SPB)
+			{
+				// Shoot backward
+				mo = K_SpawnKartMissile(player->mo, mapthing, player->mo->angle + ANGLE_180, 0, PROJSPEED/8);
+			}
+			else
+			{
+				// Shoot forward
+				mo = K_SpawnKartMissile(player->mo, mapthing, player->mo->angle, 0, PROJSPEED);
+			}
 		}
 	}
 	else
 	{
-
 		player->bananadrag = 0; // RESET timer, for multiple bananas
 
 		if (dir > 0)
 		{
 			// Shoot forward
 			mo = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + player->mo->height/2, mapthing);
-			mo->angle = player->mo->angle;
-
+			//K_FlipFromObject(mo, player->mo);
 			// These are really weird so let's make it a very specific case to make SURE it works...
 			if (player->mo->eflags & MFE_VERTICALFLIP)
 			{
@@ -4512,24 +4460,19 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 
 			S_StartSound(player->mo, mo->info->seesound);
 
+			if (mo)
 			{
 				angle_t fa = player->mo->angle>>ANGLETOFINESHIFT;
-				fixed_t HEIGHT = ((20 + (dir*10)) * FRACUNIT) + (FixedDiv(player->mo->momz, mapobjectscale)*P_MobjFlip(player->mo)); // Also intentionally not player scale
+				fixed_t HEIGHT = ((20 + (dir*10)) * FRACUNIT) + (player->mo->momz*P_MobjFlip(player->mo)); // Also intentionally not player scale
 
 				P_SetObjectMomZ(mo, HEIGHT, false);
 				mo->momx = player->mo->momx + FixedMul(FINECOSINE(fa), PROJSPEED*dir);
 				mo->momy = player->mo->momy + FixedMul(FINESINE(fa), PROJSPEED*dir);
-			}
 
-			mo->extravalue2 = dir;
+				mo->extravalue2 = dir;
 
-			if (mo->eflags & MFE_UNDERWATER)
-				mo->momz = (117 * mo->momz) / 200;
-
-			if (mapthing == MT_BANANA)
-			{
-				mo->angle = FixedAngle(P_RandomRange(PR_DECORATION, -180, 180) << FRACBITS);
-				mo->rollangle = FixedAngle(P_RandomRange(PR_DECORATION, -180, 180) << FRACBITS);
+				if (mo->eflags & MFE_UNDERWATER)
+					mo->momz = (117 * mo->momz) / 200;
 			}
 
 			// this is the small graphic effect that plops in you when you throw an item:
@@ -4544,7 +4487,6 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 			}
 
 			throwmo->movecount = 0; // above player
-
 		}
 		else
 		{
@@ -4582,11 +4524,14 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 			mo->threshold = 10;
 			P_SetTarget(&mo->target, player->mo);
 
+			P_SetScale(mo, player->mo->scale);
+			mo->destscale = player->mo->destscale;
+
 			if (P_IsObjectOnGround(player->mo))
 			{
 				// floorz and ceilingz aren't properly set to account for FOFs and Polyobjects on spawn
 				// This should set it for FOFs
-				P_SetOrigin(mo, mo->x, mo->y, mo->z); // however, THIS can fuck up your day. just absolutely ruin you.
+				P_MoveOrigin(mo, mo->x, mo->y, mo->z); // however, THIS can fuck up your day. just absolutely ruin you.
 				if (P_MobjWasRemoved(mo))
 					return NULL;
 
@@ -4608,8 +4553,6 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 
 			if (player->mo->eflags & MFE_VERTICALFLIP)
 				mo->eflags |= MFE_VERTICALFLIP;
-
-			mo->angle = newangle;
 
 			if (mapthing == MT_SSMINE)
 				mo->extravalue1 = 49; // Pads the start-up length from 21 frames to a full 2 seconds
@@ -8829,7 +8772,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				{
 					if (ATTACK_IS_DOWN)
 					{
-						K_ThrowKartItem(player, false, MT_EGGMANITEM, -1, 0, 0);
+						K_ThrowKartItem(player, false, MT_EGGMANITEM, -1, 0);
 						K_PlayAttackTaunt(player->mo);
 						player->itemflags &= ~IF_EGGMANOUT;
 						K_UpdateHnextList(player, true);
@@ -8943,7 +8886,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							else if (ATTACK_IS_DOWN && (player->itemflags & IF_ITEMOUT)) // Banana x3 thrown
 							{
-								K_ThrowKartItem(player, false, MT_BANANA, -1, 0, 0);
+								K_ThrowKartItem(player, false, MT_BANANA, -1, 0);
 								K_PlayAttackTaunt(player->mo);
 								player->itemamount--;
 								K_UpdateHnextList(player, false);
@@ -9007,7 +8950,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							else if (ATTACK_IS_DOWN && (player->itemflags & IF_ITEMOUT)) // Orbinaut x3 thrown
 							{
-								K_ThrowKartItem(player, true, MT_ORBINAUT, 1, 0, 0);
+								K_ThrowKartItem(player, true, MT_ORBINAUT, 1, 0);
 								K_PlayAttackTaunt(player->mo);
 								player->itemamount--;
 								K_UpdateHnextList(player, false);
@@ -9049,7 +8992,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							else if (ATTACK_IS_DOWN && HOLDING_ITEM && (player->itemflags & IF_ITEMOUT)) // Jawz thrown
 							{
-								K_ThrowKartItem(player, true, MT_JAWZ, 1, 0, 0);
+								K_ThrowKartItem(player, true, MT_JAWZ, 1, 0);
 								K_PlayAttackTaunt(player->mo);
 								player->itemamount--;
 								K_UpdateHnextList(player, false);
@@ -9076,7 +9019,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							else if (ATTACK_IS_DOWN && (player->itemflags & IF_ITEMOUT))
 							{
-								K_ThrowKartItem(player, false, MT_SSMINE, 1, 1, 0);
+								K_ThrowKartItem(player, false, MT_SSMINE, 1, 1);
 								K_PlayAttackTaunt(player->mo);
 								player->itemamount--;
 								player->itemflags &= ~IF_ITEMOUT;
@@ -9152,7 +9095,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 										else if (numhogs == 1)
 										{
 											player->itemamount--;
-											K_ThrowKartItem(player, true, MT_BALLHOG, 1, 0, 0);
+											K_ThrowKartItem(player, true, MT_BALLHOG, 1, 0);
 											K_PlayAttackTaunt(player->mo);
 										}
 										else
@@ -9166,7 +9109,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 
 											for (i = 0; i < numhogs; i++)
 											{
-												K_ThrowKartItem(player, true, MT_BALLHOG, 1, 0, angleOffset);
+												K_ThrowKartItem(player, true, MT_BALLHOG, 1, 0);
 												angleOffset -= offsetAmt;
 											}
 
@@ -9186,7 +9129,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							{
 								player->itemamount--;
 								K_SetItemOut(player);
-								K_ThrowKartItem(player, true, MT_SPB, 1, 0, 0);
+								K_ThrowKartItem(player, true, MT_SPB, 1, 0);
 								K_UnsetItemOut(player);
 								K_PlayAttackTaunt(player->mo);
 								player->botvars.itemconfirm = 0;
@@ -9284,7 +9227,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 
 									if (player->bubbleblowup > bubbletime*2)
 									{
-										K_ThrowKartItem(player, (player->throwdir > 0), MT_BUBBLESHIELDTRAP, -1, 0, 0);
+										K_ThrowKartItem(player, (player->throwdir > 0), MT_BUBBLESHIELDTRAP, -1, 0);
 										if (player->throwdir == -1)
 										{
 											P_InstaThrust(player->mo, player->mo->angle, player->speed + (80 * mapobjectscale));
@@ -9457,7 +9400,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							else if (ATTACK_IS_DOWN && HOLDING_ITEM && (player->itemflags & IF_ITEMOUT)) // Sink thrown
 							{
-								K_ThrowKartItem(player, false, MT_SINK, 1, 2, 0);
+								K_ThrowKartItem(player, false, MT_SINK, 1, 2);
 								K_PlayAttackTaunt(player->mo);
 								player->itemamount--;
 								player->itemflags &= ~IF_ITEMOUT;

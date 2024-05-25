@@ -1056,7 +1056,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 	// missiles can hit other things
 	if ((g_tm.thing->flags & MF_MISSILE) && !damage) // if something was already damaged, don't run this
 	{
-		UINT8 damagetype = (g_tm.thing->info->mass ^ DMG_WOMBO);
+		UINT8 damagetype = (g_tm.thing->info->mass);
 
 		// see if it went over / under
 		if (g_tm.thing->z > thing->z + thing->height)
