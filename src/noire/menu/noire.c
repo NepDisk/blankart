@@ -11,6 +11,7 @@
 #include "../n_menu.h"
 #include "../n_cvar.h"
 #include "../../d_main.h"
+#include "../../v_video.h"
 
 menuitem_t OPTIONS_Noire[] =
 {
@@ -26,17 +27,20 @@ menuitem_t OPTIONS_Noire[] =
 	{IT_STRING | IT_CVAR, "Colorized Hud Color", "Color used for hud",
 		NULL, {.cvar = &cv_colorizedhudcolor}, 0, 0},
 
-	{IT_HEADER, "Misc..", NULL,
+	{IT_HEADER, "Other Shit", NULL,
 		NULL, {NULL}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Special Music", "Enable / Disable special music",
-		NULL, {.cvar = &cv_specialmusic}, 0, 0},
+	{IT_STRING | IT_CVAR, "Hud Translucency", "The thing that was removed for no reason lol",
+		NULL, {.cvar = &cv_translucenthud}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Score Menu Hold", "Require holding to keep score menu open",
+	{IT_STRING | IT_CVAR, "Hold Scoreboard Button", "Butts",
 		NULL, {.cvar = &cv_holdscorebutt}, 0, 0},
 
+	{IT_STRING | IT_CVAR, "Power Music", "Toggle the Power Music",
+		NULL, {.cvar = &cv_specialmusic}, 0, 0},
 
-
+	{IT_STRING | IT_CVAR, "Highreshudscale", "When the hud is high how much crap scales.",
+		NULL, {.cvar = &cv_highreshudscale}, 0, 0},
 };
 
 void ColorHUD_OnChange(void)
