@@ -17,6 +17,7 @@
 #include "doomdef.h"
 #include "d_player.h"
 #include "g_game.h"
+#include "info.h"
 #include "r_main.h"
 #include "p_local.h"
 #include "k_bot.h"
@@ -459,6 +460,7 @@ static BlockItReturn_t K_FindObjectsForNudging(mobj_t *thing)
 		case MT_ORBINAUT:
 		case MT_ORBINAUT_SHIELD:
 		case MT_JAWZ:
+		case MT_JAWZ_DUD:
 		case MT_JAWZ_SHIELD:
 		case MT_SSMINE:
 		case MT_SSMINE_SHIELD:
@@ -474,11 +476,6 @@ static BlockItReturn_t K_FindObjectsForNudging(mobj_t *thing)
 			if (anglediff >= 45)
 			{
 				break;
-			}
-
-			if (P_CanPickupItem(g_nudgeSearch.botmo->player, 1))
-			{
-				K_AddAttackObject(thing, side, ((thing->extravalue1 < RINGBOX_TIME) ? 10 : 20));
 			}
 			break;
 		case MT_EGGMANITEM:

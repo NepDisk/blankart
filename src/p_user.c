@@ -15,6 +15,7 @@
 ///        Bobbing POV/weapon, movement.
 ///        Pending weapon.
 
+#include "d_player.h"
 #include "doomdef.h"
 #include "i_system.h"
 #include "d_event.h"
@@ -408,7 +409,7 @@ UINT8 P_FindHighestLap(void)
 //
 boolean P_PlayerInPain(const player_t *player)
 {
-	if (player->spinouttimer || (player->pflags & PF_FAULT) || player->icecube.frozen)
+	if (player->spinouttimer || (player->pflags & PF_SKIDDOWN) || player->icecube.frozen)
 		return true;
 
 	return false;
@@ -2111,9 +2112,9 @@ void P_MovePlayer(player_t *player)
 		player->glanceDir = 0;
 		player->pflags &= ~PF_GAINAX;
 	}
-	else if ((player->pflags & PF_FAULT) || (player->spinouttimer > 0))
+	else if (player->spinouttimer > 0)
 	{
-		UINT16 speed = ((player->pflags & PF_FAULT) ? player->nocontrol : player->spinouttimer)/8;
+		UINT16 speed = player->spinouttimer/8;
 		if (speed > 8)
 			speed = 8;
 		else if (speed < 1)
@@ -2127,6 +2128,16 @@ void P_MovePlayer(player_t *player)
 			player->drawangle -= (ANGLE_11hh * speed);
 
 		player->mo->rollangle = 0;
+	}
+	else if (player->nocontrol && player->pflags & PF_SKIDDOWN)
+	{
+		if (player->mo->state != &states[S_KART_SPINOUT])
+			P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
+
+		if (((player->nocontrol + 5) % 20) < 10)
+			player->drawangle += ANGLE_11hh;
+		else
+			player->drawangle -= ANGLE_11hh;
 	}
 	else
 	{
@@ -4099,9 +4110,9 @@ void P_PlayerThink(player_t *player)
 	{
 		if (!(--player->nocontrol))
 		{
-			if (player->pflags & PF_FAULT)
+			if (player->pflags & PF_SKIDDOWN)
 			{
-				player->pflags &= ~PF_FAULT;
+				player->pflags &= ~PF_SKIDDOWN;
 				player->mo->renderflags &= ~RF_DONTDRAW;
 				player->mo->flags &= ~MF_NOCLIPTHING;
 			}
@@ -4161,6 +4172,33 @@ void P_PlayerThink(player_t *player)
 			else if (player->exiting) // wearing a fakeskin, but need to display signpost postrace etc
 			{
 				ClearFakePlayerSkin(player);
+			}
+		}
+	}
+
+	// "Blur" a bit when you have speed shoes and are going fast enough
+	if ((player->driftboost || player->sneakertimer || player->startboost || player->ringboost || player->gateBoost) && !player->invincibilitytimer // SRB2kart
+		&& (player->speed + abs(player->mo->momz)) > FixedMul(20*FRACUNIT,player->mo->scale))
+	{
+		UINT8 i;
+		mobj_t *gmobj = P_SpawnGhostMobj(player->mo);
+
+		gmobj->fuse = 2;
+		if (leveltime & 1)
+		{
+			gmobj->frame &= ~FF_TRANSMASK;
+			gmobj->frame |= tr_trans70<<FF_TRANSSHIFT;
+		}
+
+		// Hide the mobj from our sights if we're the displayplayer and chasecam is off.
+		// Why not just not spawn the mobj?  Well, I'd rather only flirt with
+		// consistency so much...
+		for (i = 0; i <= splitscreen; i++)
+		{
+			if (player == &players[displayplayers[i]] && !camera[i].chase)
+			{
+				gmobj->renderflags |= RF_DONTDRAW;
+				break;
 			}
 		}
 	}

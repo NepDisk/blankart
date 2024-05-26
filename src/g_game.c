@@ -2370,7 +2370,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		prevcheck = players[player].prevcheck;
 		prevcheck = players[player].nextcheck;
 
-		pflags |= (players[player].pflags & (PF_STASIS|PF_ELIMINATED|PF_NOCONTEST|PF_FAULT|PF_LOSTLIFE));
+		pflags |= (players[player].pflags & (PF_STASIS|PF_ELIMINATED|PF_NOCONTEST|PF_LOSTLIFE));
 
 		if (spectator == false)
 		{

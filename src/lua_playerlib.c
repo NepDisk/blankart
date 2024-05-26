@@ -260,10 +260,6 @@ static int player_get(lua_State *L)
 		lua_pushboolean(L, plr->stingfx);
 	else if (fastcmp(field,"bumperinflate"))
 		lua_pushboolean(L, plr->bumperinflate);
-	else if (fastcmp(field,"ringboxdelay"))
-		lua_pushinteger(L, plr->ringboxdelay);
-	else if (fastcmp(field,"ringboxaward"))
-		lua_pushinteger(L, plr->ringboxaward);
 	else if (fastcmp(field,"itemflags"))
 		lua_pushinteger(L, plr->itemflags);
 	else if (fastcmp(field,"drift"))
@@ -280,8 +276,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->gateSound);
 	else if (fastcmp(field,"aizdriftstraft"))
 		lua_pushinteger(L, plr->aizdriftstrat);
-	else if (fastcmp(field,"aizdriftextend"))
-		lua_pushinteger(L, plr->aizdriftextend);
 	else if (fastcmp(field,"aizdrifttilt"))
 		lua_pushinteger(L, plr->aizdrifttilt);
 	else if (fastcmp(field,"aizdriftturn"))
@@ -316,8 +310,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->tripwireLeniency);
 	else if (fastcmp(field,"tripwirerebounddelay"))
 		lua_pushinteger(L, plr->tripwireReboundDelay);
-	else if (fastcmp(field,"eggmantransferdelay"))
-		lua_pushinteger(L, plr->eggmanTransferDelay);
 	else if (fastcmp(field,"speedpunt"))
 		lua_pushinteger(L, plr->speedpunt);
 	else if (fastcmp(field,"finalfailsafe"))
@@ -382,10 +374,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->flamemeter);
 	else if (fastcmp(field,"flamelength"))
 		lua_pushinteger(L, plr->flamelength);
-	else if (fastcmp(field,"ballhogcharge"))
-		lua_pushinteger(L, plr->ballhogcharge);
-	else if (fastcmp(field,"ballhogtap"))
-		lua_pushinteger(L, plr->ballhogtap);
 	else if (fastcmp(field,"hyudorotimer"))
 		lua_pushinteger(L, plr->hyudorotimer);
 	else if (fastcmp(field,"stealingtimer"))
@@ -764,10 +752,6 @@ static int player_set(lua_State *L)
 		plr->stingfx = luaL_checkboolean(L, 3);
 	else if (fastcmp(field,"bumperinflate"))
 		plr->bumperinflate = luaL_checkboolean(L, 3);
-	else if (fastcmp(field,"ringboxdelay"))
-		plr->ringboxdelay = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"ringboxaward"))
-		plr->ringboxaward = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"itemflags"))
 		plr->itemflags = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"drift"))
@@ -818,8 +802,6 @@ static int player_set(lua_State *L)
 		plr->tripwireLeniency = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"tripwirerebounddelay"))
 		plr->tripwireReboundDelay = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"eggmantransferdelay"))
-		plr->eggmanTransferDelay = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"speedpunt"))
 		plr->speedpunt = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"finalfailsafe"))
@@ -884,10 +866,6 @@ static int player_set(lua_State *L)
 		plr->flamemeter = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"flamelength"))
 		plr->flamelength = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"ballhogcharge"))
-		plr->ballhogcharge = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"ballhogtap"))
-		plr->ballhogtap = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"hyudorotimer"))
 		plr->hyudorotimer = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"stealingtimer"))

@@ -157,7 +157,6 @@ boolean P_CanPickupItem(player_t *player, UINT8 weapon)
 
 			// Item slot already taken up
 			if (player->itemRoulette.active == true
-				|| player->ringboxdelay > 0
 				|| (weapon != 3 && player->itemamount)
 				|| (player->itemflags & IF_ITEMOUT))
 				return false;
@@ -247,7 +246,7 @@ boolean P_EmblemWasCollected(INT32 emblemID)
 	return gamedata->collected[emblemID];
 }
 
-static void P_ItemPop(mobj_t *actor)
+static void P_ItemPop(mobj_t *actor, mobj_t *toucher)
 {
 	/*
 	INT32 locvar1 = var1;
@@ -263,14 +262,10 @@ static void P_ItemPop(mobj_t *actor)
 	}
 	*/
 
-	Obj_SpawnItemDebrisEffects(actor, actor->target);
-
-	if (!specialstageinfo.valid
-	&& (gametyperules & GTR_SPHERES) != GTR_SPHERES && cv_ng_ringboxtransform.value)
-	{
-		// Doesn't apply to Special
-		P_SetMobjState(actor, S_RINGBOX1);
-	}
+	//Pop Item
+	//Obj_SpawnItemDebrisEffects(actor, actor->target);
+	if (actor->info->deathsound)
+		S_StartSound(actor, actor->info->deathsound);
 
 	actor->extravalue1 = 0;
 
@@ -290,10 +285,7 @@ static void P_ItemPop(mobj_t *actor)
 	}
 	else if (locvar1 == 0)
 	{
-		if (actor->extravalue1 >= TICRATE)
-			K_StartItemRoulette(actor->target->player, false);
-		else
-			K_StartItemRoulette(actor->target->player, true);
+		K_StartItemRoulette(actor->target->player);
 	}
 	*/
 
@@ -423,7 +415,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			special->flags &= ~MF_SPECIAL;
 			return;
 		case MT_RANDOMITEM: {
-			UINT8 cheesetype = (special->flags2 & MF2_BOSSDEAD) ? 2 : 1; // perma ring box
+			UINT8 cheesetype = 1; // perma ring box
 
 			if (!P_CanPickupItem(player, 1))
 				return;
@@ -437,11 +429,11 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 
 			statenum_t specialstate = special->state - states;
 
-			if (specialstate >= S_RANDOMITEM1 && specialstate <= S_RANDOMITEM12)
-				K_StartItemRoulette(player, false);
-			else
-				K_StartItemRoulette(player, true);
-			P_ItemPop(special);
+			K_StartItemRoulette(player);
+
+			if (special->info->deathsound)
+				S_StartSound(special, special->info->deathsound);
+			P_ItemPop(special,player->mo);
 			special->fuse = TICRATE;
 			return;
 		}
@@ -452,7 +444,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			special->momx = special->momy = special->momz = 0;
 			P_SetTarget(&special->target, toucher);
 			// P_KillMobj(special, toucher, toucher, DMG_NORMAL);
-			P_ItemPop(special);
+			P_ItemPop(special,player->mo);
 			P_GivePlayerSpheres(player, special->extravalue2);
 			return;
 		case MT_ITEMCAPSULE:
@@ -582,7 +574,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			if (special->fuse || !P_CanPickupItem(player, 1))
 				return;
 
-			K_StartItemRoulette(player, false);
+			K_StartItemRoulette(player);
 
 			// Karma fireworks
 			/*for (i = 0; i < 5; i++)
@@ -1149,6 +1141,7 @@ static void P_AddBrokenPrison(mobj_t *target, mobj_t *inflictor, mobj_t *source)
 		// The following can't be accessed in standard play...
 		// but the cost of tracking them here is trivial :D
 		case MT_JAWZ:
+		case MT_JAWZ_DUD:
 		case MT_JAWZ_SHIELD:
 			targetdamaging = UFOD_JAWZ;
 			break;
@@ -1660,7 +1653,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 	// SRB2kart
 	if (target->type != MT_PLAYER
 		 && !(target->type == MT_ORBINAUT || target->type == MT_ORBINAUT_SHIELD
-		 || target->type == MT_JAWZ || target->type == MT_JAWZ_SHIELD
+		 || target->type == MT_JAWZ || target->type == MT_JAWZ_DUD || target->type == MT_JAWZ_SHIELD
 		 || target->type == MT_BANANA || target->type == MT_BANANA_SHIELD
 		 || target->type == MT_EGGMANITEM || target->type == MT_EGGMANITEM_SHIELD
 		 || target->type == MT_BALLHOG || target->type == MT_SPB))
@@ -2171,32 +2164,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			}
 			break;
 
-		case MT_BANANA:
-		case MT_BANANA_SHIELD:
-		{
-			const UINT8 numParticles = 8;
-			const angle_t diff = ANGLE_MAX / numParticles;
-			UINT8 i;
-
-			for (i = 0; i < numParticles; i++)
-			{
-				mobj_t *spark = P_SpawnMobjFromMobj(target, 0, 0, 0, MT_BANANA_SPARK);
-				spark->angle = (diff * i) - (diff / 2);
-
-				if (inflictor != NULL && P_MobjWasRemoved(inflictor) == false)
-				{
-					spark->angle += K_MomentumAngle(inflictor);
-					spark->momx += inflictor->momx / 2;
-					spark->momy += inflictor->momy / 2;
-					spark->momz += inflictor->momz / 2;
-				}
-
-				P_SetObjectMomZ(spark, (12 + P_RandomRange(PR_DECORATION, -4, 4)) * FRACUNIT, true);
-				P_Thrust(spark, spark->angle, (12 + P_RandomRange(PR_DECORATION, -4, 4)) * spark->scale);
-			}
-			break;
-		}
-
 		case MT_MONITOR:
 			Obj_MonitorOnDeath(target, source);
 			break;
@@ -2219,7 +2186,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			break;
 	}
 
-	if ((target->type == MT_JAWZ || target->type == MT_JAWZ_SHIELD) && !(target->flags2 & MF2_AMBUSH))
+	if ((target->type == MT_JAWZ || target->type == MT_JAWZ_DUD || target->type == MT_JAWZ_SHIELD) && !(target->flags2 & MF2_AMBUSH))
 	{
 		target->z += P_MobjFlip(target)*20*target->scale;
 	}
@@ -2532,19 +2499,13 @@ static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source,
 				return true;
 			}
 
-			// Quick respawn; does not kill
-			return K_DoIngameRespawn(player), false;
+			//Was K_DoIngameRespawn
 
 		case DMG_SPECTATOR:
 			// disappearifies, but still gotta put items back in play
 			break;
 
 		default:
-			// Everything else REALLY kills
-			if (leveltime < starttime)
-			{
-				K_DoFault(player);
-			}
 			break;
 	}
 
@@ -2947,6 +2908,11 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 						return false;
 					}
 
+					if ((player->squishedtimer > 0) && type != DMG_EXPLODE)
+					{
+						return false;
+					}
+
 				}
 			}
 
@@ -2975,27 +2941,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 
 				if (source && source != player->mo && source->player)
 				{
-					// Extend the invincibility if the hit was a direct hit.
-					if (inflictor == source && source->player->invincibilitytimer)
-					{
-						tic_t kinvextend;
-
-						if (gametyperules & GTR_CLOSERPLAYERS)
-							kinvextend = 2*TICRATE;
-						else
-							kinvextend = 3*TICRATE;
-
-						// Reduce the value of subsequent invinc extensions
-						kinvextend = kinvextend / (1 + source->player->invincibilityextensions); // 50%, 33%, 25%[...]
-						kinvextend = max(kinvextend, TICRATE);
-
-						source->player->invincibilityextensions++;
-
-						source->player->invincibilitytimer += kinvextend;
-
-						if (P_IsDisplayPlayer(source->player))
-							S_StartSound(NULL, sfx_lose);
-					}
 
 					K_TryHurtSoundExchange(target, source);
 
@@ -3163,6 +3108,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 					targetdamaging = UFOD_BOOST;
 					break;
 				case MT_JAWZ:
+				case MT_JAWZ_DUD:
 				case MT_JAWZ_SHIELD:
 					targetdamaging = UFOD_JAWZ;
 					break;

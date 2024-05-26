@@ -271,7 +271,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	"BOM2", // Boss Explosion 1
 	"BOM3", // Boss Explosion 2
 	"BOM4", // Underwater Explosion
-	"LSSJ", // My ki is overflowing!!
 
 	// Crumbly rocks
 	"ROIA",
@@ -299,7 +298,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	//SRB2kart Sprites (sort later)
 	"RNDM", // Random Item Box
 	"SBOX", // Sphere Box (for Battle)
-	"RBOX", // Ring Box
 	"ITRI", // Item Box Debris
 	"ITPA", // Paper item backdrop
 	"SGNS", // Signpost sparkle
@@ -321,15 +319,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	"IMDB", // Item Monitor Small Shard (Debris)
 	"MTWK", // Item Monitor Glass Twinkle
 
-	"GRNG", // Guard ring
-	"GBDY", // Guard body
-
-	"TRC1", // Charge aura
-	"TRC2", // Charge fall
-	"TRC3", // Charge flicker/sparks
-	"TRC4", // Charge release
-	"TRC5", // Charge extra
-
 	"DHND", // Servant Hand
 
 	"HORN", // Horncode
@@ -339,8 +328,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	"BDRF", // Brake drift sparks
 	"BRAK", // Brake dust
 	"DRWS", // Drift dust sparks
-	"DREL", // Drift electricity
-	"DRES", // Drift electric sparks
 
 	// Kart Items
 	"RSHE", // Rocket sneaker
@@ -447,7 +434,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	"ITMI",
 	"ITMN",
 	"PWRB",
-	"RBOW", // power-up aura
 
 	"PBOM", // player bomb
 
@@ -533,14 +519,11 @@ char sprnames[NUMSPRITES + 1][5] =
 	"MXCL",
 	"RGSP",
 	"LENS",
-	"DRAF",
 	"GRES",
 
 	"OTBU",
 	"OTLS",
 	"OTCP",
-
-	"DBOS", // Drift boost flame
 
 	"WAYP",
 	"EGOO",
@@ -550,17 +533,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	"GCHA", // follower: generic chao
 	"CHEZ", // follower: cheese
 
-	"DBCL", // Drift boost clip
-	"DBNC", // Drift boost clip's sparks
-	"DBST", // Drift boost plume
-
-	"HMTR", // Down Lines
-	"HBUB", // HOLD! Bubble
-
-	"TRCK",
-
-	"FLBM",
-
 	"UFOB",
 	"UFOA",
 	"UFOS",
@@ -568,9 +540,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	"SSCB",
 
 	"UQMK",
-
-	"GBOM",
-	"GCHX",
 
 	"3DFR",
 
@@ -633,8 +602,6 @@ char sprnames[NUMSPRITES + 1][5] =
 
 	// Sky Sanctuary
 	"SSCL",
-
-	"MGSH", // Mega Barrier
 
 	// GPZ Seasaw
 	"GPPS",
@@ -2000,19 +1967,6 @@ state_t states[NUMSTATES] =
 	{SPR_RNDM, 20|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RANDOMITEM12},	// S_RANDOMITEM11
 	{SPR_RNDM, 22|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RANDOMITEM1},	// S_RANDOMITEM12
 
-	{SPR_RBOX,    FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX2},		// S_RINGBOX1
-	{SPR_RBOX,  2|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX3},		// S_RINGBOX2
-	{SPR_RBOX,  4|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX4},		// S_RINGBOX3
-	{SPR_RBOX,  6|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX5},		// S_RINGBOX4
-	{SPR_RBOX,  8|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX6},		// S_RINGBOX5
-	{SPR_RBOX, 10|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX7},		// S_RINGBOX6
-	{SPR_RBOX, 12|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX8},		// S_RINGBOX7
-	{SPR_RBOX, 14|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX9},		// S_RINGBOX8
-	{SPR_RBOX, 16|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX10},	// S_RINGBOX9
-	{SPR_RBOX, 18|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX11},	// S_RINGBOX10
-	{SPR_RBOX, 20|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX12},	// S_RINGBOX11
-	{SPR_RBOX, 22|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_RINGBOX1},		// S_RINGBOX12
-
 	{SPR_SBOX,    FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_SPHEREBOX2},	// S_SPHEREBOX1
 	{SPR_SBOX,  2|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_SPHEREBOX3},	// S_SPHEREBOX2
 	{SPR_SBOX,  4|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_SPHEREBOX4},	// S_SPHEREBOX3
@@ -2025,10 +1979,6 @@ state_t states[NUMSTATES] =
 	{SPR_SBOX, 18|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_SPHEREBOX11},	// S_SPHEREBOX10
 	{SPR_SBOX, 20|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_SPHEREBOX12},	// S_SPHEREBOX11
 	{SPR_SBOX, 22|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_SPHEREBOX1},	// S_SPHEREBOX12
-
-	{SPR_ITRI, FF_FULLBRIGHT|FF_ANIMATE|FF_RANDOMANIM, -1, {NULL}, 19, 1, S_NULL}, // S_ITEM_DEBRIS
-	{SPR_NULL, 0, 0, {A_Repeat}, 16, S_ITEM_DEBRIS_CLOUD_SPAWNER2, S_NULL}, // S_ITEM_DEBRIS_CLOUD_SPAWNER1
-	{SPR_NULL, 0, 7, {A_SpawnItemDebrisCloud}, 20, 0, S_ITEM_DEBRIS_CLOUD_SPAWNER1}, // S_ITEM_DEBRIS_CLOUD_SPAWNER2
 
 	{SPR_NULL, FF_FULLBRIGHT, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMICON
 	{SPR_ITPA, FF_FULLBRIGHT, -1, {NULL}, 1, 0, S_NULL}, // S_ITEMBACKDROP
@@ -2093,9 +2043,6 @@ state_t states[NUMSTATES] =
 
 	{SPR_BDRF, FF_FULLBRIGHT|FF_PAPERSPRITE|FF_ANIMATE, -1, {NULL}, 5, 2, S_BRAKEDRIFT}, // S_BRAKEDRIFT
 
-	{SPR_BRAK, 0, 1, {NULL}, 0, 0, S_BRAKEDUST2}, // S_BRAKEDUST1
-	{SPR_BRAK, FF_ANIMATE, 7, {NULL}, 6, 1, S_NULL}, // S_BRAKEDUST2
-
 	{SPR_DUST, 0,  3, {NULL}, 0, 0, S_DRIFTDUST2}, // S_DRIFTDUST1
 	{SPR_DUST, 1,  3, {NULL}, 0, 0, S_DRIFTDUST3}, // S_DRIFTDUST2
 	{SPR_DUST, FF_TRANS20|2,  3, {NULL}, 0, 0, S_DRIFTDUST4}, // S_DRIFTDUST3
@@ -2105,9 +2052,6 @@ state_t states[NUMSTATES] =
 	{SPR_DRWS, FF_FULLBRIGHT|1,  3, {NULL}, 0, 0, S_DRIFTWARNSPARK3}, // S_DRIFTWARNSPARK2
 	{SPR_DRWS, FF_FULLBRIGHT|FF_TRANS20|2,  3, {NULL}, 0, 0, S_DRIFTWARNSPARK4}, // S_DRIFTWARNSPARK3
 	{SPR_DRWS, FF_FULLBRIGHT|FF_TRANS20|3,  3, {NULL}, 0, 0, S_NULL}, // S_DRIFTWARNSPARK4
-
-	{SPR_DREL, FF_FULLBRIGHT|FF_PAPERSPRITE|FF_ANIMATE|FF_GLOBALANIM, 2, {NULL}, 5, 2, S_NULL}, // S_DRIFTELECTRICITY
-	{SPR_DRES, FF_FULLBRIGHT|FF_PAPERSPRITE|FF_ANIMATE, 20, {NULL}, 1, 10, S_NULL}, // S_DRIFTELECTRICSPARK
 
 	{SPR_FAST, FF_PAPERSPRITE|FF_FULLBRIGHT,   1, {NULL}, 0, 0, S_FASTLINE2}, // S_FASTLINE1
 	{SPR_FAST, FF_PAPERSPRITE|FF_FULLBRIGHT|1, 1, {NULL}, 0, 0, S_FASTLINE3}, // S_FASTLINE2
@@ -2122,43 +2066,6 @@ state_t states[NUMSTATES] =
 	{SPR_DSHR, FF_PAPERSPRITE|4, 1, {NULL}, 0, 0, S_FASTDUST6}, // S_FASTDUST5
 	{SPR_DSHR, FF_PAPERSPRITE|5, 1, {NULL}, 0, 0, S_FASTDUST7}, // S_FASTDUST6
 	{SPR_DSHR, FF_PAPERSPRITE|6, 1, {NULL}, 0, 0, S_NULL}, // S_FASTDUST7
-
-	{SPR_DBOS,                FF_FULLBRIGHT,   1, {NULL}, 6, 1, S_DRIFTEXPLODE2}, // S_DRIFTEXPLODE1
-	{SPR_DBST, FF_PAPERSPRITE|FF_FULLBRIGHT,   1, {NULL}, 6, 1, S_DRIFTEXPLODE3}, // S_DRIFTEXPLODE2
-	{SPR_DBOS,                FF_FULLBRIGHT|1, 1, {NULL}, 6, 1, S_DRIFTEXPLODE4}, // S_DRIFTEXPLODE3
-	{SPR_DBST, FF_PAPERSPRITE|FF_FULLBRIGHT|1, 1, {NULL}, 6, 1, S_DRIFTEXPLODE5}, // S_DRIFTEXPLODE4
-	{SPR_DBOS,                FF_FULLBRIGHT|2, 1, {NULL}, 6, 1, S_DRIFTEXPLODE6}, // S_DRIFTEXPLODE5
-	{SPR_DBST, FF_PAPERSPRITE|FF_FULLBRIGHT|2, 1, {NULL}, 6, 1, S_DRIFTEXPLODE7}, // S_DRIFTEXPLODE6
-	{SPR_DBOS,                FF_FULLBRIGHT|3, 1, {NULL}, 6, 1, S_DRIFTEXPLODE8}, // S_DRIFTEXPLODE7
-	{SPR_DBST, FF_PAPERSPRITE|FF_FULLBRIGHT|3, 1, {NULL}, 6, 1, S_DRIFTEXPLODE1}, // S_DRIFTEXPLODE8
-
-	{SPR_DBCL, FF_FULLBRIGHT|0x0, 1, {NULL}, 6, 1, S_DRIFTCLIPA2},  // S_DRIFTCLIPA1
-	{SPR_DBCL, FF_FULLBRIGHT|0x8, 1, {NULL}, 6, 1, S_DRIFTCLIPA3},  // S_DRIFTCLIPA2
-	{SPR_DBCL, FF_FULLBRIGHT|0x1, 1, {NULL}, 6, 1, S_DRIFTCLIPA4},  // S_DRIFTCLIPA3
-	{SPR_DBCL, FF_FULLBRIGHT|0x9, 1, {NULL}, 6, 1, S_DRIFTCLIPA5},  // S_DRIFTCLIPA4
-	{SPR_DBCL, FF_FULLBRIGHT|0x2, 1, {NULL}, 6, 1, S_DRIFTCLIPA6},  // S_DRIFTCLIPA5
-	{SPR_DBCL, FF_FULLBRIGHT|0xA, 1, {NULL}, 6, 1, S_DRIFTCLIPA7},  // S_DRIFTCLIPA6
-	{SPR_DBCL, FF_FULLBRIGHT|0x3, 1, {NULL}, 6, 1, S_DRIFTCLIPA8},  // S_DRIFTCLIPA7
-	{SPR_DBCL, FF_FULLBRIGHT|0xB, 1, {NULL}, 6, 1, S_DRIFTCLIPA9},  // S_DRIFTCLIPA8
-	{SPR_DBCL, FF_FULLBRIGHT|0x4, 1, {NULL}, 6, 1, S_DRIFTCLIPA10}, // S_DRIFTCLIPA9
-	{SPR_DBCL, FF_FULLBRIGHT|0xC, 1, {NULL}, 6, 1, S_DRIFTCLIPA11}, // S_DRIFTCLIPA10
-	{SPR_DBCL, FF_FULLBRIGHT|0x5, 1, {NULL}, 6, 1, S_DRIFTCLIPA12}, // S_DRIFTCLIPA11
-	{SPR_DBCL, FF_FULLBRIGHT|0xD, 1, {NULL}, 6, 1, S_DRIFTCLIPA13}, // S_DRIFTCLIPA12
-	{SPR_DBCL, FF_FULLBRIGHT|0x6, 1, {NULL}, 6, 1, S_DRIFTCLIPA14}, // S_DRIFTCLIPA13
-	{SPR_DBCL, FF_FULLBRIGHT|0xE, 1, {NULL}, 6, 1, S_DRIFTCLIPA15}, // S_DRIFTCLIPA14
-	{SPR_DBCL, FF_FULLBRIGHT|0x7, 1, {NULL}, 6, 1, S_DRIFTCLIPA16}, // S_DRIFTCLIPA15
-	{SPR_DBCL, FF_FULLBRIGHT|0xF, 1, {NULL}, 6, 1, S_DRIFTCLIPB1},  // S_DRIFTCLIPA16
-
-	{SPR_DBCL, FF_FULLBRIGHT,   2, {NULL}, 6, 1, S_DRIFTCLIPB2}, // S_DRIFTCLIPB1
-	{SPR_DBCL, FF_FULLBRIGHT|1, 2, {NULL}, 6, 1, S_DRIFTCLIPB3}, // S_DRIFTCLIPB2
-	{SPR_DBCL, FF_FULLBRIGHT|2, 2, {NULL}, 6, 1, S_DRIFTCLIPB4}, // S_DRIFTCLIPB3
-	{SPR_DBCL, FF_FULLBRIGHT|3, 2, {NULL}, 6, 1, S_DRIFTCLIPB5}, // S_DRIFTCLIPB4
-	{SPR_DBCL, FF_FULLBRIGHT|4, 2, {NULL}, 6, 1, S_DRIFTCLIPB6}, // S_DRIFTCLIPB5
-	{SPR_DBCL, FF_FULLBRIGHT|5, 2, {NULL}, 6, 1, S_DRIFTCLIPB7}, // S_DRIFTCLIPB6
-	{SPR_DBCL, FF_FULLBRIGHT|6, 2, {NULL}, 6, 1, S_DRIFTCLIPB8}, // S_DRIFTCLIPB7
-	{SPR_DBCL, FF_FULLBRIGHT|7, 2, {NULL}, 6, 1, S_DRIFTCLIPB1}, // S_DRIFTCLIPB8
-
-	{SPR_DBNC, FF_FULLBRIGHT|FF_ANIMATE, 14, {NULL}, 6, 1, S_NULL}, // S_DRIFTCLIPSPARK
 
 	{SPR_BOST, FF_FULLBRIGHT|FF_ADD|FF_ANIMATE, TICRATE, {NULL}, 7, 1, S_BOOSTSMOKESPAWNER}, // S_BOOSTFLAME
 	{SPR_NULL, 0,                      TICRATE/2, {NULL}, 0, 0, S_NULL}, // S_BOOSTSMOKESPAWNER
@@ -2282,14 +2189,23 @@ state_t states[NUMSTATES] =
 	{SPR_ORBN, 11, 3, {NULL}, 0, 0, S_ORBINAUT_SHIELD1},	// S_ORBINAUT_SHIELD6
 	{SPR_ORBN,  6, 175, {NULL}, 0, 0, S_NULL},			// S_ORBINAUT_SHIELDDEAD
 
-	{SPR_JAWZ, 0, 1, {NULL}, 0, 0, S_JAWZ2},	// S_JAWZ1
-	{SPR_JAWZ, 4, 1, {NULL}, 0, 0, S_JAWZ3},	// S_JAWZ2
-	{SPR_JAWZ, 1, 1, {NULL}, 0, 0, S_JAWZ4},	// S_JAWZ3
-	{SPR_JAWZ, 4, 1, {NULL}, 0, 0, S_JAWZ5},	// S_JAWZ4
-	{SPR_JAWZ, 2, 1, {NULL}, 0, 0, S_JAWZ6},	// S_JAWZ5
-	{SPR_JAWZ, 4, 1, {NULL}, 0, 0, S_JAWZ7},	// S_JAWZ6
-	{SPR_JAWZ, 3, 1, {NULL}, 0, 0, S_JAWZ8},	// S_JAWZ7
-	{SPR_JAWZ, 4, 1, {NULL}, 0, 0, S_JAWZ1},	// S_JAWZ8
+	{SPR_JAWZ, 0, 1, {A_JawzChase}, 0, 0, S_JAWZ2},	// S_JAWZ1
+	{SPR_JAWZ, 4, 1, {A_JawzChase}, 0, 0, S_JAWZ3},	// S_JAWZ2
+	{SPR_JAWZ, 1, 1, {A_JawzChase}, 0, 0, S_JAWZ4},	// S_JAWZ3
+	{SPR_JAWZ, 4, 1, {A_JawzChase}, 0, 0, S_JAWZ5},	// S_JAWZ4
+	{SPR_JAWZ, 2, 1, {A_JawzChase}, 0, 0, S_JAWZ6},	// S_JAWZ5
+	{SPR_JAWZ, 4, 1, {A_JawzChase}, 0, 0, S_JAWZ7},	// S_JAWZ6
+	{SPR_JAWZ, 3, 1, {A_JawzChase}, 0, 0, S_JAWZ8},	// S_JAWZ7
+	{SPR_JAWZ, 4, 1, {A_JawzChase}, 0, 0, S_JAWZ1},	// S_JAWZ8
+
+	{SPR_JAWZ, 0, 1, {NULL}, 0, 0, S_JAWZ_DUD2},	// S_JAWZ_DUD1
+	{SPR_JAWZ, 4, 1, {NULL}, 0, 0, S_JAWZ_DUD3},	// S_JAWZ_DUD2
+	{SPR_JAWZ, 1, 1, {NULL}, 0, 0, S_JAWZ_DUD4},	// S_JAWZ_DUD3
+	{SPR_JAWZ, 4, 1, {NULL}, 0, 0, S_JAWZ_DUD5},	// S_JAWZ_DUD4
+	{SPR_JAWZ, 2, 1, {NULL}, 0, 0, S_JAWZ_DUD6},	// S_JAWZ_DUD5
+	{SPR_JAWZ, 4, 1, {NULL}, 0, 0, S_JAWZ_DUD7},	// S_JAWZ_DUD6
+	{SPR_JAWZ, 3, 1, {NULL}, 0, 0, S_JAWZ_DUD8},	// S_JAWZ_DUD7
+	{SPR_JAWZ, 4, 1, {NULL}, 0, 0, S_JAWZ_DUD1},	// S_JAWZ_DUD8
 
 	{SPR_JAWZ, 0, 1, {NULL}, 0, 0, S_JAWZ_SHIELD2},	// S_JAWZ_SHIELD1
 	{SPR_JAWZ, 4, 1, {NULL}, 0, 0, S_JAWZ_SHIELD3},	// S_JAWZ_SHIELD2
@@ -3069,25 +2985,6 @@ state_t states[NUMSTATES] =
 	{SPR_WTRL, FF_TRANS50|FF_PAPERSPRITE|14, 2, {NULL}, 0, 0, S_NULL}, // S_WATERTRAILUNDERLAY7
 	{SPR_WTRL, FF_TRANS50|FF_PAPERSPRITE|15, 2, {NULL}, 0, 0, S_NULL}, // S_WATERTRAILUNDERLAY8
 
-	// Downwards Lines
-	{SPR_HMTR, 0|FF_ADD|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DOWNLINE2}, 	// S_DOWNLINE1
-	{SPR_HMTR, 1|FF_ADD|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DOWNLINE3}, 	// S_DOWNLINE2
-	{SPR_HMTR, 2|FF_ADD|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DOWNLINE4}, 	// S_DOWNLINE3
-	{SPR_HMTR, 3|FF_ADD|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DOWNLINE5}, 	// S_DOWNLINE4
-	{SPR_HMTR, 4|FF_ADD|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_NULL}, 		// S_DOWNLINE5
-
-	// HOLD Bubble
-	{SPR_HBUB, 0|FF_FULLBRIGHT, -1, {NULL}, 0, 0, S_HOLDBUBBLE}, 	// S_HOLDBUBBLE
-
-	// Finish line beam
-	{SPR_FLBM, FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_NULL}, // S_FINISHBEAM1
-	{SPR_FLBM, FF_FULLBRIGHT|1, 1, {NULL}, 0, 0, S_NULL}, // S_FINISHBEAM2
-	{SPR_FLBM, FF_FULLBRIGHT|2, 1, {NULL}, 0, 0, S_NULL}, // S_FINISHBEAM3
-	{SPR_FLBM, FF_FULLBRIGHT|3, 1, {NULL}, 0, 0, S_NULL}, // S_FINISHBEAM4
-	{SPR_FLBM, FF_FULLBRIGHT|4, 1, {NULL}, 0, 0, S_NULL}, // S_FINISHBEAM5
-	{SPR_FLBM, FF_PAPERSPRITE|5, 1, {NULL}, 0, 0, S_NULL}, // S_FINISHBEAMEND1
-	{SPR_FLBM, FF_PAPERSPRITE|6, 1, {NULL}, 0, 0, S_NULL}, // S_FINISHBEAMEND2
-
 	// Funny Spike
 	{SPR_DEBT, 0|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE2}, // S_DEBTSPIKE1
 	{SPR_DEBT, 7|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE3}, // S_DEBTSPIKE2
@@ -3218,10 +3115,6 @@ state_t states[NUMSTATES] =
 
 	// Sky Sanctuary
 	{SPR_SSCL, FF_ANIMATE, -1, {NULL}, 3, 6, S_SSZCLOUD}, // S_SSZCLOUD
-
-	{SPR_MGSH, 2|FF_PAPERSPRITE|FF_FULLBRIGHT, -1, {NULL}, 0, 0, S_NULL}, // S_MEGABARRIER1,
-	{SPR_MGSH, 1|FF_PAPERSPRITE|FF_FULLBRIGHT, -1, {NULL}, 0, 0, S_NULL}, // S_MEGABARRIER2,
-	{SPR_MGSH, 0|FF_PAPERSPRITE|FF_FULLBRIGHT, -1, {NULL}, 0, 0, S_NULL}, // S_MEGABARRIER3,
 
 	{SPR_GPTB, 0, -1, {A_SetScale}, 4*FRACUNIT, 0, S_NULL}, // S_GPZ_TREETHING_B,
 	{SPR_GPTM, 0, -1, {A_SetScale}, 4*FRACUNIT, 0, S_NULL}, // S_GPZ_TREETHING_M,
@@ -12958,7 +12851,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	// SRB2kart MT's
 	{           // MT_RANDOMITEM
 		2000,             // doomednum
-		S_RINGBOX1,    // spawnstate
+		S_RANDOMITEM1,    // spawnstate
 		1000,             // spawnhealth
 		S_NULL,           // seestate
 		sfx_None,         // seesound
@@ -13334,87 +13227,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL					// raisestate
 	},
 
-	{           // MT_DRIFTEXPLODE
-		-1,						// doomednum
-		S_DRIFTEXPLODE1,		// spawnstate
-		1000,					// spawnhealth
-		S_NULL,					// seestate
-		sfx_None,				// seesound
-		8,						// reactiontime
-		sfx_None,				// attacksound
-		S_NULL,					// painstate
-		0,						// painchance
-		sfx_None,				// painsound
-		S_NULL,					// meleestate
-		S_NULL,					// missilestate
-		S_NULL,					// deathstate
-		S_NULL,					// xdeathstate
-		sfx_None,				// deathsound
-		8,						// speed
-		32*FRACUNIT,			// radius
-		64*FRACUNIT,			// height
-		1,						// display offset
-		100,					// mass
-		0,						// damage
-		sfx_None,				// activesound
-		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_DONTENCOREMAP, // flags
-		S_NULL					// raisestate
-	},
-
-	{           // MT_DRIFTCLIP
-		-1,						// doomednum
-		S_DRIFTCLIPA1,		// spawnstate
-		1000,					// spawnhealth
-		S_NULL,					// seestate
-		sfx_None,				// seesound
-		8,						// reactiontime
-		sfx_None,				// attacksound
-		S_NULL,					// painstate
-		0,						// painchance
-		sfx_None,				// painsound
-		S_NULL,					// meleestate
-		S_NULL,					// missilestate
-		S_NULL,					// deathstate
-		S_NULL,					// xdeathstate
-		sfx_None,				// deathsound
-		105,						// speed
-		32*FRACUNIT,			// radius
-		64*FRACUNIT,			// height
-		1,						// display offset
-		100,					// mass
-		0,						// damage
-		sfx_None,				// activesound
-		MF_NOBLOCKMAP|MF_DONTENCOREMAP|MF_GRENADEBOUNCE, // flags
-		S_NULL					// raisestate
-	},
-
-	{           // MT_DRIFTCLIPSPARK
-		-1,						// doomednum
-		S_DRIFTCLIPSPARK,		// spawnstate
-		1000,					// spawnhealth
-		S_NULL,					// seestate
-		sfx_None,				// seesound
-		8,						// reactiontime
-		sfx_None,				// attacksound
-		S_NULL,					// painstate
-		0,						// painchance
-		sfx_None,				// painsound
-		S_NULL,					// meleestate
-		S_NULL,					// missilestate
-		S_NULL,					// deathstate
-		S_NULL,					// xdeathstate
-		sfx_None,				// deathsound
-		8,						// speed
-		32*FRACUNIT,			// radius
-		64*FRACUNIT,			// height
-		1,						// display offset
-		100,					// mass
-		0,						// damage
-		sfx_None,				// activesound
-		MF_NOBLOCKMAP|MF_DONTENCOREMAP, // flags
-		S_NULL					// raisestate
-	},
-
 	{           // MT_BOOSTFLAME
 		-1,						// doomednum
 		S_BOOSTFLAME,	        // spawnstate
@@ -13658,33 +13470,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL					// raisestate
 	},
 
-	{           // MT_BRAKEDUST
-		-1,						// doomednum
-		S_BRAKEDUST1,			// spawnstate
-		1000,					// spawnhealth
-		S_NULL,					// seestate
-		sfx_None,				// seesound
-		8,						// reactiontime
-		sfx_None,				// attacksound
-		S_NULL,					// painstate
-		0,						// painchance
-		sfx_None,				// painsound
-		S_NULL,					// meleestate
-		S_NULL,					// missilestate
-		S_NULL,					// deathstate
-		S_NULL,					// xdeathstate
-		sfx_None,				// deathsound
-		8,						// speed
-		8*FRACUNIT,				// radius
-		8*FRACUNIT,				// height
-		1,						// display offset
-		100,					// mass
-		0,						// damage
-		sfx_None,				// activesound
-		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_DONTENCOREMAP, // flags
-		S_NULL					// raisestate
-	},
-
 	{           // MT_DRIFTDUST
 		-1,             // doomednum
 		S_DRIFTDUST1,   // spawnstate
@@ -13709,114 +13494,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,              // damage
 		sfx_None,       // activesound
 		MF_NOBLOCKMAP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_FLOAT|MF_SCENERY|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_ITEM_DEBRIS
-		-1,             // doomednum
-		S_ITEM_DEBRIS,  // spawnstate
-		1,              // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		32*FRACUNIT,    // radius
-		32*FRACUNIT,    // height
-		0,              // display offset
-		0,              // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_ITEM_DEBRIS_CLOUD_SPAWNER
-		-1,             // doomednum
-		S_ITEM_DEBRIS_CLOUD_SPAWNER1, // spawnstate
-		1,              // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		32*FRACUNIT,    // radius
-		32*FRACUNIT,    // height
-		0,              // display offset
-		0,              // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_NOSECTOR|MF_NOBLOCKMAP|MF_RUNSPAWNFUNC, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_DRIFTELECTRICITY
-		-1,             // doomednum
-		S_DRIFTELECTRICITY, // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		16*FRACUNIT,    // radius
-		32*FRACUNIT,    // height
-		0,              // display offset
-		0,              // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_NOBLOCKMAP|MF_NOCLIPHEIGHT|MF_NOCLIP|MF_NOCLIPTHING|MF_NOGRAVITY|MF_SCENERY|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_DRIFTELECTRICSPARK
-		-1,             // doomednum
-		S_DRIFTELECTRICSPARK, // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		4*FRACUNIT,     // speed
-		9*FRACUNIT,     // radius
-		37*FRACUNIT,    // height
-		0,              // display offset
-		0,              // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_NOBLOCKMAP|MF_NOCLIPHEIGHT|MF_NOCLIP|MF_NOCLIPTHING|MF_NOGRAVITY|MF_SCENERY|MF_DONTENCOREMAP, // flags
 		S_NULL          // raisestate
 	},
 
@@ -13864,8 +13541,8 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,         // xdeathstate
 		sfx_kc2e,       // deathsound
 		0,              // speed
-		16*FRACUNIT,    // radius
-		64*FRACUNIT,    // height
+		24*FRACUNIT,    // radius
+		32*FRACUNIT,    // height
 		0,              // display offset
 		100,            // mass
 		1,              // damage
@@ -13919,7 +13596,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,       // deathsound
 		0,              // speed
 		16*FRACUNIT,    // radius
-		64*FRACUNIT,    // height
+		32*FRACUNIT,    // height
 		0,              // display offset
 		100,            // mass
 		1,              // damage
@@ -13955,33 +13632,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL          // raisestate
 	},
 
-	{           // MT_BANANA_SPARK
-		-1,             // doomednum
-		S_BANANA_SPARK, // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_BANANA_SPARK2,// deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		4*FRACUNIT,     // radius
-		8*FRACUNIT,     // height
-		0,              // display offset
-		100,            // mass
-		1,              // damage
-		sfx_None,       // activesound
-		MF_DONTENCOREMAP|MF_NOCLIPTHING, // flags
-		S_NULL          // raisestate
-	},
-
 	{           // MT_ORBINAUT
 		-1,             // doomednum
 		S_ORBINAUT1,    // spawnstate
@@ -13998,9 +13648,9 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_ORBINAUT_DEAD,// deathstate
 		S_NULL,         // xdeathstate
 		sfx_s3k5d,      // deathsound
-		28*FRACUNIT,    // speed
+		64*FRACUNIT,    // speed
 		24*FRACUNIT,    // radius
-		64*FRACUNIT,    // height
+		32*FRACUNIT,    // height
 		0,              // display offset
 		100,            // mass
 		1,              // damage
@@ -14052,14 +13702,41 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_JAWZ_DEAD1,   // deathstate
 		S_JAWZ_DEAD2,   // xdeathstate
 		sfx_s3k5d,      // deathsound
-		28*FRACUNIT,    // speed
+		64*FRACUNIT,    // speed
 		16*FRACUNIT,    // radius
-		64*FRACUNIT,    // height
+		32*FRACUNIT,    // height
 		0,              // display offset
 		100,            // mass
 		1,              // damage
 		sfx_s3kc0s,     // activesound
 		MF_SHOOTABLE|MF_DONTENCOREMAP|MF_APPLYTERRAIN|MF_SLOPE|MF_DONTPUNT,   // flags
+		S_NULL          // raisestate
+	},
+
+	{           // MT_JAWZ_DUD
+		-1,             // doomednum
+		S_JAWZ_DUD1,    // spawnstate
+		1,              // spawnhealth
+		S_NULL,         // seestate
+		sfx_tossed,     // seesound
+		8,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		0,              // painchance
+		sfx_None,       // painsound
+		S_NULL,         // meleestate
+		S_NULL,         // missilestate
+		S_JAWZ_DEAD1,   // deathstate
+		S_JAWZ_DEAD2,   // xdeathstate
+		sfx_s3k5d,      // deathsound
+		64*FRACUNIT,    // speed
+		16*FRACUNIT,    // radius
+		32*FRACUNIT,    // height
+		0,              // display offset
+		100,            // mass
+		1,              // damage
+		sfx_s3kc0s,     // activesound
+		MF_SHOOTABLE|MF_DONTENCOREMAP,   // flags
 		S_NULL          // raisestate
 	},
 
@@ -14135,7 +13812,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,				// deathsound
 		0,						// speed
 		16*FRACUNIT,			// radius
-		56*FRACUNIT,			// height
+		24*FRACUNIT,			// height
 		0,						// display offset
 		100,					// mass
 		1,						// damage
@@ -14295,9 +13972,9 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_BALLHOG_DEAD, // deathstate
 		S_NULL,         // xdeathstate
 		sfx_hogbom,     // deathsound
-		40*FRACUNIT,    // speed
-		26*FRACUNIT,    // radius
-		64*FRACUNIT,    // height
+		64*FRACUNIT,    // speed
+		16*FRACUNIT,    // radius
+		32*FRACUNIT,    // height
 		0,              // display offset
 		100,            // mass
 		1,              // damage
@@ -14349,7 +14026,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_SPB_DEAD,     // deathstate
 		S_NULL,         // xdeathstate
 		sfx_s3k5d,      // deathsound
-		80*FRACUNIT,    // speed
+		64*FRACUNIT,    // speed
 		24*FRACUNIT,    // radius
 		48*FRACUNIT,    // height
 		0,              // display offset
@@ -14431,8 +14108,8 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,         // xdeathstate
 		sfx_None,       // deathsound
 		8,              // speed
-		28*FRACUNIT,    // radius
-		0*FRACUNIT,    // height
+		20*FRACUNIT,    // radius
+		56*FRACUNIT,    // height
 		1,              // display offset
 		16,             // mass
 		0,              // damage
@@ -17250,60 +16927,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		1,              // damage
 		sfx_None,       // activesound
 		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOGRAVITY|MF_SCENERY|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_DOWNLINE
-		-1,             // doomednum
-		S_DOWNLINE1, 	// spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		12*FRACUNIT,    // radius
-		24*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_SCENERY|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_HOLDBUBBLE
-		-1,             // doomednum
-		S_HOLDBUBBLE, 	// spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		12*FRACUNIT,    // radius
-		24*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_SCENERY|MF_DONTENCOREMAP, // flags
 		S_NULL          // raisestate
 	},
 
@@ -20779,87 +20402,87 @@ skincolor_t skincolors[MAXSKINCOLORS] = {
 	{"Taffy",          {  0, 252, 252, 200, 200, 201, 202, 203, 204, 204, 205, 206, 207,  43,  45,  47}, SKINCOLOR_JET,              8, V_PINKMAP,      true, UINT16_MAX}, // SKINCOLOR_TAFFY
 
 	// super (todo: replace these with the kart ones)
-	{"Super Silver 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x02, 0x03}, SKINCOLOR_BLACK, 15, 0,         false, UINT16_MAX}, // SKINCOLOR_SUPERSILVER1
-	{"Super Silver 2", {0x00, 0x01, 0x02, 0x02, 0x03, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07}, SKINCOLOR_BLACK, 6,  0,         false, UINT16_MAX}, // SKINCOLOR_SUPERSILVER2
-	{"Super Silver 3", {0x01, 0x02, 0x02, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07, 0x09, 0x0b}, SKINCOLOR_BLACK, 5,  0,         false, UINT16_MAX}, // SKINCOLOR_SUPERSILVER3
-	{"Super Silver 4", {0x02, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07, 0x09, 0x0b, 0x0d, 0x0f, 0x11}, SKINCOLOR_BLACK, 5,  V_GRAYMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERSILVER4
-	{"Super Silver 5", {0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07, 0x09, 0x0b, 0x0d, 0x0f, 0x11, 0x13}, SKINCOLOR_BLACK, 5,  V_GRAYMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERSILVER5
+	{"Super Silver 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x02, 0x03}, SKINCOLOR_BLACK, 15, 0,         true, UINT16_MAX}, // SKINCOLOR_SUPERSILVER1
+	{"Super Silver 2", {0x00, 0x01, 0x02, 0x02, 0x03, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07}, SKINCOLOR_BLACK, 6,  0,         true, UINT16_MAX}, // SKINCOLOR_SUPERSILVER2
+	{"Super Silver 3", {0x01, 0x02, 0x02, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07, 0x09, 0x0b}, SKINCOLOR_BLACK, 5,  0,         true, UINT16_MAX}, // SKINCOLOR_SUPERSILVER3
+	{"Super Silver 4", {0x02, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07, 0x09, 0x0b, 0x0d, 0x0f, 0x11}, SKINCOLOR_BLACK, 5,  V_GRAYMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERSILVER4
+	{"Super Silver 5", {0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07, 0x09, 0x0b, 0x0d, 0x0f, 0x11, 0x13}, SKINCOLOR_BLACK, 5,  V_GRAYMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERSILVER5
 
-	{"Super Red 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0xd0, 0xd1, 0xd1, 0xd2, 0xd2}, SKINCOLOR_CYAN, 15, 0,         false, UINT16_MAX}, // SKINCOLOR_SUPERRED1
-	{"Super Red 2", {0x00, 0x00, 0x00, 0xd0, 0xd0, 0xd0, 0xd1, 0xd1, 0xd1, 0xd2, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21}, SKINCOLOR_CYAN, 14, V_PINKMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERRED2
-	{"Super Red 3", {0x00, 0x00, 0xd0, 0xd0, 0xd1, 0xd1, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21, 0x22, 0x22, 0x23, 0x23}, SKINCOLOR_CYAN, 13, V_REDMAP,  false, UINT16_MAX}, // SKINCOLOR_SUPERRED3
-	{"Super Red 4", {0x00, 0xd0, 0xd1, 0xd1, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21, 0x22, 0x22, 0x23, 0x23, 0x24, 0x24}, SKINCOLOR_CYAN, 11, V_REDMAP,  false, UINT16_MAX}, // SKINCOLOR_SUPERRED4
-	{"Super Red 5", {0xd0, 0xd1, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21, 0x22, 0x22, 0x23, 0x23, 0x24, 0x24, 0x25, 0x25}, SKINCOLOR_CYAN, 10, V_REDMAP,  false, UINT16_MAX}, // SKINCOLOR_SUPERRED5
+	{"Super Red 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0xd0, 0xd1, 0xd1, 0xd2, 0xd2}, SKINCOLOR_CYAN, 15, 0,         true, UINT16_MAX}, // SKINCOLOR_SUPERRED1
+	{"Super Red 2", {0x00, 0x00, 0x00, 0xd0, 0xd0, 0xd0, 0xd1, 0xd1, 0xd1, 0xd2, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21}, SKINCOLOR_CYAN, 14, V_PINKMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERRED2
+	{"Super Red 3", {0x00, 0x00, 0xd0, 0xd0, 0xd1, 0xd1, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21, 0x22, 0x22, 0x23, 0x23}, SKINCOLOR_CYAN, 13, V_REDMAP,  true, UINT16_MAX}, // SKINCOLOR_SUPERRED3
+	{"Super Red 4", {0x00, 0xd0, 0xd1, 0xd1, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21, 0x22, 0x22, 0x23, 0x23, 0x24, 0x24}, SKINCOLOR_CYAN, 11, V_REDMAP,  true, UINT16_MAX}, // SKINCOLOR_SUPERRED4
+	{"Super Red 5", {0xd0, 0xd1, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21, 0x22, 0x22, 0x23, 0x23, 0x24, 0x24, 0x25, 0x25}, SKINCOLOR_CYAN, 10, V_REDMAP,  true, UINT16_MAX}, // SKINCOLOR_SUPERRED5
 
-	{"Super Orange 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0x30, 0x31, 0x32, 0x33, 0x34}, SKINCOLOR_SAPPHIRE, 15, 0,           false, UINT16_MAX}, // SKINCOLOR_SUPERORANGE1
-	{"Super Orange 2", {0x00, 0x00, 0x00, 0x00, 0xd0, 0xd0, 0x30, 0x30, 0x31, 0x31, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34}, SKINCOLOR_SAPPHIRE, 12, V_ORANGEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERORANGE2
-	{"Super Orange 3", {0x00, 0x00, 0xd0, 0xd0, 0x30, 0x30, 0x31, 0x31, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34, 0x35, 0x35}, SKINCOLOR_SAPPHIRE, 9,  V_ORANGEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERORANGE3
-	{"Super Orange 4", {0x00, 0xd0, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x44, 0x45, 0x46}, SKINCOLOR_SAPPHIRE, 4,  V_ORANGEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERORANGE4
-	{"Super Orange 5", {0xd0, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x44, 0x45, 0x46, 0x47}, SKINCOLOR_SAPPHIRE, 3,  V_ORANGEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERORANGE5
+	{"Super Orange 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0x30, 0x31, 0x32, 0x33, 0x34}, SKINCOLOR_SAPPHIRE, 15, 0,           true, UINT16_MAX}, // SKINCOLOR_SUPERORANGE1
+	{"Super Orange 2", {0x00, 0x00, 0x00, 0x00, 0xd0, 0xd0, 0x30, 0x30, 0x31, 0x31, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34}, SKINCOLOR_SAPPHIRE, 12, V_ORANGEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERORANGE2
+	{"Super Orange 3", {0x00, 0x00, 0xd0, 0xd0, 0x30, 0x30, 0x31, 0x31, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34, 0x35, 0x35}, SKINCOLOR_SAPPHIRE, 9,  V_ORANGEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERORANGE3
+	{"Super Orange 4", {0x00, 0xd0, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x44, 0x45, 0x46}, SKINCOLOR_SAPPHIRE, 4,  V_ORANGEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERORANGE4
+	{"Super Orange 5", {0xd0, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x44, 0x45, 0x46, 0x47}, SKINCOLOR_SAPPHIRE, 3,  V_ORANGEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERORANGE5
 
-	{"Super Gold 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x50, 0x50, 0x51, 0x52, 0x53, 0x48}, SKINCOLOR_PERIWINKLE, 15, 0,           false, UINT16_MAX}, // SKINCOLOR_SUPERGOLD1
-	{"Super Gold 2", {0x00, 0x50, 0x51, 0x52, 0x53, 0x53, 0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41}, SKINCOLOR_PERIWINKLE, 9,  V_YELLOWMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERGOLD2
-	{"Super Gold 3", {0x51, 0x52, 0x53, 0x53, 0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41, 0x42, 0x43}, SKINCOLOR_PERIWINKLE, 8,  V_YELLOWMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERGOLD3
-	{"Super Gold 4", {0x53, 0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46}, SKINCOLOR_PERIWINKLE, 8,  V_YELLOWMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERGOLD4
-	{"Super Gold 5", {0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47}, SKINCOLOR_PERIWINKLE, 8,  V_YELLOWMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERGOLD5
+	{"Super Gold 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x50, 0x50, 0x51, 0x52, 0x53, 0x48}, SKINCOLOR_PERIWINKLE, 15, 0,           true, UINT16_MAX}, // SKINCOLOR_SUPERGOLD1
+	{"Super Gold 2", {0x00, 0x50, 0x51, 0x52, 0x53, 0x53, 0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41}, SKINCOLOR_PERIWINKLE, 9,  V_YELLOWMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERGOLD2
+	{"Super Gold 3", {0x51, 0x52, 0x53, 0x53, 0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41, 0x42, 0x43}, SKINCOLOR_PERIWINKLE, 8,  V_YELLOWMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERGOLD3
+	{"Super Gold 4", {0x53, 0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46}, SKINCOLOR_PERIWINKLE, 8,  V_YELLOWMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERGOLD4
+	{"Super Gold 5", {0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47}, SKINCOLOR_PERIWINKLE, 8,  V_YELLOWMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERGOLD5
 
-	{"Super Peridot 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x58, 0x58, 0x58, 0xbc, 0xbc, 0xbc}, SKINCOLOR_BLUEBERRY, 15, 0,            false, UINT16_MAX}, // SKINCOLOR_SUPERPERIDOT1
-	{"Super Peridot 2", {0x00, 0x58, 0x58, 0x58, 0xbc, 0xbc, 0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe}, SKINCOLOR_BLUEBERRY, 4,  V_GREENMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERPERIDOT2
-	{"Super Peridot 3", {0x58, 0x58, 0xbc, 0xbc, 0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe, 0xbf, 0xbf}, SKINCOLOR_BLUEBERRY, 3,  V_GREENMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERPERIDOT3
-	{"Super Peridot 4", {0x58, 0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe, 0xbf, 0xbf, 0x5e, 0x5e, 0x5f}, SKINCOLOR_BLUEBERRY, 3,  V_GREENMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERPERIDOT4
-	{"Super Peridot 5", {0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe, 0xbf, 0xbf, 0x5e, 0x5e, 0x5f, 0x77}, SKINCOLOR_BLUEBERRY, 3,  V_GREENMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERPERIDOT5
+	{"Super Peridot 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x58, 0x58, 0x58, 0xbc, 0xbc, 0xbc}, SKINCOLOR_BLUEBERRY, 15, 0,            true, UINT16_MAX}, // SKINCOLOR_SUPERPERIDOT1
+	{"Super Peridot 2", {0x00, 0x58, 0x58, 0x58, 0xbc, 0xbc, 0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe}, SKINCOLOR_BLUEBERRY, 4,  V_GREENMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERPERIDOT2
+	{"Super Peridot 3", {0x58, 0x58, 0xbc, 0xbc, 0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe, 0xbf, 0xbf}, SKINCOLOR_BLUEBERRY, 3,  V_GREENMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERPERIDOT3
+	{"Super Peridot 4", {0x58, 0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe, 0xbf, 0xbf, 0x5e, 0x5e, 0x5f}, SKINCOLOR_BLUEBERRY, 3,  V_GREENMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERPERIDOT4
+	{"Super Peridot 5", {0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe, 0xbf, 0xbf, 0x5e, 0x5e, 0x5f, 0x77}, SKINCOLOR_BLUEBERRY, 3,  V_GREENMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERPERIDOT5
 
-	{"Super Sky 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x80, 0x81, 0x82, 0x83, 0x84}, SKINCOLOR_RUST, 15, 0,        false, UINT16_MAX}, // SKINCOLOR_SUPERSKY1
-	{"Super Sky 2", {0x00, 0x80, 0x81, 0x82, 0x83, 0x83, 0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86}, SKINCOLOR_RUST, 4,  V_SKYMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERSKY2
-	{"Super Sky 3", {0x81, 0x82, 0x83, 0x83, 0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86, 0x87, 0x87}, SKINCOLOR_RUST, 3,  V_SKYMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERSKY3
-	{"Super Sky 4", {0x83, 0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86, 0x87, 0x87, 0x88, 0x89, 0x8a}, SKINCOLOR_RUST, 3,  V_SKYMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERSKY4
-	{"Super Sky 5", {0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86, 0x87, 0x87, 0x88, 0x89, 0x8a, 0x8b}, SKINCOLOR_RUST, 3,  V_SKYMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERSKY5
+	{"Super Sky 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x80, 0x81, 0x82, 0x83, 0x84}, SKINCOLOR_RUST, 15, 0,        true, UINT16_MAX}, // SKINCOLOR_SUPERSKY1
+	{"Super Sky 2", {0x00, 0x80, 0x81, 0x82, 0x83, 0x83, 0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86}, SKINCOLOR_RUST, 4,  V_SKYMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERSKY2
+	{"Super Sky 3", {0x81, 0x82, 0x83, 0x83, 0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86, 0x87, 0x87}, SKINCOLOR_RUST, 3,  V_SKYMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERSKY3
+	{"Super Sky 4", {0x83, 0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86, 0x87, 0x87, 0x88, 0x89, 0x8a}, SKINCOLOR_RUST, 3,  V_SKYMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERSKY4
+	{"Super Sky 5", {0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86, 0x87, 0x87, 0x88, 0x89, 0x8a, 0x8b}, SKINCOLOR_RUST, 3,  V_SKYMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERSKY5
 
-	{"Super Purple 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0xa0, 0xa0, 0xa1, 0xa2}, SKINCOLOR_EMERALD, 15, 0,           false, UINT16_MAX}, // SKINCOLOR_SUPERPURPLE1
-	{"Super Purple 2", {0x00, 0x90, 0xa0, 0xa0, 0xa1, 0xa1, 0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5}, SKINCOLOR_EMERALD, 4,  V_PURPLEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERPURPLE2
-	{"Super Purple 3", {0xa0, 0xa0, 0xa1, 0xa1, 0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5, 0xa6, 0xa6}, SKINCOLOR_EMERALD, 0,  V_PURPLEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERPURPLE3
-	{"Super Purple 4", {0xa1, 0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5, 0xa6, 0xa6, 0xa7, 0xa8, 0xa9}, SKINCOLOR_EMERALD, 0,  V_PURPLEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERPURPLE4
-	{"Super Purple 5", {0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5, 0xa6, 0xa6, 0xa7, 0xa8, 0xa9, 0xfd}, SKINCOLOR_EMERALD, 0,  V_PURPLEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERPURPLE5
+	{"Super Purple 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0xa0, 0xa0, 0xa1, 0xa2}, SKINCOLOR_EMERALD, 15, 0,           true, UINT16_MAX}, // SKINCOLOR_SUPERPURPLE1
+	{"Super Purple 2", {0x00, 0x90, 0xa0, 0xa0, 0xa1, 0xa1, 0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5}, SKINCOLOR_EMERALD, 4,  V_PURPLEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERPURPLE2
+	{"Super Purple 3", {0xa0, 0xa0, 0xa1, 0xa1, 0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5, 0xa6, 0xa6}, SKINCOLOR_EMERALD, 0,  V_PURPLEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERPURPLE3
+	{"Super Purple 4", {0xa1, 0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5, 0xa6, 0xa6, 0xa7, 0xa8, 0xa9}, SKINCOLOR_EMERALD, 0,  V_PURPLEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERPURPLE4
+	{"Super Purple 5", {0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5, 0xa6, 0xa6, 0xa7, 0xa8, 0xa9, 0xfd}, SKINCOLOR_EMERALD, 0,  V_PURPLEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERPURPLE5
 
-	{"Super Rust 1", {0x00, 0xd0, 0xd0, 0xd0, 0x30, 0x30, 0x31, 0x32, 0x33, 0x37, 0x3a, 0x44, 0x45, 0x46, 0x47, 0x2e}, SKINCOLOR_CYAN, 14, V_ORANGEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERRUST1
-	{"Super Rust 2", {0x30, 0x31, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x38, 0x3a, 0x44, 0x45, 0x46, 0x47, 0x47, 0x2e}, SKINCOLOR_CYAN, 10, V_ORANGEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERRUST2
-	{"Super Rust 3", {0x31, 0x32, 0x33, 0x34, 0x36, 0x37, 0x38, 0x3a, 0x44, 0x45, 0x45, 0x46, 0x46, 0x47, 0x2e, 0x2e}, SKINCOLOR_CYAN, 9,  V_ORANGEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERRUST3
-	{"Super Rust 4", {0x48, 0x40, 0x41, 0x42, 0x43, 0x44, 0x44, 0x45, 0x45, 0x46, 0x46, 0x47, 0x47, 0x2e, 0x2e, 0x2e}, SKINCOLOR_CYAN, 8,  V_ORANGEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERRUST4
-	{"Super Rust 5", {0x41, 0x42, 0x43, 0x43, 0x44, 0x44, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xed, 0xee, 0xee, 0xef, 0xef}, SKINCOLOR_CYAN, 8,  V_ORANGEMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERRUST5
+	{"Super Rust 1", {0x00, 0xd0, 0xd0, 0xd0, 0x30, 0x30, 0x31, 0x32, 0x33, 0x37, 0x3a, 0x44, 0x45, 0x46, 0x47, 0x2e}, SKINCOLOR_CYAN, 14, V_ORANGEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERRUST1
+	{"Super Rust 2", {0x30, 0x31, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x38, 0x3a, 0x44, 0x45, 0x46, 0x47, 0x47, 0x2e}, SKINCOLOR_CYAN, 10, V_ORANGEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERRUST2
+	{"Super Rust 3", {0x31, 0x32, 0x33, 0x34, 0x36, 0x37, 0x38, 0x3a, 0x44, 0x45, 0x45, 0x46, 0x46, 0x47, 0x2e, 0x2e}, SKINCOLOR_CYAN, 9,  V_ORANGEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERRUST3
+	{"Super Rust 4", {0x48, 0x40, 0x41, 0x42, 0x43, 0x44, 0x44, 0x45, 0x45, 0x46, 0x46, 0x47, 0x47, 0x2e, 0x2e, 0x2e}, SKINCOLOR_CYAN, 8,  V_ORANGEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERRUST4
+	{"Super Rust 5", {0x41, 0x42, 0x43, 0x43, 0x44, 0x44, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xed, 0xee, 0xee, 0xef, 0xef}, SKINCOLOR_CYAN, 8,  V_ORANGEMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERRUST5
 
-	{"Super Tan 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x50, 0x50, 0x51, 0x51, 0x52, 0x52}, SKINCOLOR_BROWN, 14, 0,          false, UINT16_MAX}, // SKINCOLOR_SUPERTAN1
-	{"Super Tan 2", {0x00, 0x50, 0x50, 0x51, 0x51, 0x52, 0x52, 0x52, 0x54, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5}, SKINCOLOR_BROWN, 13, V_BROWNMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERTAN2
-	{"Super Tan 3", {0x50, 0x51, 0x51, 0x52, 0x52, 0x52, 0x54, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5, 0xf7, 0xf9}, SKINCOLOR_BROWN, 12, V_BROWNMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERTAN3
-	{"Super Tan 4", {0x51, 0x52, 0x52, 0x52, 0x52, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5, 0xf7, 0xf9, 0xfb, 0xed}, SKINCOLOR_BROWN, 11, V_BROWNMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERTAN4
-	{"Super Tan 5", {0x52, 0x52, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5, 0xf7, 0xf9, 0xfb, 0xed, 0xee, 0xef, 0xef}, SKINCOLOR_BROWN, 10, V_BROWNMAP, false, UINT16_MAX}, // SKINCOLOR_SUPERTAN5
+	{"Super Tan 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x50, 0x50, 0x51, 0x51, 0x52, 0x52}, SKINCOLOR_BROWN, 14, 0,          true, UINT16_MAX}, // SKINCOLOR_SUPERTAN1
+	{"Super Tan 2", {0x00, 0x50, 0x50, 0x51, 0x51, 0x52, 0x52, 0x52, 0x54, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5}, SKINCOLOR_BROWN, 13, V_BROWNMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERTAN2
+	{"Super Tan 3", {0x50, 0x51, 0x51, 0x52, 0x52, 0x52, 0x54, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5, 0xf7, 0xf9}, SKINCOLOR_BROWN, 12, V_BROWNMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERTAN3
+	{"Super Tan 4", {0x51, 0x52, 0x52, 0x52, 0x52, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5, 0xf7, 0xf9, 0xfb, 0xed}, SKINCOLOR_BROWN, 11, V_BROWNMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERTAN4
+	{"Super Tan 5", {0x52, 0x52, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5, 0xf7, 0xf9, 0xfb, 0xed, 0xee, 0xef, 0xef}, SKINCOLOR_BROWN, 10, V_BROWNMAP, true, UINT16_MAX}, // SKINCOLOR_SUPERTAN5
 
-	{"Chaos Emerald 1", {  0,  88, 188,  98, 114, 116, 117, 119,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD1
-	{"Chaos Emerald 2", {  0,  80,  82,  74,  65,  52,  56,  60,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD2
-	{"Chaos Emerald 3", {  0, 252, 201, 179, 182, 183, 185, 187,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD3
-	{"Chaos Emerald 4", {  0, 144, 146, 147, 149, 165, 167, 169,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD4
-	{"Chaos Emerald 5", {  0,   1, 144,   4,   9, 170,  14,  21,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD5
-	{"Chaos Emerald 6", {  0, 208,  50,  32,  34,  37,  40,  44,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD6
-	{"Chaos Emerald 7", {  0, 120, 121, 140, 133, 135, 149, 156,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD7
+	{"Chaos Emerald 1", {  0,  88, 188,  98, 114, 116, 117, 119,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD1
+	{"Chaos Emerald 2", {  0,  80,  82,  74,  65,  52,  56,  60,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD2
+	{"Chaos Emerald 3", {  0, 252, 201, 179, 182, 183, 185, 187,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD3
+	{"Chaos Emerald 4", {  0, 144, 146, 147, 149, 165, 167, 169,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD4
+	{"Chaos Emerald 5", {  0,   1, 144,   4,   9, 170,  14,  21,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD5
+	{"Chaos Emerald 6", {  0, 208,  50,  32,  34,  37,  40,  44,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD6
+	{"Chaos Emerald 7", {  0, 120, 121, 140, 133, 135, 149, 156,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_CHAOSEMERALD7
 
-	{"Invinc Flash", {  0,   0,   0,   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_INVINCFLASH
+	{"Invinc Flash", {  0,   0,   0,   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_INVINCFLASH
 
-	{"Position", {  8,   9,  11,  12,  14,  15,  17,  18,  20,  21,  23,  24,  26,  27,  29,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM
-	{"Position Win 1", {152, 152, 153, 153, 154, 154, 155, 155, 156, 156, 157, 158, 159, 253, 254,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_WIN1
-	{"Position Win 2", {134, 134, 135, 135, 135, 136, 136, 136, 137, 137, 138, 138, 139, 139, 254,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_WIN2
-	{"Position Win 3", {255, 255, 122, 122, 123, 123, 141, 141, 142, 142, 143, 143, 138, 139, 254,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_WIN3
-	{"Position Lose 1", { 35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  71,  46,  47,  29,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_LOSE1
-	{"Position Lose 2", { 52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  63,  44,  45,  46,  47,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_LOSE2
-	{"Position Lose 3", { 73,  74,  75,  76,  76,  77,  77,  78,  78,  79,  79, 236, 237, 238, 239,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_LOSE3
-	{"Position Best 1", { 35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  71,  46,  47,  29,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST1
-	{"Position Best 2", { 73,  74,  75,  76,  76,  77,  77,  78,  78,  79,  79, 236, 237, 238, 239,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST2
-	{"Position Best 3", {112, 112, 113, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 110, 111,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST3
-	{"Position Best 4", {255, 255, 122, 122, 123, 123, 141, 141, 142, 142, 143, 143, 138, 139, 254,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST4
-	{"Position Best 5", {152, 152, 153, 153, 154, 154, 155, 155, 156, 156, 157, 158, 159, 253, 254,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST5
-	{"Position Best 6", {181, 181, 182, 182, 183, 183, 184, 184, 185, 185, 186, 186, 187, 187,  29,  30}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST6
+	{"Position", {  8,   9,  11,  12,  14,  15,  17,  18,  20,  21,  23,  24,  26,  27,  29,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM
+	{"Position Win 1", {152, 152, 153, 153, 154, 154, 155, 155, 156, 156, 157, 158, 159, 253, 254,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_WIN1
+	{"Position Win 2", {134, 134, 135, 135, 135, 136, 136, 136, 137, 137, 138, 138, 139, 139, 254,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_WIN2
+	{"Position Win 3", {255, 255, 122, 122, 123, 123, 141, 141, 142, 142, 143, 143, 138, 139, 254,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_WIN3
+	{"Position Lose 1", { 35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  71,  46,  47,  29,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_LOSE1
+	{"Position Lose 2", { 52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  63,  44,  45,  46,  47,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_LOSE2
+	{"Position Lose 3", { 73,  74,  75,  76,  76,  77,  77,  78,  78,  79,  79, 236, 237, 238, 239,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_LOSE3
+	{"Position Best 1", { 35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  71,  46,  47,  29,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST1
+	{"Position Best 2", { 73,  74,  75,  76,  76,  77,  77,  78,  78,  79,  79, 236, 237, 238, 239,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST2
+	{"Position Best 3", {112, 112, 113, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 110, 111,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST3
+	{"Position Best 4", {255, 255, 122, 122, 123, 123, 141, 141, 142, 142, 143, 143, 138, 139, 254,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST4
+	{"Position Best 5", {152, 152, 153, 153, 154, 154, 155, 155, 156, 156, 157, 158, 159, 253, 254,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST5
+	{"Position Best 6", {181, 181, 182, 182, 183, 183, 184, 184, 185, 185, 186, 186, 187, 187,  29,  30}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_POSNUM_BEST6
 
-	{"Intermission 1", {  0,  80,  80,  80,  81,  81,  81,  84,  84,  85,  86,  86,  87,  87, 246, 248}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_INTERMISSION1
-	{"Intermission 2", {  0,  81,  81,  81,  88,  88,  88,  89,  89, 140, 140, 141, 141, 142, 142, 142}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_INTERMISSION2
-	{"Intermission 3", {  0, 144, 144, 144, 129, 129, 129, 130, 130, 146, 147, 147,  14,  16,  17,  19}, SKINCOLOR_NONE, 0, 0, false, UINT16_MAX}, // SKINCOLOR_INTERMISSION3
+	{"Intermission 1", {  0,  80,  80,  80,  81,  81,  81,  84,  84,  85,  86,  86,  87,  87, 246, 248}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_INTERMISSION1
+	{"Intermission 2", {  0,  81,  81,  81,  88,  88,  88,  89,  89, 140, 140, 141, 141, 142, 142, 142}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_INTERMISSION2
+	{"Intermission 3", {  0, 144, 144, 144, 129, 129, 129, 130, 130, 146, 147, 147,  14,  16,  17,  19}, SKINCOLOR_NONE, 0, 0, true, UINT16_MAX}, // SKINCOLOR_INTERMISSION3
 };
 
 /** Patches the mobjinfo, state, and skincolor tables.

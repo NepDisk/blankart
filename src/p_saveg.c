@@ -410,14 +410,12 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].gateSound);
 
 		WRITESINT8(save->p, players[i].aizdriftstrat);
-		WRITESINT8(save->p, players[i].aizdriftextend);
 		WRITEINT32(save->p, players[i].aizdrifttilt);
 		WRITEINT32(save->p, players[i].aizdriftturn);
 
-		WRITEINT32(save->p, players[i].underwatertilt);
-
 		WRITEFIXED(save->p, players[i].offroad);
 
+		WRITEUINT8(save->p, players[i].brakestop);
 		WRITEUINT8(save->p, players[i].pogospring);
 		WRITEFIXED(save->p, players[i].pogosidemove);
 
@@ -462,9 +460,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT16(save->p, players[i].counterdash);
 		WRITEUINT16(save->p, players[i].flamemeter);
 		WRITEUINT8(save->p, players[i].flamelength);
-
-		WRITEUINT16(save->p, players[i].ballhogcharge);
-		WRITEUINT8(save->p, players[i].ballhogtap);
 
 		WRITEUINT16(save->p, players[i].hyudorotimer);
 		WRITESINT8(save->p, players[i].stealingtimer);
@@ -512,8 +507,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].kickstartaccel);
 		WRITEUINT8(save->p, players[i].autoring);
 
-		WRITEUINT8(save->p, players[i].eggmanTransferDelay);
-
 		WRITEUINT8(save->p, players[i].tripwireReboundDelay);
 
 		WRITEUINT16(save->p, players[i].speedpunt);
@@ -545,9 +538,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT8(save->p, players[i].markedfordeath);;
 		WRITEUINT8(save->p, players[i].stingfx);
 		WRITEUINT8(save->p, players[i].bumperinflate);
-
-		WRITEUINT8(save->p, players[i].ringboxdelay);
-		WRITEUINT8(save->p, players[i].ringboxaward);
 
 		WRITEUINT8(save->p, players[i].itemflags);
 
@@ -664,7 +654,6 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEUINT32(save->p, players[i].itemRoulette.tics);
 		WRITEUINT32(save->p, players[i].itemRoulette.elapsed);
 		WRITEUINT8(save->p, players[i].itemRoulette.eggman);
-		WRITEUINT8(save->p, players[i].itemRoulette.ringbox);
 		WRITEUINT8(save->p, players[i].itemRoulette.autoroulette);
 		WRITEUINT8(save->p, players[i].itemRoulette.reserved);
 
@@ -950,14 +939,12 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].gateSound = READUINT8(save->p);
 
 		players[i].aizdriftstrat = READSINT8(save->p);
-		players[i].aizdriftextend = READSINT8(save->p);
 		players[i].aizdrifttilt = READINT32(save->p);
 		players[i].aizdriftturn = READINT32(save->p);
 
-		players[i].underwatertilt = READINT32(save->p);
-
 		players[i].offroad = READFIXED(save->p);
 
+		players[i].brakestop = READUINT8(save->p);
 		players[i].pogospring = READUINT8(save->p);
 		players[i].pogosidemove = READFIXED(save->p);
 
@@ -1002,9 +989,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].counterdash = READUINT16(save->p);
 		players[i].flamemeter = READUINT16(save->p);
 		players[i].flamelength = READUINT8(save->p);
-
-		players[i].ballhogcharge = READUINT16(save->p);
-		players[i].ballhogtap = READUINT8(save->p);
 
 		players[i].hyudorotimer = READUINT16(save->p);
 		players[i].stealingtimer = READSINT8(save->p);
@@ -1052,8 +1036,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].kickstartaccel = READUINT8(save->p);
 		players[i].autoring = READUINT8(save->p);
 
-		players[i].eggmanTransferDelay = READUINT8(save->p);
-
 		players[i].tripwireReboundDelay = READUINT8(save->p);
 
 		players[i].speedpunt = READUINT16(save->p);
@@ -1085,9 +1067,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].markedfordeath = READUINT8(save->p);
 		players[i].stingfx = READUINT8(save->p);
 		players[i].bumperinflate = READUINT8(save->p);
-
-		players[i].ringboxdelay = READUINT8(save->p);
-		players[i].ringboxaward = READUINT8(save->p);
 
 		players[i].itemflags = READUINT8(save->p);
 
@@ -1215,7 +1194,6 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 		players[i].itemRoulette.tics = (tic_t)READUINT32(save->p);
 		players[i].itemRoulette.elapsed = (tic_t)READUINT32(save->p);
 		players[i].itemRoulette.eggman = (boolean)READUINT8(save->p);
-		players[i].itemRoulette.ringbox = (boolean)READUINT8(save->p);
 		players[i].itemRoulette.autoroulette = (boolean)READUINT8(save->p);
 		players[i].itemRoulette.reserved = READUINT8(save->p);
 

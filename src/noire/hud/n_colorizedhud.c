@@ -62,12 +62,6 @@ patch_t *K_getItemBoxPatch(boolean small, boolean dark)
 	return (cv_colorizeditembox.value && K_UseColorHud()) ? kc_itembg[ofs] : kp_itembg[ofs];
 }
 
-patch_t *K_getSlotMachinePatch(boolean small)
-{
-	UINT8 ofs = small ? 1 : 0;
-	return (cv_colorizeditembox.value && K_UseColorHud()) ? kc_ringbg[ofs] : kp_ringbg[ofs];
-}
-
 patch_t *K_getItemMulPatch(boolean small)
 {
 	UINT8 ofs = small ? 1 : 0;

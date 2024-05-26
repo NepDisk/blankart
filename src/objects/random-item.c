@@ -80,80 +80,6 @@ static player_t *GetItemBoxPlayer(mobj_t *mobj)
 	return player;
 }
 
-static void ItemBoxColor(mobj_t *mobj)
-{
-	player_t *player = GetItemBoxPlayer(mobj);
-	skincolornum_t color = SKINCOLOR_BLACK;
-
-	if (player != NULL)
-	{
-		color = player->skincolor;
-	}
-
-	mobj->color = color;
-	mobj->colorized = false;
-}
-
-static void ItemBoxBob(mobj_t *mobj)
-{
-	const fixed_t sine = FINESINE((FLOAT_ANGLE * item_vfxtimer(mobj)) >> ANGLETOFINESHIFT);
-	const fixed_t bob = FixedMul(FLOAT_HEIGHT, sine);
-	mobj->spriteyoffset = FLOAT_HEIGHT + bob;
-}
-
-static void ItemBoxScaling(mobj_t *mobj)
-{
-	const fixed_t sine = FINESINE((SCALE_ANGLE * item_vfxtimer(mobj)) >> ANGLETOFINESHIFT);
-	const fixed_t newScale = SCALE_LO + FixedMul(SCALE_HI - SCALE_LO, (sine + FRACUNIT) >> 1);
-	mobj->spritexscale = mobj->spriteyscale = newScale;
-}
-
-void Obj_RandomItemVisuals(mobj_t *mobj)
-{
-	ItemBoxColor(mobj);
-	ItemBoxBob(mobj);
-	ItemBoxScaling(mobj);
-	item_vfxtimer(mobj)++;
-
-	if (mobj->type != MT_RANDOMITEM)
-		return;
-
-	// Respawn flow, documented by a dumb asshole:
-	// P_TouchSpecialThing -> P_ItemPop sets fuse, NOCLIPTHING and DONTDRAW.
-	// P_FuseThink does visual flicker, and when fuse is 0, unsets NOCLIPTHING/DONTDRAW/etc...
-	// ...unless it's a map-start box from Battle, in which case it does nothing and waits for
-	// P_RespawnBattleBoxes to trigger the effect instead, since Battle boxes don't respawn until
-	// the player's cleared out a good portion of the map.
-	//
-	// Then extraval1 starts ticking up and triggers the transformation from Ringbox to Random Item.
-	if (mobj->fuse == 0 && !(mobj->flags & MF_NOCLIPTHING) && !(mobj->flags2 & MF2_BOSSDEAD) && !K_ThunderDome()
-		&& (modeattacking == ATTACKING_NONE || !!(modeattacking & ATTACKING_SPB) || specialstageinfo.valid)) // Time Attacking in Special is a fucked-looking exception
-	{
-		mobj->extravalue1++;
-
-		// Dumb, but in Attack starts (or POSITION from hell) you can reach early boxes before they transform.
-		if (leveltime == 0)
-			mobj->extravalue1 = RINGBOX_TIME;
-
-		// Don't transform stuff that isn't a Ring Box, idiot
-		statenum_t boxstate = mobj->state - states;
-		if (boxstate < S_RINGBOX1 || boxstate > S_RINGBOX12)
-			return;
-
-		if (mobj->extravalue1 == RINGBOX_TIME || specialstageinfo.valid)
-		{
-			// Sync the position in RINGBOX and RANDOMITEM animations.
-			statenum_t animDelta = mobj->state - states - S_RINGBOX1;
-			P_SetMobjState(mobj, S_RANDOMITEM1 + (animDelta%12));
-		}
-
-	}
-
-
-
-
-}
-
 boolean Obj_RandomItemSpawnIn(mobj_t *mobj)
 {
 	// We don't want item spawnpoints to be visible during
@@ -161,15 +87,6 @@ boolean Obj_RandomItemSpawnIn(mobj_t *mobj)
 	// battleprisons isn't set in time to do this on spawn. GROAN
 	if ((mobj->flags2 & MF2_BOSSFLEE) && (gametyperules & (GTR_CIRCUIT|GTR_PAPERITEMS)) == GTR_PAPERITEMS && !battleprisons)
 		mobj->renderflags |= RF_DONTDRAW;
-
-
-	if (!cv_ng_mapringboxes.value)
-	{
-		statenum_t boxstate = mobj->state - states;
-		if (boxstate >= S_RINGBOX1 || boxstate <= S_RINGBOX12)
-			P_SetMobjState(mobj, S_RANDOMITEM1);
-	}
-
 
 	if ((leveltime == starttime) && !(gametyperules & GTR_CIRCUIT) && (mobj->flags2 & MF2_BOSSFLEE)) // here on map start?
 	{
@@ -206,25 +123,9 @@ boolean Obj_RandomItemSpawnIn(mobj_t *mobj)
 	return true;
 }
 
-fixed_t Obj_RandomItemScale(fixed_t oldScale)
-{
-	const fixed_t intendedScale = oldScale * 3;
-	const fixed_t maxScale = FixedDiv(MAPBLOCKSIZE, mobjinfo[MT_RANDOMITEM].radius); // don't make them larger than the blockmap can handle
-
-	return min(intendedScale, maxScale);
-}
-
 void Obj_RandomItemSpawn(mobj_t *mobj)
 {
 	item_vfxtimer(mobj) = P_RandomRange(PR_DECORATION, 0, SCALE_TIME - 1);
-
-	// Respawns are handled by P_RespawnBattleBoxes,
-	// but we do need to start MT_RANDOMITEMs in the right state...
-	if (mobj->type == MT_RANDOMITEM && (gametyperules & GTR_BUMPERS))
-	{
-		mobj->extravalue1 = RINGBOX_TIME;
-		P_SetMobjState(mobj, S_RANDOMITEM1);
-	}
 
 	if (leveltime == 0)
 	{
@@ -237,7 +138,4 @@ void Obj_RandomItemSpawn(mobj_t *mobj)
 			P_SetThingPosition(mobj);
 		}
 	}
-
-	mobj->destscale = Obj_RandomItemScale(mobj->destscale);
-	P_SetScale(mobj, mobj->destscale);
 }

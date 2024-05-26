@@ -169,6 +169,7 @@ static UINT8 K_KartItemOddsSpecial[NUMKARTRESULTS-1][4] =
 	{ 0, 0, 1, 1 }, // Sneaker x2
 	{ 0, 0, 0, 0 }, // Sneaker x3
 	{ 0, 0, 0, 0 }, // Banana x3
+	{ 0, 0, 0, 0 }, // Banana x10
 	{ 0, 0, 1, 1 }, // Orbinaut x3
 	{ 0, 0, 0, 0 }, // Orbinaut x4
 	{ 0, 0, 1, 1 }, // Jawz x2
@@ -215,27 +216,6 @@ static kartitems_t K_KartItemReelBoss[] =
 	KITEM_ORBINAUT,
 	KITEM_ORBINAUT,
 	KITEM_NONE
-};
-
-static kartslotmachine_t K_KartItemReelRingBox[] =
-{
-	KSM_BAR,
-	KSM_DOUBLEBAR,
-	KSM_TRIPLEBAR,
-	KSM_RING,
-	KSM_SEVEN,
-	KSM_JACKPOT,
-	KSM__MAX
-};
-
-static sfxenum_t ringboxsound[] =
-{
-	sfx_slot00,
-	sfx_slot01,
-	sfx_slot02,
-	sfx_slot03,
-	sfx_slot04,
-	sfx_slot05
 };
 
 /*--------------------------------------------------
@@ -795,6 +775,7 @@ INT32 K_KartGetItemOdds(const player_t *player, itemroulette_t *const roulette, 
 
 		case KITEM_HYUDORO:
 		case KRITEM_TRIPLEBANANA:
+		case KRITEM_TENFOLDBANANA:
 		{
 			conditions.powerItem = true;
 			conditions.notNearEnd = true;
@@ -1086,7 +1067,6 @@ static void K_InitRoulette(itemroulette_t *const roulette)
 
 	roulette->active = true;
 	roulette->eggman = false;
-	roulette->ringbox = false;
 	roulette->autoroulette = false;
 
 	for (i = 0; i < MAXPLAYERS; i++)
@@ -1296,11 +1276,11 @@ static void K_CalculateRouletteSpeed(itemroulette_t *const roulette)
 }
 
 /*--------------------------------------------------
-	void K_FillItemRouletteData(const player_t *player, itemroulette_t *const roulette, boolean ringbox)
+	void K_FillItemRouletteData(const player_t *player, itemroulette_t *const roulette)
 
 		See header file for description.
 --------------------------------------------------*/
-void K_FillItemRouletteData(const player_t *player, itemroulette_t *const roulette, boolean ringbox)
+void K_FillItemRouletteData(const player_t *player, itemroulette_t *const roulette)
 {
 	UINT32 spawnChance[NUMKARTRESULTS] = {0};
 	UINT32 totalSpawnChance = 0;
@@ -1321,20 +1301,6 @@ void K_FillItemRouletteData(const player_t *player, itemroulette_t *const roulet
 			roulette->autoroulette = true;
 
 		K_CalculateRouletteSpeed(roulette);
-	}
-
-	if (ringbox == true)
-	{
-		// If this is being invoked by a Ring Box, it should literally never produce items.
-		kartslotmachine_t *presetlist = K_KartItemReelRingBox;
-		roulette->ringbox = true;
-
-		for (i = 0; presetlist[i] != KSM__MAX; i++)
-		{
-			K_PushToRouletteItemList(roulette, presetlist[i]);
-		}
-
-		return;
 	}
 
 	// SPECIAL CASE No. 1:
@@ -1518,12 +1484,12 @@ void K_FillItemRouletteData(const player_t *player, itemroulette_t *const roulet
 
 		See header file for description.
 --------------------------------------------------*/
-void K_StartItemRoulette(player_t *const player, boolean ringbox)
+void K_StartItemRoulette(player_t *const player)
 {
 	itemroulette_t *const roulette = &player->itemRoulette;
 	size_t i;
 
-	K_FillItemRouletteData(player, roulette, ringbox);
+	K_FillItemRouletteData(player, roulette);
 
 	if (roulette->autoroulette)
 		roulette->index = P_RandomRange(PR_AUTOROULETTE, 0, roulette->itemListLen - 1);
@@ -1553,7 +1519,7 @@ void K_StartItemRoulette(player_t *const player, boolean ringbox)
 void K_StartEggmanRoulette(player_t *const player)
 {
 	itemroulette_t *const roulette = &player->itemRoulette;
-	K_StartItemRoulette(player, false);
+	K_StartItemRoulette(player);
 	roulette->eggman = true;
 }
 
@@ -1566,7 +1532,6 @@ void K_StopRoulette(itemroulette_t *const roulette)
 {
 	roulette->active = false;
 	roulette->eggman = false;
-	roulette->ringbox = false;
 	roulette->reserved = 0;
 }
 
@@ -1703,7 +1668,7 @@ void K_KartItemRoulette(player_t *const player, ticcmd_t *const cmd)
 		if (roulette->eggman == true)
 		{
 			// FATASS JUMPSCARE instead of your actual item
-			player->eggmanexplode = 6*TICRATE;
+			player->eggmanexplode = 4*TICRATE;
 
 			//player->karthud[khud_itemblink] = TICRATE;
 			//player->karthud[khud_itemblinkmode] = 1;
@@ -1743,32 +1708,15 @@ void K_KartItemRoulette(player_t *const player, ticcmd_t *const cmd)
 
 			INT32 finalItem = roulette->itemList[ roulette->index ];
 
-			if (roulette->ringbox == true)
-			{
-				player->ringboxdelay = TICRATE;
-				player->ringboxaward = finalItem;
-				player->karthud[khud_rouletteoffset] = K_GetSlotOffset(roulette, FRACUNIT, baseFudge);
-			}
-			else
-			{
-				K_KartGetItemResult(player, finalItem);
-				player->karthud[khud_rouletteoffset] = K_GetRouletteOffset(roulette, FRACUNIT, baseFudge);
-			}
+			K_KartGetItemResult(player, finalItem);
+			player->karthud[khud_rouletteoffset] = K_GetRouletteOffset(roulette, FRACUNIT, baseFudge);
 
 			player->karthud[khud_itemblink] = TICRATE;
 			player->karthud[khud_itemblinkmode] = 0;
 
 			if (K_IsPlayingDisplayPlayer(player))
 			{
-				if (roulette->ringbox)
-				{
-					// Hi modders! Boost your treble and Loudness Normalize to 0 LUFS.
-					// I'm a responsible audio engineer. -Tyron 2023-07-30
-					UINT8 volume = (finalItem > 2) ? (15 * finalItem + 60) : 80;
-					S_StartSoundAtVolume(NULL, ringboxsound[finalItem], volume);
-				}
-				else
-					S_StartSound(NULL, sfx_itrolf);
+				S_StartSound(NULL, sfx_itrolf);
 			}
 		}
 
@@ -1794,10 +1742,7 @@ void K_KartItemRoulette(player_t *const player, ticcmd_t *const cmd)
 
 		if (K_IsPlayingDisplayPlayer(player))
 		{
-			if (roulette->ringbox)
-				S_StartSound(NULL, sfx_s240);
-			else
-				S_StartSound(NULL, sfx_itrol1 + roulette->sound);
+			S_StartSound(NULL, sfx_itrol1 + roulette->sound);
 		}
 	}
 	else

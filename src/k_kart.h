@@ -144,7 +144,6 @@ void K_UpdateHnextList(player_t *player, boolean clean);
 void K_DropHnextList(player_t *player);
 void K_RepairOrbitChain(mobj_t *orbit);
 void K_CalculateBananaSlope(mobj_t *mobj, fixed_t x, fixed_t y, fixed_t z, fixed_t radius, fixed_t height, boolean flip, boolean player);
-mobj_t *K_FindJawzTarget(mobj_t *actor, player_t *source, angle_t range);
 INT32 K_GetKartRingPower(const player_t *player, boolean boosted);
 boolean K_CheckPlayersRespawnColliding(INT32 playernum, fixed_t x, fixed_t y);
 INT32 K_GetKartDriftSparkValue(const player_t *player);
@@ -161,6 +160,7 @@ void K_DropRocketSneaker(player_t *player);
 void K_DropKitchenSink(player_t *player);
 void K_StripItems(player_t *player);
 void K_StripOther(player_t *player);
+INT32 K_FlameShieldMax(player_t *player);
 void K_MomentumToFacing(player_t *player);
 boolean K_ApplyOffroad(const player_t *player);
 fixed_t K_PlayerTripwireSpeedThreshold(const player_t *player);
@@ -205,8 +205,6 @@ void K_SetItemOut(player_t *player);
 void K_UnsetItemOut(player_t *player);
 
 void K_UpdateMobjItemOverlay(mobj_t *part, SINT8 itemType, UINT8 itemCount);
-
-void K_EggmanTransfer(player_t *source, player_t *victim);
 
 tic_t K_TimeLimitForGametype(void);
 UINT32 K_PointLimitForGametype(void);

@@ -28,11 +28,6 @@ void Obj_HyudoroCenterThink(mobj_t *actor);
 void Obj_HyudoroCollide(mobj_t *special, mobj_t *toucher);
 boolean Obj_HyudoroShadowZ(mobj_t *actor, fixed_t *return_z, pslope_t **return_slope);
 
-/* Item Debris */
-void Obj_SpawnItemDebrisEffects(mobj_t *collectible, mobj_t *collector);
-void Obj_ItemDebrisThink(mobj_t *debris);
-fixed_t Obj_ItemDebrisBounce(mobj_t *debris, fixed_t momz);
-
 /* SPB */
 void Obj_SPBThink(mobj_t *mobj);
 void Obj_SPBTouch(mobj_t *spb, mobj_t *toucher);
@@ -44,14 +39,16 @@ mobj_t *Obj_MantaRingCreate(mobj_t *spb, mobj_t *owner, mobj_t *chase);
 /* Orbinaut */
 void Obj_OrbinautThink(mobj_t *th);
 boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2);
-void Obj_OrbinautThrown(mobj_t *th, fixed_t finalSpeed, SINT8 dir);
 void Obj_OrbinautJawzMoveHeld(player_t *player);
-void Obj_OrbinautDrop(mobj_t *th);
 boolean Obj_OrbinautCanRunOnWater(mobj_t *th);
 
 /* Jawz */
-void Obj_JawzThink(mobj_t *th);
-void Obj_JawzThrown(mobj_t *th, fixed_t finalSpeed, SINT8 dir);
+void Obj_JawzThink(mobj_t *mobj);
+void Obj_JawzDudThink(mobj_t *mobj);
+player_t *K_FindJawzTarget(mobj_t *actor, player_t *source);
+
+/* Eggman/Banana */
+void Obj_EggBananaThink(mobj_t *mobj);
 
 /* Duel Bomb */
 void Obj_DuelBombThink(mobj_t *bomb);
@@ -109,11 +106,8 @@ void Obj_AudienceInit(mobj_t * mobj, mapthing_t *mthing, INT32 followerpick);
 void Obj_AudienceThink(mobj_t * mobj, boolean focusonplayer, boolean checkdeathpit);
 
 /* Random Item Boxes */
-void Obj_RandomItemVisuals(mobj_t *mobj);
 boolean Obj_RandomItemSpawnIn(mobj_t *mobj);
-fixed_t Obj_RandomItemScale(fixed_t oldScale);
 void Obj_RandomItemSpawn(mobj_t *mobj);
-#define RINGBOX_TIME (105)
 
 /* Servant Hand */
 void Obj_ServantHandSpawning(player_t *player);

@@ -292,7 +292,6 @@ actionpointer_t actionpointers[] =
 	{{A_MayonakaArrow},          "A_MAYONAKAARROW"},
 	{{A_FlameShieldPaper},       "A_FLAMESHIELDPAPER"},
 	{{A_InvincSparkleRotate},    "A_INVINCSPARKLEROTATE"},
-	{{A_SpawnItemDebrisCloud},   "A_SPAWNITEMDEBRISCLOUD"},
 	{{A_RingShooterFace},        "A_RINGSHOOTERFACE"},
 	{{A_SpawnSneakerPanel},      "A_SPAWNSNEAKERPANEL"},
 	{{A_MakeSSCandle},           "A_MAKESSCANDLE"},
@@ -1481,20 +1480,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_RANDOMITEM11",
 	"S_RANDOMITEM12",
 
-	// Ring Box
-	"S_RINGBOX1",
-	"S_RINGBOX2",
-	"S_RINGBOX3",
-	"S_RINGBOX4",
-	"S_RINGBOX5",
-	"S_RINGBOX6",
-	"S_RINGBOX7",
-	"S_RINGBOX8",
-	"S_RINGBOX9",
-	"S_RINGBOX10",
-	"S_RINGBOX11",
-	"S_RINGBOX12",
-
 	// Sphere Box (for Battle)
 	"S_SPHEREBOX1",
 	"S_SPHEREBOX2",
@@ -1508,10 +1493,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_SPHEREBOX10",
 	"S_SPHEREBOX11",
 	"S_SPHEREBOX12",
-
-	"S_ITEM_DEBRIS",
-	"S_ITEM_DEBRIS_CLOUD_SPAWNER1",
-	"S_ITEM_DEBRIS_CLOUD_SPAWNER2",
 
 	"S_ITEMICON",
 	"S_ITEMBACKDROP",
@@ -1577,10 +1558,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	// Brake drift sparks
 	"S_BRAKEDRIFT",
 
-	// Brake dust
-	"S_BRAKEDUST1",
-	"S_BRAKEDUST2",
-
 	// Drift Smoke
 	"S_DRIFTDUST1",
 	"S_DRIFTDUST2",
@@ -1592,10 +1569,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_DRIFTWARNSPARK2",
 	"S_DRIFTWARNSPARK3",
 	"S_DRIFTWARNSPARK4",
-
-	// Drift electricity
-	"S_DRIFTELECTRICITY",
-	"S_DRIFTELECTRICSPARK",
 
 	// Fast lines
 	"S_FASTLINE1",
@@ -1612,45 +1585,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_FASTDUST5",
 	"S_FASTDUST6",
 	"S_FASTDUST7",
-
-	// Drift boost effect
-	"S_DRIFTEXPLODE1",
-	"S_DRIFTEXPLODE2",
-	"S_DRIFTEXPLODE3",
-	"S_DRIFTEXPLODE4",
-	"S_DRIFTEXPLODE5",
-	"S_DRIFTEXPLODE6",
-	"S_DRIFTEXPLODE7",
-	"S_DRIFTEXPLODE8",
-
-	// Drift boost clip
-	"S_DRIFTCLIPA1",
-	"S_DRIFTCLIPA2",
-	"S_DRIFTCLIPA3",
-	"S_DRIFTCLIPA4",
-	"S_DRIFTCLIPA5",
-	"S_DRIFTCLIPA6",
-	"S_DRIFTCLIPA7",
-	"S_DRIFTCLIPA8",
-	"S_DRIFTCLIPA9",
-	"S_DRIFTCLIPA10",
-	"S_DRIFTCLIPA11",
-	"S_DRIFTCLIPA12",
-	"S_DRIFTCLIPA13",
-	"S_DRIFTCLIPA14",
-	"S_DRIFTCLIPA15",
-	"S_DRIFTCLIPA16",
-	"S_DRIFTCLIPB1",
-	"S_DRIFTCLIPB2",
-	"S_DRIFTCLIPB3",
-	"S_DRIFTCLIPB4",
-	"S_DRIFTCLIPB5",
-	"S_DRIFTCLIPB6",
-	"S_DRIFTCLIPB7",
-	"S_DRIFTCLIPB8",
-
-	// Drift boost clip spark
-	"S_DRIFTCLIPSPARK",
 
 	// Sneaker boost effect
 	"S_BOOSTFLAME",
@@ -1793,6 +1727,14 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_JAWZ6",
 	"S_JAWZ7",
 	"S_JAWZ8",
+	"S_JAWZ_DUD1",
+	"S_JAWZ_DUD2",
+	"S_JAWZ_DUD3",
+	"S_JAWZ_DUD4",
+	"S_JAWZ_DUD5",
+	"S_JAWZ_DUD6",
+	"S_JAWZ_DUD7",
+	"S_JAWZ_DUD8",
 	"S_JAWZ_SHIELD1",
 	"S_JAWZ_SHIELD2",
 	"S_JAWZ_SHIELD3",
@@ -2569,23 +2511,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_WATERTRAILUNDERLAY6",
 	"S_WATERTRAILUNDERLAY7",
 	"S_WATERTRAILUNDERLAY8",
-
-	"S_DOWNLINE1",
-	"S_DOWNLINE2",
-	"S_DOWNLINE3",
-	"S_DOWNLINE4",
-	"S_DOWNLINE5",
-
-	"S_HOLDBUBBLE",
-
-	// Finish line beam
-	"S_FINISHBEAM1",
-	"S_FINISHBEAM2",
-	"S_FINISHBEAM3",
-	"S_FINISHBEAM4",
-	"S_FINISHBEAM5",
-	"S_FINISHBEAMEND1",
-	"S_FINISHBEAMEND2",
 
 	// Funny Spike
 	"S_DEBTSPIKE1",
@@ -3376,9 +3301,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 
 	"MT_FASTLINE",
 	"MT_FASTDUST",
-	"MT_DRIFTEXPLODE",
-	"MT_DRIFTCLIP",
-	"MT_DRIFTCLIPSPARK",
 	"MT_BOOSTFLAME",
 	"MT_BOOSTSMOKE",
 	"MT_SNEAKERTRAIL",
@@ -3388,12 +3310,7 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_WIPEOUTTRAIL",
 	"MT_DRIFTSPARK",
 	"MT_BRAKEDRIFT",
-	"MT_BRAKEDUST",
 	"MT_DRIFTDUST",
-	"MT_ITEM_DEBRIS",
-	"MT_ITEM_DEBRIS_CLOUD_SPAWNER",
-	"MT_DRIFTELECTRICITY",
-	"MT_DRIFTELECTRICSPARK",
 
 	"MT_ROCKETSNEAKER", // Rocket sneakers
 
@@ -3402,12 +3319,12 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 
 	"MT_BANANA", // Banana Stuff
 	"MT_BANANA_SHIELD",
-	"MT_BANANA_SPARK",
 
 	"MT_ORBINAUT", // Orbinaut stuff
 	"MT_ORBINAUT_SHIELD",
 
 	"MT_JAWZ", // Jawz stuff
+	"MT_JAWZ_DUD",
 	"MT_JAWZ_SHIELD",
 
 	"MT_PLAYERRETICULE", // Jawz reticule
@@ -3595,7 +3512,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_WATERTRAILUNDERLAY",
 
 	"MT_DOWNLINE",
-	"MT_HOLDBUBBLE",
 
 	"MT_PAPERITEMSPOT",
 
@@ -4911,6 +4827,7 @@ struct int_const_s const INT_CONST[] = {
 	{"KRITEM_DUALSNEAKER",KRITEM_DUALSNEAKER}, // Additional roulette IDs (not usable for much in Lua besides K_GetItemPatch)
 	{"KRITEM_TRIPLESNEAKER",KRITEM_TRIPLESNEAKER},
 	{"KRITEM_TRIPLEBANANA",KRITEM_TRIPLEBANANA},
+	{"KRITEM_TENFOLDBANANA",KRITEM_TENFOLDBANANA},
 	{"KRITEM_TRIPLEORBINAUT",KRITEM_TRIPLEORBINAUT},
 	{"KRITEM_QUADORBINAUT",KRITEM_QUADORBINAUT},
 	{"KRITEM_DUALJAWZ",KRITEM_DUALJAWZ},
@@ -4922,15 +4839,6 @@ struct int_const_s const INT_CONST[] = {
 	{"KSHIELD_BUBBLE",KSHIELD_BUBBLE},
 	{"KSHIELD_FLAME",KSHIELD_FLAME},
 	{"NUMKARTSHIELDS",NUMKARTSHIELDS},
-
-	// kartslotmachine_t
-	{"KSM_BAR",KSM_BAR},
-	{"KSM_DOUBLEBAR",KSM_DOUBLEBAR},
-	{"KSM_TRIPLEBAR",KSM_TRIPLEBAR},
-	{"KSM_RING",KSM_RING},
-	{"KSM_SEVEN",KSM_SEVEN},
-	{"KSM_JACKPOT",KSM_JACKPOT},
-	{"KSM__MAX",KSM__MAX},
 
 	// kartspinoutflags_t
 	{"KSPIN_THRUST",KSPIN_THRUST},

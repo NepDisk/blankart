@@ -37,9 +37,7 @@
 #include "k_collide.h"
 #include "k_objects.h"
 #include "k_roulette.h"
-
-// Noire
-#include "noire/n_object.h"
+#include "k_objects.h"
 
 boolean LUA_CallAction(enum actionnum actionnum, mobj_t *actor);
 
@@ -321,7 +319,6 @@ void A_RandomShadowFrame(mobj_t *actor);
 void A_MayonakaArrow(mobj_t *actor);
 void A_FlameShieldPaper(mobj_t *actor);
 void A_InvincSparkleRotate(mobj_t *actor);
-void A_SpawnItemDebrisCloud(mobj_t *actor);
 void A_RingShooterFace(mobj_t *actor);
 void A_SpawnSneakerPanel(mobj_t *actor);
 void A_BlendEyePuyoHack(mobj_t *actor);
@@ -12205,7 +12202,7 @@ void A_JawzChase(mobj_t *actor)
 	if (!actor->target || P_MobjWasRemoved(actor->target)) // No source!
 		return;
 
-	player = K_FindOldJawzTarget(actor, actor->target->player);
+	player = K_FindJawzTarget(actor, actor->target->player);
 	if (player)
 		P_SetTarget(&actor->tracer, player->mo);
 
@@ -12844,89 +12841,6 @@ void A_InvincSparkleRotate(mobj_t *actor)
 	{
 		ghost->frame |= FF_ADD;
 		ghost->fuse = 4;
-	}
-}
-
-// Function: A_SpawnItemDebrisCloud
-//
-// Description: Spawns the poofs of an exploded item box. Target is a player to spawn the particles around.
-//
-// var1 = Copy extravalue2 / var1 fraction of target's momentum.
-// var2 = unused
-//
-void
-A_SpawnItemDebrisCloud (mobj_t *actor)
-{
-	INT32 locvar1 = var1;
-
-	mobj_t *target = actor->target;
-	player_t *player;
-
-	fixed_t kartspeed;
-	fixed_t fade;
-
-	if (LUA_CallAction(A_SPAWNITEMDEBRISCLOUD, (actor)))
-	{
-		return;
-	}
-
-	if (target == NULL || target->player == NULL)
-	{
-		return;
-	}
-
-	player = target->player;
-	kartspeed = K_GetKartSpeed(player, false, false);
-
-	// Scale around >50% top speed
-	fade = FixedMul(locvar1, (FixedDiv(player->speed,
-					kartspeed) - FRACUNIT/2) * 2);
-
-	if (fade < 1)
-	{
-		fade = 1;
-	}
-
-	if (actor->extravalue2 > fade)
-	{
-		actor->extravalue2 = fade;
-	}
-
-	// MT_ITEM_DEBRIS_CLOUD_SPAWNER
-	// extravalue2 from A_Repeat
-	fade = actor->extravalue2 * FRACUNIT / locvar1;
-
-	// Most of this code is from p_inter.c, MT_ITEMCAPSULE
-
-	// dust effects
-	{
-		const INT16 spacing =
-			(target->radius / 2) / target->scale;
-
-		mobj_t *puff = P_SpawnMobjFromMobj(
-				target,
-				P_RandomRange(PR_ITEM_DEBRIS, -spacing, spacing) * FRACUNIT,
-				P_RandomRange(PR_ITEM_DEBRIS, -spacing, spacing) * FRACUNIT,
-				P_RandomRange(PR_ITEM_DEBRIS, 0, 4 * spacing) * FRACUNIT,
-				MT_DUST
-		);
-
-		puff->color = target->color;
-		puff->colorized = true;
-
-		puff->momz = puff->scale * P_MobjFlip(puff);
-
-		puff->angle = R_PointToAngle2(
-					target->x,
-					target->y,
-					puff->x,
-					puff->y);
-
-		P_Thrust(puff, puff->angle, 3 * puff->scale);
-
-		puff->momx += FixedMul(target->momx, fade);
-		puff->momy += FixedMul(target->momy, fade);
-		puff->momz += FixedMul(target->momz, fade);
 	}
 }
 

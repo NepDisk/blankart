@@ -285,7 +285,6 @@ enum actionnum
 	A_MAYONAKAARROW,
 	A_FLAMESHIELDPAPER,
 	A_INVINCSPARKLEROTATE,
-	A_SPAWNITEMDEBRISCLOUD,
 	A_RINGSHOOTERFACE,
 	A_SPAWNSNEAKERPANEL,
 	A_BLENDEYEPUYOHACK,
@@ -556,7 +555,6 @@ void A_RandomShadowFrame();
 void A_MayonakaArrow();
 void A_FlameShieldPaper();
 void A_InvincSparkleRotate();
-void A_SpawnItemDebrisCloud();
 void A_RingShooterFace();
 void A_SpawnSneakerPanel();
 void A_BlendEyePuyoHack();
@@ -815,7 +813,6 @@ typedef enum sprite
 	SPR_BOM2, // Boss Explosion 1
 	SPR_BOM3, // Boss Explosion 2
 	SPR_BOM4, // Underwater Explosion
-	SPR_LSSJ, // My ki is overflowing!!
 
 	// Crumbly rocks
 	SPR_ROIA,
@@ -843,7 +840,6 @@ typedef enum sprite
 	// SRB2Kart
 	SPR_RNDM, // Random Item Box
 	SPR_SBOX, // Sphere Box (for Battle)
-	SPR_RBOX, // Ring Box
 	SPR_ITRI, // Item Box Debris
 	SPR_ITPA, // Paper item backdrop
 	SPR_SGNS, // Signpost sparkle
@@ -865,15 +861,6 @@ typedef enum sprite
 	SPR_IMDB, // Item Monitor Small Shard (Debris)
 	SPR_MTWK, // Item Monitor Glass Twinkle
 
-	SPR_GRNG, // Guard ring
-	SPR_GBDY, // Guard body
-
-	SPR_TRC1, // Charge aura
-	SPR_TRC2, // Charge fall
-	SPR_TRC3, // Charge flicker/sparks
-	SPR_TRC4, // Charge release
-	SPR_TRC5, // Charge extra
-
 	SPR_DHND, // Servant Hand
 
 	SPR_HORN, // Horncode
@@ -883,8 +870,6 @@ typedef enum sprite
 	SPR_BDRF, // Brake drift sparks
 	SPR_BRAK, // Brake brak
 	SPR_DRWS, // Drift dust sparks
-	SPR_DREL, // Drift electricity
-	SPR_DRES, // Drift electric sparks
 
 	// Kart Items
 	SPR_RSHE, // Rocket sneaker
@@ -991,7 +976,6 @@ typedef enum sprite
 	SPR_ITMI,
 	SPR_ITMN,
 	SPR_PWRB,
-	SPR_RBOW, // power-up aura
 
 	SPR_PBOM, // player bomb
 
@@ -1077,14 +1061,11 @@ typedef enum sprite
 	SPR_MXCL,
 	SPR_RGSP,
 	SPR_LENS,
-	SPR_DRAF,
 	SPR_GRES,
 
 	SPR_OTBU,
 	SPR_OTLS,
 	SPR_OTCP,
-
-	SPR_DBOS, // Drift boost flame
 
 	SPR_WAYP,
 	SPR_EGOO,
@@ -1094,17 +1075,6 @@ typedef enum sprite
 	SPR_GCHA, // follower: generic chao
 	SPR_CHEZ, // follower: cheese
 
-	SPR_DBCL, // Drift boost clip
-	SPR_DBNC, // Drift boost clip's sparks
-	SPR_DBST, // Drift boost plume
-
-	SPR_HMTR, // downwards line
-	SPR_HBUB, // HOLD! Bubble
-
-	SPR_TRCK,
-
-	SPR_FLBM, // Finish line beam
-
 	SPR_UFOB,
 	SPR_UFOA,
 	SPR_UFOS,
@@ -1112,9 +1082,6 @@ typedef enum sprite
 	SPR_SSCB,
 
 	SPR_UQMK,
-
-	SPR_GBOM,
-	SPR_GCHX,
 
 	SPR_3DFR,
 
@@ -1173,8 +1140,6 @@ typedef enum sprite
 	
 	// Sky Sanctuary
 	SPR_SSCL,
-
-	SPR_MGSH, // Mega Barrier
 
 	// GPZ Seasaw
 	SPR_GPPS,
@@ -2470,20 +2435,6 @@ typedef enum state
 	S_RANDOMITEM11,
 	S_RANDOMITEM12,
 
-	// Ring Box
-	S_RINGBOX1,
-	S_RINGBOX2,
-	S_RINGBOX3,
-	S_RINGBOX4,
-	S_RINGBOX5,
-	S_RINGBOX6,
-	S_RINGBOX7,
-	S_RINGBOX8,
-	S_RINGBOX9,
-	S_RINGBOX10,
-	S_RINGBOX11,
-	S_RINGBOX12,
-
 	// Sphere Box (for Battle)
 	S_SPHEREBOX1,
 	S_SPHEREBOX2,
@@ -2497,10 +2448,6 @@ typedef enum state
 	S_SPHEREBOX10,
 	S_SPHEREBOX11,
 	S_SPHEREBOX12,
-
-	S_ITEM_DEBRIS,
-	S_ITEM_DEBRIS_CLOUD_SPAWNER1,
-	S_ITEM_DEBRIS_CLOUD_SPAWNER2,
 
 	S_ITEMICON,
 	S_ITEMBACKDROP,
@@ -2566,10 +2513,6 @@ typedef enum state
 	// Brake drift sparks
 	S_BRAKEDRIFT,
 
-	// Brake dust
-	S_BRAKEDUST1,
-	S_BRAKEDUST2,
-
 	// Drift Smoke
 	S_DRIFTDUST1,
 	S_DRIFTDUST2,
@@ -2581,10 +2524,6 @@ typedef enum state
 	S_DRIFTWARNSPARK2,
 	S_DRIFTWARNSPARK3,
 	S_DRIFTWARNSPARK4,
-
-	// Drift electricity
-	S_DRIFTELECTRICITY,
-	S_DRIFTELECTRICSPARK,
 
 	// Fast lines
 	S_FASTLINE1,
@@ -2601,45 +2540,6 @@ typedef enum state
 	S_FASTDUST5,
 	S_FASTDUST6,
 	S_FASTDUST7,
-
-	// Drift boost effect
-	S_DRIFTEXPLODE1,
-	S_DRIFTEXPLODE2,
-	S_DRIFTEXPLODE3,
-	S_DRIFTEXPLODE4,
-	S_DRIFTEXPLODE5,
-	S_DRIFTEXPLODE6,
-	S_DRIFTEXPLODE7,
-	S_DRIFTEXPLODE8,
-
-	// Drift boost clip
-	S_DRIFTCLIPA1,
-	S_DRIFTCLIPA2,
-	S_DRIFTCLIPA3,
-	S_DRIFTCLIPA4,
-	S_DRIFTCLIPA5,
-	S_DRIFTCLIPA6,
-	S_DRIFTCLIPA7,
-	S_DRIFTCLIPA8,
-	S_DRIFTCLIPA9,
-	S_DRIFTCLIPA10,
-	S_DRIFTCLIPA11,
-	S_DRIFTCLIPA12,
-	S_DRIFTCLIPA13,
-	S_DRIFTCLIPA14,
-	S_DRIFTCLIPA15,
-	S_DRIFTCLIPA16,
-	S_DRIFTCLIPB1,
-	S_DRIFTCLIPB2,
-	S_DRIFTCLIPB3,
-	S_DRIFTCLIPB4,
-	S_DRIFTCLIPB5,
-	S_DRIFTCLIPB6,
-	S_DRIFTCLIPB7,
-	S_DRIFTCLIPB8,
-
-	// Drift boost clip sparks
-	S_DRIFTCLIPSPARK,
 
 	// Sneaker boost effect
 	S_BOOSTFLAME,
@@ -2782,6 +2682,14 @@ typedef enum state
 	S_JAWZ6,
 	S_JAWZ7,
 	S_JAWZ8,
+	S_JAWZ_DUD1,
+	S_JAWZ_DUD2,
+	S_JAWZ_DUD3,
+	S_JAWZ_DUD4,
+	S_JAWZ_DUD5,
+	S_JAWZ_DUD6,
+	S_JAWZ_DUD7,
+	S_JAWZ_DUD8,
 	S_JAWZ_SHIELD1,
 	S_JAWZ_SHIELD2,
 	S_JAWZ_SHIELD3,
@@ -3562,22 +3470,6 @@ typedef enum state
 	S_WATERTRAILUNDERLAY6,
 	S_WATERTRAILUNDERLAY7,
 	S_WATERTRAILUNDERLAY8,
-
-	S_DOWNLINE1,
-	S_DOWNLINE2,
-	S_DOWNLINE3,
-	S_DOWNLINE4,
-	S_DOWNLINE5,
-
-	S_HOLDBUBBLE,
-
-	S_FINISHBEAM1,
-	S_FINISHBEAM2,
-	S_FINISHBEAM3,
-	S_FINISHBEAM4,
-	S_FINISHBEAM5,
-	S_FINISHBEAMEND1,
-	S_FINISHBEAMEND2,
 
 	S_DEBTSPIKE1,
 	S_DEBTSPIKE2,
@@ -4394,9 +4286,6 @@ typedef enum mobj_type
 
 	MT_FASTLINE,
 	MT_FASTDUST,
-	MT_DRIFTEXPLODE,
-	MT_DRIFTCLIP,
-	MT_DRIFTCLIPSPARK,
 	MT_BOOSTFLAME,
 	MT_BOOSTSMOKE,
 	MT_SNEAKERTRAIL,
@@ -4406,12 +4295,7 @@ typedef enum mobj_type
 	MT_WIPEOUTTRAIL,
 	MT_DRIFTSPARK,
 	MT_BRAKEDRIFT,
-	MT_BRAKEDUST,
 	MT_DRIFTDUST,
-	MT_ITEM_DEBRIS,
-	MT_ITEM_DEBRIS_CLOUD_SPAWNER,
-	MT_DRIFTELECTRICITY,
-	MT_DRIFTELECTRICSPARK,
 
 	MT_ROCKETSNEAKER,
 
@@ -4420,12 +4304,12 @@ typedef enum mobj_type
 
 	MT_BANANA, // Banana Stuff
 	MT_BANANA_SHIELD,
-	MT_BANANA_SPARK,
 
 	MT_ORBINAUT, // Orbinaut stuff
 	MT_ORBINAUT_SHIELD,
 
 	MT_JAWZ, // Jawz stuff
+	MT_JAWZ_DUD,
 	MT_JAWZ_SHIELD,
 
 	MT_PLAYERRETICULE, // Jawz reticule
@@ -4613,7 +4497,6 @@ typedef enum mobj_type
 	MT_WATERTRAILUNDERLAY,
 
 	MT_DOWNLINE,
-	MT_HOLDBUBBLE,
 
 	MT_PAPERITEMSPOT,
 

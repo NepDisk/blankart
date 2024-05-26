@@ -903,48 +903,17 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"keygen", false, 204,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Key Generated"},
   {"gpmetr", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
 
-  // SRB2Kart - Ring Box
-  {"slot00", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Bar"},
-  {"slot01", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Double Bar"},
-  {"slot02", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Triple Bar"},
-  {"slot03", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Slot Ring"},
-  {"slot04", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Seven"},
-  {"slot05", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "JACKPOT!"},
-
   // RR - Flame Shield
   {"fshld0", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Flame Shield activate"},
   {"fshld1", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Flame Shield hold"},
   {"fshld2", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Flame Shield burst"},
   {"fshld3", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Flame Shield cooldown"},
 
-  // RR - Ballhog Charge
-  {"bhog00", false, 64,  64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ballhog charging"},
-  {"bhog01", false, 64,  64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ballhog charging"},
-  {"bhog02", false, 64,  64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ballhog charging"},
-  {"bhog03", false, 64,  64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ballhog charging"},
-  {"bhog04", false, 64,  64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ballhog charging"},
-  {"bhog05", false, 64,  64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ballhog charging"},
-
-  // SRB2Kart - Drop target sounds
-  {"kdtrg1", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Low energy, SF_X8AWAYSOUND
-  {"kdtrg2", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Medium energy, SF_X8AWAYSOUND
-  {"kdtrg3", false,  64, 80, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // High energy, SF_X2AWAYSOUND|SF_X8AWAYSOUND
-
     // SRB2kart - Grow/invinc clash
   {"parry",  false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X8AWAYSOUND
 
-  {"ffbonc", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-
   // Shout message sound effect
   {"sysmsg", false, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Server notification"},
-
-  // Shrink laser beam
-  {"beam01", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-
-  // SPB seeking
-  {"spbska", false,  32, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"spbskb", false,  32, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"spbskc", false,  32, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
 
   // Juicebox for SPB
   {"gate01", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},

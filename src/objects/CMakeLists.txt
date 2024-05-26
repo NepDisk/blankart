@@ -1,10 +1,10 @@
 target_sources(SRB2SDL2 PRIVATE
 	hyudoro.c
-	item-debris.c
 	spb.c
 	manta-ring.c
 	orbinaut.c
 	jawz.c
+	eggbanana.c
 	duel-bomb.c
 	ufo.c
 	monitor.c

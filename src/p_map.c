@@ -914,7 +914,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 	if (thing->type == MT_BUBBLESHIELD || g_tm.thing->type == MT_BUBBLESHIELD)
 		return BMIT_CONTINUE;
 
-	if (g_tm.thing->type == MT_ORBINAUT || g_tm.thing->type == MT_JAWZ
+	if (g_tm.thing->type == MT_ORBINAUT || g_tm.thing->type == MT_JAWZ || g_tm.thing->type == MT_JAWZ_DUD
 		|| g_tm.thing->type == MT_ORBINAUT_SHIELD || g_tm.thing->type == MT_JAWZ_SHIELD)
 	{
 		// see if it went over / under
@@ -925,7 +925,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 
 		return Obj_OrbinautJawzCollide(g_tm.thing, thing) ? BMIT_CONTINUE : BMIT_ABORT;
 	}
-	else if (thing->type == MT_ORBINAUT || thing->type == MT_JAWZ
+	else if (thing->type == MT_ORBINAUT || thing->type == MT_JAWZ || thing->type == MT_JAWZ_DUD
 		|| thing->type == MT_ORBINAUT_SHIELD || thing->type == MT_JAWZ_SHIELD)
 	{
 		// see if it went over / under
@@ -1259,17 +1259,6 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			if (thing->player->hyudorotimer || g_tm.thing->player->hyudorotimer)
 			{
 				return BMIT_CONTINUE;
-			}
-
-			if (!P_MobjWasRemoved(thing) && !P_MobjWasRemoved(g_tm.thing))
-			{
-				if (thing->player->eggmanexplode)
-				{
-					K_EggmanTransfer(thing->player, g_tm.thing->player);
-				} else if (g_tm.thing->player->eggmanexplode)
-				{
-					K_EggmanTransfer(g_tm.thing->player, thing->player);
-				}
 			}
 
 			if (K_KartBouncing(g_tm.thing, thing) == true)

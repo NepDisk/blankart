@@ -58,12 +58,6 @@ menuitem_t OPTIONS_NoireGameplayRings[] =
 
 	{IT_STRING | IT_CVAR, "Spawn Rings", "Will rings appear in tracks.",
 		NULL, {.cvar = &cv_ng_maprings}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Spawn Ring Boxes", "Enable or disable Ring Boxes appearance in tracks.",
-		NULL, {.cvar = &cv_ng_mapringboxes}, 0, 0},
-
-	{IT_STRING | IT_CVAR, "Ring Box Transformation", "After picking up Item Boxes, can they turn into Ring Boxes?",
-		NULL, {.cvar = &cv_ng_ringboxtransform}, 0, 0},
 };
 
 ///////////
@@ -182,8 +176,6 @@ void NG_Rings_OnChange(void)
 		CV_Set(&cv_ng_ringsting, "On");
 		CV_Set(&cv_ng_ringdeathmark, "-20");
 		CV_Set(&cv_ng_maprings, "On");
-		CV_Set(&cv_ng_mapringboxes, "On");
-		CV_Set(&cv_ng_ringboxtransform, "On");
 
 		for (int i = 1; i < OPTIONS_NoireGameplayRingsDef.numitems; i++)
 		{
@@ -198,8 +190,6 @@ void NG_Rings_OnChange(void)
 		CV_Set(&cv_ng_ringsting, "Off");
 		CV_Set(&cv_ng_ringdeathmark, "-20");
 		CV_Set(&cv_ng_maprings, "Off");
-		CV_Set(&cv_ng_mapringboxes, "Off");
-		CV_Set(&cv_ng_ringboxtransform, "Off");
 
 		for (int i = 1; i < OPTIONS_NoireGameplayRingsDef.numitems; i++)
 		{

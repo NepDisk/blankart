@@ -491,6 +491,8 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		if (player->mo->eflags & MFE_SPRUNG)
 			return;
 
+		player->mo->standingslope = NULL;
+
 		if ((player->speed > maxspeed) && terrain->pogoPanel == 2) // Prevent overshooting jumps
 		{
 			P_InstaThrust(player->mo, pushangle, maxspeed);

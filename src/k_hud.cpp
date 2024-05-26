@@ -14,6 +14,7 @@
 #include <vector>
 #include <deque>
 
+#include "d_player.h"
 #include "p_mobj.h"
 #include "v_draw.hpp"
 
@@ -179,9 +180,6 @@ static patch_t *kp_talk;
 static patch_t *kp_typdot;
 
 patch_t *kp_eggnum[6];
-
-static patch_t *kp_flameshieldmeter[FLAMESHIELD_MAX][2];
-static patch_t *kp_flameshieldmeter_bg[FLAMESHIELD_MAX][2];
 
 static patch_t *kp_fpview[3];
 static patch_t *kp_inputwheel[5];
@@ -482,24 +480,6 @@ void K_LoadKartHUDGraphics(void)
 	HU_UpdatePatch(&kp_seven[0], "K_RBSEV");
 	HU_UpdatePatch(&kp_jackpot[0], "K_RBJACK");
 
-	sprintf(buffer, "FSMFGxxx");
-	for (i = 0; i < FLAMESHIELD_MAX; i++)
-	{
-		buffer[5] = '0'+((i+1)/100);
-		buffer[6] = '0'+(((i+1)/10)%10);
-		buffer[7] = '0'+((i+1)%10);
-		HU_UpdatePatch(&kp_flameshieldmeter[i][0], "%s", buffer);
-	}
-
-	sprintf(buffer, "FSMBGxxx");
-	for (i = 0; i < FLAMESHIELD_MAX; i++)
-	{
-		buffer[5] = '0'+((i+1)/100);
-		buffer[6] = '0'+(((i+1)/10)%10);
-		buffer[7] = '0'+((i+1)%10);
-		HU_UpdatePatch(&kp_flameshieldmeter_bg[i][0], "%s", buffer);
-	}
-
 	// Splitscreen
 	HU_UpdatePatch(&kp_itembg[2], "K_ISBG");
 	HU_UpdatePatch(&kp_itembg[3], "K_ISBGD");
@@ -538,24 +518,6 @@ void K_LoadKartHUDGraphics(void)
 	HU_UpdatePatch(&kp_slotring[1], "K_SBRING");
 	HU_UpdatePatch(&kp_seven[1], "K_SBSEV");
 	HU_UpdatePatch(&kp_jackpot[1], "K_SBJACK");
-
-	sprintf(buffer, "FSMFSxxx");
-	for (i = 0; i < 120; i++)
-	{
-		buffer[5] = '0'+((i+1)/100);
-		buffer[6] = '0'+(((i+1)/10)%10);
-		buffer[7] = '0'+((i+1)%10);
-		HU_UpdatePatch(&kp_flameshieldmeter[i][1], "%s", buffer);
-	}
-
-	sprintf(buffer, "FSMBS0xx");
-	for (i = 0; i < 120; i++)
-	{
-		buffer[5] = '0'+((i+1)/100);
-		buffer[6] = '0'+(((i+1)/10)%10);
-		buffer[7] = '0'+((i+1)%10);
-		HU_UpdatePatch(&kp_flameshieldmeter_bg[i][1], "%s", buffer);
-	}
 
 	// 4P item spy
 	HU_UpdatePatch(&kp_itembg[4], "ISPYBG");
@@ -851,6 +813,7 @@ const char *K_GetItemPatch(UINT8 item, boolean tiny)
 			return (tiny ? "K_ISINV1" : "K_ITINV1");
 		case KITEM_BANANA:
 		case KRITEM_TRIPLEBANANA:
+		case KRITEM_TENFOLDBANANA:
 			return (tiny ? "K_ISBANA" : "K_ITBANA");
 		case KITEM_EGGMAN:
 			return (tiny ? "K_ISEGGM" : "K_ITEGGM");
@@ -948,23 +911,6 @@ static patch_t *K_GetSmallStaticCachedItemPatch(kartitems_t item)
 	}
 
 	return K_GetCachedItemPatch(item, offset);
-}
-
-static patch_t *K_GetCachedSlotMachinePatch(INT32 item, UINT8 offset)
-{
-	patch_t **kp[KSM__MAX] = {
-		kp_bar,
-		kp_doublebar,
-		kp_triplebar,
-		kp_slotring,
-		kp_seven,
-		kp_jackpot,
-	};
-
-	if (item >= 0 && item < KSM__MAX)
-		return kp[item][offset];
-	else
-		return NULL;
 }
 
 //}
@@ -1363,19 +1309,6 @@ static void K_drawKartItem(void)
 			else
 				localpatch[1] = kp_nodraw;
 		}
-		else if (stplyr->ballhogcharge > 0)
-		{
-			// itembar = stplyr->ballhogcharge;
-			// maxl = (((stplyr->itemamount-1) * BALLHOGINCREMENT) + 1);
-
-			itembar = stplyr->ballhogcharge % BALLHOGINCREMENT;
-			maxl = BALLHOGINCREMENT;
-
-			if (leveltime & 1)
-				localpatch[1] = kp_ballhog[offset];
-			else
-				localpatch[1] = kp_nodraw;
-		}
 		else if (stplyr->rocketsneakertimer > 1)
 		{
 			itembar = stplyr->rocketsneakertimer;
@@ -1383,6 +1316,21 @@ static void K_drawKartItem(void)
 
 			if (leveltime & 1)
 				localpatch[1] = kp_rocketsneaker[offset];
+			else
+				localpatch[1] = kp_nodraw;
+		}
+		else if (stplyr->itemtype == KITEM_FLAMESHIELD && ((stplyr->flamemeter > 1) || (stplyr->flamelength == 0)))
+		{
+			INT32 flamemax = stplyr->flamelength;
+			INT32 flamemeter = fmin(stplyr->flamemeter, flamemax);
+			if (flamemax != 0)
+			{
+				itembar = flamemax - flamemeter;
+				maxl = flamemax;
+			}
+
+			if (leveltime & 1)
+				localpatch[1] = kp_flameshield[offset];
 			else
 				localpatch[1] = kp_nodraw;
 		}
@@ -1416,7 +1364,6 @@ static void K_drawKartItem(void)
 				case KITEM_SPB:
 				case KITEM_LIGHTNINGSHIELD:
 				case KITEM_BUBBLESHIELD:
-				case KITEM_FLAMESHIELD:
 					localbg = K_getItemBoxPatch(offset,1);
 					/*FALLTHRU*/
 
@@ -1539,7 +1486,7 @@ static void K_drawKartItem(void)
 		V_ClearClipRect();
 
 		// A little goofy, but helps with ballhog charge conveyance—you're "loading" them.
-		UINT8 fakeitemamount = stplyr->itemamount - (stplyr->ballhogcharge / BALLHOGINCREMENT);
+		UINT8 fakeitemamount = stplyr->itemamount;
 
 		if (fakeitemamount >= numberdisplaymin && stplyr->itemRoulette.active == false)
 		{
@@ -1602,194 +1549,6 @@ static void K_drawKartItem(void)
 	// Quick Eggman numbers
 	if (stplyr->eggmanexplode > 1)
 		V_DrawScaledPatch(fx+17, fy+13-offset, V_HUDTRANS|V_SLIDEIN|fflags, kp_eggnum[std::min<INT32>(5, G_TicsToSeconds(stplyr->eggmanexplode))]);
-
-	if (stplyr->itemtype == KITEM_FLAMESHIELD && stplyr->flamelength > 0)
-	{
-		INT32 numframes = FLAMESHIELD_MAX;
-		INT32 absolutemax = numframes;
-		INT32 flamemax = stplyr->flamelength;
-		INT32 flamemeter = std::min(static_cast<INT32>(stplyr->flamemeter), flamemax);
-
-		INT32 bf = numframes - stplyr->flamelength;
-		INT32 ff = numframes - ((flamemeter * numframes) / absolutemax);
-
-		INT32 xo = 6, yo = 4;
-		INT32 flip = 0;
-
-		if (offset)
-		{
-			xo++;
-
-			if (!(R_GetViewNumber() & 1)) // Flip for P1 and P3 (yes, that's correct)
-			{
-				xo -= 62;
-				flip = V_FLIP;
-			}
-		}
-
-		/*
-		INT32 fmin = (8 * (bf-1));
-		if (ff < fmin)
-			ff = fmin;
-		*/
-
-		if (bf >= 0 && bf < numframes)
-			V_DrawScaledPatch(fx-xo, fy-yo, V_HUDTRANS|V_SLIDEIN|fflags|flip, kp_flameshieldmeter_bg[bf][offset]);
-
-		if (ff >= 0 && ff < numframes && stplyr->flamemeter > 0)
-		{
-			if ((stplyr->flamemeter > flamemax) && (leveltime & 1))
-			{
-				UINT8 *fsflash = R_GetTranslationColormap(TC_BLINK, SKINCOLOR_WHITE, GTC_CACHE);
-				V_DrawMappedPatch(fx-xo, fy-yo, V_HUDTRANS|V_SLIDEIN|fflags|flip, kp_flameshieldmeter[ff][offset], fsflash);
-			}
-			else
-			{
-				V_DrawScaledPatch(fx-xo, fy-yo, V_HUDTRANS|V_SLIDEIN|fflags|flip, kp_flameshieldmeter[ff][offset]);
-			}
-		}
-	}
-}
-
-static void K_drawKartSlotMachine(void)
-{
-	// ITEM_X = BASEVIDWIDTH-50;	// 270
-	// ITEM_Y = 24;					//  24
-
-	// Why write V_DrawScaledPatch calls over and over when they're all the same?
-	// Set to 'no item' just in case.
-	const UINT8 offset = ((r_splitscreen > 1) ? 1 : 0);
-
-	patch_t *localpatch[3] = { kp_nodraw, kp_nodraw, kp_nodraw };
-	patch_t *localbg = offset ? K_getSlotMachinePatch(1) : K_getSlotMachinePatch(0);
-
-	// == SHITGARBAGE UNLIMITED 2: RISE OF MY ASS ==
-	// FIVE LAYERS OF BULLSHIT PER-PIXEL SHOVING BECAUSE THE PATCHES HAVE DIFFERENT OFFSETS
-	// IF YOU ARE HERE TO ADJUST THE RINGBOX HUD TURN OFF YOUR COMPUTER AND GO TO YOUR LOCAL PARK
-
-	INT32 fx = 0, fy = 0, fflags = 0;	// final coords for hud and flags...
-	INT32 boxoffx = 0;
-	INT32 boxoffy = -6;
-	INT32 vstretch = 0;
-	INT32 hstretch = 3;
-	INT32 splitbsx = 0, splitbsy = 0;
-	skincolornum_t localcolor[3] = { static_cast<skincolornum_t>(K_GetHudColor()) };
-	SINT8 colormode[3] = { TC_RAINBOW };
-
-	fixed_t rouletteOffset = 0;
-	fixed_t rouletteSpace = SLOT_SPACING;
-	vector2_t rouletteCrop = {10, 10};
-	INT32 i;
-
-	if (stplyr->itemRoulette.itemListLen > 0)
-	{
-		// Init with item roulette stuff.
-		for (i = 0; i < 3; i++)
-		{
-			const SINT8 indexOfs = i-1;
-			const size_t index = (stplyr->itemRoulette.itemListLen + (stplyr->itemRoulette.index + indexOfs)) % stplyr->itemRoulette.itemListLen;
-
-			const SINT8 result = stplyr->itemRoulette.itemList[index];
-
-			localpatch[i] = K_GetCachedSlotMachinePatch(result, offset);
-		}
-	}
-
-	if (stplyr->itemRoulette.active == true)
-	{
-		rouletteOffset = K_GetSlotOffset(&stplyr->itemRoulette, rendertimefrac, 0);
-	}
-	else
-	{
-		rouletteOffset = stplyr->karthud[khud_rouletteoffset];
-
-		if (!stplyr->ringboxdelay)
-		{
-			return;
-		}
-	}
-
-	if (stplyr->karthud[khud_itemblink] && (leveltime & 1))
-	{
-		colormode[1] = TC_BLINK;
-		localcolor[1] = SKINCOLOR_WHITE;
-
-		// This looks kinda wild with the white-background patch.
-		/*
-		switch (stplyr->ringboxaward)
-		{
-			case 5: // JACKPOT!
-				localcolor[1] = K_RainbowColor(leveltime);
-				break;
-			default:
-				localcolor[1] = SKINCOLOR_WHITE;
-				break;
-		}
-		*/
-	}
-
-	// pain and suffering defined below
-	if (offset)
-	{
-		boxoffx -= 4;
-		if (!(R_GetViewNumber() & 1)) // If we are P1 or P3...
-		{
-			fx = ITEM_X + 10;
-			fy = ITEM_Y + 10;
-			fflags = V_SNAPTOLEFT|V_SNAPTOTOP|V_SPLITSCREEN;
-		}
-		else // else, that means we're P2 or P4.
-		{
-			fx = ITEM2_X + 7;
-			fy = ITEM2_Y + 10;
-			fflags = V_SNAPTORIGHT|V_SNAPTOTOP|V_SPLITSCREEN;
-		}
-
-		rouletteSpace = SLOT_SPACING_SPLITSCREEN;
-		rouletteOffset = FixedMul(rouletteOffset, FixedDiv(SLOT_SPACING_SPLITSCREEN, SLOT_SPACING));
-		rouletteCrop.x = 16;
-		rouletteCrop.y = 13;
-		splitbsx = -6;
-		splitbsy = -6;
-		boxoffy += 2;
-		hstretch = 0;
-	}
-	else
-	{
-		fx = ITEM_X;
-		fy = ITEM_Y;
-		fflags = V_SNAPTOTOP|V_SNAPTOLEFT|V_SPLITSCREEN;
-	}
-
-	if (r_splitscreen == 1)
-	{
-		fy -= 5;
-	}
-
-	UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
-	V_DrawMappedPatch(fx, fy, V_HUDTRANS|V_SLIDEIN|fflags, localbg, (K_UseColorHud()) ? colormap : NULL);
-
-	V_SetClipRect(
-		((fx + rouletteCrop.x + boxoffx + splitbsx) << FRACBITS), ((fy + rouletteCrop.y + boxoffy - vstretch + splitbsy) << FRACBITS),
-		rouletteSpace + (hstretch<<FRACBITS), rouletteSpace + (vstretch<<FRACBITS),
-		V_SLIDEIN|fflags
-	);
-
-	// item box has special layering, transparency, different sized patches, other fucked up shit
-	// ring box is evenly spaced and easy
-	rouletteOffset += rouletteSpace;
-	for (i = 0; i < 3; i++)
-	{
-		V_DrawFixedPatch(
-			((fx)<<FRACBITS), ((fy)<<FRACBITS) + rouletteOffset,
-			FRACUNIT, V_HUDTRANS|V_SLIDEIN|fflags,
-			localpatch[i], (localcolor[i] ? R_GetTranslationColormap(colormode[i], localcolor[i], GTC_CACHE) : NULL)
-		);
-
-		rouletteOffset -= rouletteSpace;
-	}
-
-	V_ClearClipRect();
 }
 
 tic_t K_TranslateTimer(tic_t drawtime, UINT8 mode, INT32 *return_jitter)
@@ -5232,7 +4991,7 @@ static void K_drawDistributionDebugger(void)
 		return;
 	}
 
-	K_FillItemRouletteData(stplyr, &rouletteData, false);
+	K_FillItemRouletteData(stplyr, &rouletteData);
 
 	for (i = 0; i < rouletteData.itemListLen; i++)
 	{
@@ -5955,14 +5714,7 @@ void K_drawKartHUD(void)
 			// Draw the item window
 			if (LUA_HudEnabled(hud_item) && !freecam)
 			{
-				if (stplyr->itemRoulette.ringbox && stplyr->itemamount == 0 && stplyr->itemtype == 0)
-				{
-					K_drawKartSlotMachine();
-				}
-				else
-				{
-					K_drawKartItem();
-				}
+				K_drawKartItem();
 			}
 		}
 	}

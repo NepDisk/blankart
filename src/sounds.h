@@ -971,49 +971,17 @@ typedef enum
 	sfx_keygen,
 	sfx_gpmetr,
 
-	// SRB2Kart - Ring Box
-	sfx_slot00,
-	sfx_slot01,
-	sfx_slot02,
-	sfx_slot03,
-	sfx_slot04,
-	sfx_slot05,
-
 	// RR - Flame Shield
 	sfx_fshld0,
 	sfx_fshld1,
 	sfx_fshld2,
 	sfx_fshld3,
 
-	// RR - Ballhog Charge
-	sfx_bhog00,
-	sfx_bhog01,
-	sfx_bhog02,
-	sfx_bhog03,
-	sfx_bhog04,
-	sfx_bhog05,
-
-	// SRB2Kart - Drop target sounds
-	sfx_kdtrg1,
-	sfx_kdtrg2,
-	sfx_kdtrg3,
-
 	// SRB2Kart - Powerup clash SFX
 	sfx_parry,
 
-	// Fast fall bounce
-	sfx_ffbonc,
-
 	// Shout message sound effect
 	sfx_sysmsg,
-
-	// Shrink laser
-	sfx_beam01,
-
-	// SPB seeking
-	sfx_spbska,
-	sfx_spbskb,
-	sfx_spbskc,
 
 	// Juicebox for SPB
 	sfx_gate01,

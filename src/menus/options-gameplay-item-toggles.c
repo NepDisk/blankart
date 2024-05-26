@@ -18,7 +18,7 @@ menuitem_t OPTIONS_GameplayItems[] =
 	// Mostly handled by the drawing function.
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Super Ring",			NULL, {.routine = M_HandleItemToggles}, KITEM_SUPERRING, 0},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Self-Propelled Bomb",	NULL, {.routine = M_HandleItemToggles}, KITEM_SPB, 0},
-	{IT_KEYHANDLER | IT_NOTHING, NULL, NULL, NULL, {.routine = M_HandleItemToggles}, 255, 0}, // maybe KITEM_PUYO eventually?
+	//{IT_KEYHANDLER | IT_NOTHING, NULL, NULL, NULL, {.routine = M_HandleItemToggles}, 255, 0}, // maybe KITEM_PUYO eventually?
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Toggle All / Ring Box Only", NULL, {.routine = M_HandleItemToggles}, 0, 0},
 
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Sneaker",				NULL, {.routine = M_HandleItemToggles}, KITEM_SNEAKER, 0},
@@ -28,6 +28,7 @@ menuitem_t OPTIONS_GameplayItems[] =
 
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Banana",				NULL, {.routine = M_HandleItemToggles}, KITEM_BANANA, 0},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Banana x3",				NULL, {.routine = M_HandleItemToggles}, KRITEM_TRIPLEBANANA, 0},
+	{IT_KEYHANDLER | IT_NOTHING, NULL, "Banana x10",			NULL, {.routine = M_HandleItemToggles}, KRITEM_TENFOLDBANANA, 0},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Eggmark",				NULL, {.routine = M_HandleItemToggles}, KITEM_EGGMAN, 0},
 
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Orbinaut",				NULL, {.routine = M_HandleItemToggles}, KITEM_ORBINAUT, 0},

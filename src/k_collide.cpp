@@ -95,7 +95,7 @@ boolean K_BananaBallhogCollide(mobj_t *t1, mobj_t *t2)
 	}
 	else if (t2->type == MT_BANANA || t2->type == MT_BANANA_SHIELD
 		|| t2->type == MT_ORBINAUT || t2->type == MT_ORBINAUT_SHIELD
-		|| t2->type == MT_JAWZ || t2->type == MT_JAWZ_SHIELD
+		|| t2->type == MT_JAWZ || t2->type == MT_JAWZ_DUD || t2->type == MT_JAWZ_SHIELD
 		|| t2->type == MT_BALLHOG)
 	{
 		// Other Item Damage
@@ -182,7 +182,10 @@ boolean K_EggItemCollide(mobj_t *t1, mobj_t *t2)
 		}
 		else
 		{
-			Obj_SpawnItemDebrisEffects(t1, t2);
+			//Popitem
+			//Obj_SpawnItemDebrisEffects(t1, t2);
+			if (t1->info->deathsound)
+				S_StartSound(t2, sfx_kc2e);
 
 #if 0
 			// Eggbox snipe!
@@ -359,7 +362,7 @@ boolean K_MineCollide(mobj_t *t1, mobj_t *t2)
 			K_PuntMine(t1, t2);
 		}
 	}
-	else if (t2->type == MT_ORBINAUT || t2->type == MT_JAWZ
+	else if (t2->type == MT_ORBINAUT || t2->type == MT_JAWZ || t2->type == MT_JAWZ_DUD
 		|| t2->type == MT_ORBINAUT_SHIELD || t2->type == MT_JAWZ_SHIELD)
 	{
 		// Bomb death
@@ -428,7 +431,7 @@ boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 	}
 	else if (t2->type == MT_BANANA || t2->type == MT_BANANA_SHIELD
 		|| t2->type == MT_ORBINAUT || t2->type == MT_ORBINAUT_SHIELD
-		|| t2->type == MT_JAWZ || t2->type == MT_JAWZ_SHIELD
+		|| t2->type == MT_JAWZ || t2->type == MT_JAWZ_DUD || t2->type == MT_JAWZ_SHIELD
 		|| t2->type == MT_BALLHOG)
 	{
 		// Other Item Damage
@@ -562,7 +565,7 @@ void K_LightningShieldAttack(mobj_t *actor, fixed_t size)
 
 boolean K_BubbleShieldCanReflect(mobj_t *t1, mobj_t *t2)
 {
-	return (t2->type == MT_ORBINAUT || t2->type == MT_JAWZ
+	return (t2->type == MT_ORBINAUT || t2->type == MT_JAWZ || t2->type == MT_JAWZ_DUD
 		|| t2->type == MT_BANANA || t2->type == MT_EGGMANITEM || t2->type == MT_BALLHOG
 		|| t2->type == MT_SSMINE || t2->type == MT_LANDMINE || t2->type == MT_SINK
 		|| (t2->type == MT_PLAYER && t1->target != t2));

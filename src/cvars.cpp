@@ -719,6 +719,7 @@ consvar_t cv_items[] = {
 	UnsavedNetVar("dualsneaker",		"On").on_off(),
 	UnsavedNetVar("triplesneaker",		"On").on_off(),
 	UnsavedNetVar("triplebanana",		"On").on_off(),
+	UnsavedNetVar("tenfoldorbinaut",	"On").on_off(),
 	UnsavedNetVar("tripleorbinaut",		"On").on_off(),
 	UnsavedNetVar("quadorbinaut",		"On").on_off(),
 	UnsavedNetVar("dualjawz",			"On").on_off(),
@@ -816,8 +817,6 @@ consvar_t cv_ng_ringdebt = UnsavedNetVar("ng_ringdebt", "On").on_off();
 consvar_t cv_ng_ringsting = UnsavedNetVar("ng_ringsting", "On").on_off();
 consvar_t cv_ng_ringdeathmark = UnsavedNetVar("ng_ringdeathmark", "Default (-20)").min_max(INT8_MIN, INT8_MAX, {{-20, "Default (-20)"}});
 consvar_t cv_ng_maprings = UnsavedNetVar("ng_maprings", "On").on_off().onchange(NG_Generic_OnChange);
-consvar_t cv_ng_mapringboxes = UnsavedNetVar("ng_mapringboxes", "On").on_off();
-consvar_t cv_ng_ringboxtransform = UnsavedNetVar("ng_ringboxtransform", "On").on_off();
 
 //Items
 consvar_t cv_ng_capsules = UnsavedNetVar("ng_capsules", "On").on_off().onchange(NG_Generic_OnChange);

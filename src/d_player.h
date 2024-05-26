@@ -98,7 +98,7 @@ typedef enum
 	PF_WANTSTOJOIN		= 1<<7, // Spectator that wants to join
 
 	PF_STASIS			= 1<<8, // Player is not allowed to move
-	PF_FAULT			= 1<<9, // F A U L T
+	PF_SKIDDOWN			= 1<<9, // PF_SKIDDOWN
 	PF_ELIMINATED		= 1<<10, // Battle-style elimination, no extra penalty
 	PF_NOCONTEST 		= 1<<11, // Did not finish (last place explosion)
 	PF_LOSTLIFE			= 1<<12, // Do not lose life more than once
@@ -189,6 +189,7 @@ typedef enum
 	KRITEM_DUALSNEAKER = NUMKARTITEMS,
 	KRITEM_TRIPLESNEAKER,
 	KRITEM_TRIPLEBANANA,
+	KRITEM_TENFOLDBANANA,
 	KRITEM_TRIPLEORBINAUT,
 	KRITEM_QUADORBINAUT,
 	KRITEM_DUALJAWZ,
@@ -204,17 +205,6 @@ typedef enum
 	KSHIELD_FLAME = 3,
 	NUMKARTSHIELDS
 } kartshields_t;
-
-typedef enum
-{
-	KSM_BAR,
-	KSM_DOUBLEBAR,
-	KSM_TRIPLEBAR,
-	KSM_RING,
-	KSM_SEVEN,
-	KSM_JACKPOT,
-	KSM__MAX,
-} kartslotmachine_t;
 
 typedef enum
 {
@@ -451,7 +441,6 @@ struct itemroulette_t
 	tic_t elapsed;
 
 	boolean eggman;
-	boolean ringbox;
 	boolean autoroulette;
 	UINT8 reserved;
 };
@@ -640,15 +629,12 @@ struct player_t
 	UINT8 gateSound;		// Sound effect combo
 
 	SINT8 aizdriftstrat;	// (-1 to 1) - Let go of your drift while boosting? Helper for the SICK STRATZ (sliptiding!) you have just unlocked
-	SINT8 aizdriftextend;	// Nonzero when you were sliptiding last tic, sign indicates direction.
 	INT32 aizdrifttilt;
 	INT32 aizdriftturn;
 
-	INT32 underwatertilt;
-
 	fixed_t offroad;		// In Super Mario Kart, going offroad has lee-way of about 1 second before you start losing speed
 
-	UINT8 brakestop; //Breakstop
+	UINT8 brakestop; // Brake stop
 	UINT8 pogospring;		// Pogo spring bounce effect
 	fixed_t pogosidemove;		// Used to store sidemove for pogo
 
@@ -698,9 +684,6 @@ struct player_t
 	UINT8 flamelength;	// Flame Shield dash meter, number of segments
 
 	UINT16 counterdash;	// Flame Shield boost without the flame, largely. Used in places where awarding thrust would affect player control.
-
-	UINT16 ballhogcharge;	// Ballhog charge up -- the higher this value, the more projectiles
-	boolean ballhogtap;		// Ballhog released during charge: used to allow semirapid tapfire
 
 	UINT16 hyudorotimer;	// Duration of the Hyudoro offroad effect itself
 	SINT8 stealingtimer;	// if >0 you are stealing, if <0 you are being stolen from
@@ -873,8 +856,6 @@ struct player_t
 	UINT8 kickstartaccel;
 	boolean autoring;	// did we autoring this tic?
 
-	UINT8 eggmanTransferDelay;
-
 	fixed_t SPBdistance;
 
 	UINT8 tripwireReboundDelay; // When failing Tripwire, brieftly lock out speed-based tripwire pass (anti-cheese)
@@ -909,9 +890,6 @@ struct player_t
 	boolean markedfordeath;
 	boolean stingfx;
 	UINT8 bumperinflate;
-
-	UINT8 ringboxdelay; // Delay until Ring Box auto-activates
-	UINT8 ringboxaward; // Where did we stop?
 
 	UINT8 itemflags; 	// holds IF_ flags (see itemflags_t)
 

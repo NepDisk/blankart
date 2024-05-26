@@ -98,52 +98,19 @@ static void K_RespawnAtWaypoint(player_t *player, waypoint_t *waypoint)
 }
 
 /*--------------------------------------------------
-	void K_DoFault(player_t *player)
-
-		See header file for description.
---------------------------------------------------*/
-
-void K_DoFault(player_t *player)
-{
-	player->nocontrol = (starttime - leveltime) + TICRATE/2;
-	if (!(player->pflags & PF_FAULT))
-	{
-		S_StartSound(player->mo, sfx_s3k83);
-		player->karthud[khud_fault] = 1;
-		player->pflags |= PF_FAULT;
-
-		if (P_IsDisplayPlayer(player))
-		{
-			S_StartSound(player->mo, sfx_s3kb2);
-		}
-
-		player->mo->renderflags |= RF_DONTDRAW;
-		player->mo->flags |= MF_NOCLIPTHING;
-
-		if (player->roundconditions.faulted == false)
-		{
-			player->roundconditions.faulted = true;
-			player->roundconditions.checkthisframe = true;
-		}
-	}
-}
-
-/*--------------------------------------------------
 	void K_DoIngameRespawn(player_t *player)
 
 		See header file for description.
 --------------------------------------------------*/
 void K_DoIngameRespawn(player_t *player)
 {
-	boolean faultstartfaulting = false;
 
 	if (!player->mo || P_MobjWasRemoved(player->mo))
 	{
 		return;
 	}
 
-	if (player->respawn.state != RESPAWNST_NONE &&
-			( player->pflags & PF_FAULT ) == 0)
+	if (player->respawn.state != RESPAWNST_NONE)
 	{
 		return;
 	}
@@ -151,33 +118,6 @@ void K_DoIngameRespawn(player_t *player)
 	if (leveltime <= introtime)
 	{
 		return;
-	}
-
-	// FAULT
-	if ((gametyperules & GTR_CIRCUIT) && leveltime < starttime)
-	{
-		const waypoint_t *finish = K_GetFinishLineWaypoint();
-
-		if (numfaultstarts > 0 && faultstart)
-		{
-			subsector_t *subs;
-			if ((subs = R_PointInSubsectorOrNull(faultstart->x << FRACBITS, faultstart->y << FRACBITS)) != NULL)
-			{
-				faultstartfaulting = true;
-				player->respawn.wp = NULL;
-				player->respawn.flip = false;
-				player->respawn.pointx = faultstart->x << FRACBITS;
-				player->respawn.pointy = faultstart->y << FRACBITS;
-				player->respawn.pointz =
-					P_GetSectorFloorZAt(subs->sector, faultstart->x << FRACBITS, faultstart->y << FRACBITS)
-					+ (faultstart->z << FRACBITS)
-					+ K_RespawnOffset(player, player->respawn.flip);
-				player->respawn.pointangle = FixedAngle(faultstart->angle << FRACBITS);
-			}
-		}
-		else if (!(mapheaderinfo[gamemap-1]->levelflags & LF_SECTIONRACE) && finish != NULL)
-			player->respawn.wp = finish->prevwaypoints[0];
-		K_DoFault(player);
 	}
 
 	player->ringboost = 0;
@@ -214,10 +154,6 @@ void K_DoIngameRespawn(player_t *player)
 			player->respawn.distanceleft = (dist * mapobjectscale) / FRACUNIT;
 			K_RespawnAtWaypoint(player, player->respawn.wp);
 		}
-	}
-	else if (faultstartfaulting)
-	{
-		; // Do nothing, position was already set
 	}
 	else if ((gametyperules & GTR_CHECKPOINTS)
 		&& player->checkpointId
@@ -340,7 +276,7 @@ void K_DoIngameRespawn(player_t *player)
 	player->respawn.returnspeed = 0;
 
 	player->respawn.airtimer = player->airtime;
-	player->respawn.truedeath = !!(player->pflags & PF_FAULT);
+	//player->respawn.truedeath = !!(player->pflags & PF_SKIDDOWN);
 
 	player->botvars.respawnconfirm = 0;
 
@@ -720,9 +656,6 @@ static void K_DropDashWait(player_t *player)
 {
 	if (player->nocontrol == 0)
 		player->respawn.timer--;
-
-	if (player->pflags & PF_FAULT)
-		return;
 
 	if (leveltime % 8 == 0)
 	{

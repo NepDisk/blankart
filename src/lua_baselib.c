@@ -27,6 +27,7 @@
 #include "hu_stuff.h"	// HU_AddChatText
 #include "console.h"
 #include "k_kart.h" // SRB2Kart
+#include "k_objects.h"
 #include "k_battle.h"
 #include "k_boss.h"
 #include "k_collide.h"
@@ -3301,7 +3302,7 @@ static int lib_kFindJawzTarget(lua_State *L)
 		return LUA_ErrInvalid(L, "mobj_t");
 	if (!source)
 		return LUA_ErrInvalid(L, "player_t");
-	LUA_PushUserdata(L, K_FindJawzTarget(actor, source, ANGLE_45), META_PLAYER);
+	LUA_PushUserdata(L, K_FindJawzTarget(actor, source), META_PLAYER);
 	return 1;
 }
 

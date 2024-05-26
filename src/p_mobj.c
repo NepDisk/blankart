@@ -57,7 +57,6 @@
 
 //Noire
 #include "noire/n_cvar.h"
-#include "noire/n_object.h"
 
 actioncache_t actioncachehead;
 
@@ -1238,9 +1237,6 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 			case MT_KARMAFIREWORK:
 				gravityadd /= 3;
 				break;
-			case MT_ITEM_DEBRIS:
-				gravityadd *= 6;
-				break;
 			case MT_FLOATINGITEM: {
 				// Basically this accelerates gravity after
 				// the object reached its peak vertical
@@ -1768,15 +1764,7 @@ void P_XYMovement(mobj_t *mo)
 					S_StartSound(mo, mo->info->activesound);
 
 					//{ SRB2kart - Orbinaut, Ballhog
-					// Ballhog dies on contact with walls
-					if (mo->type == MT_BALLHOG)
-					{
-						S_StartSound(mo, mo->info->deathsound);
-						P_KillMobj(mo, NULL, NULL, DMG_NORMAL);
-						return;
-					}
-					// Bump sparks
-					else if (mo->type == MT_ORBINAUT)
+					if (mo->type == MT_ORBINAUT || mo->type == MT_BALLHOG)
 					{
 						mobj_t *fx;
 						fx = P_SpawnMobj(mo->x, mo->y, mo->z, MT_BUMP);
@@ -1801,6 +1789,7 @@ void P_XYMovement(mobj_t *mo)
 							/*FALLTHRU*/
 
 						case MT_JAWZ:
+						case MT_JAWZ_DUD:
 							if (mo->health == 1)
 							{
 								// This Item Damage
@@ -2356,26 +2345,6 @@ boolean P_ZMovement(mobj_t *mo)
 		// hit the floor
 		if (mo->type == MT_SPINFIRE) // elemental shield fire is another exception here
 			;
-		else if (mo->type == MT_ITEM_DEBRIS)
-		{
-			mom.z = Obj_ItemDebrisBounce(mo, mom.z);
-
-			if (mom.z == 0)
-			{
-				return false;
-			}
-		}
-		else if (mo->type == MT_DRIFTCLIP)
-		{
-			mom.z = -mom.z/2;
-			if (abs(mom.z) > 4 * mo->scale / 3)
-			{
-				K_SpawnDriftBoostClipSpark(mo);
-				S_StartSound(mo, sfx_tink);
-			}
-			else
-				mo->renderflags ^= RF_DONTDRAW;
-		}
 		else if (mo->type == MT_DEBTSPIKE)
 		{
 			mom.x = mom.y = 0;
@@ -5140,6 +5109,7 @@ boolean P_IsKartItem(INT32 type)
 		case MT_ORBINAUT:
 		case MT_ORBINAUT_SHIELD:
 		case MT_JAWZ:
+		case MT_JAWZ_DUD:
 		case MT_JAWZ_SHIELD:
 		case MT_SSMINE:
 		case MT_SSMINE_SHIELD:
@@ -5166,6 +5136,7 @@ boolean P_IsKartFieldItem(INT32 type)
 		case MT_EGGMANITEM:
 		case MT_ORBINAUT:
 		case MT_JAWZ:
+		case MT_JAWZ_DUD:
 		case MT_SSMINE:
 		case MT_LANDMINE:
 		case MT_BALLHOG:
@@ -6288,9 +6259,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 			return;
 		}
 		break;
-	case MT_DRIFTELECTRICSPARK:
-		mobj->renderflags ^= RF_DONTDRAW;
-		break;
 	case MT_MONITOR_SHARD:
 		Obj_MonitorShardThink(mobj);
 		break;
@@ -6529,12 +6497,6 @@ static boolean P_MobjDeadThink(mobj_t *mobj)
 		}
 	}
 	break;
-	case MT_BANANA_SPARK:
-	{
-		angle_t spin = FixedMul(FixedDiv(abs(mobj->momz), 8 * mobj->scale), ANGLE_22h);
-		mobj->rollangle += spin;
-	}
-	break;
 	case MT_ORBINAUT:
 	case MT_EGGMANITEM:
 	case MT_LANDMINE:
@@ -6554,6 +6516,7 @@ static boolean P_MobjDeadThink(mobj_t *mobj)
 		if (P_IsObjectOnGround(mobj))
 			P_SetMobjState(mobj, mobj->info->xdeathstate);
 		/* FALLTHRU */
+	case MT_JAWZ_DUD:
 	case MT_JAWZ_SHIELD:
 		mobj->renderflags ^= RF_DONTDRAW;
 		break;
@@ -7026,88 +6989,19 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 	}
 	case MT_JAWZ:
 	{
-		OBJ_JawzOldThink(mobj);
+		Obj_JawzThink(mobj);
 		P_MobjCheckWater(mobj);
 		break;
 	}
-	case MT_EGGMANITEM:
-		Obj_RandomItemVisuals(mobj);
-		/* FALLTHRU */
-	case MT_BANANA:
-		mobj->friction = ORIG_FRICTION/4;
-
-		if (mobj->momx || mobj->momy)
-		{
-			mobj_t *ghost = P_SpawnGhostMobj(mobj);
-
-			if (mobj->target && !P_MobjWasRemoved(mobj->target) && mobj->target->player)
-			{
-				ghost->color = mobj->target->player->skincolor;
-				ghost->colorized = true;
-			}
-		}
-
-		if (P_IsObjectOnGround(mobj))
-		{
-			//mobj->rollangle = 0;
-
-			if (mobj->health > 1)
-			{
-				S_StartSound(mobj, mobj->info->activesound);
-				mobj->momx = mobj->momy = 0;
-				mobj->health = 1;
-
-				if (mobj->type == MT_EGGMANITEM)
-				{
-					// Grow to match the actual items
-					mobj->destscale = Obj_RandomItemScale(mobj->destscale);
-				}
-			}
-		}
-		else
-		{
-			// tilt n tumble
-			angle_t spin = FixedMul(FixedDiv(abs(mobj->momz), 8 * mobj->scale), ANGLE_67h);
-			mobj->angle += spin;
-			mobj->rollangle -= spin;
-		}
-
-		P_MobjCheckWater(mobj);
-
-		if (mobj->threshold > 0)
-			mobj->threshold--;
+	case MT_JAWZ_DUD:
+	{
+		Obj_JawzDudThink(mobj);
 		break;
-	case MT_BANANA_SPARK:
+	}
+	case MT_EGGMANITEM:
+	case MT_BANANA:
 		{
-			if (leveltime & 1)
-			{
-				mobj->spritexscale = mobj->spriteyscale = FRACUNIT;
-			}
-			else
-			{
-				if ((leveltime / 2) & 1)
-				{
-					mobj->spriteyscale = 3*FRACUNIT/2;
-				}
-				else
-				{
-					mobj->spritexscale = 3*FRACUNIT/2;
-				}
-			}
-
-			if (P_IsObjectOnGround(mobj) == true && mobj->momz * P_MobjFlip(mobj) <= 0)
-			{
-				P_SetObjectMomZ(mobj, 8*FRACUNIT, false);
-
-				if (mobj->health > 0)
-				{
-					mobj->tics = 1;
-					mobj->destscale = 0;
-					mobj->spritexscale = mobj->spriteyscale = FRACUNIT;
-					mobj->health = 0;
-				}
-			}
-
+			Obj_EggBananaThink(mobj);
 			break;
 		}
 	case MT_SPB:
@@ -7371,105 +7265,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			return false;
 		}
 		break;
-	case MT_DRIFTEXPLODE:
-		if (!mobj->target || !mobj->target->health)
-		{
-			P_RemoveMobj(mobj);
-			return false;
-		}
-
-		//mobj->angle = mobj->target->angle;
-		{
-			angle_t angle = K_MomentumAngle(mobj->target);
-			fixed_t nudge;
-
-			mobj->angle = angle;
-
-			if (( mobj->fuse & 1 ))
-			{
-				nudge = 4*mobj->target->radius;
-				/* unrotate interp angle */
-				mobj->old_angle -= ANGLE_90;
-			}
-			else
-			{
-				nudge = 2*mobj->target->radius;
-				/* rotate the papersprite frames to see the flat angle */
-				mobj->angle += ANGLE_90;
-				mobj->old_angle += ANGLE_90;
-			}
-
-			P_MoveOrigin(mobj,
-					mobj->target->x + P_ReturnThrustX(mobj, angle + ANGLE_180, nudge),
-					mobj->target->y + P_ReturnThrustY(mobj, angle + ANGLE_180, nudge),
-					mobj->target->z);
-		}
-		P_SetScale(mobj, mobj->target->scale);
-
-		mobj->roll = mobj->target->roll;
-		mobj->pitch = mobj->target->pitch;
-
-		if (mobj->fuse <= 16)
-		{
-			mobj->color = SKINCOLOR_GOLD;
-			/* don't draw papersprite frames after blue boost */
-			mobj->renderflags ^= RF_DONTDRAW;
-		}
-		else if (mobj->fuse <= 32)
-			mobj->color = SKINCOLOR_KETCHUP;
-		else if (mobj->fuse <= 48)
-			mobj->color = SKINCOLOR_SAPPHIRE;
-		else if (mobj->fuse > 48)
-			mobj->color = K_RainbowColor(
-				(SKINCOLOR_SAPPHIRE - SKINCOLOR_PINK) // Smoothly transition into the other state
-				+ ((mobj->fuse - 32) * 2) // Make the color flashing slow down while it runs out
-			);
-
-		switch (mobj->extravalue1)
-		{
-			case 4:/* rainbow boost */
-				/* every 20 tics, bang! */
-				if (( 120 - mobj->fuse ) % 10 == 0)
-				{
-					K_SpawnDriftBoostClip(mobj->target->player);
-					S_StartSound(mobj->target, sfx_s3k77);
-				}
-				break;
-
-			case 3:/* blue boost */
-				if ((mobj->fuse == 32)/* to red*/
-				|| (mobj->fuse == 16))/* to yellow*/
-					K_SpawnDriftBoostClip(mobj->target->player);
-				break;
-
-			case 2:/* red boost */
-				if (mobj->fuse == 16)/* to yellow*/
-					K_SpawnDriftBoostClip(mobj->target->player);
-				break;
-
-			case 0:/* air failsafe boost */
-				mobj->color = SKINCOLOR_SILVER; // force white
-				break;
-		}
-
-		{
-			player_t *p = NULL;
-			if (mobj->target->target && mobj->target->target->player)
-				p = mobj->target->target->player;
-			else if (mobj->target->player)
-				p = mobj->target->player;
-
-			if (p)
-			{
-				if (p->driftboost > mobj->movecount)
-				{
-					; // reset animation
-				}
-
-				mobj->movecount = p->driftboost;
-			}
-		}
-		break;
 	case MT_TRIPWIREBOOST: {
 		fixed_t newHeight;
 		fixed_t newScale;
@@ -7655,9 +7450,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			if (leveltime & 1)
 				mobj->renderflags |= RF_DONTDRAW;
 		}
-		break;
-	case MT_BRAKEDUST:
-		//mobj->renderflags ^= RF_DONTDRAW;
 		break;
 	case MT_PLAYERRETICULE:
 		if (!mobj->target || !mobj->target->health)
@@ -8127,11 +7919,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 	case MT_HYUDORO_CENTER:
 	{
 		Obj_HyudoroCenterThink(mobj);
-		break;
-	}
-	case MT_ITEM_DEBRIS:
-	{
-		Obj_ItemDebrisThink(mobj);
 		break;
 	}
 	case MT_BATTLEUFO:
@@ -9100,9 +8887,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		{
 			return false;
 		}
-		/* FALLTHRU */
-	case MT_SPHEREBOX:
-		Obj_RandomItemVisuals(mobj);
 		break;
 	case MT_MONITOR_PART:
 		Obj_MonitorPartThink(mobj);
@@ -9776,14 +9560,10 @@ void P_MobjThinker(mobj_t *mobj)
 	// Sliding physics for slidey mobjs!
 	if (mobj->type == MT_FLINGRING
 		|| mobj->type == MT_FLINGBLUESPHERE
-		|| mobj->type == MT_EMERALD
 		|| mobj->type == MT_BIGTUMBLEWEED
 		|| mobj->type == MT_LITTLETUMBLEWEED
 		|| mobj->type == MT_CANNONBALLDECOR
-		|| mobj->type == MT_FALLINGROCK
-		|| mobj->type == MT_ORBINAUT
-		|| mobj->type == MT_JAWZ)
-	{
+		|| mobj->type == MT_FALLINGROCK) {
 		P_TryMove(mobj, mobj->x, mobj->y, true, NULL); // Sets mo->standingslope correctly
 
 		if (P_MobjWasRemoved(mobj)) // anything that calls checkposition can be lethal
@@ -10012,6 +9792,7 @@ static void P_DefaultMobjShadowScale(mobj_t *thing)
 		case MT_ORBINAUT:
 		case MT_ORBINAUT_SHIELD:
 		case MT_JAWZ:
+		case MT_JAWZ_DUD:
 		case MT_JAWZ_SHIELD:
 		case MT_SSMINE:
 		case MT_SSMINE_SHIELD:
@@ -10053,9 +9834,6 @@ static void P_DefaultMobjShadowScale(mobj_t *thing)
 		case MT_ITEMCAPSULE:
 		case MT_POGOSPRING:
 			thing->shadowscale = FRACUNIT/2;
-			break;
-		case MT_DRIFTCLIP:
-			thing->shadowscale = FRACUNIT/3;
 			break;
 		case MT_SNEAKERPANEL:
 			thing->shadowscale = 0;

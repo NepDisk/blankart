@@ -25,140 +25,68 @@
 #include "../k_respawn.h"
 #include "../k_collide.h"
 
-#define ORBINAUT_MAXTURN (ANGLE_67h)
-#define ORBINAUT_TURNLERP (16)
-
-#define orbinaut_speed(o) ((o)->movefactor)
 #define orbinaut_selfdelay(o) ((o)->threshold)
-#define orbinaut_droptime(o) ((o)->movecount)
-
-#define orbinaut_turn(o) ((o)->extravalue1)
 
 #define orbinaut_owner(o) ((o)->target)
 
-#define orbinaut_shield_dist(o) ((o)->extravalue1)
-
 enum {
-	ORBI_DROPPED	= 0x01, // stationary hazard
-	ORBI_TOSSED		= 0x02, // Gacha Bom tossed forward
-	ORBI_TRAIL		= 0x04, // spawn afterimages
-	ORBI_SPIN		= 0x08, // animate facing angle
 	ORBI_WATERSKI	= 0x10, // this orbinaut can waterski
 };
 
 #define orbinaut_flags(o) ((o)->movedir)
 #define orbinaut_spin(o) ((o)->extravalue2)
 
-void Obj_OrbinautThink(mobj_t *th)
+void Obj_OrbinautThink(mobj_t *mobj)
 {
-	boolean grounded = P_IsObjectOnGround(th);
-
-	if (th->fuse > 0 && th->fuse <= TICRATE)
+	boolean grounded = P_IsObjectOnGround(mobj);
+	if (mobj->flags2 & MF2_AMBUSH)
 	{
-		th->renderflags ^= RF_DONTDRAW;
-	}
-
-	if (orbinaut_flags(th) & ORBI_DROPPED)
-	{
-		if (grounded && (th->flags & MF_NOCLIPTHING))
+		if (grounded && (mobj->flags & MF_NOCLIPTHING))
 		{
-			th->momx = 1;
-			th->momy = 0;
-			th->frame = 3;
-			S_StartSound(th, th->info->activesound);
-			th->flags &= ~MF_NOCLIPTHING;
+			mobj->momx = 1;
+			mobj->momy = 0;
+			mobj->frame = 3;
+			S_StartSound(mobj, mobj->info->activesound);
+			mobj->flags &= ~MF_NOCLIPTHING;
 		}
-		else if (orbinaut_droptime(th))
+		else if (mobj->movecount)
+			mobj->movecount--;
+		else if (mobj->frame < 3)
 		{
-			orbinaut_droptime(th)--;
-		}
-		else if (th->frame < 3)
-		{
-			orbinaut_droptime(th) = 2;
-			th->frame++;
-		}
-
-		return;
-	}
-
-	if (orbinaut_flags(th) & ORBI_TRAIL)
-	{
-		mobj_t *ghost = NULL;
-
-		ghost = P_SpawnGhostMobj(th);
-		ghost->colorized = true; // already has color!
-	}
-
-	th->angle = K_MomentumAngle(th);
-	if (orbinaut_turn(th) != 0)
-	{
-		th->angle += orbinaut_turn(th);
-
-		if (abs(orbinaut_turn(th)) < ORBINAUT_MAXTURN)
-		{
-			if (orbinaut_turn(th) < 0)
-			{
-				orbinaut_turn(th) -= ORBINAUT_MAXTURN / ORBINAUT_TURNLERP;
-			}
-			else
-			{
-				orbinaut_turn(th) += ORBINAUT_MAXTURN / ORBINAUT_TURNLERP;
-			}
+			mobj->movecount = 2;
+			mobj->frame++;
 		}
 	}
-
-	if (grounded == true)
+	else
 	{
-		fixed_t finalspeed = orbinaut_speed(th);
-		const fixed_t currentspeed = R_PointToDist2(0, 0, th->momx, th->momy);
-		fixed_t thrustamount = 0;
-		fixed_t frictionsafety = (th->friction == 0) ? 1 : th->friction;
+		fixed_t finalspeed = mobj->movefactor;
 
-		if (th->health <= 5)
+		P_SpawnGhostMobj(mobj);
+
+		mobj->angle = R_PointToAngle2(0, 0, mobj->momx, mobj->momy);
+		if (mobj->health <= 5)
 		{
 			INT32 i;
-			for (i = 5; i >= th->health; i--)
-			{
+			for (i = 5; i >= mobj->health; i--)
 				finalspeed = FixedMul(finalspeed, FRACUNIT-FRACUNIT/4);
-			}
 		}
 
-		if (currentspeed >= finalspeed)
+		P_InstaThrust(mobj, mobj->angle, finalspeed);
+
+		if (grounded)
 		{
-			// Thrust as if you were at top speed, slow down naturally
-			thrustamount = FixedDiv(finalspeed, frictionsafety) - finalspeed;
-		}
-		else
-		{
-			const fixed_t beatfriction = FixedDiv(currentspeed, frictionsafety) - currentspeed;
-			// Thrust to immediately get to top speed
-			thrustamount = beatfriction + FixedDiv(finalspeed - currentspeed, frictionsafety);
+			/*sector_t *sec2 = P_ThingOnSpecial3DFloor(mobj);
+			if ((sec2 && GETSECSPECIAL(sec2->special, 3) == 1)
+				|| (P_IsObjectOnRealGround(mobj, mobj->subsector->sector)
+				&& GETSECSPECIAL(mobj->subsector->sector->special, 3) == 1))
+				K_DoPogoSpring(mobj, 0, 1);*/
 		}
 
-		P_Thrust(th, th->angle, thrustamount);
-	}
+		if (mobj->threshold > 0)
+			mobj->threshold--;
 
-	if (orbinaut_flags(th) & ORBI_SPIN)
-	{
-		th->angle = orbinaut_spin(th);
-		orbinaut_spin(th) += ANGLE_22h;
-	}
-
-	/* todo: UDMFify
-	if (P_MobjTouchingSectorSpecialFlag(th, ?))
-	{
-		K_DoPogoSpring(th, 0, 1);
-	}
-	*/
-
-	if (orbinaut_selfdelay(th) > 0)
-	{
-		orbinaut_selfdelay(th)--;
-	}
-
-	if (leveltime % 6 == 0)
-	{
-		S_StartSound(th, th->info->activesound);
+		if (leveltime % 6 == 0)
+			S_StartSound(mobj, mobj->info->activesound);
 	}
 }
 
@@ -192,7 +120,7 @@ boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 	if (t2->player)
 	{
 		if ((t2->player->flashing > 0)
-			&& !(t1->type == MT_ORBINAUT || t1->type == MT_JAWZ))
+			&& !(t1->type == MT_ORBINAUT || t1->type == MT_JAWZ || t1->type == MT_JAWZ_DUD))
 			return true;
 
 		if (t2->player->hyudorotimer)
@@ -225,7 +153,7 @@ boolean Obj_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 
 		damageitem = true;
 	}
-	else if (t2->type == MT_ORBINAUT || t2->type == MT_JAWZ
+	else if (t2->type == MT_ORBINAUT || t2->type == MT_JAWZ || t2->type == MT_JAWZ_DUD
 		|| t2->type == MT_ORBINAUT_SHIELD || t2->type == MT_JAWZ_SHIELD
 		|| t2->type == MT_BANANA || t2->type == MT_BANANA_SHIELD
 		|| t2->type == MT_BALLHOG)
@@ -373,11 +301,6 @@ void Obj_OrbinautJawzMoveHeld(player_t *player)
 
 					cur = cur->hnext;
 				}
-}
-
-void Obj_OrbinautDrop(mobj_t *th)
-{
-	orbinaut_flags(th) |= ORBI_DROPPED;
 }
 
 boolean Obj_OrbinautCanRunOnWater(mobj_t *th)

@@ -765,6 +765,7 @@ static UINT8 GetUFODamage(mobj_t *inflictor, UINT8 damageType)
 				break;
 			}
 			case MT_JAWZ:
+			case MT_JAWZ_DUD:
 			{
 				// Thrown Jawz deal a bit extra.
 				targetdamaging = UFOD_JAWZ;

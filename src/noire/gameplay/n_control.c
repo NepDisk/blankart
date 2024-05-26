@@ -19,8 +19,8 @@ boolean K_PlayerCanTurn(const player_t* player)
 	if (leveltime > starttime && (player->cmd.buttons & BT_ACCELERATE && player->cmd.buttons & BT_BRAKE)) // Rubber-burn turn
 		return true;
 
-	//if (player->respawn.state == RESPAWNST_NONE) // Respawning
-		//return true;
+	if (player->respawn.state == RESPAWNST_DROP) // Respawning
+		return true;
 
 	if (player->spectator || objectplacing) // Not a physical player
 		return true;
@@ -272,7 +272,7 @@ void N_LegacyStart(player_t *player)
 			player->nocontrol = 40;
 			//S_StartSound(player->mo, sfx_kc34);
 			S_StartSound(player->mo, sfx_s3k83);
-			player->pflags |= PF_FAULT; // cheeky pflag reuse
+			player->pflags |= PF_SKIDDOWN; // cheeky pflag reuse
 		}
 
 		player->boostcharge = 0;
