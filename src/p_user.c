@@ -1857,7 +1857,7 @@ static void P_3dMovement(player_t *player)
 	fixed_t oldMagnitude, newMagnitude;
 	vector3_t totalthrust;
 
-	totalthrust.x = totalthrust.y = 0; // I forget if this is needed
+	totalthrust.x = totalthrust.y = totalthrust.z = 0; // I forget if this is needed
 
 	// Get the old momentum; this will be needed at the end of the function! -SH
 	oldMagnitude = R_PointToDist2(player->mo->momx - player->cmomx, player->mo->momy - player->cmomy, 0, 0);
