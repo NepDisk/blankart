@@ -3329,8 +3329,9 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 
 	"MT_PLAYERRETICULE", // Jawz reticule
 
-	"MT_SSMINE_SHIELD", // Special Stage Mine stuff
 	"MT_SSMINE",
+	"MT_SSMINE_SHIELD", // Special Stage Mine stuff
+
 
 	"MT_SMOLDERING", // New explosion
 	"MT_BOOMEXPLODE",
