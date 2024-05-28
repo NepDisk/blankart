@@ -1772,6 +1772,7 @@ static void K_DrawKartPositionNum(INT32 num)
 	fixed_t scale = FRACUNIT;
 	patch_t *localpatch = kp_positionnum[0][0];
 	INT32 fx = 0, fy = 0, fflags = 0;
+	INT32 xoffs = (cv_drawinput.value) ? -48 : 0;
 	boolean flipdraw = false;	// flip the order we draw it in for MORE splitscreen bs. fun.
 	boolean flipvdraw = false;	// used only for 2p splitscreen so overtaking doesn't make 1P's position fly off the screen.
 	boolean overtake = false;
@@ -1789,7 +1790,7 @@ static void K_DrawKartPositionNum(INT32 num)
 	// pain and suffering defined below
 	if (!r_splitscreen)
 	{
-		fx = POSI_X;
+		fx = POSI_X + xoffs;
 		fy = BASEVIDHEIGHT - 8;
 		fflags = V_SNAPTOBOTTOM|V_SNAPTORIGHT|V_SPLITSCREEN;
 	}
@@ -4716,58 +4717,95 @@ static void K_drawKartFirstPerson(void)
 	}
 }
 
+// doesn't need to ever support 4p
 static void K_drawInput(void)
 {
-	UINT8 viewnum = R_GetViewNumber();
-	boolean freecam = camera[viewnum].freecam;	//disable some hud elements w/ freecam
+	static INT32 pn = 0;
+	INT32 target = 0, splitflags = (V_SNAPTOBOTTOM|V_SNAPTORIGHT);
+	INT32 x = BASEVIDWIDTH - 32, y = BASEVIDHEIGHT-24, offs, col;
+	const INT32 accent1 = splitflags | skincolors[stplyr->skincolor].ramp[5];
+	const INT32 accent2 = splitflags | skincolors[stplyr->skincolor].ramp[9];
+	ticcmd_t *cmd = &stplyr->cmd;
 
-	if (!cv_drawinput.value && !modeattacking && gametype != GT_TUTORIAL)
+	if (timeinmap <= 105)
 		return;
 
-	if (stplyr->spectator || freecam || demo.attract)
-		return;
-
-	INT32 def[4][3] = {
-		{247, 156, V_SNAPTOBOTTOM | V_SNAPTORIGHT}, // 1p
-		{247, 56, V_SNAPTOBOTTOM | V_SNAPTORIGHT}, // 2p
-		{6, 52, V_SNAPTOBOTTOM | V_SNAPTOLEFT}, // 4p left
-		{282 - BASEVIDWIDTH/2, 52, V_SNAPTOBOTTOM | V_SNAPTORIGHT}, // 4p right
-	};
-	INT32 k = r_splitscreen <= 1 ? r_splitscreen : 2 + (viewnum & 1);
-	INT32 flags = def[k][2] | V_SPLITSCREEN;
-	char mode = ((stplyr->pflags & PF_ANALOGSTICK) ? '4' : '2') + (r_splitscreen > 1);
-	bool local = !demo.playback && P_IsMachineLocalPlayer(stplyr);
-	fixed_t slide = K_GetDialogueSlide(FRACUNIT);
-	INT32 tallySlide = []() -> INT32
+	if (timeinmap < 113)
 	{
-		if (r_splitscreen <= 1)
-		{
-			return 0;
-		}
-		if (!stplyr->tally.active)
-		{
-			return 0;
-		}
-		constexpr INT32 kSlideDown = 22;
-		if (stplyr->tally.state == TALLY_ST_GOTTHRU_SLIDEIN ||
-			stplyr->tally.state == TALLY_ST_GAMEOVER_SLIDEIN)
-		{
-			return static_cast<INT32>(Easing_OutQuad(std::min<fixed_t>(stplyr->tally.transition * 2, FRACUNIT), 0, kSlideDown));
-		}
-		return kSlideDown;
-	}();
-	if (slide)
-		flags &= ~(V_SNAPTORIGHT); // don't draw underneath the dialogue box in non-green resolutions
+		INT32 count = ((INT32)(timeinmap) - 105);
+		offs = 64;
+		while (count-- > 0)
+			offs >>= 1;
+		x += offs;
+	}
 
-	// Move above the boss health bar.
-	// TODO: boss HUD only works in 1P, so this only works in 1P too.
-	if (LUA_HudEnabled(hud_position) && bossinfo.valid)
+#define BUTTW 8
+#define BUTTH 11
+
+#define drawbutt(xoffs, butt, symb)\
+	if (!stplyr->exiting && (cmd->buttons & butt))\
+	{\
+		offs = 2;\
+		col = accent1;\
+	}\
+	else\
+	{\
+		offs = 0;\
+		col = accent2;\
+		V_DrawFill(x+(xoffs), y+BUTTH, BUTTW-1, 2, splitflags|31);\
+	}\
+	V_DrawFill(x+(xoffs), y+offs, BUTTW-1, BUTTH, col);\
+	V_DrawFixedPatch((x+1+(xoffs))<<FRACBITS, (y+offs+1)<<FRACBITS, FRACUNIT, splitflags, fontv[TINY_FONT].font[symb-HU_FONTSTART], NULL)
+
+	drawbutt(-2*BUTTW, BT_ACCELERATE, 'A');
+	drawbutt(  -BUTTW, BT_BRAKE,      'B');
+	drawbutt(       0, BT_DRIFT,      'D');
+	drawbutt(   BUTTW, BT_ATTACK,     'I');
+
+#undef drawbutt
+
+#undef BUTTW
+#undef BUTTH
+
+	y -= 1;
+
+	if (stplyr->exiting || !cmd->driftturn) // no turn
+		target = 0;
+	else // turning of multiple strengths!
 	{
-		constexpr tic_t kDelay = 2u;
-		// See K_drawBossHealthBar
-		tic_t start = lt_endtime - 1u;
-		tic_t t = std::clamp(lt_ticker, start, start + kDelay) - start;
-		def[0][1] -= 24 + Easing_Linear(t * FRACUNIT / kDelay, 0, 7);
+		target = ((abs(cmd->driftturn) - 1)/125)+1;
+		if (target > 4)
+			target = 4;
+		if (cmd->driftturn < 0)
+			target = -target;
+	}
+
+	if (pn != target)
+	{
+		if (abs(pn - target) == 1)
+			pn = target;
+		else if (pn < target)
+			pn += 2;
+		else //if (pn > target)
+			pn -= 2;
+	}
+
+	if (pn < 0)
+	{
+		splitflags |= V_FLIP; // right turn
+		x--;
+	}
+
+	target = abs(pn);
+	if (target > 4)
+		target = 4;
+
+	if (!stplyr->skincolor)
+		V_DrawFixedPatch(x<<FRACBITS, y<<FRACBITS, FRACUNIT, splitflags, kp_inputwheel[target], NULL);
+	else
+	{
+		UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, static_cast<skincolornum_t>(K_GetHudColor()), GTC_CACHE);
+		V_DrawFixedPatch(x<<FRACBITS, y<<FRACBITS, FRACUNIT, splitflags, kp_inputwheel[target], colormap);
 	}
 }
 
@@ -4917,6 +4955,7 @@ void K_drawKartFreePlay(void)
 	INT32 h_snap = r_splitscreen < 2 ? V_SNAPTORIGHT | V_SLIDEIN : V_HUDTRANS;
 	fixed_t x = ((r_splitscreen > 1 ? BASEVIDWIDTH/4 : BASEVIDWIDTH - (LAPS_X+6)) * FRACUNIT);
 	fixed_t y = ((r_splitscreen ? BASEVIDHEIGHT/2 : BASEVIDHEIGHT) - 20) * FRACUNIT;
+	INT32 xoffs = (cv_drawinput.value) ? -48<<FRACBITS: 0;
 
 	x -= V_StringScaledWidth(
 		FRACUNIT,
@@ -4928,7 +4967,7 @@ void K_drawKartFreePlay(void)
 	) / (r_splitscreen > 1 ? 2 : 1);
 
 	V_DrawStringScaled(
-		x,
+		x + xoffs,
 		y,
 		FRACUNIT,
 		FRACUNIT,

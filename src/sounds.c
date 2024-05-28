@@ -321,7 +321,7 @@ sfxinfo_t S_sfx[NUMSFX] =
   // Sonic 1 sounds
   {"s1a0",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1a1",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s1a2",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Monty Mole attach
+  {"s1a2",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Mole Attach"}, // Monty Mole attach
   {"s1a3",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1a4",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1a5",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
@@ -330,8 +330,8 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"s1a8",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1a9",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1aa",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s1ab",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Monty Mole twitch
-  {"s1ac",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Misc. obstacle destroyed
+  {"s1ab",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Mole Twitch"}, // Monty Mole twitch
+  {"s1ac",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Obstacle Destroyed"}, // Misc. obstacle destroyed
   {"s1ad",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1ae",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1af",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
@@ -339,28 +339,28 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"s1b1",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1b2",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1b3",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s1b4",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Toggle all items
-  {"s1b5",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"s1b4",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Toggle Items"}, // Toggle all items
+  {"s1b5",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ring"},
   {"s1b6",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1b7",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1b8",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1b9",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s1ba",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Toggle item
-  {"s1bb",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Thwomp drop
+  {"s1ba",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Item Toggle"}, // Toggle item
+  {"s1bb",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Drop"}, // Thwomp drop
   {"s1bc",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s1bd",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Ballhog bounce
+  {"s1bd",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ballhog bounce"}, // Ballhog bounce
   {"s1be",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1bf",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1c0",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s1c1",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Monokuma death
+  {"s1c1",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Monokuma death"}, // Monokuma death
   {"s1c2",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1c3",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1c4",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s1c5",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"s1c5",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Total"},
   {"s1c6",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1c7",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1c8",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s1c9",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Item hit w/ voices off
+  {"s1c9",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Item Hit"}, // Item hit w/ voices off
   {"s1ca",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1cb",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s1cc",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
@@ -370,13 +370,13 @@ sfxinfo_t S_sfx[NUMSFX] =
 
   // Sonic 2 sounds
   {"s220",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s221",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Lap sound
+  {"s221",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Lap"}, // Lap sound
   {"s222",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s223",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s224",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s225",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s226",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s227",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"s227",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ring Pickup"},
   {"s228",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s229",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s22a",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
@@ -397,9 +397,9 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"s239",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s23a",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s23b",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s23c",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Drift boost
+  {"s23c",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Drift Boost"}, // Drift boost
   {"s23d",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s23e",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Title screen opening
+  {"s23e",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Opening"}, // Title screen opening
   {"s23f",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s240",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s241",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
@@ -426,13 +426,13 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"s256",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s257",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s258",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s259",   false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Item clashing
+  {"s259",   false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Clash"}, // Item clashing
   {"s25a",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s25b",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s25c",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s25d",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s25e",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s25f",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Perfect start boost
+  {"s25f",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Perfect Start"}, // Perfect start boost
   {"s260",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s261",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s262",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
@@ -446,7 +446,7 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"s26a",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s26b",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s26c",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s26d",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Missed checkpoint
+  {"s26d",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Checkpoint Missed"}, // Missed checkpoint
   {"s26e",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s26f",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"s270",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
@@ -564,7 +564,7 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"s3k9f",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Transformation"},
   {"s3ka0",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Launch"},
   {"s3ka1",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"s3ka2",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Launch"},
+  {"s3ka2",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Drift Charge"},
   {"s3ka3",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Rising charge"},
   {"s3ka4",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Powering up"},
   {"s3ka5",  false,  64,  16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // bufo x8away
@@ -678,7 +678,7 @@ sfxinfo_t S_sfx[NUMSFX] =
 
   // Sonic CD sounds
   {"cdfm00", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Skid"},
-  {"cdfm01", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"cdfm01", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Speed Boost"},
   {"cdfm02", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Jump"},
   {"cdfm03", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Dying"},
   {"cdfm04", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ring loss"},
@@ -694,7 +694,7 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"cdfm14", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"cdfm15", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"cdfm16", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"cdfm17", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"cdfm17", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Brake Drifting"},
   {"cdfm18", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"cdfm19", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"cdfm20", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
@@ -707,7 +707,7 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"cdfm27", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"cdfm28", false,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"cdfm29", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Bubble gasp"},
-  {"cdfm30", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Cheatcheck"},
+  {"cdfm30", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Starpost"},
   {"cdfm31", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Warp"},
   {"cdfm32", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"cdfm33", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
@@ -743,7 +743,7 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"cdfm63", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"cdfm64", false,  64,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"cdfm65", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"cdfm66", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"cdfm66", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ring Used"},
   {"cdfm67", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"cdfm68", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"cdfm69", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
@@ -774,7 +774,7 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"kc2c",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"kc2d",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"kc2e",   false,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"kc2f",   false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"kc2f",   false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Pogospring"},
   {"kc30",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"kc31",   false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
   {"kc32",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
@@ -839,69 +839,69 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"kc6e",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
 
   // SRB2kart
-  {"slip",   false,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Spinout
-  {"screec", false,  48,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Tight turning screech
-  {"drift",  false,  48,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Drifting ambient
-  {"ruburn", false,  48,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Rubber-burn turn ambient
-  {"ddash",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Respawn Drop Dash
-  {"tossed", false, 192,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Item fired
-  {"peel",   false,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Edited S25A for banana landing
-  {"hogbom", false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Ballhog explosions
-  {"zio3",   false, 128,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Thunder Shield use
-  {"kpogos", false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Pogo Spring use
-  {"alarmi", false, 255,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Invincibility alarm
-  {"alarmg", false, 255,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Grow alarm
-  {"itrol1",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Roulette spinning
-  {"itrol2",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"itrol3",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"itrol4",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"itrol5",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"itrol6",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"itrol7",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"itrol8",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"itrolf",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Roulette end
-  {"itrolm",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Roulette end (mashed)
-  {"itrolk",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Roulette end (karma enhanced)
-  {"itrole",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Roulette end (Eggman)
-  {"itpick",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Item Pickup
-  {"vroom",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Kart Krew opening vroom
-  {"chaooo", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Chao audience cheer
-  {"yeeeah", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Voting picks you
-  {"noooo1", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Voting picks hell (by chance)
-  {"noooo2", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Voting picks hell (on purpose)
-  {"ruby1",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Phantom Ruby charge up
-  {"ruby2",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Phantom Ruby teleport
-  {"tcart",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Twinkle Cart
-  {"bfare",  false, 128,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Pleasure Castle fanfare
-  {"merry",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Pleasure Castle merry-go-round ambient
-  {"bowlh",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Pleasure Castle pins
-  {"tppop",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Pleasure Castle bombs
-  {"hsdoor", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Red Barrage Area door
-  {"hstrn",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Red Barrage Area train
-  {"aspkb",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Red Barrage Area spikeballs
-  {"wind1",  false,  64,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Midnight Channel monsters
-  {"fire2",  false,  64,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"chain",  false, 255,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Mementos Reaper
-  {"mkuma",  false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Trigger Happy Havoc Monokuma
-  {"toada",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Arid Sands Toad scream
-  {"bhurry", false, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // v1.0.2 Battle overtime
-  {"bsnipe", false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Banana sniping
-  {"sploss", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Down to grey sparks
-  {"join",    true,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Player joined server
-  {"leave",   true,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Player left server
-  {"requst",  true,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Got a Discord join request
-  {"syfail",  true,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Funny sync failure
-  {"itfree", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // :shitsfree:
-  {"dbgsal", false, 255,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Debug notification
+  {"slip",   false,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Spinout"}, // Spinout
+  {"screec", false,  48,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Tight turning screech
+  {"drift",  false,  48,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Drifting ambient
+  {"ruburn", false,  48,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Rubber-burn turn ambient
+  {"ddash",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Drop Dash"}, // Respawn Drop Dash
+  {"tossed", false, 192,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Item Fired"}, // Item fired
+  {"peel",   false,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Banana Landing"}, // Edited S25A for banana landing
+  {"hogbom", false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ballhog Explosion"}, // Ballhog explosions
+  {"zio3",   false, 128,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Thunder Shield"}, // Thunder Shield use
+  {"kpogos", false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Pogo Spring"}, // Pogo Spring use
+  {"alarmi", false, 255,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Invincibility"}, // Invincibility alarm
+  {"alarmg", false, 255,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Grow"}, // Grow alarm
+  {"itrol1",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Rolling"}, // Roulette spinning
+  {"itrol2",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Rolling"},
+  {"itrol3",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Rolling"},
+  {"itrol4",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Rolling"},
+  {"itrol5",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Rolling"},
+  {"itrol6",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Rolling"},
+  {"itrol7",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Rolling"},
+  {"itrol8",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Rolling"},
+  {"itrolf",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Roulette End"}, // Roulette end
+  {"itrolm",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Roulette Mashed"}, // Roulette end (mashed)
+  {"itrolk",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Enhanced Roulette"}, // Roulette end (karma enhanced)
+  {"itrole",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Eggman Roulette"}, // Roulette end (Eggman)
+  {"itpick",  true,  96,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Item Pickup"}, // Item Pickup
+  {"vroom",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "VROOOOM!"}, // Kart Krew opening vroom
+  {"chaooo", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Chao"}, // Chao audience cheer
+  {"yeeeah", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Yay"}, // Voting picks you
+  {"noooo1", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Hell"}, // Voting picks hell (by chance)
+  {"noooo2", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Hell"}, // Voting picks hell (on purpose)
+  {"ruby1",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Encore"}, // Phantom Ruby charge up
+  {"ruby2",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Encore"}, // Phantom Ruby teleport
+  {"tcart",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Twinkle Cart
+  {"bfare",  false, 128,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Win"}, // Pleasure Castle fanfare
+  {"merry",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Pleasure Castle merry-go-round ambient
+  {"bowlh",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Pin Hit"}, // Pleasure Castle pins
+  {"tppop",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Explode"}, // Pleasure Castle bombs
+  {"hsdoor", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Door"}, // Red Barrage Area door
+  {"hstrn",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Train"}, // Red Barrage Area train
+  {"aspkb",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Spikeballs"}, // Red Barrage Area spikeballs
+  {"wind1",  false,  64,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Shadow"}, // Midnight Channel monsters
+  {"fire2",  false,  64,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"chain",  false, 255,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Reaper"}, // Mementos Reaper
+  {"mkuma",  false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Monokuma"}, // Trigger Happy Havoc Monokuma
+  {"toada",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Toad Scream"}, // Arid Sands Toad scream
+  {"bhurry", false, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Overtime"}, // v1.0.2 Battle overtime
+  {"bsnipe", false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Snipe"}, // Banana sniping
+  {"sploss", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Drift loss"}, // Down to grey sparks
+  {"join",    true,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Player joined server
+  {"leave",   true,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Player left server
+  {"requst",  true,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Got a Discord join request
+  {"syfail",  true,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Funny sync failure
+  {"itfree", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // :shitsfree:
+  {"dbgsal", false, 255,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Debug Notification"}, // Debug notification
   {"cock",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Hammer cocks, bang bang
   {"itcaps", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, "Item capsule"},
-  {"kstart", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Sonic Adventure shwing!
-  {"typri1", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SA2 boss typewriting 1
-  {"typri2", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SA2 final boss-type typewriting
-  {"eggspr", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Sonic Unleashed Trap Spring
+  {"kstart", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Sonic Adventure shwing!
+  {"typri1", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // SA2 boss typewriting 1
+  {"typri2", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // SA2 final boss-type typewriting
+  {"eggspr", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Sonic Unleashed Trap Spring
   {"achiev", false, 204,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Achievement"},
   {"keygen", false, 204,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Key Generated"},
-  {"gpmetr", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"gpmetr", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
 
   // RR - Flame Shield
   {"fshld0", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Flame Shield activate"},
@@ -910,60 +910,60 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"fshld3", false, 64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Flame Shield cooldown"},
 
     // SRB2kart - Grow/invinc clash
-  {"parry",  false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X8AWAYSOUND
+  {"parry",  false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, "Clash"}, // SF_X8AWAYSOUND
 
   // Shout message sound effect
   {"sysmsg", false, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Server notification"},
 
   // Juicebox for SPB
-  {"gate01", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"gate02", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"gate03", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"gate04", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"gate05", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"gate01", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Gate"},
+  {"gate02", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Gate"},
+  {"gate03", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Gate"},
+  {"gate04", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Gate"},
+  {"gate05", false,  32, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Gate"},
 
   // SRB2Kart - Blocked damage
-  {"grownd", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X8AWAYSOUND
-  {"invind", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X8AWAYSOUND
+  {"grownd", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, "Grow Block"}, // SF_X8AWAYSOUND
+  {"invind", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, "Invincibility Block"}, // SF_X8AWAYSOUND
 
     // SRB2Kart - Claw SFX
-  {"claw01", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw02", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw03", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw04", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw05", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw06", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw07", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw08", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw09", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw10", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw11", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw12", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw13", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw14", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw15", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"claw16", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X2AWAYSOUND
-  {"clawht", false,  64, 8, -1, NULL, 0,         -1,  -1, LUMPERROR, ""}, // SF_X4AWAYSOUND
-  {"clawzm", false,  64, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, ""}, // SF_X8AWAYSOUND
-  {"clawk1", false,  64, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, ""}, // SF_X8AWAYSOUND
-  {"clawk2", false,  64, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, ""}, // SF_X8AWAYSOUND
+  {"claw01", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw02", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw03", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw04", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw05", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw06", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw07", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw08", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw09", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw10", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw11", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw12", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw13", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw14", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw15", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"claw16", false,  64, 64, -1, NULL, 0,        -1,  -1, LUMPERROR, "Claw"}, // SF_X2AWAYSOUND
+  {"clawht", false,  64, 8, -1, NULL, 0,         -1,  -1, LUMPERROR, "Claw Hit"}, // SF_X4AWAYSOUND
+  {"clawzm", false,  64, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, "Claw Zoom"}, // SF_X8AWAYSOUND
+  {"clawk1", false,  64, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, "Claw"}, // SF_X8AWAYSOUND
+  {"clawk2", false,  64, 16, -1, NULL, 0,         -1,  -1, LUMPERROR, "Claw"}, // SF_X8AWAYSOUND
 
   {"horn00", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "/"}, // HORNCODE
   {"melody", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "/"}, // Mystic Melody
   {"cdsprk", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "/"}, // Prison Egg CD sparkling
-  {"monch",  false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, ""},
+  {"monch",  false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "/"},
   {"etexpl", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "Game crash"},
   {"d4getm", false,  255, 0, -1, NULL, 0,         -1,  -1, LUMPERROR, "Don't forget me"},
 
-  {"dashr",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Regular Dash Ring
-  {"rainbr", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Rainbow Dash Ring
+  {"dashr",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Dash Ring"}, // Regular Dash Ring
+  {"rainbr", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Rainbow Dash Ring"}, // Rainbow Dash Ring
 
-  {"rank",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Rank slam
+  {"rank",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Rank"}, // Rank slam
 
   {"ridr1",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Boarding Rideroid"}, // Rideroid Activation
-  {"ridr2",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Rideroid Diveroll
-  {"ridr3",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Rideroid Loop
-  {"ridr4",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Leaving Rideroid
+  {"ridr2",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Rideroid Diveroll
+  {"ridr3",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Rideroid Loop
+  {"ridr4",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Leaving Rideroid"}, // Leaving Rideroid
 
   {"befan1",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Whisking"}, // Blend Eye whisk startup
   {"befan2",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Whisking"}, // Blend Eye whisk
@@ -998,173 +998,173 @@ sfxinfo_t S_sfx[NUMSFX] =
 
   // SRB2Kart - Engine sounds
   // Engine class A
-  {"krta00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krta12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"krta00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krta12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
   // Engine class B
-  {"krtb00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtb12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"krtb00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtb12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
   // Engine class C
-  {"krtc00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtc12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"krtc00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtc12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
   // Engine class D
-  {"krtd00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtd12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"krtd00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtd12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
   // Engine class E
-  {"krte00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krte12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"krte00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krte12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
   // Engine class F
-  {"krtf00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtf12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"krtf00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtf12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
   // Engine class G
-  {"krtg00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krtg12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"krtg00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krtg12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
   // Engine class H
-  {"krth00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krth12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"krth00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krth12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
   // Engine class I
-  {"krti00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"krti12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"krti00", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti01", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti02", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti03", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti04", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti05", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti06", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti07", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti08", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti09", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti10", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti11", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"krti12", false,  48, 65, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
 
   // Pinball
-  {"cftbl0", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"cftbl1", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
-  {"cftbl2", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"cftbl0", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"cftbl1", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
+  {"cftbl2", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"},
 
   // S-erotonin
-  {"srank", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
+  {"srank", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "S-Rank"},
   
   // Generic menu SFX
-  {"tmxatt", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Attention
-  {"tmxawd", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Award
-  {"tmxbak", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Back
-  {"tmxdsm", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Dismiss
-  {"tmxerr", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Error
-  {"tmxfwd", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Forward
-  {"tmxnah", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // "Nah"
-  {"tmxqst", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Question
-  {"tmxsuc", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Success
-  {"tmxunx", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Unexpected item in bagging area
-  {"tmxbdn", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Button down
-  {"tmxbup", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Button up
+  {"tmxatt", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Attention
+  {"tmxawd", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Award
+  {"tmxbak", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Back
+  {"tmxdsm", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Dismiss
+  {"tmxerr", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Error
+  {"tmxfwd", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Forward
+  {"tmxnah", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // "Nah"
+  {"tmxqst", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Question
+  {"tmxsuc", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Success
+  {"tmxunx", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Unexpected item in bagging area
+  {"tmxbdn", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Button down
+  {"tmxbup", false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Button up
 
   // SMS
-  {"sting0", false,  64, 2, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Ring loss
+  {"sting0", false,  64, 2, -1, NULL, 0,        -1,  -1, LUMPERROR, "Ring Sting"}, // Ring loss
 
   // Patching up base sounds
-  {"s226l",  false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // s2 spikes LOUD
+  {"s226l",  false,  64, 0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Spikes"}, // s2 spikes LOUD
 
   // SRB2kart - Skin sounds
-  {"kwin",   false,  64, 96, -1, NULL, 0,   SKSKWIN,  -1, LUMPERROR, ""},
-  {"klose",  false,  64, 96, -1, NULL, 0,  SKSKLOSE,  -1, LUMPERROR, ""},
-  {"khurt1", false,  64, 96, -1, NULL, 0,  SKSKPAN1,  -1, LUMPERROR, ""},
-  {"khurt2", false,  64, 96, -1, NULL, 0,  SKSKPAN2,  -1, LUMPERROR, ""},
-  {"kattk1", false,  64, 96, -1, NULL, 0,  SKSKATK1,  -1, LUMPERROR, ""},
-  {"kattk2", false,  64, 96, -1, NULL, 0,  SKSKATK2,  -1, LUMPERROR, ""},
-  {"kbost1", false,  64, 96, -1, NULL, 0,  SKSKBST1,  -1, LUMPERROR, ""},
-  {"kbost2", false,  64, 96, -1, NULL, 0,  SKSKBST2,  -1, LUMPERROR, ""},
-  {"kslow",  false,  64, 32, -1, NULL, 0,  SKSKSLOW,  -1, LUMPERROR, ""},
-  {"khitem", false, 128, 32, -1, NULL, 0,  SKSKHITM,  -1, LUMPERROR, ""},
-  {"kgloat", false,  64, 48, -1, NULL, 0,  SKSKPOWR,  -1, LUMPERROR, ""},
-  {"ktalk",  false,  64, 48, -1, NULL, 0,  SKSKTALK,  -1, LUMPERROR, ""},
+  {"kwin",   false,  64, 96, -1, NULL, 0,   SKSKWIN,  -1, LUMPERROR, "/"},
+  {"klose",  false,  64, 96, -1, NULL, 0,  SKSKLOSE,  -1, LUMPERROR, "/"},
+  {"khurt1", false,  64, 96, -1, NULL, 0,  SKSKPAN1,  -1, LUMPERROR, "Pain"},
+  {"khurt2", false,  64, 96, -1, NULL, 0,  SKSKPAN2,  -1, LUMPERROR, "Pain"},
+  {"kattk1", false,  64, 96, -1, NULL, 0,  SKSKATK1,  -1, LUMPERROR, "/"},
+  {"kattk2", false,  64, 96, -1, NULL, 0,  SKSKATK2,  -1, LUMPERROR, "/"},
+  {"kbost1", false,  64, 96, -1, NULL, 0,  SKSKBST1,  -1, LUMPERROR, "/"},
+  {"kbost2", false,  64, 96, -1, NULL, 0,  SKSKBST2,  -1, LUMPERROR, "/"},
+  {"kslow",  false,  64, 32, -1, NULL, 0,  SKSKSLOW,  -1, LUMPERROR, "/"},
+  {"khitem", false, 128, 32, -1, NULL, 0,  SKSKHITM,  -1, LUMPERROR, "/"},
+  {"kgloat", false,  64, 48, -1, NULL, 0,  SKSKPOWR,  -1, LUMPERROR, "/"},
+  {"ktalk",  false,  64, 48, -1, NULL, 0,  SKSKTALK,  -1, LUMPERROR, "/"},
 
   // skin sounds free slots to add sounds at run time (Boris HACK!!!)
   // initialized to NULL

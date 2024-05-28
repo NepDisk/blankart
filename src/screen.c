@@ -636,7 +636,7 @@ void SCR_ClosedCaptions(void)
 		if (music)
 			dot = '\x19';
 		else if (closedcaptions[i].c && closedcaptions[i].c->origin)
-			dot = '\x1E';
+			dot = '>';
 		else
 			dot = ' ';
 
