@@ -1323,7 +1323,15 @@ void R_SkyboxFrame(int s)
 
 	newview->x = r_viewmobj->x;
 	newview->y = r_viewmobj->y;
-	newview->z = r_viewmobj->z; // 26/04/17: use actual Z position instead of spawnpoint angle!
+	if (!udmf)
+    {
+        if (r_viewmobj->spawnpoint)
+            newview->z = ((fixed_t)r_viewmobj->spawnpoint->angle)<<FRACBITS;
+        else
+            newview->z = 0;
+    }
+    else
+        newview->z = r_viewmobj->z; // 26/04/17: use actual Z position instead of spawnpoint angle!
 
 	if (mapheaderinfo[gamemap-1])
 	{

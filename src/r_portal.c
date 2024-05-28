@@ -256,6 +256,16 @@ void Portal_AddSkybox
 	portal->viewz = viewpoint->z;
 	portal->viewangle = viewangle + viewpoint->angle;
 
+    if (!udmf)
+    {
+        if (viewpoint->spawnpoint)
+            portal->viewz = ((fixed_t)viewpoint->spawnpoint->angle)<<FRACBITS;
+        else
+            portal->viewz = 0;
+    }
+    else
+        portal->viewz = viewpoint->z; // 26/04/17: use actual Z position instead of spawnpoint angle!
+
 	mh = mapheaderinfo[gamemap-1];
 
 	// If a relative viewpoint exists, offset the viewpoint.
