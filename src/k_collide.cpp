@@ -424,7 +424,7 @@ boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 		else
 		{
 			// Player Damage
-			P_DamageMobj(t2, t1, t1->target, 1, DMG_WIPEOUT);
+			P_DamageMobj(t2, t1, t1->target, 1, DMG_EXPLODE);
 		}
 
 		P_KillMobj(t1, t2, t2, DMG_NORMAL);

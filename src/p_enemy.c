@@ -12565,12 +12565,15 @@ void A_SSMineSearch(mobj_t *actor)
 
 void A_SSMineExplode(mobj_t *actor)
 {
+	 INT32 locvar1 = var1;
 
 	if (LUA_CallAction(A_SSMINEEXPLODE, actor))
 		return;
 
 	if (actor->flags2 & MF2_DEBRIS)
 		return;
+
+	K_MineExplodeAttack(actor, (3*actor->info->painchance)>>1, (boolean)locvar1);
 
 	skincolornum_t color = SKINCOLOR_KETCHUP;
 	if (!P_MobjWasRemoved(actor->target) && actor->target->player)
