@@ -112,7 +112,6 @@ boolean K_IsDuelItem(mobjtype_t type)
 		case MT_EGGMANITEM:
 		case MT_SSMINE:
 		case MT_LANDMINE:
-		case MT_HYUDORO_CENTER:
 		case MT_POGOSPRING:
 			return true;
 
@@ -2749,8 +2748,8 @@ fixed_t K_GetKartSpeed(const player_t *player, boolean doboostpower, boolean not
 	if (doboostpower && !player->pogospring && !P_IsObjectOnGround(player->mo))
 		return (75*mapobjectscale); // air speed cap
 
-	//if (G_BattleGametype() && player->kartstuff[k_bumper] <= 0)
-		//kartspeed = 1;
+	if ((gametyperules & GTR_KARMA) && player->mo->health <= 0)
+		kartspeed = 1;
 
 	finalspeed = FixedMul(finalspeed, player->mo->scale);
 
@@ -2764,8 +2763,8 @@ fixed_t K_GetKartAccel(const player_t *player)
 	fixed_t k_accel = 32; // 36;
 	UINT8 kartspeed = player->kartspeed;
 
-	//if (G_BattleGametype() && player->kartstuff[k_bumper] <= 0)
-		//kartspeed = 1;
+	if ((gametyperules & GTR_KARMA) && player->mo->health <= 0)
+		kartspeed = 1;
 
 	//k_accel += 3 * (9 - kartspeed); // 36 - 60
 	k_accel += 4 * (9 - kartspeed); // 32 - 64
@@ -8149,7 +8148,7 @@ void K_AdjustPlayerFriction(player_t *player, boolean onground)
 			player->mo->friction -= 2048;
 
 		// Karma ice physics
-		/*if ((gametyperules & GTR_BUMPERS) && player->bumpers <= 0)
+		if ((gametyperules & GTR_KARMA) && player->mo->health <= 0)
 		{
 			player->mo->friction += 1228;
 
@@ -8167,7 +8166,7 @@ void K_AdjustPlayerFriction(player_t *player, boolean onground)
 
 			if (player->mo->movefactor < 32)
 				player->mo->movefactor = 32;
-		*/
+		}
 
 		// Wipeout slowdown
 		if (player->speed > 0 && player->spinouttimer && player->wipeoutslow)
