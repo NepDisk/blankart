@@ -1838,12 +1838,18 @@ void D_SRB2Main(void)
 	
 	CONS_Printf("W_InitMultipleFiles(): Adding external PWADs.\n");
 	W_InitMultipleFiles(startuppwads, true);
+	
+	// Only search for pwad maps and reload graphics if we actually have a pwad added
+	if (startuppwads[0] != NULL)
+	{
+		//
+		// search for pwad maps
+		//
+		P_InitMapData();
+		HU_LoadGraphics();
+	}
+	
 	D_CleanFile(startuppwads);
-
-	//
-	// search for pwad maps
-	//
-	P_InitMapData();
 
 	CON_SetLoadingProgress(LOADED_PWAD);
 
