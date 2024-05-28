@@ -87,6 +87,8 @@ typedef enum
 
 	PR_FROSTTHROWERS,
 
+	PR_HYUDORO,
+
 	PRNUMSYNCED,
 
 	PR_INTERPHUDRANDOM = PRNUMSYNCED, // Interpolation-accomodating HUD randomisation

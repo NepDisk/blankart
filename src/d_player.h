@@ -686,7 +686,8 @@ struct player_t
 	UINT16 counterdash;	// Flame Shield boost without the flame, largely. Used in places where awarding thrust would affect player control.
 
 	UINT16 hyudorotimer;	// Duration of the Hyudoro offroad effect itself
-	SINT8 stealingtimer;	// if >0 you are stealing, if <0 you are being stolen from
+	SINT8 stealingtimer;	// if >0 you are stealing.
+	SINT8 stolentimer;
 	mobj_t *hoverhyudoro;	// First hyudoro hovering next to player
 
 	UINT16 sneakertimer;	// Duration of a Sneaker Boost (from Sneakers or level boosters)

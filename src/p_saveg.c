@@ -463,6 +463,7 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 
 		WRITEUINT16(save->p, players[i].hyudorotimer);
 		WRITESINT8(save->p, players[i].stealingtimer);
+		WRITESINT8(save->p, players[i].stolentimer);
 
 		WRITEUINT16(save->p, players[i].sneakertimer);
 		WRITEUINT8(save->p, players[i].numsneakers);
@@ -992,6 +993,7 @@ static void P_NetUnArchivePlayers(savebuffer_t *save)
 
 		players[i].hyudorotimer = READUINT16(save->p);
 		players[i].stealingtimer = READSINT8(save->p);
+		players[i].stolentimer = READSINT8(save->p);
 
 		players[i].sneakertimer = READUINT16(save->p);
 		players[i].numsneakers = READUINT8(save->p);
