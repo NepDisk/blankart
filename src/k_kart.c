@@ -9234,6 +9234,10 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->topAccel = FixedMul(topmult, player->topAccel);
 	}
 
+	// Start at lap 1 on binary maps just to be safe.
+	if ((!udmf) && player->laps == 0 && numlaps > 0)
+		player->laps = 1;
+
 	player->topAccel = min(player->topAccel + TOPACCELREGEN, MAXTOPACCEL);
 
 	if (player->stealingtimer == 0
