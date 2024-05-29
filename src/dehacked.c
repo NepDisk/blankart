@@ -313,10 +313,16 @@ static void DEH_LoadDehackedFile(MYFILE *f, boolean mainfile)
 #endif
 				else if (fastcmp(word, "LEVEL"))
 				{
+
 					size_t len = strlen(word2);
 					if (len <= MAXMAPLUMPNAME-1)
 					{
-						readlevelheader(f, word2);
+						if (len == 1)
+							readlevelheader(f, va("MAP0%s",word2));
+						else if (len == 2)
+							readlevelheader(f, va("MAP%s",word2));
+						else
+							readlevelheader(f, word2);
 					}
 					else
 					{

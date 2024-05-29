@@ -1105,6 +1105,13 @@ void readlevelheader(MYFILE *f, char * name)
 				continue;
 			}
 
+			if (fastcmp(word, "SUBTITLE"))
+			{
+				deh_strlcpy(mapheaderinfo[num]->subttl, word2,
+					sizeof(mapheaderinfo[num]->subttl), va("Level header %d: subtitle", num));
+				continue;
+			}
+
 			if (fastcmp(word, "ZONETITLE"))
 			{
 				deh_strlcpy(mapheaderinfo[num]->zonttl, word2,
@@ -1324,18 +1331,6 @@ void readlevelheader(MYFILE *f, char * name)
 					mapheaderinfo[num]->associatedmus_size = j;
 				}
 			}
-			else if (fastcmp(word, "POSITIONMUSIC"))
-			{
-				if (fastcmp(word2, "NONE"))
-				{
-					mapheaderinfo[num]->positionmus[0] = 0; // becomes empty string
-				}
-				else
-				{
-					deh_strlcpy(mapheaderinfo[num]->positionmus, word2,
-						sizeof(mapheaderinfo[num]->positionmus), va("Level header %d: POSITION!! music", num));
-				}
-			}
 			else if (fastcmp(word, "MUSICTRACK"))
 				mapheaderinfo[num]->mustrack = ((UINT16)i - 1);
 			else if (fastcmp(word, "MUSICPOS"))
@@ -1344,6 +1339,9 @@ void readlevelheader(MYFILE *f, char * name)
 				mapheaderinfo[num]->weather = get_precip(word2);
 			else if (fastcmp(word, "SKYTEXTURE"))
 				deh_strlcpy(mapheaderinfo[num]->skytexture, word2,
+					sizeof(mapheaderinfo[num]->skytexture), va("Level header %d: sky texture", num));
+			else if (fastcmp(word, "SKYNUM"))
+				deh_strlcpy(mapheaderinfo[num]->skytexture, va("SKY%s", word2),
 					sizeof(mapheaderinfo[num]->skytexture), va("Level header %d: sky texture", num));
 			else if (fastcmp(word, "PRECUTSCENENUM"))
 				mapheaderinfo[num]->precutscenenum = (UINT8)i;

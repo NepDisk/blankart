@@ -2488,6 +2488,8 @@ static int mapheaderinfo_get(lua_State *L)
 	const char *field = luaL_checkstring(L, 2);
 	if (fastcmp(field,"lvlttl"))
 		lua_pushstring(L, header->lvlttl);
+	else if (fastcmp(field,"subttl"))
+		lua_pushstring(L, header->subttl);
 	else if (fastcmp(field,"menuttl"))
 		lua_pushstring(L, header->menuttl);
 	else if (fastcmp(field,"zonttl"))

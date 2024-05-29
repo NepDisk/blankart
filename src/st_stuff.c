@@ -1231,7 +1231,7 @@ luahook:
 void ST_drawOldLevelTitle(void)
 {
 	char *lvlttl = mapheaderinfo[gamemap-1]->lvlttl;
-	//char *subttl = mapheaderinfo[gamemap-1]->subttl;
+	char *subttl = mapheaderinfo[gamemap-1]->subttl;
 	char *zonttl = mapheaderinfo[gamemap-1]->zonttl; // SRB2kart
 	UINT8 actnum = mapheaderinfo[gamemap-1]->actnum;
 	INT32 lvlttlxpos;
@@ -1305,10 +1305,10 @@ void ST_drawOldLevelTitle(void)
 		V_DrawFill(sub - dupcalc, bary, ttlnumxpos+dupcalc, 10, gtc|V_SNAPTOBOTTOM);
 		V_DrawDiag(sub + ttlnumxpos, bary, 10, gtc|V_SNAPTOBOTTOM);
 
-		//if (subttl[0])
-			//V_DrawRightAlignedString(sub + zonexpos - 8, bary+1, V_SNAPTOBOTTOM, subttl);
-		//else // DRRR doesn't support subtitle bleh do this for now
-			V_DrawRightAlignedString(sub + zonexpos - 8, bary+1, 0, va("%s Mode", gametypes[gametype]->name));
+		if (subttl[0])
+			V_DrawRightAlignedString(sub + zonexpos - 8, bary+1, V_SNAPTOBOTTOM, subttl);
+		//else // DRRR doesn't support subtitle bleh do this for now. <- Now it does!
+			//V_DrawRightAlignedString(sub + zonexpos - 8, bary+1, 0, va("%s Mode", gametypes[gametype]->name));
 
 	}
 
