@@ -56,6 +56,9 @@
 #include "k_dialogue.h"
 #include "m_easing.h"
 
+// Noire
+#include "noire/n_cvar.h"
+
 UINT16 objectsdrawn = 0;
 
 //
@@ -1225,6 +1228,114 @@ luahook:
 	LUA_HUD_DrawList(luahuddrawlist_titlecard);
 }
 
+void ST_drawOldLevelTitle(void)
+{
+	char *lvlttl = mapheaderinfo[gamemap-1]->lvlttl;
+	//char *subttl = mapheaderinfo[gamemap-1]->subttl;
+	char *zonttl = mapheaderinfo[gamemap-1]->zonttl; // SRB2kart
+	UINT8 actnum = mapheaderinfo[gamemap-1]->actnum;
+	INT32 lvlttlxpos;
+	INT32 ttlnumxpos;
+	INT32 zonexpos;
+	INT32 dupcalc = (vid.width/vid.dupx);
+	UINT8 gtc = G_GetGametypeColor(gametype);
+	//UINT8 gtc = skymap[120];
+	INT32 sub = 0;
+	INT32 bary = (splitscreen)
+		? BASEVIDHEIGHT/2
+		: 163;
+	INT32 lvlw;
+
+	if (!cv_stagetitle.value)
+		return;
+
+	if (!G_IsTitleCardAvailable())
+		return;
+
+	if (!LUA_HudEnabled(hud_stagetitle))
+		goto luahook;
+
+	/*if (lt_ticker >= (lt_endtime + TICRATE))
+		goto luahook;
+
+	if ((lt_ticker-lt_lasttic) > 1)
+		lt_ticker = lt_lasttic+1;*/
+
+
+	if (timeinmap > 113)
+		return;
+
+	lvlw = V_LevelNameWidth(lvlttl);
+
+	if (actnum)
+		lvlttlxpos = ((BASEVIDWIDTH/2) - (lvlw/2)) - V_LevelNameWidth(actnum);
+	else
+		lvlttlxpos = ((BASEVIDWIDTH/2) - (lvlw/2));
+
+	zonexpos = ttlnumxpos = lvlttlxpos + lvlw;
+	if (!(mapheaderinfo[gamemap-1]->levelflags & LF_NOZONE))
+	{
+		if (zonttl[0])
+			zonexpos -= V_LevelNameWidth(zonttl); // SRB2kart
+		else
+			zonexpos -= V_LevelNameWidth(M_GetText("Zone"));
+	}
+
+	if (lvlttlxpos < 0)
+		lvlttlxpos = 0;
+
+	if (timeinmap > 105)
+	{
+		INT32 count = (113 - (INT32)(timeinmap));
+
+		// uh... "fill in the bits" of sub, or something... no idea what I came up with
+		// VERY janky, but doesn't require m_easing
+		//INT32 frac = (FixedMul(R_GetHudUncap(), FixedDiv(dupcalc, BASEVIDWIDTH)) >> (count + 4))/13; // these two magic numbers seem to do the trick
+
+		sub = dupcalc;
+		while (count-- > 0)
+			sub >>= 1;
+		sub = -sub /*- frac*/;
+	}
+
+	{
+		dupcalc = (dupcalc - BASEVIDWIDTH)>>1;
+		V_DrawFill(sub - dupcalc, bary+9, ttlnumxpos+dupcalc + 1, 2, 31|V_SNAPTOBOTTOM);
+		V_DrawDiag(sub + ttlnumxpos + 1, bary, 11, 31|V_SNAPTOBOTTOM);
+		V_DrawFill(sub - dupcalc, bary, ttlnumxpos+dupcalc, 10, gtc|V_SNAPTOBOTTOM);
+		V_DrawDiag(sub + ttlnumxpos, bary, 10, gtc|V_SNAPTOBOTTOM);
+
+		//if (subttl[0])
+			//V_DrawRightAlignedString(sub + zonexpos - 8, bary+1, V_SNAPTOBOTTOM, subttl);
+		//else // DRRR doesn't support subtitle bleh do this for now
+			V_DrawRightAlignedString(sub + zonexpos - 8, bary+1, 0, va("%s Mode", gametypes[gametype]->name));
+
+	}
+
+	ttlnumxpos += sub;
+	lvlttlxpos += sub;
+	zonexpos += sub;
+
+	V_DrawLevelTitle(lvlttlxpos, bary-18, V_SNAPTOBOTTOM, lvlttl);
+
+	if (strlen(zonttl) > 0)
+		V_DrawLevelTitle(zonexpos, bary+6, V_SNAPTOBOTTOM, zonttl);
+	else if (!(mapheaderinfo[gamemap-1]->levelflags & LF_NOZONE))
+		V_DrawLevelTitle(zonexpos, bary+6, V_SNAPTOBOTTOM, M_GetText("Zone"));
+
+	if (actnum)
+		V_DrawLevelTitle(ttlnumxpos+12, bary+6, V_SNAPTOBOTTOM, actnum);
+
+
+luahook:
+	if (renderisnewtic)
+	{
+		LUA_HUD_ClearDrawList(luahuddrawlist_titlecard);
+		LUA_HookHUD(luahuddrawlist_titlecard, HUD_HOOK(titlecard));
+	}
+	LUA_HUD_DrawList(luahuddrawlist_titlecard);
+}
+
 // Clear defined coordinates, we don't need them anymore
 #undef FINAL_ROUNDX
 #undef FINAL_EGGY
@@ -1248,7 +1359,8 @@ void ST_preLevelTitleCardDrawer(void)
 {
 	V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, levelfadecol);
 
-	ST_drawTitleCard();
+	//ST_drawTitleCard();
+	ST_drawOldLevelTitle();
 	I_OsPolling();
 	I_UpdateNoBlit();
 }
@@ -1624,7 +1736,10 @@ void ST_Drawer(void)
 	}*/
 
 	if (stagetitle)
-		ST_drawTitleCard();
+	{
+		//ST_drawTitleCard();
+		ST_drawOldLevelTitle();
+	}
 
 	K_DrawDialogue();
 

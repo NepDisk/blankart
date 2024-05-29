@@ -753,6 +753,9 @@ void M_GoBack(INT32 choice);
 void M_Ticker(void);
 void M_Init(void);
 
+void M_GetGametypeColor(void);
+INT32 HU_GetHighlightColor(void);
+
 void M_PlayMenuJam(void);
 
 boolean M_ConsiderSealedSwapAlert(void);
@@ -1297,9 +1300,13 @@ void M_HandleImageDef(INT32 choice);
 // K_MENUDRAW.C
 
 // flags for text highlights
-#define highlightflags V_AQUAMAP
-#define recommendedflags V_GREENMAP
-#define warningflags V_ORANGEMAP
+//#define highlightflags V_AQUAMAP
+//#define recommendedflags V_GREENMAP
+//#define warningflags V_ORANGEMAP
+
+extern INT32 highlightflags;
+extern INT32 recommendedflags;
+extern INT32 warningflags;
 
 #define M_ALTCOLOR V_ORANGEMAP
 

@@ -450,7 +450,8 @@ void F_WipeStageTitle(void)
 	if ((WipeStageTitle) && G_IsTitleCardAvailable())
 	{
 		ST_runTitleCard();
-		ST_drawTitleCard();
+		//ST_drawTitleCard();
+		ST_drawOldLevelTitle();
 	}
 }
 

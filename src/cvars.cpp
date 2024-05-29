@@ -519,6 +519,8 @@ consvar_t cv_holdscorebutt = Player("holdscoreboardbutton", "On").on_off();
 
 consvar_t cv_translucenthud = Player("translucenthud", "10").values({{0, "MIN"}, {10, "MAX"}});
 
+consvar_t cv_stagetitle = Player("stagetitle", "On").on_off();
+
 //
 // Server local, also available on dedicated servers.
 // Usually saved, not sycned though...
@@ -1368,6 +1370,25 @@ consvar_t cons_height = Console("con_height", "50").values(CV_Unsigned).onchange
 extern CV_PossibleValue_t hudlines_cons_t[];
 void CONS_hudlines_Change(void);
 consvar_t cons_hudlines = Console("con_hudlines", "5").values(hudlines_cons_t).onchange(CONS_hudlines_Change);
+
+consvar_t cons_menuhighlight = Console("con_menuhighlight", "Gametype Default").values({
+	{0, 			"Gametype Default"},
+	{V_YELLOWMAP, 	"Always Yellow"},
+	{V_PURPLEMAP, 	"Always Purple"},
+	{V_GREENMAP, 	"Always Green"},
+	{V_BLUEMAP, 	"Always Blue"},
+	{V_REDMAP, 		"Always Red"},
+	{V_GRAYMAP, 	"Always Gray"},
+	{V_ORANGEMAP, 	"Always Orange"},
+	{V_SKYMAP, 		"Always Sky-Blue"},
+	{V_GOLDMAP, 	"Always Gold"},
+	{V_LAVENDERMAP, "Always Lavender"},
+	{V_BROWNMAP , 		"Always Brown"},
+	{V_SKYMAP,	"Always Sky"},
+	{V_PINKMAP, 	"Always Pink"},
+	{V_BROWNMAP, 	"Always Brown"},
+	{V_TANMAP, 	"Always Tan"}
+});
 
 // how many seconds the hud messages lasts on the screen
 // CV_Unsigned can overflow when multiplied by TICRATE later, so let's use a 3-year limit instead

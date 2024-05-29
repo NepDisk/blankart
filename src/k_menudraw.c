@@ -528,7 +528,7 @@ static void M_DrawSplitText(INT32 x, INT32 y, INT32 option,INT32 alpha)
 	for (int i = 0; i < num_lines; i++)
 	{
         V_DrawCenteredThinString(x, y + yoffset, option, clines[i]);
-		V_DrawCenteredThinString(x, y + yoffset, option|V_YELLOWMAP|((9 - alpha) << V_ALPHASHIFT), clines[i]);
+		V_DrawCenteredThinString(x, y + yoffset, option|highlightflags|((9 - alpha) << V_ALPHASHIFT), clines[i]);
 		yoffset += 10;
         // Remember to free the memory for each line when you're done with it.
         free((void*)clines[i]);
@@ -1048,7 +1048,10 @@ void M_Drawer(void)
 	if (menuactive)
 	{
 		if (currentMenu->drawroutine)
+		{
+			M_GetGametypeColor();
 			currentMenu->drawroutine(); // call current menu Draw routine
+		}
 
 		M_DrawMenuForeground();
 

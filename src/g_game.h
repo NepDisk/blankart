@@ -197,6 +197,7 @@ void G_DirtyGameData(void);
 void G_SetGametype(INT16 gametype);
 char *G_PrepareGametypeConstant(const char *newgtconst);
 void G_AddTOL(UINT32 newtol, const char *tolname);
+UINT8 G_GetGametypeColor(INT16 gt);
 INT32 G_GetGametypeByName(const char *gametypestr);
 INT32 G_GuessGametypeByTOL(UINT32 tol);
 
