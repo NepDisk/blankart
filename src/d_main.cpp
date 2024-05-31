@@ -1846,7 +1846,7 @@ void D_SRB2Main(void)
 		// search for pwad maps
 		//
 		P_InitMapData();
-		HU_LoadGraphics();
+		// HU_LoadGraphics();
 	}
 	
 	D_CleanFile(startuppwads);
