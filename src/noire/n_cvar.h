@@ -1,5 +1,6 @@
 // RINGRACERS-NOIRE
 //-----------------------------------------------------------------------------
+// Copyright (C) 2024 by hayaUnderscore/haya
 // Copyright (C) 2024 by NepDisk
 //
 // This program is free software distributed under the
@@ -15,7 +16,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 //Player
 extern consvar_t cv_colorizedhud;
