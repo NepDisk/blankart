@@ -51,6 +51,9 @@ static struct {
 	// Water shader
 	{GLSL_DEFAULT_VERTEX_SHADER, GLSL_WATER_FRAGMENT_SHADER},
 
+	// Brightmap Water shader
+	{GLSL_DEFAULT_VERTEX_SHADER, GLSL_WATER_FRAGMENT_SHADER_NOPAL},
+
 	// Fog shader
 	{GLSL_DEFAULT_VERTEX_SHADER, GLSL_FOG_FRAGMENT_SHADER},
 
@@ -446,6 +449,7 @@ customshaderxlat_t shaderxlat[] =
 	{"Sprite", SHADER_SPRITE},
 	{"Model", SHADER_MODEL},
 	{"WaterRipple", SHADER_WATER},
+	{"BrightmapWaterRipple", SHADER_BRIGHTMAP_WATER},
 	{"Fog", SHADER_FOG},
 	{"Sky", SHADER_SKY},
 	{"PalettePostprocess", SHADER_PALETTE_POSTPROCESS},

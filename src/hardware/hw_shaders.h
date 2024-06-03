@@ -341,6 +341,36 @@
 		"gl_FragColor = final_color;\n" \
 	"}\n" \
 	"#endif\0"
+	
+#define GLSL_WATER_FRAGMENT_SHADER_NOPAL \
+	GLSL_FLOOR_FUDGES \
+	"const float freq = 0.025;\n" \
+	"const float amp = 0.025;\n" \
+	"const float speed = 2.0;\n" \
+	"const float pi = 3.14159;\n" \
+	"uniform sampler2D tex;\n" \
+	"uniform sampler2D brightmap;\n" \
+	"uniform vec4 poly_color;\n" \
+	"uniform vec4 tint_color;\n" \
+	"uniform vec4 fade_color;\n" \
+	"uniform float lighting;\n" \
+	"uniform float fade_start;\n" \
+	"uniform float fade_end;\n" \
+	"uniform float leveltime;\n" \
+	GLSL_DOOM_COLORMAP \
+	GLSL_DOOM_LIGHT_EQUATION \
+	"void main(void) {\n" \
+		GLSL_WATER_TEXEL \
+		"vec4 base_color = texel * poly_color;\n" \
+		"vec4 final_color = base_color;\n" \
+		"float brightmap_mix = floor(texture2D(brightmap, gl_TexCoord[0].st).r);\n" \
+		"float light_gain = (255.0 - lighting) * brightmap_mix;\n" \
+		"float final_lighting = lighting + light_gain;\n" \
+		GLSL_SOFTWARE_TINT_EQUATION \
+		GLSL_SOFTWARE_FADE_EQUATION \
+		"final_color.a = texel.a * poly_color.a;\n" \
+		"gl_FragColor = final_color;\n" \
+	"}\n" \
 
 //
 // Fog block shader
