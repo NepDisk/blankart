@@ -3851,6 +3851,18 @@ static void HWR_DrawSprite(gl_vissprite_t *spr)
 		// Let dispoffset work first since this adjust each vertex
 		HWR_RotateSpritePolyToAim(spr, wallVerts, false);
 	}
+	else if (splat)
+	{
+		// pull splats out of the floor since the vertex shader is useless
+		float sprdist = sqrtf((spr->x1 - gl_viewx)*(spr->x1 - gl_viewx) + (spr->z1 - gl_viewy)*(spr->z1 - gl_viewy));
+		float distfact = ((2.0f*spr->dispoffset) + 20.0f) / sprdist;
+		for (size_t i = 0; i < 4; i++)
+		{
+			wallVerts[i].x += (gl_viewx - wallVerts[i].x)*distfact;
+			wallVerts[i].z += (gl_viewy - wallVerts[i].z)*distfact;
+			wallVerts[i].y += (gl_viewz - wallVerts[i].y)*distfact;
+		}
+	}
 
 	// This needs to be AFTER the shadows so that the regular sprites aren't drawn completely black.
 	// sprite lighting by modulating the RGB components
