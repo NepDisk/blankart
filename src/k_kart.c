@@ -7706,7 +7706,7 @@ static void K_KartDrift(player_t *player, boolean onground)
 		}
 	}
 
-	if (P_PlayerInPain(player) || player->speed <= 0)
+	if (P_PlayerInPain(player) || player->speed < minspeed)
 	{
 		// Stop drifting
 		player->drift = player->driftcharge = player->aizdriftstrat = 0;
@@ -7748,28 +7748,8 @@ static void K_KartDrift(player_t *player, boolean onground)
 				|| (player->offroad && K_ApplyOffroad(player)))
 				driftadditive = 0;
 
-			// Inbetween minspeed and minspeed*2, it'll keep your previous drift-spark state.
 			if (player->speed > minspeed*2)
-			{
 				player->pflags |= PF_GETSPARKS;
-
-				if (player->driftcharge <= -1)
-				{
-					player->driftcharge = dsone; // Back to red
-					playsound = true;
-				}
-			}
-			else if (player->speed <= minspeed)
-			{
-				player->pflags &= ~PF_GETSPARKS;
-				driftadditive = 0;
-
-				if (player->driftcharge >= dsone)
-				{
-					player->driftcharge = -1; // Set yellow sparks
-					playsound = true;
-				}
-			}
 		}
 		else
 		{
@@ -7803,22 +7783,18 @@ static void K_KartDrift(player_t *player, boolean onground)
 		player->pflags &= ~PF_DRIFTEND;
 	}
 
-	// We don't meet sliptide conditions!
 	if ((!player->sneakertimer)
 	|| (!player->cmd.driftturn)
 	|| (!player->aizdriftstrat)
 	|| (player->cmd.driftturn > 0) != (player->aizdriftstrat > 0))
 	{
-			if (!player->drift)
-				player->aizdriftstrat = 0;
-			else
-				player->aizdriftstrat = ((player->drift > 0) ? 1 : -1);
+		if (!player->drift)
+			player->aizdriftstrat = 0;
+		else
+			player->aizdriftstrat = ((player->drift > 0) ? 1 : -1);
 	}
-
-	if ((player->aizdriftstrat && !player->drift))
-	{
+	else if (player->aizdriftstrat && !player->drift)
 		K_SpawnAIZDust(player);
-	}
 
 	if (player->drift
 		&& ((buttons & BT_BRAKE)

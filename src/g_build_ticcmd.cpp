@@ -49,25 +49,24 @@ namespace
 
 // Take a magnitude of two axes, and adjust it to take out the deadzone
 // Will return a value between 0 and JOYAXISRANGE
-INT32 G_BasicDeadZoneCalculation(INT32 magnitude, fixed_t deadZone)
+static INT32 G_BasicDeadZoneCalculation(INT32 magnitude, fixed_t deadZone)
 {
 	const INT32 jdeadzone = (JOYAXISRANGE * deadZone) / FRACUNIT;
-
+	INT32 deadzoneAppliedValue = 0;
 	INT32 adjustedMagnitude = std::abs(magnitude);
 
 	if (jdeadzone >= JOYAXISRANGE && adjustedMagnitude >= JOYAXISRANGE) // If the deadzone and magnitude are both 100%...
-	{
 		return JOYAXISRANGE; // ...return 100% input directly, to avoid dividing by 0
-	}
-
-	if (adjustedMagnitude <= jdeadzone)
+	else if (adjustedMagnitude > jdeadzone) // Otherwise, calculate how much the magnitude exceeds the deadzone
 	{
-		return 0; // Magnitude is within deadzone, so do nothing
+		adjustedMagnitude = std::min(adjustedMagnitude, JOYAXISRANGE);
+
+		adjustedMagnitude -= jdeadzone;
+
+		deadzoneAppliedValue = (adjustedMagnitude * JOYAXISRANGE) / (JOYAXISRANGE - jdeadzone);
 	}
 
-	// Calculate how much the magnitude exceeds the deadzone
-	adjustedMagnitude = std::min<INT32>(adjustedMagnitude, JOYAXISRANGE) - jdeadzone;
-	return (adjustedMagnitude * JOYAXISRANGE) / (JOYAXISRANGE - jdeadzone);
+	return deadzoneAppliedValue;
 }
 
 class TiccmdBuilder
@@ -333,6 +332,8 @@ class TiccmdBuilder
 			cmd->angleturn = (INT16)(cmd->angleturn - (((joystickvector.xaxis * angleturn[1]) >> 10))); // ANALOG!
 			cmd->driftturn = (INT16)(cmd->driftturn - (((joystickvector.xaxis * angleturn[1]) >> 10)));
 		}
+			CONS_Printf("angleturn: %d\n-----------------\n",cmd->angleturn);
+			CONS_Printf("driftturn: %d\n-----------------\n",cmd->driftturn);
 
 		if (spectator_analog_input())
 		{
