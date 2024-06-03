@@ -8530,11 +8530,12 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		}
 
 		// Default
-		levelfadecol = 31;
+		levelfadecol = 0;
 
 		if (gamestate == GS_TITLESCREEN)
 		{
-			;
+			levelfadecol = 31;
+			wipetype = wipe_titlescreen_toblack;
 		}
 		else if (K_PodiumHasEmerald())
 		{

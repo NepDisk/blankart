@@ -651,13 +651,19 @@ static bool D_Display(bool world)
 				// last minute toast edit: We need to run most of this so
 				// that the fallback GL behaviour activates at the right time
 
-				if (gamestate != GS_TITLESCREEN
+				/*if (gamestate != GS_TITLESCREEN
 				&& G_GamestateUsesLevel() == true
-				&& lt_fade < 16)
+				&& lt_fade < 15)
 				{
+
+					// Draw a white fade on level opening
+						if (lt_fade <= 5)
+							V_DrawFill(0,0,BASEVIDWIDTH,BASEVIDHEIGHT,120); // Pure white on first few frames, to hide SRB2's awful level load artifacts
+						else
+							V_DrawFadeScreen(120, 15-lt_fade); // Then gradually fade out from there
 					// Level fade-in
-					V_DrawCustomFadeScreen(((levelfadecol == 0) ? "FADEMAP1" : "FADEMAP0"), 31-(lt_fade*2));
-				}
+					//V_DrawCustomFadeScreen(((levelfadecol == 0) ? "FADEMAP1" : "FADEMAP0"), 31-(lt_fade*2));
+				}*/
 
 				if (demo.attract == DEMO_ATTRACT_CREDITS)
 				{

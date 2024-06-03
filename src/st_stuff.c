@@ -1262,7 +1262,7 @@ void ST_drawOldLevelTitle(void)
 		lt_ticker = lt_lasttic+1;*/
 
 
-	if (timeinmap > 113)
+	if ((timeinmap > 113) || (timeinmap < 6))
 		return;
 
 	lvlw = V_LevelNameWidth(lvlttl);
@@ -1727,6 +1727,16 @@ void ST_Drawer(void)
 		if (mapheaderinfo[gamemap-1]->typeoflevel & TOL_TV)	// Very specific Midnight Channel stuff.
 			ST_MayonakaStatic();
 	}
+
+	// Draw a white fade on level opening
+	if (timeinmap < 15)
+	{
+		if (timeinmap <= 5)
+			V_DrawFill(0,0,BASEVIDWIDTH,BASEVIDHEIGHT,120); // Pure white on first few frames, to hide SRB2's awful level load artifacts
+		else
+			V_DrawFadeScreen(120, 15-timeinmap); // Then gradually fade out from there
+	}
+
 
 	// See d_main.c and V_DrawCustomFadeScreen for the hacks that prevents this being here
 	/*if (lt_fade < 16)

@@ -655,7 +655,7 @@ static void WalkBSPNode(INT32 bspnum, poly_t *poly, UINT16 *leafnode, fixed_t *b
 			if (ls_count-- <= 0)
 			{
 				ls_count = numsubsectors/50;
-				loading_status();
+				//loading_status();
 			}
 #endif
 		}
