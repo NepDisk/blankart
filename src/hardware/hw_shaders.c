@@ -27,6 +27,12 @@ static struct {
 	// Floor shader
 	{GLSL_DEFAULT_VERTEX_SHADER, GLSL_FLOOR_FRAGMENT_SHADER},
 
+	// Brightmap Floor shader 
+	{GLSL_DEFAULT_VERTEX_SHADER, GLSL_BRIGHTMAP_FLOOR_FRAGMENT_SHADER},
+
+	// Brightmap Wall shader 
+	{GLSL_DEFAULT_VERTEX_SHADER, GLSL_BRIGHTMAP_WALL_FRAGMENT_SHADER},
+
 	// Wall shader
 	{GLSL_DEFAULT_VERTEX_SHADER, GLSL_WALL_FRAGMENT_SHADER},
 
@@ -434,7 +440,9 @@ static inline UINT16 HWR_FindShaderDefs(UINT16 wadnum)
 customshaderxlat_t shaderxlat[] =
 {
 	{"Flat", SHADER_FLOOR},
+	{"BrightmapFloor", SHADER_BRIGHTMAP_FLOOR},
 	{"WallTexture", SHADER_WALL},
+	{"BrightmapWall", SHADER_BRIGHTMAP_WALL},
 	{"Sprite", SHADER_SPRITE},
 	{"Model", SHADER_MODEL},
 	{"WaterRipple", SHADER_WATER},
