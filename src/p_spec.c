@@ -9324,6 +9324,7 @@ void T_Pusher(pusher_t *p)
 
 		thing->momx += xspeed;
 		thing->momy += yspeed;
+		thing->momz += zspeed;
 
 		if (thing->player)
 		{
