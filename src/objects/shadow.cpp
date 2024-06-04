@@ -36,16 +36,6 @@ struct Shadow : mobj_t
 	{
 		switch (follow()->type)
 		{
-		case MT_HYUDORO: {
-			fixed_t z;
-			pslope_t* slope;
-
-			if (Obj_HyudoroShadowZ(follow(), &z, &slope))
-			{
-				return {{z, slope}};
-			}
-			break;
-		}
 
 		default:
 			break;

@@ -622,10 +622,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			S_StartSound(toucher, sfx_s1b2);
 			return;
 
-		case MT_HYUDORO:
-			Obj_HyudoroCollide(special, toucher);
-			return;
-
 		case MT_RING:
 		case MT_FLINGRING:
 			if (special->extravalue1)

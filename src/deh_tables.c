@@ -1495,7 +1495,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_SPHEREBOX12",
 
 	"S_ITEMICON",
-	"S_ITEMBACKDROP",
 
 	// Item capsules
 	"S_ITEMCAPSULE",
@@ -1959,10 +1958,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_FLAMESHIELDLINE2",
 	"S_FLAMESHIELDLINE3",
 	"S_FLAMESHIELDFLASH",
-
-	// Caked-Up Booty-Sheet Ghost
-	"S_HYUDORO",
-	"S_HYUDORO_RETURNING",
 
 	// The legend
 	"S_SINK",
@@ -2534,8 +2529,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_SPECIAL_UFO_GLASS_UNDER",
 	"S_SPECIAL_UFO_ARM",
 	"S_SPECIAL_UFO_STEM",
-
-	"S_SUPER_FLICKY",
 
 	"S_BATTLEUFO",
 	"S_BATTLEUFO_LEG",
@@ -3352,9 +3345,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_FLAMESHIELDUNDERLAY",
 	"MT_FLAMESHIELDPAPER",
 	"MT_BUBBLESHIELDTRAP",
-
-	"MT_HYUDORO",
-	"MT_HYUDORO_CENTER",
 
 	"MT_SINK", // Kitchen Sink Stuff
 	"MT_SINK_SHIELD",

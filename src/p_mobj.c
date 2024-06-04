@@ -5117,7 +5117,6 @@ boolean P_IsKartItem(INT32 type)
 		case MT_BALLHOG:
 		case MT_SPB:
 		case MT_BUBBLESHIELDTRAP:
-		case MT_HYUDORO:
 		case MT_SINK:
 			return true;
 
@@ -5662,10 +5661,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 	case MT_CUSTOMMACEPOINT:
 	case MT_HIDDEN_SLING:
 		P_MaceSceneryThink(mobj);
-		break;
-	case MT_SMALLMACE:
-	case MT_BIGMACE:
-		P_SpawnGhostMobj(mobj)->tics = 8;
 		break;
 	case MT_HOOP:
 		if (mobj->fuse > 1)
@@ -7911,16 +7906,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		}
 		break;
 	}
-	case MT_HYUDORO:
-	{
-		Obj_HyudoroThink(mobj);
-		break;
-	}
-	case MT_HYUDORO_CENTER:
-	{
-		Obj_HyudoroCenterThink(mobj);
-		break;
-	}
 	case MT_BATTLEUFO:
 	{
 		Obj_BattleUFOThink(mobj);
@@ -9798,7 +9783,6 @@ static void P_DefaultMobjShadowScale(mobj_t *thing)
 		case MT_SSMINE_SHIELD:
 		case MT_LANDMINE:
 		case MT_BALLHOG:
-		case MT_HYUDORO:
 		case MT_SINK:
 		case MT_ROCKETSNEAKER:
 		case MT_SPB:
@@ -12926,11 +12910,6 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj)
 	{
 		// Give Duel bananas a random angle
 		mobj->angle = FixedMul(P_RandomFixed(PR_DECORATION), ANGLE_MAX);
-		break;
-	}
-	case MT_HYUDORO_CENTER:
-	{
-		Obj_InitHyudoroCenter(mobj, NULL);
 		break;
 	}
 	case MT_LOOPCENTERPOINT:

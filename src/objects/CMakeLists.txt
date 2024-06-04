@@ -1,5 +1,4 @@
 target_sources(SRB2SDL2 PRIVATE
-	hyudoro.c
 	spb.c
 	manta-ring.c
 	orbinaut.c

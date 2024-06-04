@@ -352,7 +352,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	"FLMP", // Flame Shield paper sprites
 	"FLML", // Flame Shield speed lines
 	"FLMF", // Flame Shield flash
-	"HYUU", // Hyudoro
 	"SINK", // Kitchen Sink
 	"SITR", // Kitchen Sink Trail
 	"KBLN", // Battle Mode Bumper
@@ -539,8 +538,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	"SSCB",
 
 	"UQMK",
-
-	"3DFR",
 
 	"BUFO", // Battle/Power-UP UFO
 
@@ -1980,7 +1977,6 @@ state_t states[NUMSTATES] =
 	{SPR_SBOX, 22|FF_FULLBRIGHT|FF_ANIMATE|FF_GLOBALANIM, 4, {NULL}, 1, 1, S_SPHEREBOX1},	// S_SPHEREBOX12
 
 	{SPR_NULL, FF_FULLBRIGHT, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMICON
-	{SPR_ITPA, FF_FULLBRIGHT, -1, {NULL}, 1, 0, S_NULL}, // S_ITEMBACKDROP
 
 	{SPR_ICAP,                         FF_ADD|0, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMCAPSULE
 	{SPR_ICAP,                 FF_PAPERSPRITE|1, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMCAPSULE_TOP_SIDE
@@ -2421,9 +2417,6 @@ state_t states[NUMSTATES] =
 	{SPR_FLML, FF_FULLBRIGHT|FF_PAPERSPRITE|FF_ANIMATE|7, 7, {NULL}, 6, 1, S_NULL}, // S_FLAMESHIELDLINE2
 	{SPR_FLML, FF_FULLBRIGHT|FF_PAPERSPRITE|FF_ANIMATE|14, 7, {NULL}, 6, 1, S_NULL}, // S_FLAMESHIELDLINE3
 	{SPR_FLMF, FF_FULLBRIGHT, 2, {NULL}, 0, 0, S_NULL}, // S_FLAMESHIELDFLASH
-
-	{SPR_HYUU, FF_FULLBRIGHT, -1, {NULL}, 0, 0, S_NULL}, // S_HYUDORO
-	{SPR_HYUU, FF_FULLBRIGHT|1, -1, {NULL}, 0, 0, S_NULL}, // S_HYUDORO_RETURNING
 
 	{SPR_SINK, 0,  1, {A_SmokeTrailer}, MT_SINKTRAIL, 0, S_SINK},	// S_SINK
 	{SPR_SINK, 0|FF_TRANS80|FF_FULLBRIGHT, -1, {NULL}, 0, 0, S_SINK_SHIELD}, // S_SINK_SHIELD
@@ -3006,8 +2999,6 @@ state_t states[NUMSTATES] =
 	{SPR_SSCB, FF_SUBTRACT, -1, {NULL}, 0, 0, S_NULL}, // S_SPECIAL_UFO_GLASS_UNDER
 	{SPR_UFOA, FF_PAPERSPRITE, -1, {NULL}, 0, 0, S_NULL}, // S_SPECIAL_UFO_ARM
 	{SPR_UFOS, 0, -1, {NULL}, 0, 0, S_NULL}, // S_SPECIAL_UFO_STEM
-
-	{SPR_3DFR, 1|FF_ANIMATE, -1, {NULL}, 2, 5, S_NULL}, // S_SUPER_FLICKY
 
 	// Battle/Power-UP UFO
 	{SPR_BUFO, 0, -1, {A_SetScale}, 3*FRACUNIT/2 , 0, S_NULL}, // S_BATTLEUFO
@@ -4514,8 +4505,8 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_SPIKED2,      // xdeathstate
 		sfx_mspogo,     // deathsound
 		2*TICRATE,      // speed
-		14*FRACUNIT,     // radius
-		90*FRACUNIT,    // height
+		8*FRACUNIT,     // radius
+		32*FRACUNIT,    // height
 		0,              // display offset
 		4,              // mass
 		0,              // damage
@@ -14249,60 +14240,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,              // damage
 		sfx_None,       // activesound
 		MF_SPECIAL|MF_NOGRAVITY|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_HYUDORO
-		-1,             // doomednum
-		S_HYUDORO,      // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		40*FRACUNIT,    // radius
-		80*FRACUNIT,    // height
-		0,              // display offset
-		0,              // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_SPECIAL|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_DONTENCOREMAP|MF_APPLYTERRAIN, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_HYUDORO_CENTER
-		2055,           // doomednum
-		S_INVISIBLE,    // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		64*FRACUNIT,    // radius
-		32*FRACUNIT,    // height
-		0,              // display offset
-		0,              // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_NOGRAVITY|MF_DONTENCOREMAP, // flags
 		S_NULL          // raisestate
 	},
 
