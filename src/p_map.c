@@ -20,6 +20,7 @@
 #include "m_random.h"
 #include "p_local.h"
 #include "p_setup.h" // NiGHTS stuff
+#include "p_spec.h"
 #include "r_fps.h"
 #include "r_state.h"
 #include "r_main.h"
@@ -2543,13 +2544,13 @@ fixed_t P_GetThingStepUp(mobj_t *thing, fixed_t destX, fixed_t destY)
 	}
 
 	if (P_MobjTouchingSectorSpecialFlag(thing, SSF_DOUBLESTEPUP)
-		|| (R_PointInSubsector(destX, destY)->sector->specialflags & SSF_DOUBLESTEPUP))
+		|| (R_PointInSubsector(destX, destY)->sector->specialflags & SSF_DOUBLESTEPUP) || P_MobjTouchingSectorSpecial(thing, 1, 13) || (GETSECSPECIAL(R_PointInSubsector(destX, destY)->sector->special, 1) == 13))
 	{
 		// If using type Section1:13, double the maxstep.
 		maxstep <<= 1;
 	}
 	else if (P_MobjTouchingSectorSpecialFlag(thing, SSF_NOSTEPUP)
-		|| (R_PointInSubsector(destX, destY)->sector->specialflags & SSF_NOSTEPUP))
+		|| (R_PointInSubsector(destX, destY)->sector->specialflags & SSF_NOSTEPUP) || P_MobjTouchingSectorSpecial(thing, 1, 12) || (GETSECSPECIAL(R_PointInSubsector(destX, destY)->sector->special, 1) == 12))
 	{
 		// If using type Section1:12, no maxstep. For short walls, like Egg Zeppelin
 		maxstep = 0;
