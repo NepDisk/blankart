@@ -373,6 +373,8 @@ static boolean prepare_hud_hook
 		Hook_State * hook,
 		int hook_type
 ){
+	// TODO: Should probably call this somewhere else...
+	hud_interpcounter = 0;
 	return init_hook_type(hook, 0,
 			hook_type, 0, NULL,
 			hudHookIds[hook_type].numHooks);
