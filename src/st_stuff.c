@@ -1268,7 +1268,7 @@ void ST_drawOldLevelTitle(void)
 	lvlw = V_LevelNameWidth(lvlttl);
 
 	if (actnum)
-		lvlttlxpos = ((BASEVIDWIDTH/2) - (lvlw/2)) - V_LevelNameWidth(actnum);
+		lvlttlxpos = ((BASEVIDWIDTH/2) - (lvlw/2)) - V_LevelNameWidth(va("%d",actnum));
 	else
 		lvlttlxpos = ((BASEVIDWIDTH/2) - (lvlw/2));
 
@@ -1324,7 +1324,7 @@ void ST_drawOldLevelTitle(void)
 		V_DrawLevelTitle(zonexpos, bary+6, V_SNAPTOBOTTOM, M_GetText("Zone"));
 
 	if (actnum)
-		V_DrawLevelTitle(ttlnumxpos+12, bary+6, V_SNAPTOBOTTOM, actnum);
+		V_DrawLevelTitle(ttlnumxpos+12, bary+6, V_SNAPTOBOTTOM, va("%d",actnum));
 
 
 luahook:

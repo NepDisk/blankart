@@ -738,7 +738,7 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		return (t1->player->invincibilitytimer > 0);
 	};
 
-	if (forEither(shouldSpinout, doDamage(DMG_WIPEOUT)))
+	if (forEither(shouldSpinout, doDamage(DMG_NORMAL)))
 	{
 		return true;
 	}
@@ -767,13 +767,13 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 				&& (t1->player->flashing == 0));
 		};
 
-		if (forEither(shouldSteal, doDamage(DMG_WIPEOUT | DMG_STEAL)))
+		if (forEither(shouldSteal, doDamage(DMG_NORMAL | DMG_STEAL)))
 		{
 			return true;
 		}
 	}
 
-	// Cause stumble on scale difference
+	// Cause sqiush on scale difference
 	auto shouldSquish= [](mobj_t *t1, mobj_t *t2)
 	{
 		return K_IsBigger(t1, t2);
