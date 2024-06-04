@@ -2694,7 +2694,7 @@ increment_move
 				}
 				else if (thing->momz * P_MobjFlip(thing) <= 0 // Step down requires moving down.
 					&& !(P_MobjTouchingSectorSpecialFlag(thing, SSF_NOSTEPDOWN)
-					|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_NOSTEPDOWN)))
+					|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_NOSTEPDOWN) || P_MobjTouchingSectorSpecial(thing, 1, 14) || (GETSECSPECIAL(R_PointInSubsector(x, y)->sector->special, 1) == 14)))
 				{
 					// If the floor difference is MAXSTEPMOVE or less, and the sector isn't Section1:14, ALWAYS
 					// step down! Formerly required a Section1:13 sector for the full MAXSTEPMOVE, but no more.

@@ -5531,6 +5531,10 @@ static void P_EvaluateOldSectorSpecial(player_t *player, sector_t *sector, secto
 			}
 			break;
 		}
+		case 12: // Wall Sector (Don't step-up/down)
+		case 13: // Ramp Sector (Increase step-up/down)
+		case 14: // Non-Ramp Sector (Don't step-down)
+			break;
 	}
 
 }
