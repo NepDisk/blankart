@@ -3927,7 +3927,10 @@ static void P_PlayerMobjThinker(mobj_t *mobj)
 		mobj->eflags &= ~MFE_JUSTHITFLOOR;
 	}
 
-	K_UpdateTerrainOverlay(mobj);
+	if (!udmf)
+		mobj->terrain = NULL;
+	else
+		K_UpdateTerrainOverlay(mobj);
 
 animonly:
 	P_CyclePlayerMobjState(mobj);
@@ -9558,7 +9561,10 @@ void P_MobjThinker(mobj_t *mobj)
 		P_ButteredSlope(mobj);
 	}
 
-	K_UpdateTerrainOverlay(mobj);
+	if (!udmf)
+		mobj->terrain = NULL;
+	else
+		K_UpdateTerrainOverlay(mobj);
 
 	// Crush enemies!
 	if (mobj->ceilingz - mobj->floorz < mobj->height)
