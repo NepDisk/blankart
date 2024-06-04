@@ -326,7 +326,6 @@ char sprnames[NUMSPRITES + 1][5] =
 	"WIPD", // Wipeout dust trail
 	"DRIF", // Drift Sparks
 	"BDRF", // Brake drift sparks
-	"BRAK", // Brake dust
 	"DRWS", // Drift dust sparks
 
 	// Kart Items

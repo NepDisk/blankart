@@ -868,7 +868,6 @@ typedef enum sprite
 	SPR_WIPD, // Wipeout dust trail
 	SPR_DRIF, // Drift Sparks
 	SPR_BDRF, // Brake drift sparks
-	SPR_BRAK, // Brake brak
 	SPR_DRWS, // Drift dust sparks
 
 	// Kart Items
@@ -4495,8 +4494,6 @@ typedef enum mobj_type
 
 	MT_WATERTRAIL,
 	MT_WATERTRAILUNDERLAY,
-
-	MT_DOWNLINE,
 
 	MT_PAPERITEMSPOT,
 
