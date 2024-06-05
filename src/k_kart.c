@@ -4365,7 +4365,14 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 		{
 			mobj_t *lasttrail = K_FindLastTrailMobj(player);
 
-			if (lasttrail)
+			if (mapthing == MT_BUBBLESHIELDTRAP) // Drop directly on top of you.
+			{
+				newangle = player->mo->angle;
+				newx = player->mo->x + player->mo->momx;
+				newy = player->mo->y + player->mo->momy;
+				newz = player->mo->z;
+			}
+			else if (lasttrail)
 			{
 				newx = lasttrail->x;
 				newy = lasttrail->y;
@@ -8952,10 +8959,9 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 						case KITEM_HYUDORO:
 							if (ATTACK_IS_DOWN && !HOLDING_ITEM && NO_HYUDORO)
 							{
-								player->itemamount--;
 								K_DoHyudoroSteal(player); // yes. yes they do.
-								//Obj_HyudoroDeploy(player->mo);
 								K_PlayAttackTaunt(player->mo);
+								player->itemamount--;
 								player->botvars.itemconfirm = 0;
 							}
 							break;
@@ -9000,6 +9006,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 								K_ThrowKartItem(player, false, MT_SINK, 1, 2);
 								K_PlayAttackTaunt(player->mo);
 								player->itemflags &= ~IF_ITEMOUT;
+								player->itemamount--;
 								K_UpdateHnextList(player, true);
 								player->botvars.itemconfirm = 0;
 							}
