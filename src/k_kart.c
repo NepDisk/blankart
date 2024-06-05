@@ -8562,6 +8562,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							{
 								K_ThrowKartItem(player, false, MT_BANANA, -1, 0);
 								K_PlayAttackTaunt(player->mo);
+								player->itemamount--;
 								K_UpdateHnextList(player, false);
 								player->botvars.itemconfirm = 0;
 							}
@@ -8625,6 +8626,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							{
 								K_ThrowKartItem(player, true, MT_ORBINAUT, 1, 0);
 								K_PlayAttackTaunt(player->mo);
+								player->itemamount--;
 								K_UpdateHnextList(player, false);
 								player->botvars.itemconfirm = 0;
 							}
@@ -8669,6 +8671,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 								else if (player->throwdir == -1) // Throwing backward gives you a dud that doesn't home in
 									K_ThrowKartItem(player, true, MT_JAWZ_DUD, -1, 0);
 								K_PlayAttackTaunt(player->mo);
+								player->itemamount--;
 								K_UpdateHnextList(player, false);
 								player->botvars.itemconfirm = 0;
 							}
@@ -8696,6 +8699,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 								K_ThrowKartItem(player, false, MT_SSMINE, 1, 1);
 								K_PlayAttackTaunt(player->mo);
 								player->itemflags &= ~IF_ITEMOUT;
+								player->itemamount--;
 								K_UpdateHnextList(player, true);
 								player->botvars.itemconfirm = 0;
 							}
@@ -8703,9 +8707,9 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 						case KITEM_LANDMINE:
 							if (ATTACK_IS_DOWN && !HOLDING_ITEM && NO_HYUDORO)
 							{
-								player->itemamount--;
 								K_ThrowLandMine(player);
 								K_PlayAttackTaunt(player->mo);
+								player->itemamount--;
 								player->botvars.itemconfirm = 0;
 							}
 							break;
@@ -8722,11 +8726,11 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 						case KITEM_SPB:
 							if (ATTACK_IS_DOWN && !HOLDING_ITEM && NO_HYUDORO)
 							{
-								player->itemamount--;
 								K_SetItemOut(player);
 								K_ThrowKartItem(player, true, MT_SPB, 1, 0);
 								K_UnsetItemOut(player);
 								K_PlayAttackTaunt(player->mo);
+								player->itemamount--;
 								player->botvars.itemconfirm = 0;
 							}
 							break;
