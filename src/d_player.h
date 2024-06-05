@@ -589,6 +589,15 @@ typedef enum
 
 extern altview_t titlemapcam;
 
+// player_t struct for saltyhop related variables
+struct saltyhop_t {
+	boolean jump; // Player has the ability to do the hop
+	boolean ready; // Saltyhop is ready
+	boolean tapping; // Player is tapping the drift button
+
+	fixed_t momz, zoffset; // erm... the mechanism....
+};
+
 // ========================================================================
 //                          PLAYER STRUCTURE
 // ========================================================================
@@ -1053,6 +1062,8 @@ struct player_t
 
 	tic_t darkness_start;
 	tic_t darkness_end;
+
+	saltyhop_t salty;
 
 	//NOIRE: Re-declare pogoSpring stuff. If the game affords to declare one trillion variables for hardcoded lua, we can do this too.
 	// REVIEW: Should pogo shit be a player state, like Tricks?

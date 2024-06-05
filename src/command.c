@@ -41,6 +41,9 @@
 #include "p_local.h" // P_ResetPlayerCheats
 #include "k_color.h"
 
+// Noire
+#include "noire/n_hud.h"
+
 //========
 // protos.
 //========
@@ -2312,6 +2315,9 @@ void CV_AddValue(consvar_t *var, INT32 increment)
 				{
 					max = KARTSPEED_HARD+1;
 				}
+				// HAYA: stupid shit doesnt work without this
+				else if (var->PossibleValue == HudColor_cons_t)
+					max = MAXSKINCOLORS;
 			}
 #ifdef PARANOIA
 			if (currentindice == -1)

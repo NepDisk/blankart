@@ -66,6 +66,8 @@
 #include "m_easing.h"
 #include "k_endcam.h"
 
+//HEP
+#include "hep2/h_cvars.h"
 // Noire
 #include "noire/n_control.h"
 #include "noire/n_legacycheckpoint.h"
@@ -8583,6 +8585,89 @@ boolean K_PressingEBrake(const player_t *player)
 	return ((K_GetKartButtons(player) & BT_EBRAKEMASK) == BT_EBRAKEMASK);
 }
 
+// I have no idea where to put this...
+static void K_QuiteSaltyHop(player_t *player)
+{
+	if (cv_saltyhop.value == 0)
+	{
+		// reset before we leave
+		player->salty.jump = player->salty.ready = player->salty.tapping = false;
+		player->salty.momz = player->salty.zoffset = 0;
+		return;
+	}
+
+	const boolean onground = P_IsObjectOnGround(player->mo);
+
+	// k_jmp is gone so just check for drift here
+	// TODO: Rework this shit. this is awful
+	if (!(player->pflags & PF_DRIFTINPUT))
+	{
+		player->salty.ready = true;
+		player->salty.tapping = false;
+	}
+	else if (player->salty.ready)
+	{
+		player->salty.ready = false;
+		player->salty.tapping = true;
+	}
+	else
+	{
+		player->salty.tapping = false;
+	}
+
+	if (player->salty.jump)
+	{
+		if (player->mo->eflags & MFE_JUSTHITFLOOR)
+			player->salty.zoffset = 0;
+		else if (onground)
+		{
+			player->salty.zoffset += player->salty.momz;
+			player->salty.momz -= (3*FRACUNIT)/2;
+		}
+		else
+		{
+			// Originally (49/50)*FRACUNIT. tf was i on
+			player->salty.zoffset *= FRACUNIT;
+			player->salty.momz = 0;
+		}
+
+		// zoffset is back to zero...
+		if (player->salty.zoffset <= 0)
+		{
+			// play the sound
+			if (!(player->mo->eflags & MFE_JUSTHITFLOOR) && onground)
+				S_StartSound(player->mo, sfx_s268);
+			player->salty.jump = false;
+			player->salty.zoffset = 0;
+			player->salty.momz = 0;
+			// small squish upon landing
+			player->mo->spritexscale = FRACUNIT*14/10;
+			player->mo->spriteyscale = FRACUNIT*6/10;
+		}
+		else if (player->salty.zoffset > 0)
+		{
+			// stretch the funny
+			player->mo->spritexscale -= (FRACUNIT/30);
+			player->mo->spriteyscale += (FRACUNIT/30);
+		}
+		// Apply the z offset!
+		player->mo->spriteyoffset = player->salty.zoffset;
+
+		// Stop any and all drift sounds when hopping.
+		if (S_SoundPlaying(player->mo, sfx_screec))
+			S_StopSoundByID(player->mo, sfx_screec);
+		if (S_SoundPlaying(player->mo, sfx_drift))
+			S_StopSoundByID(player->mo, sfx_drift);
+	}
+	else if (player->salty.tapping && onground && !player->spinouttimer && !player->wipeoutslow && !player->tumbleBounces)
+	{
+		player->salty.jump = true;
+		player->salty.zoffset = 0;
+		player->salty.momz = 6*FRACUNIT;
+		S_StartSound(player->mo, sfx_s25a);
+	}
+}
+
 /**	\brief	Decreases various kart timers and powers per frame. Called in P_PlayerThink in p_user.c
 
 	\param	player	player object passed from P_PlayerThink
@@ -9725,6 +9810,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (N_UseLegacyStart())
 		N_LegacyStart(player);
+
+	// update salty hop
+	K_QuiteSaltyHop(player);
 
 }
 

@@ -10,6 +10,7 @@
 // Noire
 #include "../n_menu.h"
 #include "../n_cvar.h"
+#include "../../hep2/h_cvars.h"
 #include "../../d_main.h"
 #include "../../v_video.h"
 
@@ -44,6 +45,12 @@ menuitem_t OPTIONS_Noire[] =
 		
 	{IT_STRING | IT_CVAR, "Power Music", "Toggles the power music during gameplay.",
 		NULL, {.cvar = &cv_specialmusic}, 0, 0},
+
+	{IT_HEADER, "Visuals...", NULL,
+		NULL, {NULL}, 0, 0},
+
+	{IT_STRING | IT_CVAR, "Visual Hopping", "Do a funny hop!",
+		NULL, {.cvar = &cv_saltyhop}, 0, 0},
 };
 
 void ColorHUD_OnChange(void)

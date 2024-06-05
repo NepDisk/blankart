@@ -12141,6 +12141,10 @@ void P_SpawnPlayer(INT32 playernum)
 	K_InitWavedashIndicator(p);
 	K_InitTrickIndicator(p);
 
+	// saltyhop
+	p->salty.jump = p->salty.ready = p->salty.tapping = false;
+	p->salty.momz = p->salty.zoffset = 0;
+
 	if ((gametyperules & GTR_BUMPERS) && !p->spectator)
 	{
 		mobj->health = K_BumpersToHealth(K_StartingBumperCount());

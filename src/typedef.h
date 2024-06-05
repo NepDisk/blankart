@@ -54,6 +54,7 @@ TYPEDEF (itemroulette_t);
 TYPEDEF (powerupvars_t);
 TYPEDEF (icecubevars_t);
 TYPEDEF (altview_t);
+TYPEDEF (saltyhop_t);
 TYPEDEF (player_t);
 
 // d_clisrv.h

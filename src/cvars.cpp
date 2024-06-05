@@ -38,6 +38,8 @@
 
 // Noire
 #include "noire/n_hud.h"
+// HEP2
+#include "hep2/h_cvars.h"
 
 // There is a memset in one of consvar_t's constructors. It
 // SHOULD be safe if there is no polymorphism, but just
@@ -512,6 +514,10 @@ consvar_t cv_colorizeditembox = Player("colorizeditembox", "On").on_off();
 consvar_t cv_darkitembox = Player("darkitembox", "On").on_off();
 
 consvar_t cv_colorizedhudcolor = Player("colorizedhudcolor", "Skin Color").values(HudColor_cons_t);
+
+// HEP2 cvars....
+// Should probably make this profile specific...
+consvar_t cv_saltyhop = Player("saltyhop", "Off").on_off();
 
 consvar_t cv_specialmusic = Player("specialmusic", "On").on_off();
 
