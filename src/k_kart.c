@@ -3333,7 +3333,7 @@ INT32 K_ExplodePlayer(player_t *player, mobj_t *inflictor, mobj_t *source) // A 
 // This kind of wipeout happens with no rings -- doesn't remove a bumper, has no invulnerability, and is much shorter.
 void K_DebtStingPlayer(player_t *player, mobj_t *source)
 {
-	INT32 length = TICRATE;
+	INT32 length = 5;
 
 	if (source->player)
 	{

@@ -805,8 +805,15 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 			P_PlayerRingBurst(t2->player, 1);
 
 			return stung;
+
+
+
 		};
 
+		if (forEither(doSting, doSting))
+		{
+			return true;
+		}
 	}
 
 	return false;

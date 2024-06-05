@@ -53,9 +53,6 @@ menuitem_t OPTIONS_NoireGameplayRings[] =
 	{IT_STRING | IT_CVAR, "Ringsting", "Should getting bumped while having no rings hurt?",
 		NULL, {.cvar = &cv_ng_ringsting}, 0, 0},
 
-	{IT_STRING | IT_CVAR, "Ring Deathmark", "Racer dies upon taking damage if ring count is equal to or below this value.",
-		NULL, {.cvar = &cv_ng_ringdeathmark}, 0, 0},
-
 	{IT_STRING | IT_CVAR, "Spawn Rings", "Will rings appear in tracks.",
 		NULL, {.cvar = &cv_ng_maprings}, 0, 0},
 };
@@ -161,12 +158,6 @@ void NG_Generic_OnChange(void)
 
 void NG_Rings_OnChange(void)
 {
-	if (con_startup) return;
-	if (dedicated)
-	{
-		CONS_Printf("This value only works on locally, set cvars manually instead for dedicated\n");
-		return;
-	}
 
 	if(cv_ng_rings.value)
 	{
@@ -174,7 +165,6 @@ void NG_Rings_OnChange(void)
 		CV_SetValue(&cv_ng_spillcap, 20);
 		CV_Set(&cv_ng_ringdebt, "On");
 		CV_Set(&cv_ng_ringsting, "On");
-		CV_Set(&cv_ng_ringdeathmark, "-20");
 		CV_Set(&cv_ng_maprings, "On");
 
 		for (int i = 1; i < OPTIONS_NoireGameplayRingsDef.numitems; i++)
@@ -188,7 +178,6 @@ void NG_Rings_OnChange(void)
 		CV_SetValue(&cv_ng_spillcap, 0);
 		CV_Set(&cv_ng_ringdebt, "Off");
 		CV_Set(&cv_ng_ringsting, "Off");
-		CV_Set(&cv_ng_ringdeathmark, "-20");
 		CV_Set(&cv_ng_maprings, "Off");
 
 		for (int i = 1; i < OPTIONS_NoireGameplayRingsDef.numitems; i++)
