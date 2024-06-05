@@ -204,14 +204,22 @@ void P_InitPicAnims(void)
 	lastanim = anims;
 	for (i = 0; animdefs[i].istexture != -1; i++)
 	{
-		if (animdefs[i].istexture != 1)
-			continue;
+		if (animdefs[i].istexture)
+		{
+			if (R_CheckTextureNumForName(animdefs[i].startname) == -1)
+				continue;
 
-		if (R_CheckTextureNumForName(animdefs[i].startname) == -1)
-			continue;
+			lastanim->picnum = R_TextureNumForName(animdefs[i].endname);
+			lastanim->basepic = R_TextureNumForName(animdefs[i].startname);
+		}
+		else
+		{
+			if ((W_CheckNumForName(animdefs[i].startname)) == LUMPERROR)
+				continue;
 
-		lastanim->picnum = R_TextureNumForName(animdefs[i].endname);
-		lastanim->basepic = R_TextureNumForName(animdefs[i].startname);
+			lastanim->picnum = R_GetFlatNumForName(animdefs[i].endname);
+			lastanim->basepic = R_GetFlatNumForName(animdefs[i].startname);
+		}
 
 		lastanim->istexture = animdefs[i].istexture;
 		lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
