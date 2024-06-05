@@ -786,10 +786,17 @@ INT32 K_KartGetItemOdds(const player_t *player, itemroulette_t *const roulette, 
 		case KITEM_MINE:
 		case KITEM_GROW:
 		case KITEM_BUBBLESHIELD:
+		{
+			conditions.cooldownOnStart = true;
+			conditions.powerItem = true;
+			break;
+		}
+
 		case KITEM_FLAMESHIELD:
 		{
 			conditions.cooldownOnStart = true;
 			conditions.powerItem = true;
+			conditions.notNearEnd = true;
 			break;
 		}
 
@@ -1346,7 +1353,7 @@ void K_FillItemRouletteData(const player_t *player, itemroulette_t *const roulet
 		{
 			presetlist = K_KartItemReelSPBAttack;
 		}
-		else if (gametype == GT_TUTORIAL)
+		else if (K_CanChangeRules(true) == false) // GT_TUTORIAL, time attack
 		{
 			presetlist = K_KartItemReelRingSneaker;
 		}

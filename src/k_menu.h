@@ -1206,8 +1206,9 @@ extern struct extrasmenu_s {
 typedef enum
 {
 	extras_addons = 0,
-	extras_tutorial,
 	extras_challenges,
+	extras_manual,
+	extras_tutorial,
 	extras_statistics,
 	extras_eggtv,
 	extras_stereo,

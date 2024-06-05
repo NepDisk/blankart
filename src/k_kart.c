@@ -68,6 +68,8 @@
 #include "m_easing.h"
 #include "k_endcam.h"
 
+//HEP
+#include "hep2/h_cvars.h"
 // Noire
 #include "noire/n_control.h"
 #include "noire/n_legacycheckpoint.h"
@@ -2427,6 +2429,26 @@ boolean K_WaterSkip(mobj_t *mobj)
 	}
 }
 
+static mobj_t *K_SpawnOrMoveMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type, mobj_t *source, int id) {
+	mobj_t *mobj = source->watertrail[id];
+
+	if (!mobj || P_MobjWasRemoved(mobj))
+	{
+		mobj = P_SpawnMobj(x, y, z, type);
+
+		P_SetTarget(&source->watertrail[id], mobj);
+	}
+	else
+	{
+		if ((mobj->state - states) == S_INVISIBLE)
+            P_SetOrigin(mobj, x, y, z);
+        else
+            P_MoveOrigin(mobj, x, y, z);
+	}
+
+	return mobj;
+}
+
 void K_SpawnWaterRunParticles(mobj_t *mobj)
 {
 	fixed_t runSpeed = 14 * mobj->scale;
@@ -2511,8 +2533,9 @@ void K_SpawnWaterRunParticles(mobj_t *mobj)
 
 			// Left
 			// underlay
-			water = P_SpawnMobj(x1, y1,
-				((mobj->eflags & MFE_VERTICALFLIP) ? mobj->waterbottom - FixedMul(mobjinfo[MT_WATERTRAILUNDERLAY].height, mobj->scale) : mobj->watertop), MT_WATERTRAILUNDERLAY);
+			water = K_SpawnOrMoveMobj(x1, y1,
+				((mobj->eflags & MFE_VERTICALFLIP) ? mobj->waterbottom - FixedMul(mobjinfo[MT_WATERTRAILUNDERLAY].height, mobj->scale) : mobj->watertop), MT_WATERTRAILUNDERLAY,
+				mobj, 0);
 			water->angle = forwardangle - ANGLE_180 - ANGLE_22h;
 			water->destscale = trailScale;
 			water->momx = mobj->momx;
@@ -2524,8 +2547,9 @@ void K_SpawnWaterRunParticles(mobj_t *mobj)
 			water->renderflags |= RF_REDUCEVFX;
 
 			// overlay
-			water = P_SpawnMobj(x1, y1,
-				((mobj->eflags & MFE_VERTICALFLIP) ? mobj->waterbottom - FixedMul(mobjinfo[MT_WATERTRAIL].height, mobj->scale) : mobj->watertop), MT_WATERTRAIL);
+			water = K_SpawnOrMoveMobj(x1, y1,
+				((mobj->eflags & MFE_VERTICALFLIP) ? mobj->waterbottom - FixedMul(mobjinfo[MT_WATERTRAIL].height, mobj->scale) : mobj->watertop), MT_WATERTRAIL,
+				mobj, 1);
 			water->angle = forwardangle - ANGLE_180 - ANGLE_22h;
 			water->destscale = trailScale;
 			water->momx = mobj->momx;
@@ -2538,8 +2562,9 @@ void K_SpawnWaterRunParticles(mobj_t *mobj)
 
 			// Right
 			// Underlay
-			water = P_SpawnMobj(x2, y2,
-				((mobj->eflags & MFE_VERTICALFLIP) ? mobj->waterbottom - FixedMul(mobjinfo[MT_WATERTRAILUNDERLAY].height, mobj->scale) : mobj->watertop), MT_WATERTRAILUNDERLAY);
+			water = K_SpawnOrMoveMobj(x2, y2,
+				((mobj->eflags & MFE_VERTICALFLIP) ? mobj->waterbottom - FixedMul(mobjinfo[MT_WATERTRAILUNDERLAY].height, mobj->scale) : mobj->watertop), MT_WATERTRAILUNDERLAY,
+				mobj, 2);
 			water->angle = forwardangle - ANGLE_180 + ANGLE_22h;
 			water->destscale = trailScale;
 			water->momx = mobj->momx;
@@ -2551,8 +2576,9 @@ void K_SpawnWaterRunParticles(mobj_t *mobj)
 			water->renderflags |= RF_REDUCEVFX;
 
 			// Overlay
-			water = P_SpawnMobj(x2, y2,
-				((mobj->eflags & MFE_VERTICALFLIP) ? mobj->waterbottom - FixedMul(mobjinfo[MT_WATERTRAIL].height, mobj->scale) : mobj->watertop), MT_WATERTRAIL);
+			water = K_SpawnOrMoveMobj(x2, y2,
+				((mobj->eflags & MFE_VERTICALFLIP) ? mobj->waterbottom - FixedMul(mobjinfo[MT_WATERTRAIL].height, mobj->scale) : mobj->watertop), MT_WATERTRAIL,
+				mobj, 3);
 			water->angle = forwardangle - ANGLE_180 + ANGLE_22h;
 			water->destscale = trailScale;
 			water->momx = mobj->momx;
@@ -6128,6 +6154,89 @@ static void K_UpdateTripwire(player_t *player)
 	}
 }
 
+// I have no idea where to put this...
+static void K_QuiteSaltyHop(player_t *player)
+{
+	if (cv_saltyhop.value == 0)
+	{
+		// reset before we leave
+		player->salty.jump = player->salty.ready = player->salty.tapping = false;
+		player->salty.momz = player->salty.zoffset = 0;
+		return;
+	}
+
+	const boolean onground = P_IsObjectOnGround(player->mo);
+
+	// k_jmp is gone so just check for drift here
+	// TODO: Rework this shit. this is awful
+	if (!(player->pflags & PF_DRIFTINPUT))
+	{
+		player->salty.ready = true;
+		player->salty.tapping = false;
+	}
+	else if (player->salty.ready)
+	{
+		player->salty.ready = false;
+		player->salty.tapping = true;
+	}
+	else
+	{
+		player->salty.tapping = false;
+	}
+
+	if (player->salty.jump)
+	{
+		if (player->mo->eflags & MFE_JUSTHITFLOOR)
+			player->salty.zoffset = 0;
+		else if (onground)
+		{
+			player->salty.zoffset += player->salty.momz;
+			player->salty.momz -= (3*FRACUNIT)/2;
+		}
+		else
+		{
+			// Originally (49/50)*FRACUNIT. tf was i on
+			player->salty.zoffset *= FRACUNIT;
+			player->salty.momz = 0;
+		}
+
+		// zoffset is back to zero...
+		if (player->salty.zoffset <= 0)
+		{
+			// play the sound
+			if (!(player->mo->eflags & MFE_JUSTHITFLOOR) && onground)
+				S_StartSound(player->mo, sfx_s268);
+			player->salty.jump = false;
+			player->salty.zoffset = 0;
+			player->salty.momz = 0;
+			// small squish upon landing // Well sorta, this is broken due to no sqiush thinker...
+			player->mo->spritexscale = FRACUNIT;//FRACUNIT*14/10; Setting to FRACUNIT until I can fixeur
+			player->mo->spriteyscale = FRACUNIT;//FRACUNIT*6/10;
+		}
+		else if (player->salty.zoffset > 0)
+		{
+			// stretch the funny
+			player->mo->spritexscale -= (FRACUNIT/30);
+			player->mo->spriteyscale += (FRACUNIT/30);
+		}
+		// Apply the z offset!
+		player->mo->spriteyoffset = player->salty.zoffset;
+
+		// Stop any and all drift sounds when hopping.
+		if (S_SoundPlaying(player->mo, sfx_screec))
+			S_StopSoundByID(player->mo, sfx_screec);
+		if (S_SoundPlaying(player->mo, sfx_drift))
+			S_StopSoundByID(player->mo, sfx_drift);
+	}
+	else if (player->salty.tapping && onground && !player->spinouttimer && !player->wipeoutslow)
+	{
+		player->salty.jump = true;
+		player->salty.zoffset = 0;
+		player->salty.momz = 6*FRACUNIT;
+		S_StartSound(player->mo, sfx_s25a);
+	}
+}
+
 /**	\brief	Decreases various kart timers and powers per frame. Called in P_PlayerThink in p_user.c
 
 	\param	player	player object passed from P_PlayerThink
@@ -6603,6 +6712,10 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if ((!udmf) && player->laps == 0 && numlaps > 0)
 		player->laps = 1;
 
+	// Start at lap 1 on binary maps just to be safe.
+	if ((!udmf) && player->laps == 0 && numlaps > 0)
+		player->laps = 1;
+
 	player->topAccel = min(player->topAccel + TOPACCELREGEN, MAXTOPACCEL);
 
 	if (player->stealingtimer == 0
@@ -6901,6 +7014,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	}
 
 	N_LegacyStart(player);
+
+	// update salty hop
+	K_QuiteSaltyHop(player);
 
 }
 
@@ -8446,7 +8562,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							{
 								K_ThrowKartItem(player, false, MT_BANANA, -1, 0);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								K_UpdateHnextList(player, false);
 								player->botvars.itemconfirm = 0;
 							}
@@ -8510,7 +8625,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							{
 								K_ThrowKartItem(player, true, MT_ORBINAUT, 1, 0);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								K_UpdateHnextList(player, false);
 								player->botvars.itemconfirm = 0;
 							}
@@ -8555,7 +8669,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 								else if (player->throwdir == -1) // Throwing backward gives you a dud that doesn't home in
 									K_ThrowKartItem(player, true, MT_JAWZ_DUD, -1, 0);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								K_UpdateHnextList(player, false);
 								player->botvars.itemconfirm = 0;
 							}
@@ -8582,7 +8695,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							{
 								K_ThrowKartItem(player, false, MT_SSMINE, 1, 1);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								player->itemflags &= ~IF_ITEMOUT;
 								K_UpdateHnextList(player, true);
 								player->botvars.itemconfirm = 0;
@@ -8720,7 +8832,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 										player->bubbleblowup = 0;
 										player->bubblecool = 0;
 										player->itemflags &= ~IF_HOLDREADY;
-										player->itemamount--;
 										player->botvars.itemconfirm = 0;
 									}
 								}
@@ -8794,7 +8905,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 											player->mo, player->mo->angle,
 											FixedMul((50*player->mo->scale), K_GetKartGameSpeedScalar(gamespeed))
 										);
-
 										player->fakeBoost = TICRATE/3;
 
 										S_StopSoundByID(player->mo, sfx_fshld1);
@@ -8885,7 +8995,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							{
 								K_ThrowKartItem(player, false, MT_SINK, 1, 2);
 								K_PlayAttackTaunt(player->mo);
-								player->itemamount--;
 								player->itemflags &= ~IF_ITEMOUT;
 								K_UpdateHnextList(player, true);
 								player->botvars.itemconfirm = 0;

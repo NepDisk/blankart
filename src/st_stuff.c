@@ -80,7 +80,7 @@ static patch_t *hud_tv2;
 static patch_t *envelope;
 #endif
 
-static huddrawlist_h luahuddrawlist_game;
+static huddrawlist_h luahuddrawlist_game[MAXSPLITSCREENPLAYERS];
 static huddrawlist_h luahuddrawlist_titlecard;
 
 //
@@ -261,7 +261,8 @@ void ST_Init(void)
 
 	ST_LoadGraphics();
 
-	luahuddrawlist_game = LUA_HUD_CreateDrawList();
+	for (int i = 0; i < MAXSPLITSCREENPLAYERS; i++)
+		luahuddrawlist_game[i] = LUA_HUD_CreateDrawList();
 	luahuddrawlist_titlecard = LUA_HUD_CreateDrawList();
 }
 
@@ -1380,7 +1381,7 @@ static void ST_overlayDrawer(void)
 
 		if (renderisnewtic)
 		{
-			LUA_HookHUD(luahuddrawlist_game, HUD_HOOK(game));
+			LUA_HookHUD(luahuddrawlist_game[viewnum], HUD_HOOK(game));
 		}
 
 		if (cv_showviewpointtext.value)
@@ -1696,6 +1697,8 @@ void ST_Drawer(void)
 			st_translucency = cv_translucenthud.value;
 		else
 			st_translucency = FixedMul(cv_translucenthud.value, maxFade);
+
+		st_translucency = min(max((st_translucency), 0), 10);
 	}
 
 	// Check for a valid level title
@@ -1709,7 +1712,8 @@ void ST_Drawer(void)
 		UINT8 i;
 		if (renderisnewtic)
 		{
-			LUA_HUD_ClearDrawList(luahuddrawlist_game);
+			for (i = 0; i <= r_splitscreen; i++)
+				LUA_HUD_ClearDrawList(luahuddrawlist_game[i]);
 		}
 		// No deadview!
 		for (i = 0; i <= r_splitscreen; i++)
@@ -1721,7 +1725,8 @@ void ST_Drawer(void)
 			ST_overlayDrawer();
 		}
 
-		LUA_HUD_DrawList(luahuddrawlist_game);
+		for (i = 0; i <= r_splitscreen; i++)
+			LUA_HUD_DrawList(luahuddrawlist_game[i]);
 
 		// draw Midnight Channel's overlay ontop
 		if (mapheaderinfo[gamemap-1]->typeoflevel & TOL_TV)	// Very specific Midnight Channel stuff.

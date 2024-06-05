@@ -434,7 +434,7 @@ static void I_ReportSignal(int num, int coredumped)
 }
 
 #ifndef NEWSIGNALHANDLER
-FUNCNORETURN static ATTRNORETURN void signal_handler(INT32 num)
+static ATTRNORETURN void signal_handler(INT32 num)
 {
 	g_in_exiting_signal_handler = true;
 
@@ -1017,6 +1017,25 @@ void
 I_CursedWindowMovement (int xd, int yd)
 {
 	SDL_SetWindowPosition(window, window_x + xd, window_y + yd);
+}
+
+boolean I_HasOpenURL()
+{
+	#if (SDL_VERSION_ATLEAST(2, 0, 14))
+		return true;
+	#else
+		return false;
+	#endif
+}
+
+void I_OpenURL(const char *data)
+{
+	#if (SDL_VERSION_ATLEAST(2, 0, 14))
+		SDL_OpenURL(data);
+	#else
+		(void)data;
+		return;
+	#endif
 }
 
 //

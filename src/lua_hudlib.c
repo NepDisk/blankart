@@ -35,6 +35,13 @@
 #define HUDONLY if (!hud_running) return luaL_error(L, "HUD rendering code should not be called outside of rendering hooks!");
 
 boolean hud_running = false;
+
+boolean hud_interpolate = false;
+UINT8 hud_interptag = 0;
+UINT32 hud_interpcounter = 0;
+boolean hud_interpstring = false;
+boolean hud_interplatch = false;
+
 static UINT8 hud_enabled[(hud_MAX/8)+1];
 
 static UINT8 camnum = 1;
@@ -989,6 +996,45 @@ static int libd_drawKartString(lua_State *L)
 	return 0;
 }
 
+static int libd_setClipRect(lua_State *L)
+{
+	fixed_t x = luaL_checkinteger(L, 1);
+	fixed_t y = luaL_checkinteger(L, 2);
+	fixed_t w = luaL_checkinteger(L, 3);
+	fixed_t h = luaL_checkinteger(L, 4);
+	INT32 flags = luaL_optinteger(L, 5, 0);
+	huddrawlist_h list;
+
+	flags &= ~V_PARAMMASK; // Don't let crashes happen.
+
+	HUDONLY
+	lua_getfield(L, LUA_REGISTRYINDEX, "HUD_DRAW_LIST");
+	list = (huddrawlist_h) lua_touserdata(L, -1);
+	lua_pop(L, 1);
+
+	if (LUA_HUD_IsDrawListValid(list))
+		LUA_HUD_AddSetClipRect(list, x, y, w, h, flags);
+	else
+		V_SetClipRect(x, y, w, h, flags);
+	return 0;
+}
+
+static int libd_clearClipRect(lua_State *L)
+{
+	huddrawlist_h list;
+
+	HUDONLY
+	lua_getfield(L, LUA_REGISTRYINDEX, "HUD_DRAW_LIST");
+	list = (huddrawlist_h) lua_touserdata(L, -1);
+	lua_pop(L, 1);
+
+	if (LUA_HUD_IsDrawListValid(list))
+		LUA_HUD_AddClearClipRect(list);
+	else
+		V_ClearClipRect();
+	return 0;
+}
+
 static int libd_titleCardStringWidth(lua_State *L)
 {
 	const char *str = luaL_checkstring(L, 1);
@@ -1045,7 +1091,7 @@ static int libd_getColormap(lua_State *L)
 			skinnum = i;
 	}
 
-	if (demo.playback)
+	if (demo.playback && skinnum >= 0)
 		skinnum = demo.skinlist[skinnum].mapping;
 
 	// all was successful above, now we generate the colormap at last!
@@ -1187,6 +1233,38 @@ static int libd_getDeltaTime(lua_State *L)
 	return 1;
 }
 
+static int libd_interpolate(lua_State *L)
+{
+	HUDONLY
+
+	// do type checking even if interpolation is disabled
+	boolean newinterpolate;
+	UINT8 newtag;
+
+	if (lua_isnumber(L, 1))
+	{
+		newinterpolate = true;
+		newtag = luaL_checkinteger(L, 1);
+	}
+	else
+	{
+		newinterpolate = luaL_checkboolean(L, 1);
+		newtag = 0;
+	}
+
+	hud_interpolate = newinterpolate;
+	hud_interptag = newtag;
+
+	return 0;
+}
+
+static int libd_interpLatch(lua_State *L)
+{
+	HUDONLY
+	hud_interpstring = hud_interplatch = luaL_checkboolean(L, 1);
+	return 0;
+}
+
 static luaL_Reg lib_draw[] = {
 	// cache
 	{"patchExists", libd_patchExists},
@@ -1207,6 +1285,8 @@ static luaL_Reg lib_draw[] = {
 	{"drawString", libd_drawString},
 	{"drawTitleCardString", libd_drawTitleCardString},
 	{"drawKartString", libd_drawKartString},
+	{"setClipRect", libd_setClipRect},
+	{"clearClipRect", libd_clearClipRect},
 	// misc
 	{"stringWidth", libd_stringWidth},
 	{"titleCardStringWidth", libd_titleCardStringWidth},
@@ -1226,6 +1306,9 @@ static luaL_Reg lib_draw[] = {
 	{"localTransFlag", libd_getlocaltransflag},
 	{"drawOnMinimap", libd_drawOnMinimap},
 	{"getDeltaTime", libd_getDeltaTime},
+	// interpolation
+	{"interpolate", libd_interpolate},
+	{"interpLatch", libd_interpLatch},
 	{NULL, NULL}
 };
 
@@ -1318,6 +1401,10 @@ boolean LUA_HudEnabled(enum hud option)
 void LUA_SetHudHook(int hook, huddrawlist_h list)
 {
 	lua_getref(gL, lib_draw_ref);
+	
+	// Update interpolation
+	hud_interpolate = hud_interpstring = hud_interplatch = false;
+	hud_interpcounter++;
 
 	lua_pushlightuserdata(gL, list);
 	lua_setfield(gL, LUA_REGISTRYINDEX, "HUD_DRAW_LIST");

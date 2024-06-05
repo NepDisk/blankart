@@ -158,7 +158,6 @@ void NG_Generic_OnChange(void)
 
 void NG_Rings_OnChange(void)
 {
-
 	if(cv_ng_rings.value)
 	{
 		CV_SetValue(&cv_ng_ringcap, 20);

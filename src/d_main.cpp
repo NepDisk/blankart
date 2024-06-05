@@ -114,14 +114,14 @@ extern "C" consvar_t cv_lua_profile, cv_menuframeskip;
 #define ASSET_HASH_SCRIPTS_PK3					"15e65f7f6d5460f9362c646714f57578"
 #define ASSET_HASH_GFX_PK3						"142df1ca805fd80a688a318cc4d24ca0"
 #define ASSET_HASH_TEXTURES_GENERAL_PK3			"1c91e9d6f407ba8350f7c2dce0035936"
-#define ASSET_HASH_TEXTURES_SEGAZONES_PK3		"fb8d3bdf9cd63c508170e89d8d71d2e7"
-#define ASSET_HASH_TEXTURES_ORIGINALZONES_PK3	"b8d956fb556e45b323efe7dd0b34cef6"
+#define ASSET_HASH_TEXTURES_SEGAZONES_PK3		"a029a0993e5f04056eb6c139b1ffa924"
+#define ASSET_HASH_TEXTURES_ORIGINALZONES_PK3	"ee5c04df39386e6cd93d346769b37693"
 #define ASSET_HASH_CHARS_PK3					"bf014478cdda5e9208e3dea3c51f58c5"
 #define ASSET_HASH_FOLLOWERS_PK3				"a37b8796fc1d83d3398f79767aa0de47"
 #define ASSET_HASH_MAPS_PK3						"a8bd1f924531c483f500d96583b7b837"
 #define ASSET_HASH_UNLOCKS_PK3					"ebc06ff46c2cc80e93dadf5f7099d7b8"
 #define ASSET_HASH_STAFFGHOSTS_PK3				"9cb77f6c0e801c1bc61ca84870b65707"
-#define ASSET_HASH_SHADERS_PK3					"dbfb1d5eb9818cd2fb81680c0bab05c0"
+#define ASSET_HASH_SHADERS_PK3					"7aefd2aa55129b31210aa094cf782695"
 #ifdef USE_PATCH_FILE
 #define ASSET_HASH_PATCH_PK3					"00000000000000000000000000000000"
 #endif
@@ -1834,12 +1834,18 @@ void D_SRB2Main(void)
 	
 	CONS_Printf("W_InitMultipleFiles(): Adding external PWADs.\n");
 	W_InitMultipleFiles(startuppwads, true);
+	
+	// Only search for pwad maps and reload graphics if we actually have a pwad added
+	if (startuppwads[0] != NULL)
+	{
+		//
+		// search for pwad maps
+		//
+		P_InitMapData();
+		// HU_LoadGraphics();
+	}
+	
 	D_CleanFile(startuppwads);
-
-	//
-	// search for pwad maps
-	//
-	P_InitMapData();
 
 	CON_SetLoadingProgress(LOADED_PWAD);
 

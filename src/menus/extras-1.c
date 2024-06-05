@@ -17,6 +17,7 @@
 #include "../f_finale.h"
 #include "../k_credits.h"
 #include "../m_pw.h"
+#include "../i_system.h"
 
 menuitem_t EXTRAS_Main[] =
 {
@@ -27,11 +28,11 @@ menuitem_t EXTRAS_Main[] =
 	{IT_STRING | IT_CALL, NULL, NULL,
 		NULL, {.routine = M_Addons}, 0, 0},
 
-	{IT_STRING | IT_CALL, "Tutorial", "Help Dr. Robotnik and Tails test out their new Ring Racers.",
-		NULL, {.routine = M_LevelSelectInit}, 0, GT_TUTORIAL},
-
 	{IT_STRING | IT_CALL, "Challenges", "View the requirements for some of the secret content you can unlock!",
 		NULL, {.routine = M_Challenges}, 0, 0},
+
+	{IT_STRING | IT_CALL, "Tutorial", "Help Dr. Robotnik and Tails test out their new Ring Racers.",
+		NULL, {.routine = M_LevelSelectInit}, 0, GT_TUTORIAL},
 
 	{IT_STRING | IT_CALL, "Statistics", "Look back on some of your greatest achievements such as your playtime and wins!",
 		NULL, {.routine = M_Statistics}, 0, 0},

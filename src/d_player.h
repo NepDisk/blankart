@@ -511,6 +511,15 @@ typedef enum
 
 extern altview_t titlemapcam;
 
+// player_t struct for saltyhop related variables
+struct saltyhop_t {
+	boolean jump; // Player has the ability to do the hop
+	boolean ready; // Saltyhop is ready
+	boolean tapping; // Player is tapping the drift button
+
+	fixed_t momz, zoffset; // erm... the mechanism....
+};
+
 // ========================================================================
 //                          PLAYER STRUCTURE
 // ========================================================================
@@ -910,6 +919,8 @@ struct player_t
 
 	tic_t darkness_start;
 	tic_t darkness_end;
+
+	saltyhop_t salty;
 };
 
 // WARNING FOR ANYONE ABOUT TO ADD SOMETHING TO THE PLAYER STRUCT, G_PlayerReborn WANTS YOU TO SUFFER

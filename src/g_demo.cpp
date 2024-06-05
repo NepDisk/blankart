@@ -171,8 +171,9 @@ demoghost *ghosts = NULL;
 //   - SPB cup TA replays were recorded at this time
 //   - Slope physics changed with a scaling fix
 // - 0x000C (Ring Racers v2.2)
+// - 0x000D (Ring Racers v2.3)
 
-#define DEMOVERSION 0x000C
+#define DEMOVERSION 0x000D
 
 boolean G_CompatLevel(UINT16 level)
 {
@@ -2266,6 +2267,7 @@ void G_BeginRecording(void)
 		WRITEUINT8(demobuf.p, grandprixinfo.gamespeed);
 		WRITEUINT8(demobuf.p, grandprixinfo.masterbots == true);
 		WRITEUINT8(demobuf.p, grandprixinfo.eventmode);
+		WRITEUINT32(demobuf.p, grandprixinfo.specialDamage);
 	}
 
 	// Save netUnlocked from actual unlocks
@@ -2513,8 +2515,9 @@ UINT8 G_CmpDemoTime(char *oldname, char *newname)
 	{
 	case DEMOVERSION: // latest always supported
 	case 0x0009: // older staff ghosts
-	case 0x000A: // older staff ghosts
-	case 0x000B: // older staff ghosts
+	case 0x000A: // 2.0, 2.1
+	case 0x000B: // 2.2 indev (staff ghosts)
+	case 0x000C: // 2.2
 		break;
 	// too old, cannot support.
 	default:
@@ -2664,8 +2667,9 @@ void G_LoadDemoInfo(menudemo_t *pdemo, boolean allownonmultiplayer)
 	{
 	case DEMOVERSION: // latest always supported
 	case 0x0009: // older staff ghosts
-	case 0x000A: // older staff ghosts
-	case 0x000B: // older staff ghosts
+	case 0x000A: // 2.0, 2.1
+	case 0x000B: // 2.2 indev (staff ghosts)
+	case 0x000C: // 2.2
 		if (P_SaveBufferRemaining(&info) < 64)
 		{
 			goto corrupt;
@@ -3093,8 +3097,9 @@ void G_DoPlayDemoEx(const char *defdemoname, lumpnum_t deflumpnum)
 	{
 	case DEMOVERSION: // latest always supported
 	case 0x0009: // older staff ghosts
-	case 0x000A: // older staff ghosts
-	case 0x000B: // older staff ghosts
+	case 0x000A: // 2.0, 2.1
+	case 0x000B: // 2.2 indev (staff ghosts)
+	case 0x000C: // 2.2
 		break;
 	// too old, cannot support.
 	default:
@@ -3263,6 +3268,10 @@ void G_DoPlayDemoEx(const char *defdemoname, lumpnum_t deflumpnum)
 		grandprixinfo.gamespeed = READUINT8(demobuf.p);
 		grandprixinfo.masterbots = READUINT8(demobuf.p) != 0;
 		grandprixinfo.eventmode = static_cast<gpEvent_e>(READUINT8(demobuf.p));
+		if (demo.version >= 0x000D)
+		{
+			grandprixinfo.specialDamage = READUINT32(demobuf.p);
+		}
 	}
 
 	// Load unlocks into netUnlocked
@@ -3553,8 +3562,9 @@ void G_AddGhost(savebuffer_t *buffer, const char *defdemoname)
 	{
 	case DEMOVERSION: // latest always supported
 	case 0x0009: // older staff ghosts
-	case 0x000A: // older staff ghosts
-	case 0x000B: // older staff ghosts
+	case 0x000A: // 2.0, 2.1
+	case 0x000B: // 2.2 indev (staff ghosts)
+	case 0x000C: // 2.2
 		break;
 	// too old, cannot support.
 	default:
@@ -3641,7 +3651,11 @@ void G_AddGhost(savebuffer_t *buffer, const char *defdemoname)
 	}
 
 	if ((flags & DF_GRANDPRIX))
+	{
 		p += 3;
+		if (ghostversion >= 0x000D)
+			p++;
+	}
 
 	// Skip unlockables
 	{
@@ -3811,8 +3825,9 @@ staffbrief_t *G_GetStaffGhostBrief(UINT8 *buffer)
 	{
 		case DEMOVERSION: // latest always supported
 		case 0x0009: // older staff ghosts
-		case 0x000A: // older staff ghosts
-		case 0x000B: // older staff ghosts
+		case 0x000A: // 2.0, 2.1
+		case 0x000B: // 2.2 indev (staff ghosts)
+		case 0x000C: // 2.2
 			break;
 
 		// too old, cannot support.
@@ -3866,7 +3881,11 @@ staffbrief_t *G_GetStaffGhostBrief(UINT8 *buffer)
 	}
 
 	if ((flags & DF_GRANDPRIX))
+	{
 		p += 3;
+		if (ghostversion >= 0x000D)
+			p++;
+	}
 
 	// Skip unlockables
 	{
