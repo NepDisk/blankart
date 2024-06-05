@@ -8843,6 +8843,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 										player->bubbleblowup = 0;
 										player->bubblecool = 0;
 										player->itemflags &= ~IF_HOLDREADY;
+										player->itemamount--;
 										player->botvars.itemconfirm = 0;
 									}
 								}
