@@ -2625,10 +2625,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 
 	"S_SSZCLOUD",
 
-	"S_MEGABARRIER1",
-	"S_MEGABARRIER2",
-	"S_MEGABARRIER3",
-
 	"S_GPZ_TREETHING_B",
 	"S_GPZ_TREETHING_M",
 	"S_GPZ_TREETHING_S",
@@ -3568,8 +3564,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	
 	"MT_SSZ_CLOUD",
 	"MT_SSZ_CLOUDCLUSTER",
-
-	"MT_MEGABARRIER",
 
 	"MT_SEASAW_VISUAL",
 	"MT_DLZ_SEASAW_SPAWN",
