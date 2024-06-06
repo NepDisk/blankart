@@ -1262,9 +1262,13 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 				return BMIT_CONTINUE;
 			}
 
-			if (K_KartBouncing(g_tm.thing, thing) == true)
+			if (K_PvPTouchDamage(g_tm.thing, thing) == true)
 			{
-				K_PvPTouchDamage(g_tm.thing, thing);
+				K_KartBouncing(g_tm.thing, thing);
+			}
+			else
+			{
+				K_KartBouncing(g_tm.thing, thing);
 			}
 
 			return BMIT_CONTINUE;

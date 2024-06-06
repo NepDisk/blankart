@@ -934,6 +934,19 @@ boolean K_KartBouncing(mobj_t *mobj1, mobj_t *mobj2)
 		return false;
 	}
 
+	// Don't bump if you are under grow
+	if (mobj1->player && (mobj1->player->growshrinktimer > 0))
+	{
+		return false;
+	}
+
+	if (mobj2->player && (mobj2->player->growshrinktimer > 0))
+	{
+		return false;
+	}
+
+
+
 	// Adds the OTHER object's momentum times a bunch, for the best chance of getting the correct direction
 	distx = (mobj1->x + mobj2->momx) - (mobj2->x + mobj1->momx);
 	disty = (mobj1->y + mobj2->momy) - (mobj2->y + mobj1->momy);
