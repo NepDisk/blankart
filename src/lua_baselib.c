@@ -34,7 +34,7 @@
 #include "k_color.h"
 #include "k_hud.h"
 #include "d_netcmd.h" // IsPlayerAdmin
-#include "k_menu.h" // Player Setup menu color stuff
+#include "m_menu.h" // Player Setup menu color stuff
 #include "p_spec.h" // P_StartQuake
 #include "i_system.h" // I_GetPreciseTime, I_GetPrecisePrecision
 #include "hu_stuff.h" // for the cecho

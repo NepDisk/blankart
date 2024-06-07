@@ -10,7 +10,7 @@
 #ifndef __N_MENU__
 #define __N_MENU__
 
-#include "../k_menu.h"
+#include "../m_menu.h"
 #include "../m_cond.h"
 #include "../command.h"
 #include "../console.h"

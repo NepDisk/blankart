@@ -29,7 +29,7 @@
 #include "doomstat.h"
 #include "doomtype.h"
 #include "g_game.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "m_cheat.h"
 #include "m_cond.h"
 #include "m_pw.h"

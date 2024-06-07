@@ -141,8 +141,7 @@ add_executable(SRB2SDL2 MACOSX_BUNDLE WIN32
 	k_boss.c
 	k_hud.cpp
 	k_hud_track.cpp
-	k_menufunc.c
-	k_menudraw.c
+	m_menu.c
 	k_terrain.c
 	k_brightmap.c
 	k_terrain.c
@@ -601,7 +600,6 @@ add_subdirectory(objects)
 add_subdirectory(acs)
 add_subdirectory(rhi)
 add_subdirectory(monocypher)
-add_subdirectory(menus)
 if(SRB2_CONFIG_ENABLE_WEBM_MOVIES)
 	add_subdirectory(media)
 endif()

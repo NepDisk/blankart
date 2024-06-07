@@ -32,7 +32,7 @@
 #include "i_system.h"
 #include "i_threads.h"
 #include "d_main.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "filesrch.h"
 #include "m_misc.h"
 

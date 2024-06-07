@@ -14,7 +14,7 @@
 #include "doomdef.h" // Constants
 #include "s_sound.h" // Sound constants
 #include "info.h" // Mobj, state, sprite, etc constants
-#include "k_menu.h" // Menu constants
+#include "m_menu.h" // Menu constants
 #include "y_inter.h" // Intermission constants
 #include "p_local.h" // some more constants
 #include "r_draw.h" // Colormap constants

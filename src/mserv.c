@@ -25,7 +25,7 @@
 #include "z_zone.h"
 
 // SRB2Kart
-#include "k_menu.h"
+#include "m_menu.h"
 
 #ifdef HAVE_DISCORDRPC
 #include "discord.h"
@@ -89,11 +89,11 @@ void AddMServCommands(void)
 static void WarnGUI (void)
 {
 #ifdef HAVE_THREADS
-	I_lock_mutex(&k_menu_mutex);
+	I_lock_mutex(&m_menu_mutex);
 #endif
 	M_StartMessage("Online Play", M_GetText("There was a problem connecting to\nthe Master Server\n\nCheck the console for details.\n"), NULL, MM_NOTHING, NULL, NULL);
 #ifdef HAVE_THREADS
-	I_unlock_mutex(k_menu_mutex);
+	I_unlock_mutex(m_menu_mutex);
 #endif
 }
 

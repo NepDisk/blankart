@@ -22,7 +22,7 @@
 #include "command.h"
 #include "console.h"
 #include "z_zone.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "m_misc.h"
 #include "m_fixed.h"
 #include "m_argv.h"

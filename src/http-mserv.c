@@ -24,7 +24,7 @@ Documentation available here.
 #include "command.h"
 #include "console.h"
 #include "m_argv.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "mserv.h"
 #include "i_tcp.h"/* for current_port */
 #include "i_threads.h"

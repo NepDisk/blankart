@@ -191,7 +191,7 @@ static char returnWadPath[256];
 #include "../r_main.h" // Frame interpolation/uncapped
 #include "../r_fps.h"
 
-#include "../k_menu.h"
+#include "../m_menu.h"
 
 #ifdef MAC_ALERT
 #include "macosx/mac_alert.h"

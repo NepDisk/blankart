@@ -53,7 +53,7 @@
 #include "lua_hook.h"
 
 // SRB2Kart
-#include "k_menu.h"
+#include "m_menu.h"
 #include "k_grandprix.h"
 #include "music.h"
 #include "r_main.h"

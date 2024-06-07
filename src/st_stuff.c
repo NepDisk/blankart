@@ -27,7 +27,7 @@
 #include "console.h"
 #include "s_sound.h"
 #include "i_system.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "m_cheat.h"
 #include "m_misc.h" // moviemode
 #include "m_anigif.h" // cv_gif_downscale

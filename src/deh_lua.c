@@ -14,7 +14,7 @@
 #include "g_game.h"
 #include "s_sound.h"
 #include "z_zone.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "m_misc.h"
 #include "p_local.h"
 #include "st_stuff.h"

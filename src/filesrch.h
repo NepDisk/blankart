@@ -17,7 +17,7 @@
 
 #include "doomdef.h"
 #include "d_netfil.h"
-#include "k_menu.h" // MAXSTRINGLENGTH
+#include "m_menu.h" // MAXSTRINGLENGTH
 
 #ifdef __cplusplus
 extern "C" {

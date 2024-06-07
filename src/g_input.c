@@ -16,7 +16,7 @@
 #include "doomstat.h"
 #include "g_input.h"
 #include "keys.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "hu_stuff.h" // need HUFONT start & end
 #include "d_net.h"
 #include "console.h"

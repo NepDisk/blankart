@@ -43,7 +43,7 @@
 #include "lua_hud.h"
 #include "lua_hook.h"
 
-#include "k_menu.h"
+#include "m_menu.h"
 #include "k_grandprix.h"
 #include "k_rank.h"
 

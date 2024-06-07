@@ -30,7 +30,7 @@
 #include "k_bot.h"
 #include "k_director.h"
 #include "k_kart.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "lua_hook.h"
 #include "m_cheat.h"
 #include "m_fixed.h"

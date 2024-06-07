@@ -33,7 +33,7 @@
 #include "m_cond.h" // for conditionsets
 #include "lua_hook.h" // MusicChange hook
 #include "byteptr.h"
-#include "k_menu.h" // M_PlayMenuJam
+#include "m_menu.h" // M_PlayMenuJam
 #include "m_random.h" // M_RandomKey
 #include "i_time.h"
 #include "v_video.h" // V_ThinStringWidth

@@ -20,7 +20,7 @@
 #include "i_net.h"
 #include "g_game.h"
 #include "p_tick.h"
-#include "k_menu.h" // gametype_cons_t
+#include "m_menu.h" // gametype_cons_t
 #include "r_things.h" // skins
 #include "mserv.h" // cv_advertise
 #include "s_sound.h"

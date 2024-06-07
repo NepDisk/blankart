@@ -28,7 +28,7 @@
 #include "hu_stuff.h"
 #include "keys.h"
 #include "g_input.h" // JOY1
-#include "k_menu.h"
+#include "m_menu.h"
 #include "console.h"
 #include "d_netfil.h"
 #include "byteptr.h"
@@ -2151,7 +2151,7 @@ static boolean CL_ServerConnectionTicker(const char *tmpsave, tic_t *oldtic, tic
 			}
 
 #ifdef HAVE_THREADS
-			I_lock_mutex(&k_menu_mutex);
+			I_lock_mutex(&m_menu_mutex);
 #endif
 			M_UpdateMenuCMD(0, true);
 
@@ -2169,7 +2169,7 @@ static boolean CL_ServerConnectionTicker(const char *tmpsave, tic_t *oldtic, tic
 			M_ScreenshotTicker();
 
 #ifdef HAVE_THREADS
-			I_unlock_mutex(k_menu_mutex);
+			I_unlock_mutex(m_menu_mutex);
 #endif
 		}
 
@@ -2202,11 +2202,11 @@ static boolean CL_ServerConnectionTicker(const char *tmpsave, tic_t *oldtic, tic
 			if (cl_mode == CL_CONFIRMCONNECT)
 			{
 #ifdef HAVE_THREADS
-				I_lock_mutex(&k_menu_mutex);
+				I_lock_mutex(&m_menu_mutex);
 #endif
 				M_DrawMenuMessage();
 #ifdef HAVE_THREADS
-				I_unlock_mutex(k_menu_mutex);
+				I_unlock_mutex(m_menu_mutex);
 #endif
 			}
 			I_UpdateNoVsync(); // page flip or blit buffer
@@ -6757,12 +6757,12 @@ void NetUpdate(void)
 	{
 		resptime = nowtime;
 #ifdef HAVE_THREADS
-		I_lock_mutex(&k_menu_mutex);
+		I_lock_mutex(&m_menu_mutex);
 #endif
 		M_Ticker();
 		refreshdirmenu = 0;
 #ifdef HAVE_THREADS
-		I_unlock_mutex(k_menu_mutex);
+		I_unlock_mutex(m_menu_mutex);
 #endif
 		CON_Ticker();
 

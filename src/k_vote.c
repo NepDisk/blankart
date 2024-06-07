@@ -29,7 +29,7 @@
 #include "w_wad.h"
 #include "y_inter.h"
 #include "z_zone.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "m_misc.h"
 #include "i_system.h"
 #include "p_setup.h"

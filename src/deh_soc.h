@@ -22,7 +22,7 @@
 #include "m_argv.h"
 #include "z_zone.h"
 #include "w_wad.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "m_misc.h"
 #include "f_finale.h"
 #include "st_stuff.h"

@@ -51,7 +51,7 @@
 #include "byteptr.h"
 #include "p_setup.h"
 #include "m_misc.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "md5.h"
 #include "filesrch.h"
 #include "stun.h"

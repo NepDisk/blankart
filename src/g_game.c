@@ -34,7 +34,7 @@
 #include "g_demo.h"
 #include "m_cheat.h"
 #include "m_misc.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "m_argv.h"
 #include "hu_stuff.h"
 #include "st_stuff.h"

@@ -48,7 +48,7 @@
 #include "i_threads.h"
 #include "i_video.h"
 #include "m_argv.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "m_misc.h"
 #include "p_setup.h"
 #include "p_saveg.h"
@@ -324,13 +324,13 @@ void D_ProcessEvents(boolean callresponders)
 
 		// Menu input
 #ifdef HAVE_THREADS
-		I_lock_mutex(&k_menu_mutex);
+		I_lock_mutex(&m_menu_mutex);
 #endif
 		{
 			eaten = M_Responder(ev);
 		}
 #ifdef HAVE_THREADS
-		I_unlock_mutex(k_menu_mutex);
+		I_unlock_mutex(m_menu_mutex);
 #endif
 
 		if (eaten)
@@ -748,11 +748,11 @@ static bool D_Display(bool world)
 	vid.recalc = 0;
 
 #ifdef HAVE_THREADS
-	I_lock_mutex(&k_menu_mutex);
+	I_lock_mutex(&m_menu_mutex);
 #endif
 	M_Drawer(); // menu is drawn even on top of everything
 #ifdef HAVE_THREADS
-	I_unlock_mutex(k_menu_mutex);
+	I_unlock_mutex(m_menu_mutex);
 #endif
 	// focus lost moved to M_Drawer
 

@@ -17,7 +17,7 @@
 #include "hu_stuff.h"
 #include "font.h"
 
-#include "k_menu.h" // highlightflags
+#include "m_menu.h" // highlightflags
 #include "m_cond.h" // emblems
 #include "m_misc.h" // word jumping
 

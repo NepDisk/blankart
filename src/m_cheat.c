@@ -23,7 +23,7 @@
 #include "d_net.h"
 
 #include "m_cheat.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "m_random.h"
 #include "m_misc.h"
 

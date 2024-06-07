@@ -22,7 +22,7 @@
 #include "g_game.h"
 #include "hu_stuff.h"
 #include "g_input.h"
-#include "k_menu.h"
+#include "m_menu.h"
 #include "r_local.h"
 #include "r_skins.h"
 #include "p_local.h"

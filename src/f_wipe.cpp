@@ -44,7 +44,7 @@
 #endif
 
 // SRB2Kart
-#include "k_menu.h"
+#include "m_menu.h"
 
 using namespace srb2;
 
@@ -566,11 +566,11 @@ void F_RunWipe(UINT8 wipemode, UINT8 wipetype, boolean drawMenu, const char *col
 		if (drawMenu && rendermode != render_none)
 		{
 #ifdef HAVE_THREADS
-			I_lock_mutex(&k_menu_mutex);
+			I_lock_mutex(&m_menu_mutex);
 #endif
 			M_Drawer(); // menu is drawn even on top of wipes
 #ifdef HAVE_THREADS
-			I_unlock_mutex(k_menu_mutex);
+			I_unlock_mutex(m_menu_mutex);
 #endif
 		}
 
