@@ -69,43 +69,51 @@
 		#endif // UNIXCOMMON
 	#endif
 
-	#ifdef USE_WINSOCK
-		// some undefined under win32
-		#undef errno
-		//#define errno WSAGetLastError() //Alam_GBC: this is the correct way, right?
-		#define errno h_errno // some very strange things happen when not using h_error?!?
-		#ifdef EWOULDBLOCK
-		#undef EWOULDBLOCK
-		#endif
-		#define EWOULDBLOCK WSAEWOULDBLOCK
-		#ifdef EMSGSIZE
-		#undef EMSGSIZE
-		#endif
-		#define EMSGSIZE WSAEMSGSIZE
-		#ifdef ECONNREFUSED
-		#undef ECONNREFUSED
-		#endif
-		#define ECONNREFUSED WSAECONNREFUSED
-		#ifdef ETIMEDOUT
-		#undef ETIMEDOUT
-		#endif
-		#define ETIMEDOUT WSAETIMEDOUT
-		#ifndef IOC_VENDOR
-		#define IOC_VENDOR 0x18000000
-		#endif
-		#ifndef _WSAIOW
-		#define _WSAIOW(x,y) (IOC_IN|(x)|(y))
-		#endif
-		#ifndef SIO_UDP_CONNRESET
-		#define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR,12)
-		#endif
-		#ifndef AI_ADDRCONFIG
-		#define AI_ADDRCONFIG 0x00000400
-		#endif
-		#ifndef STATUS_INVALID_PARAMETER
-		#define STATUS_INVALID_PARAMETER 0xC000000D
-		#endif
-	#endif // USE_WINSOCK
+#ifdef USE_WINSOCK
+	// some undefined under win32
+	#undef errno
+	//#define errno WSAGetLastError() //Alam_GBC: this is the correct way, right?
+	#define errno h_errno // some very strange things happen when not using h_error?!?
+	#ifdef EWOULDBLOCK
+	#undef EWOULDBLOCK
+	#endif
+	#define EWOULDBLOCK WSAEWOULDBLOCK
+	#ifdef EMSGSIZE
+	#undef EMSGSIZE
+	#endif
+	#define EMSGSIZE WSAEMSGSIZE
+	#ifdef ECONNREFUSED
+	#undef ECONNREFUSED
+	#endif
+	#define ECONNREFUSED WSAECONNREFUSED
+	#ifdef ETIMEDOUT
+	#undef ETIMEDOUT
+	#endif
+	#define ETIMEDOUT WSAETIMEDOUT
+	#ifdef EHOSTUNREACH
+	#undef EHOSTUNREACH
+	#endif
+	#define EHOSTUNREACH WSAEHOSTUNREACH
+	#ifdef ENETUNREACH
+	#undef ENETUNREACH
+	#endif
+	#define ENETUNREACH WSAENETUNREACH
+	#ifndef IOC_VENDOR
+	#define IOC_VENDOR 0x18000000
+	#endif
+	#ifndef _WSAIOW
+	#define _WSAIOW(x,y) (IOC_IN|(x)|(y))
+	#endif
+	#ifndef SIO_UDP_CONNRESET
+	#define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR,12)
+	#endif
+	#ifndef AI_ADDRCONFIG
+	#define AI_ADDRCONFIG 0x00000400
+	#endif
+	#ifndef STATUS_INVALID_PARAMETER
+	#define STATUS_INVALID_PARAMETER 0xC000000D
+	#endif
+#endif // USE_WINSOCK
 
 	#ifdef __DJGPP__
 		#ifdef WATTCP // Alam_GBC: Wattcp may need this
@@ -799,6 +807,8 @@ static inline ssize_t SOCK_SendToAddr(SOCKET_TYPE socket, mysockaddr_t *sockaddr
 	return sendto(socket, (char *)&doomcom->data, doomcom->datalength, 0, &sockaddr->any, d);
 }
 
+#define ALLOWEDERROR(x) ((x) == ECONNREFUSED || (x) == EWOULDBLOCK || (x) == EHOSTUNREACH || (x) == ENETUNREACH)
+
 static void SOCK_Send(void)
 {
 	ssize_t c = ERRSOCKET;
@@ -814,19 +824,25 @@ static void SOCK_Send(void)
 			for (j = 0; j < broadcastaddresses; j++)
 			{
 				if (myfamily[i] == broadcastaddress[j].any.sa_family)
-					SOCK_SendToAddr(mysockets[i], &broadcastaddress[j]);
+				{
+					c = SOCK_SendToAddr(mysockets[i], &broadcastaddress[j]);
+					if (c == ERRSOCKET && !ALLOWEDERROR(errno))
+						break;
+				}
 			}
 		}
-		return;
 	}
 	else if (nodesocket[doomcom->remotenode] == (SOCKET_TYPE)ERRSOCKET)
 	{
 		for (i = 0; i < mysocketses; i++)
 		{
 			if (myfamily[i] == clientaddress[doomcom->remotenode].any.sa_family)
-				SOCK_SendToAddr(mysockets[i], &clientaddress[doomcom->remotenode]);
+			{
+				c = SOCK_SendToAddr(mysockets[i], &clientaddress[doomcom->remotenode]);
+				if (c == ERRSOCKET && !ALLOWEDERROR(errno))
+					break;
+			}
 		}
-		return;
 	}
 	else
 	{
@@ -836,7 +852,7 @@ static void SOCK_Send(void)
 	if (c == ERRSOCKET)
 	{
 		int e = errno; // save error code so it can't be modified later
-		if (e != ECONNREFUSED && e != EWOULDBLOCK)
+		if (!ALLOWEDERROR(e))
 			I_Error("SOCK_Send, error sending to node %d (%s) #%u: %s", doomcom->remotenode,
 				SOCK_GetNodeAddress(doomcom->remotenode), e, strerror(e));
 	}
@@ -844,6 +860,8 @@ static void SOCK_Send(void)
 #endif
 
 #ifndef NONET
+#undef ALLOWEDERROR
+
 static void SOCK_FreeNodenum(INT32 numnode)
 {
 	// can't disconnect from self :)
