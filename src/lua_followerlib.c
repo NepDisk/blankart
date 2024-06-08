@@ -165,7 +165,7 @@ static int follower_num(lua_State *L)
 {
 	follower_t *follower = *((follower_t **)luaL_checkudata(L, 1, META_FOLLOWER));
 
-	// skins are always valid, only added, never removed
+	// followers are always valid, only added, never removed
 	I_Assert(follower != NULL);
 
 	lua_pushinteger(L, follower-followers);
@@ -178,7 +178,6 @@ static int lib_iterateFollowers(lua_State *L)
 
 	if (lua_gettop(L) < 2)
 	{
-		//return luaL_error(L, "Don't call skins.iterate() directly, use it as 'for skin in skins.iterate do <block> end'.");
 		lua_pushcfunction(L, lib_iterateFollowers);
 		return 1;
 	}
@@ -191,7 +190,7 @@ static int lib_iterateFollowers(lua_State *L)
 	else
 		i = 0;
 
-	// skins are always valid, only added, never removed
+	// followers are always valid, only added, never removed
 	if (i < numfollowers)
 	{
 		LUA_PushUserdata(L, &followers[i], META_FOLLOWER);
@@ -206,11 +205,10 @@ static int lib_getFollower(lua_State *L)
 	const char *field;
 	INT32 i;
 
-	// find skin by number
+	// find follower by number
 	if (lua_type(L, 2) == LUA_TNUMBER)
 	{
 		i = luaL_checkinteger(L, 2);
-		// It's kind of funny how the follower limit is 1023 while skins have 255
 		if (i < 0 || i >= MAXFOLLOWERS)
 			return luaL_error(L, "followers[] index %d out of range (0 - %d)", i, MAXFOLLOWERS-1);
 		if (i >= numfollowers)
@@ -228,7 +226,7 @@ static int lib_getFollower(lua_State *L)
 		return 1;
 	}
 
-	// find skin by name
+	// find follower by name
 	i = K_FollowerAvailable(field);
 	if (i != -1)
 	{
