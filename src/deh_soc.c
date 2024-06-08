@@ -3620,7 +3620,7 @@ void readfollower(MYFILE *f)
 	INT32 res;
 	INT32 i;
 
-	if (numfollowers > MAXSKINS)
+	if (numfollowers > MAXFOLLOWERS)
 	{
 		deh_warning("Error: Too many followers, cannot add anymore.\n");
 		return;
