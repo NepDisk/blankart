@@ -1251,6 +1251,7 @@ enum {
 	WP_AUTOROULETTE = 1<<2,
 	WP_ANALOGSTICK = 1<<3,
 	WP_AUTORING = 1<<4,
+	WP_FLIPCAM = 1<<5,
 };
 
 void WeaponPref_Send(UINT8 ssplayer)
@@ -1271,6 +1272,9 @@ void WeaponPref_Send(UINT8 ssplayer)
 
 	if (cv_autoring[ssplayer].value)
 		prefs |= WP_AUTORING;
+
+	if (cv_flipcam[ssplayer].value)
+		prefs |= WP_FLIPCAM;
 
 	UINT8 buf[2];
 	buf[0] = prefs;
@@ -1300,6 +1304,9 @@ void WeaponPref_Save(UINT8 **cp, INT32 playernum)
 	if (player->pflags & PF_AUTORING)
 		prefs |= WP_AUTORING;
 
+	if (player->pflags & PF_FLIPCAM)
+		prefs |= WP_FLIPCAM;
+
 	WRITEUINT8(*cp, prefs);
 }
 
@@ -1328,6 +1335,11 @@ size_t WeaponPref_Parse(const UINT8 *bufstart, INT32 playernum)
 
 	if (prefs & WP_AUTORING)
 		player->pflags |= PF_AUTORING;
+
+	if (prefs & WP_FLIPCAM)
+		player->pflags |= PF_FLIPCAM;
+	else
+		player->pflags &= ~PF_FLIPCAM;
 
 	if (leveltime < 2)
 	{

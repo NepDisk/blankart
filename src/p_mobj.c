@@ -1056,6 +1056,28 @@ static void P_PlayerFlip(mobj_t *mo)
 
 	G_GhostAddFlip((INT32) (mo->player - players));
 	// Flip aiming to match!
+
+	if (mo->player->pflags & PF_FLIPCAM)
+	{
+		UINT8 i;
+
+		mo->player->aiming = InvAngle(mo->player->aiming);
+
+		for (i = 0; i <= r_splitscreen; i++)
+		{
+			if (mo->player-players == displayplayers[i])
+			{
+				localaiming[i] = mo->player->aiming;
+				if (camera[i].chase) {
+					camera[i].aiming = InvAngle(camera[i].aiming);
+					camera[i].z = mo->z - camera[i].z + mo->z;
+					if (mo->eflags & MFE_VERTICALFLIP)
+						camera[i].z += FixedMul(20*FRACUNIT, mo->scale);
+				}
+			}
+		}
+	}
+
 }
 
 static boolean P_UseUnderwaterGravity(mobj_t *mo)
@@ -3646,16 +3668,21 @@ void P_DestroyRobots(void)
 void P_CalcChasePostImg(player_t *player, camera_t *thiscam)
 {
 	postimg_t postimg = postimg_none;
+	boolean flipcam = (player->pflags & PF_FLIPCAM) && (player->mo->eflags & MFE_VERTICALFLIP);
 	UINT8 i;
 
 	// This can happen when joining
 	if (thiscam->subsector == NULL || thiscam->subsector->sector == NULL)
 		return;
 
-	if (encoremode)
+	if (encoremode && !flipcam)
 	{
 		postimg = postimg_mirror;
 	}
+	else if (!encoremode && flipcam)
+		postimg = postimg_flip;
+	else if (encoremode && flipcam)
+		postimg = postimg_mirrorflip;
 	else if (player->awayview.tics && player->awayview.mobj && !P_MobjWasRemoved(player->awayview.mobj)) // Camera must obviously exist
 	{
 		camera_t dummycam;

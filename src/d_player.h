@@ -117,7 +117,7 @@ typedef enum
 	PF_BRAKEDRIFT		= 1<<21, // Helper for brake-drift spark spawning
 
 	PF_AIRFAILSAFE		= 1<<22, // Whenever or not try the air boost
-	//					= 1<<23,
+	PF_FLIPCAM			= 1<<23,
 
 	PF_HITFINISHLINE	= 1<<26, // Already hit the finish line this tic
 	PF_WRONGWAY			= 1<<27, // Moving the wrong way with respect to waypoints?

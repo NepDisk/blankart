@@ -1160,6 +1160,13 @@ consvar_t cv_autoring[MAXSPLITSCREENPLAYERS] = {
 	Player("autoring4", "Off").on_off().onchange(weaponPrefChange4),
 };
 
+consvar_t cv_flipcam[MAXSPLITSCREENPLAYERS] = {
+	Player("flipcam", "Off").on_off().onchange(weaponPrefChange),
+	Player("flipcam2", "Off").on_off().onchange(weaponPrefChange2),
+	Player("flipcam3", "Off").on_off().onchange(weaponPrefChange3),
+	Player("flipcam4", "Off").on_off().onchange(weaponPrefChange4),
+};
+
 consvar_t cv_cam_dist[MAXSPLITSCREENPLAYERS] = {
 	Player("cam_dist", "190").floating_point(),
 	Player("cam2_dist", "190").floating_point(),

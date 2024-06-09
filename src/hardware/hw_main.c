@@ -5436,6 +5436,11 @@ static void HWR_DrawSkyBackground(player_t *player)
 		else
 			dometransform.mirror = false;
 
+		if (*type == postimg_mirrorflip)
+			dometransform.mirrorflip = true;
+		else
+			dometransform.mirrorflip = false;
+
 		dometransform.scalex = 1;
 		dometransform.scaley = (float)vid.width/vid.height;
 		dometransform.scalez = 1;
@@ -5709,6 +5714,11 @@ static void HWR_RenderViewpoint(player_t *player, boolean drawSkyTexture, boolea
 		atransform.mirror = true;
 	else
 		atransform.mirror = false;
+
+	if (*type == postimg_mirrorflip)
+		atransform.mirrorflip = true;
+	else
+		atransform.mirrorflip = false;
 
 	atransform.x      = gl_viewx;  // FIXED_TO_FLOAT(viewx)
 	atransform.y      = gl_viewy;  // FIXED_TO_FLOAT(viewy)
