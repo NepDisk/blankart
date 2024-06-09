@@ -2911,7 +2911,7 @@ EXPORT void HWRAPI(SetTransform) (FTransform *stransform)
 	if (shearing)
 	{
 		float fdy = stransform->viewaiming * 2 * ((float)vid.width / vid.height) / ((float)BASEVIDWIDTH / BASEVIDHEIGHT); //screen_width/BASEVIDWIDTH;
-		if (stransform->flip)
+		if (stransform->flip || stransform->mirrorflip)
 			fdy *= -1.0f;
 		pglTranslatef(0.0f, -fdy/BASEVIDHEIGHT, 0.0f);
 	}
