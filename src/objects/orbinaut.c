@@ -73,13 +73,10 @@ void Obj_OrbinautThink(mobj_t *mobj)
 
 		P_InstaThrust(mobj, mobj->angle, finalspeed);
 
-		if (grounded)
+		if (grounded) // Handle pogosprings.
 		{
-			/*sector_t *sec2 = P_ThingOnSpecial3DFloor(mobj);
-			if ((sec2 && GETSECSPECIAL(sec2->special, 3) == 1)
-				|| (P_IsObjectOnRealGround(mobj, mobj->subsector->sector)
-				&& GETSECSPECIAL(mobj->subsector->sector->special, 3) == 1))
-				K_DoPogoSpring(mobj, 0, 1);*/
+			if (P_MobjTouchingSectorSpecial(mobj, 3, 1) || P_MobjTouchingSectorSpecial(mobj, 3, 3) || (mobj->terrain && (mobj->terrain->pogoPanel > 0)))
+				K_DoPogoSpring(mobj, 0, 1);
 		}
 
 		if (mobj->threshold > 0)

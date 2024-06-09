@@ -28,7 +28,7 @@
 
 void Obj_JawzThink(mobj_t *mobj)
 {
-	sector_t *sec2;
+	boolean grounded = P_IsObjectOnGround(mobj);
 	fixed_t topspeed = mobj->movefactor;
 	fixed_t distbarrier = 512*mapobjectscale;
 	fixed_t distaway;
@@ -77,11 +77,11 @@ void Obj_JawzThink(mobj_t *mobj)
 
 	K_DriftDustHandling(mobj);
 
-	/*sec2 = P_ThingOnSpecial3DFloor(mobj);
-	if ((sec2 && GETSECSPECIAL(sec2->special, 3) == 1)
-		|| (P_IsObjectOnRealGround(mobj, mobj->subsector->sector)
-		&& GETSECSPECIAL(mobj->subsector->sector->special, 3) == 1))
-		K_DoPogoSpring(mobj, 0, 1);*/
+	if (grounded) // Handle pogosprings.
+	{
+		if (P_MobjTouchingSectorSpecial(mobj, 3, 1) || P_MobjTouchingSectorSpecial(mobj, 3, 3) || (mobj->terrain && (mobj->terrain->pogoPanel > 0)))
+			K_DoPogoSpring(mobj, 0, 1);
+	}
 }
 
 void Obj_JawzDudThink(mobj_t *mobj)
@@ -103,13 +103,10 @@ void Obj_JawzDudThink(mobj_t *mobj)
 		mobj->angle = R_PointToAngle2(0, 0, mobj->momx, mobj->momy);
 		P_InstaThrust(mobj, mobj->angle, mobj->movefactor);
 
-		if (grounded)
+		if (grounded) // Handle pogosprings.
 		{
-			/*sector_t *sec2 = P_ThingOnSpecial3DFloor(mobj);
-			if ((sec2 && GETSECSPECIAL(sec2->special, 3) == 1)
-				|| (P_IsObjectOnRealGround(mobj, mobj->subsector->sector)
-				&& GETSECSPECIAL(mobj->subsector->sector->special, 3) == 1))
-				K_DoPogoSpring(mobj, 0, 1);*/
+			if (P_MobjTouchingSectorSpecial(mobj, 3, 1) || P_MobjTouchingSectorSpecial(mobj, 3, 3) || (mobj->terrain && (mobj->terrain->pogoPanel > 0)))
+				K_DoPogoSpring(mobj, 0, 1);
 		}
 
 		if (mobj->threshold > 0)
