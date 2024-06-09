@@ -32,6 +32,7 @@ public:
 		bool heat;
 		bool flip;
 		bool mirror;
+		bool mirrorflip;
 	};
 
 	struct ScreenConfig

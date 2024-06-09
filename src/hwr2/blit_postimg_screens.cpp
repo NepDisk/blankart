@@ -211,11 +211,17 @@ void BlitPostimgScreens::transfer(Rhi& rhi, Handle<GraphicsContext> ctx)
 		{
 			flip_mirror_uv_displace.y = 1 - (1 - screen_config.uv_size.y);
 		}
+		
+		if (screen_config.post.mirrorflip)
+		{
+			flip_mirror_uv_displace.y = 1 - (1 - screen_config.uv_size.y);
+			flip_mirror_uv_displace.x = 1 - (1 - screen_config.uv_size.x);
+		}
 
 		glm::mat3 texcoord_transform =
 		{
-			glm::vec3(screen_config.uv_size.x * (screen_config.post.mirror ? -1 : 1), 0.0, 0.0),
-			glm::vec3(0.0, screen_config.uv_size.y * (screen_config.post.flip ? -1 : 1), 0.0),
+			glm::vec3(screen_config.uv_size.x * ((screen_config.post.mirror || screen_config.post.mirrorflip) ? -1 : 1), 0.0, 0.0),
+			glm::vec3(0.0, screen_config.uv_size.y * ((screen_config.post.flip || screen_config.post.mirrorflip) ? -1 : 1), 0.0),
 			glm::vec3(screen_config.uv_offset + flip_mirror_uv_displace, 1.0)
 		};
 
