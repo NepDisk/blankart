@@ -337,7 +337,6 @@ actionpointer_t actionpointers[] =
 	{{A_ReaperThinker},          "A_REAPERTHINKER"},
 	{{A_FlameShieldPaper},       "A_FLAMESHIELDPAPER"},
 	{{A_InvincSparkleRotate},    "A_INVINCSPARKLEROTATE"},
-	{{A_SpawnItemDebrisCloud},   "A_SPAWNITEMDEBRISCLOUD"},
 
 	{{NULL},                     "NONE"},
 
@@ -3278,12 +3277,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_RANDOMITEMPOP4",
 	//}
 
-	"S_ITEM_DEBRIS",
-	"S_ITEM_DEBRIS_CLOUD_SPAWNER_INIT",
-	"S_ITEM_DEBRIS_CLOUD_SPAWNER1",
-	"S_ITEM_DEBRIS_CLOUD_SPAWNER2",
-	"S_ITEM_DEBRIS_CLOUD_SPAWNER3",
-
 	"S_ITEMICON",
 
 	// Item capsules
@@ -5294,8 +5287,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_BRAKEDRIFT",
 	"MT_BRAKEDUST",
 	"MT_DRIFTDUST",
-	"MT_ITEM_DEBRIS",
-	"MT_ITEM_DEBRIS_CLOUD_SPAWNER",
 	"MT_DRIFTELECTRICITY",
 	"MT_DRIFTELECTRICSPARK",
 	"MT_JANKSPARK",
