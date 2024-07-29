@@ -7522,56 +7522,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 				mobj->angle = mobj->target->angle + ANGLE_45;
 		}
 		break;
-	case MT_TIREGREASE:
-		if (!mobj->target || P_MobjWasRemoved(mobj->target) || !mobj->target->player
-			|| !mobj->target->player->tiregrease)
-		{
-			P_RemoveMobj(mobj);
-			return false;
-		}
-
-		K_MatchGenericExtraFlags(mobj, mobj->target);
-
-		{
-			const angle_t off = FixedAngle(40*FRACUNIT);
-			angle_t ang = K_MomentumAngle(mobj->target);
-			fixed_t z;
-			UINT8 trans = (mobj->target->player->tiregrease * (NUMTRANSMAPS+1)) / greasetics;
-
-			if (trans > NUMTRANSMAPS)
-				trans = NUMTRANSMAPS;
-
-			trans = NUMTRANSMAPS - trans;
-
-			z = mobj->target->z;
-			if (mobj->eflags & MFE_VERTICALFLIP)
-				z += mobj->target->height;
-
-			if (mobj->extravalue1)
-				ang = (signed)(ang - off);
-			else
-				ang = (signed)(ang + off);
-
-			P_MoveOrigin(mobj,
-				mobj->target->x - FixedMul(mobj->target->radius, FINECOSINE(ang >> ANGLETOFINESHIFT)),
-				mobj->target->y - FixedMul(mobj->target->radius, FINESINE(ang >> ANGLETOFINESHIFT)),
-				z);
-			mobj->angle = ang;
-
-			if (!P_IsObjectOnGround(mobj->target))
-				mobj->renderflags |= RF_DONTDRAW;
-
-			if (leveltime & 1)
-				mobj->renderflags |= RF_DONTDRAW;
-
-			if (trans >= NUMTRANSMAPS)
-				mobj->renderflags |= RF_DONTDRAW;
-			else if (trans == 0)
-				mobj->renderflags = (mobj->renderflags & ~RF_TRANSMASK);
-			else
-				mobj->renderflags = (mobj->renderflags & ~RF_TRANSMASK)|(trans << RF_TRANSSHIFT);
-		}
-		break;
 	case MT_LIGHTNINGSHIELD:
 	{
 		fixed_t destx, desty;

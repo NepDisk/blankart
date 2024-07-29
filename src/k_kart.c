@@ -1592,10 +1592,6 @@ static UINT8 K_CheckOffroadCollide(mobj_t *mo)
 	I_Assert(mo != NULL);
 	I_Assert(!P_MobjWasRemoved(mo));
 
-	// If tiregrease is active, don't
-	if (mo->player && mo->player->tiregrease)
-		return 0;
-
 	for (node = mo->touching_sectorlist; node; node = node->m_sectorlist_next)
 	{
 		if (!node->m_sector)
@@ -2955,7 +2951,7 @@ boolean K_ApplyOffroad(player_t *player)
 
 boolean K_SlopeResistance(player_t *player)
 {
-	if (player->invincibilitytimer || player->sneakertimer || player->tiregrease || player->flamedash)
+	if (player->invincibilitytimer || player->sneakertimer || player->flamedash)
 		return true;
 	return false;
 }
@@ -2993,7 +2989,6 @@ boolean K_WaterRun(player_t *player)
 	if (
 			player->invincibilitytimer ||
 			player->sneakertimer ||
-			player->tiregrease ||
 			player->flamedash ||
 			player->speed > 2 * K_GetKartSpeed(player, false, true)
 	)
@@ -7391,9 +7386,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->justbumped > 0)
 		player->justbumped--;
 
-	if (player->tiregrease)
-		player->tiregrease--;
-
 	K_UpdateTripwire(player);
 
 	K_KartPlayerHUDUpdate(player);
@@ -8126,18 +8118,6 @@ static INT16 K_GetKartDriftValue(player_t *player, fixed_t countersteer)
 
 	basedrift = (83 * player->drift) - (((driftweight - 14) * player->drift) / 5); // 415 - 303
 	driftadjust = abs((252 - driftweight) * player->drift / 5);
-
-	if (player->tiregrease > 0) // Buff drift-steering while in greasemode
-	{
-		basedrift += (basedrift / greasetics) * player->tiregrease;
-	}
-
-#if 0
-	if (player->mo->eflags & MFE_UNDERWATER)
-	{
-		countersteer = FixedMul(countersteer, 3*FRACUNIT/2);
-	}
-#endif
 
 	return basedrift + (FixedMul(driftadjust * FRACUNIT, countersteer) / FRACUNIT);
 }
@@ -9032,21 +9012,6 @@ static void K_KartSpindash(player_t *player)
 			P_InstaThrust(player->mo, player->mo->angle, thrust);
 		}
 
-		if (!player->tiregrease)
-		{
-			UINT8 i;
-			for (i = 0; i < 2; i++)
-			{
-				mobj_t *grease;
-				grease = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_TIREGREASE);
-				P_SetTarget(&grease->target, player->mo);
-				P_InitAngle(grease, K_MomentumAngle(player->mo));
-				grease->extravalue1 = i;
-			}
-		}
-
-		player->tiregrease = 2*TICRATE;
-
 		player->spindash = 0;
 		S_StartSound(player->mo, sfx_s23c);
 	}
@@ -9210,12 +9175,6 @@ void K_AdjustPlayerFriction(player_t *player)
 	if (P_IsObjectOnGround(player->mo) == false)
 	{
 		return;
-	}
-
-	// Reduce friction after hitting a spring
-	if (player->tiregrease)
-	{
-		player->mo->friction += ((FRACUNIT - prevfriction) / greasetics) * player->tiregrease;
 	}
 
 	/*

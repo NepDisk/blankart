@@ -791,7 +791,7 @@ static UINT8 K_TrySpindash(player_t *player)
 
 	const INT32 angleDiff = AngleDelta(player->mo->angle, K_MomentumAngle(player->mo));
 
-	if (player->spindashboost || player->tiregrease // You just released a spindash, you don't need to try again yet, jeez.
+	if (player->spindashboost // You just released a spindash, you don't need to try again yet, jeez.
 		|| P_PlayerInPain(player) || !P_IsObjectOnGround(player->mo)) // Not in a state where we want 'em to spindash.
 	{
 		player->botvars.spindashconfirm = 0;

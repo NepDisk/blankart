@@ -269,7 +269,6 @@ static void P_NetArchivePlayers(void)
 		WRITEFIXED(save_p, players[i].offroad);
 		WRITEUINT8(save_p, players[i].waterskip);
 
-		WRITEUINT16(save_p, players[i].tiregrease);
 		WRITEUINT16(save_p, players[i].springstars);
 		WRITEUINT16(save_p, players[i].springcolor);
 		WRITEUINT8(save_p, players[i].dashpadcooldown);
@@ -552,7 +551,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].offroad = READFIXED(save_p);
 		players[i].waterskip = READUINT8(save_p);
 
-		players[i].tiregrease = READUINT16(save_p);
 		players[i].springstars = READUINT16(save_p);
 		players[i].springcolor = READUINT16(save_p);
 		players[i].dashpadcooldown = READUINT8(save_p);
