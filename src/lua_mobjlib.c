@@ -99,7 +99,6 @@ enum mobj_e {
 	mobj_sprxoff,
 	mobj_spryoff,
 	mobj_sprzoff,
-	mobj_hitlag,
 	mobj_dispoffset
 };
 
@@ -180,7 +179,6 @@ static const char *const mobj_opt[] = {
 	"sprxoff",
 	"spryoff",
 	"sprzoff",
-	"hitlag",
 	"dispoffset",
 	NULL};
 
@@ -456,9 +454,6 @@ static int mobj_get(lua_State *L)
 		break;
 	case mobj_sprzoff:
 		lua_pushfixed(L, mo->sprzoff);
-		break;
-	case mobj_hitlag:
-		lua_pushinteger(L, mo->hitlag);
 		break;
 	case mobj_dispoffset:
 		lua_pushinteger(L, mo->dispoffset);
@@ -831,9 +826,6 @@ static int mobj_set(lua_State *L)
 		break;
 	case mobj_sprzoff:
 		mo->sprzoff = luaL_checkfixed(L, 3);
-		break;
-	case mobj_hitlag:
-		mo->hitlag = luaL_checkinteger(L, 3);
 		break;
 	case mobj_dispoffset:
 		mo->dispoffset = luaL_checkinteger(L, 3);

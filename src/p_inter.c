@@ -394,9 +394,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			if (special->threshold > 0)
 				return;
 
-			if (toucher->hitlag > 0)
-				return;
-
 			player->emeralds |= special->extravalue1;
 			K_CheckEmeralds(player);
 			break;
@@ -972,8 +969,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 	if (LUAh_MobjDeath(target, inflictor, source, damagetype) || P_MobjWasRemoved(target))
 		return;
 
-	//K_SetHitLagForObjects(target, inflictor, MAXHITLAGTICS, true);
-
 	// SRB2kart
 	// I wish I knew a better way to do this
 	if (target->target && target->target->player && target->target->player->mo)
@@ -1251,8 +1246,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 				{
 					kart->angle = target->angle;
 					kart->color = target->color;
-					kart->hitlag = target->hitlag;
-					kart->eflags |= MFE_DAMAGEHITLAG;
 					P_SetObjectMomZ(kart, 6*FRACUNIT, false);
 					kart->extravalue1 = target->player->kartweight;
 
@@ -1754,7 +1747,6 @@ static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source,
 	}
 
 	K_DropEmeraldsFromPlayer(player, player->emeralds);
-	K_SetHitLagForObjects(player->mo, inflictor, MAXHITLAGTICS, true);
 
 	player->carry = CR_NONE;
 
@@ -1855,7 +1847,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 		if (!(target->flags & MF_SHOOTABLE))
 			return false; // shouldn't happen...
 
-		if (!(damagetype & DMG_DEATHMASK) && target->hitlag > 0 && inflictor == NULL)
+		if (!(damagetype & DMG_DEATHMASK) && inflictor == NULL)
 			return false;
 	}
 
@@ -1949,7 +1941,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 							allowcombo = false;
 					}
 
-					if ((target->hitlag == 0 || allowcombo == false) && player->flashing > 0)
+					if ((allowcombo == false) && player->flashing > 0)
 					{
 						// Post-hit invincibility
 						K_DoInstashield(player);
@@ -2088,7 +2080,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 			}
 
 			player->instashield = 15;
-			K_SetHitLagForObjects(target, inflictor, laglength, true);
 
 			if (inflictor && !P_MobjWasRemoved(inflictor) && inflictor->type == MT_BANANA)
 			{
@@ -2116,15 +2107,11 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 	if (source && source->player && target)
 		G_GhostAddHit((INT32) (source->player - players), target);
 
-	K_SetHitLagForObjects(target, inflictor, laglength, true);
-
 	if (target->health <= 0)
 	{
 		P_KillMobj(target, inflictor, source, damagetype);
 		return true;
 	}
-
-	//K_SetHitLagForObjects(target, inflictor, laglength, true);
 
 	if (player)
 		P_ResetPlayer(target->player);

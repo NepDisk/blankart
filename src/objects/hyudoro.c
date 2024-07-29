@@ -302,8 +302,6 @@ hyudoro_patrol_hit_player
 	if (!player->itemamount)
 		return false;
 
-	K_AddHitLag(toucher, TICRATE/2, true);
-
 	hyudoro_mode(hyu) = HYU_RETURN;
 	hyudoro_itemtype(hyu) = player->itemtype;
 	hyudoro_itemcount(hyu) = player->itemamount;

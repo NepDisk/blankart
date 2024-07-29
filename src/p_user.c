@@ -3079,11 +3079,9 @@ boolean P_MoveChaseCamera(player_t *player, camera_t *thiscam, boolean resetcall
 
 	mo = player->mo;
 
-	if (mo->hitlag > 0 || player->playerstate == PST_DEAD)
+	if (player->playerstate == PST_DEAD)
 	{
-		// Do not move the camera while in hitlag!
-		// The camera zooming out after you got hit makes it hard to focus on the vibration.
-		// of course, if you're in chase, don't forget the postimage - otherwise encore will flip back
+		// Do not move the camera while dead!
 		if (thiscam->chase)
 			P_CalcChasePostImg(player, thiscam);
 
@@ -4100,11 +4098,6 @@ void P_PlayerThink(player_t *player)
 
 	if (player->awayviewtics && player->awayviewtics != -1)
 		player->awayviewtics--;
-
-	if (player->mo->hitlag > 0)
-	{
-		return;
-	}
 
 	// Track airtime
 	if (P_IsObjectOnGround(player->mo)

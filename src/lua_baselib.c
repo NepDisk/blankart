@@ -3758,19 +3758,6 @@ static int lib_kGetCollideAngle(lua_State *L)
 	return 1;
 }
 
-static int lib_kAddHitLag(lua_State *L)
-{
-	mobj_t *mo = *((mobj_t **)luaL_checkudata(L, 1, META_MOBJ));
-	tic_t tics = (tic_t)luaL_checkinteger(L, 2);
-	boolean fromdamage = lua_opttrueboolean(L, 3);
-	NOHUD
-	if (!mo)
-		return LUA_ErrInvalid(L, "mobj_t");
-	K_AddHitLag(mo, tics, fromdamage);
-	return 0;
-}
-
-
 static int lib_kInitBossHealthBar(lua_State *L)
 {
 	const char *enemyname = luaL_checkstring(L, 1);
@@ -4084,7 +4071,6 @@ static luaL_Reg lib[] = {
 	{"K_GetItemPatch",lib_kGetItemPatch},
 
 	{"K_GetCollideAngle",lib_kGetCollideAngle},
-	{"K_AddHitLag",lib_kAddHitLag},
 
 	// k_boss
 	{"K_InitBossHealthBar", lib_kInitBossHealthBar},

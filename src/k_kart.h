@@ -19,9 +19,6 @@ Make sure this matches the actual number of states
 */
 #define KART_NUMINVSPARKLESANIM 12
 
-#define MAXHITLAGTICS 18 //12
-#define HITLAGJITTERS (FRACUNIT / 20)
-
 #define GROW_SCALE (2*FRACUNIT)
 #define SHRINK_SCALE (FRACUNIT/2)
 
@@ -65,8 +62,6 @@ void K_KartResetPlayerColor(player_t *player);
 void K_KartPlayerThink(player_t *player, ticcmd_t *cmd);
 void K_KartPlayerAfterThink(player_t *player);
 angle_t K_MomentumAngle(mobj_t *mo);
-void K_AddHitLag(mobj_t *mo, INT32 tics, boolean fromDamage);
-void K_SetHitLagForObjects(mobj_t *mo1, mobj_t *mo2, INT32 tics, boolean fromDamage);
 void K_AwardPlayerRings(player_t *player, INT32 rings, boolean overload);
 void K_DoInstashield(player_t *player);
 void K_DoPowerClash(player_t *t1, player_t *t2);

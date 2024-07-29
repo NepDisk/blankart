@@ -5492,8 +5492,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 		}
 		else
 			P_AddOverlay(mobj);
-		if (mobj->target->hitlag) // move to the correct position, update to the correct properties, but DON'T STATE-ANIMATE
-			return;
 		break;
 	case MT_WATERDROP:
 		P_SceneryCheckWater(mobj);
@@ -9342,26 +9340,7 @@ void P_MobjThinker(mobj_t *mobj)
 	if ((mobj->flags & MF_BOSS) && mobj->spawnpoint && (bossdisabled & (1<<mobj->spawnpoint->extrainfo)))
 		return;
 
-	// Don't run any thinker code while in hitlag
-	if (mobj->hitlag > 0)
-	{
-		mobj->hitlag--;
-
-		if (mobj->type == MT_DROPTARGET && mobj->reactiontime > 0 && mobj->hitlag == 2)
-		{
-			mobj->spritexscale = FRACUNIT;
-			mobj->spriteyscale = 5*FRACUNIT;
-		}
-
-		if (mobj->player != NULL && mobj->hitlag == 0 && (mobj->eflags & MFE_DAMAGEHITLAG))
-		{
-			K_HandleDirectionalInfluence(mobj->player);
-		}
-
-		return;
-	}
-
-	mobj->eflags &= ~(MFE_PUSHED|MFE_SPRUNG|MFE_JUSTBOUNCEDWALL|MFE_DAMAGEHITLAG|MFE_SLOPELAUNCHED);
+	mobj->eflags &= ~(MFE_PUSHED|MFE_SPRUNG|MFE_JUSTBOUNCEDWALL|MFE_SLOPELAUNCHED);
 
 	tmfloorthing = tmhitthing = NULL;
 
@@ -10008,8 +9987,6 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 		mobj->z = z;
 
 	mobj->colorized = false;
-
-	mobj->hitlag = 0;
 
 	// Set shadowscale here, before spawn hook so that Lua can change it
 	P_DefaultMobjShadowScale(mobj);

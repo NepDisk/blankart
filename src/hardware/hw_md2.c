@@ -46,7 +46,7 @@
 
 // SRB2Kart
 #include "../k_color.h"
-#include "../k_kart.h" // HITLAGJITTERS
+#include "../k_kart.h"
 #include "../r_fps.h"
 
 #ifdef HAVE_PNG
@@ -822,12 +822,7 @@ static void HWR_CreateBlendedTexture(patch_t *gpatch, patch_t *blendgpatch, GLMi
 
 	while (size--)
 	{
-		if (skinnum == TC_HITLAG)
-		{
-			cur->s.red = cur->s.green = cur->s.blue = K_HitlagColorValue(*image);
-			cur->s.alpha = image->s.alpha;
-		}
-		else if (skinnum == TC_BOSS)
+		if (skinnum == TC_BOSS)
 		{
 			// Turn everything below a certain threshold white
 			if ((image->s.red == image->s.green) && (image->s.green == image->s.blue) && image->s.blue < 127)
@@ -1381,21 +1376,6 @@ boolean HWR_DrawModel(gl_vissprite_t *spr)
 			R_InterpolateMobjState(spr->mobj, FRACUNIT, &interp);
 		}
 
-		// hitlag vibrating
-		if (spr->mobj->hitlag > 0 && (spr->mobj->eflags & MFE_DAMAGEHITLAG))
-		{
-			fixed_t mul = spr->mobj->hitlag * HITLAGJITTERS;
-
-			if (leveltime & 1)
-			{
-				mul = -mul;
-			}
-
-			interp.x += FixedMul(spr->mobj->momx, mul);
-			interp.y += FixedMul(spr->mobj->momy, mul);
-			interp.z += FixedMul(spr->mobj->momz, mul);
-		}
-
 		// sprite offset
 		interp.x += spr->mobj->sprxoff;
 		interp.y += spr->mobj->spryoff;
@@ -1506,10 +1486,6 @@ boolean HWR_DrawModel(gl_vissprite_t *spr)
 		{
 			INT32 skinnum = TC_DEFAULT;
 
-			if (R_ThingIsFlashing(spr->mobj))
-			{
-				skinnum = TC_HITLAG;
-			}
 			/*
 			else if ((spr->mobj->flags & (MF_ENEMY|MF_BOSS)) && (spr->mobj->flags2 & MF2_FRET) && !(spr->mobj->flags & MF_GRENADEBOUNCE) && (leveltime & 1)) // Bosses "flash"
 			{
@@ -1521,7 +1497,7 @@ boolean HWR_DrawModel(gl_vissprite_t *spr)
 					skinnum = TC_BOSS;
 			}
 			*/
-			else if ((skincolornum_t)spr->mobj->color != SKINCOLOR_NONE)
+			if ((skincolornum_t)spr->mobj->color != SKINCOLOR_NONE)
 			{
 				if (spr->mobj->colorized)
 					skinnum = TC_RAINBOW;

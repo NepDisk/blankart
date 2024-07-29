@@ -5611,7 +5611,6 @@ const char *const MOBJFLAG_LIST[] = {
 	"DONTENCOREMAP",
 	"PICKUPFROMBELOW",
 	"NOSQUISH",
-	"NOHITLAGFORME",
 	NULL
 };
 
@@ -5664,7 +5663,6 @@ const char *const MOBJEFLAG_LIST[] = {
 	"APPLYPMOMZ", // Platform movement
 	"TRACERANGLE", // Compute and trigger on mobj angle relative to tracer
 	"JUSTBOUNCEDWALL",
-	"DAMAGEHITLAG",
 	"SLOPELAUNCHED",
 	NULL
 };
@@ -6674,7 +6672,6 @@ struct int_const_s const INT_CONST[] = {
 	{"TC_RAINBOW",TC_RAINBOW},
 	{"TC_BLINK",TC_BLINK},
 	{"TC_DASHMODE",TC_DASHMODE},
-	{"TC_HITLAG",TC_HITLAG},
 
 	// marathonmode flags
 	{"MA_INIT",MA_INIT},

@@ -44,7 +44,7 @@
 #include "hw_md2.h"
 
 // SRB2Kart
-#include "../k_kart.h" // HITLAGJITTERS
+#include "../k_kart.h"
 #include "../r_fps.h"
 
 #ifdef NEWCLIP
@@ -3676,21 +3676,6 @@ static void HWR_DrawDropShadow(mobj_t *thing, fixed_t scale)
 		R_InterpolateMobjState(thing, FRACUNIT, &interp);
 	}
 
-	// hitlag vibrating (todo: interp somehow?)
-	if (thing->hitlag > 0 && (thing->eflags & MFE_DAMAGEHITLAG))
-	{
-		fixed_t mul = thing->hitlag * HITLAGJITTERS;
-
-		if (leveltime & 1)
-		{
-			mul = -mul;
-		}
-
-		interp.x += FixedMul(thing->momx, mul);
-		interp.y += FixedMul(thing->momy, mul);
-		interp.z += FixedMul(thing->momz, mul);
-	}
-
 	// sprite offset
 	interp.x += thing->sprxoff;
 	interp.y += thing->spryoff;
@@ -5131,21 +5116,6 @@ static void HWR_ProjectSprite(mobj_t *thing)
 
 	dispoffset = thing->dispoffset;
 
-	// hitlag vibrating (todo: interp somehow?)
-	if (thing->hitlag > 0 && (thing->eflags & MFE_DAMAGEHITLAG))
-	{
-		fixed_t mul = thing->hitlag * HITLAGJITTERS;
-
-		if (leveltime & 1)
-		{
-			mul = -mul;
-		}
-
-		interp.x += FixedMul(thing->momx, mul);
-		interp.y += FixedMul(thing->momy, mul);
-		interp.z += FixedMul(thing->momz, mul);
-	}
-
 	// sprite offset
 	interp.x += thing->sprxoff;
 	interp.y += thing->spryoff;
@@ -5500,10 +5470,6 @@ static void HWR_ProjectSprite(mobj_t *thing)
 	vis->mobj = thing;
 
 	//Hurdler: 25/04/2000: now support colormap in hardware mode
-	if (R_ThingIsFlashing(vis->mobj))
-	{
-		vis->colormap = R_GetTranslationColormap(TC_HITLAG, 0, GTC_CACHE);
-	}
 	/*
 	else if ((vis->mobj->flags & (MF_ENEMY|MF_BOSS)) && (vis->mobj->flags2 & MF2_FRET) && !(vis->mobj->flags & MF_GRENADEBOUNCE) && (leveltime & 1)) // Bosses "flash"
 	{
@@ -5515,7 +5481,7 @@ static void HWR_ProjectSprite(mobj_t *thing)
 			vis->colormap = R_GetTranslationColormap(TC_BOSS, 0, GTC_CACHE);
 	}
 	*/
-	else if (thing->color)
+	if (thing->color)
 	{
 		// New colormap stuff for skins Tails 06-07-2002
 		if (thing->colorized)

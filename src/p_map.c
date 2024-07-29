@@ -446,7 +446,7 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 		{
 			if (spring->reactiontime == 0)
 			{
-				object->player->tricktime = 0; // Reset post-hitlag timer
+				object->player->tricktime = 0;
 				// Setup the boost for potential upwards trick, at worse, make it your regular max speed. (boost = curr speed*1.25)
 				object->player->trickboostpower = max(FixedDiv(object->player->speed, K_GetKartSpeed(object->player, false, false)) - FRACUNIT, 0)*125/100;
 				//CONS_Printf("Got boost: %d%\n", mo->player->trickboostpower*100 / FRACUNIT);
@@ -567,10 +567,6 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 	// Ignore spectators
 	if ((tmthing->player && tmthing->player->spectator)
 	|| (thing->player && thing->player->spectator))
-		return BMIT_CONTINUE;
-
-	// Ignore the collision if BOTH things are in hitlag.
-	if (thing->hitlag > 0 && tmthing->hitlag > 0)
 		return BMIT_CONTINUE;
 
 	if ((thing->flags & MF_NOCLIPTHING) || !(thing->flags & (MF_SOLID|MF_SPECIAL|MF_PAIN|MF_SHOOTABLE|MF_SPRING)))
@@ -2508,14 +2504,6 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 
 	// And Big Large (tm) movements can skip over slopes.
 	radius = min(radius, 16*mapobjectscale);
-
-#if 0
-	if (thing->hitlag > 0)
-	{
-		// Do not move during hitlag
-		return false;
-	}
-#endif
 
 	do {
 		if (thing->flags & MF_NOCLIP)

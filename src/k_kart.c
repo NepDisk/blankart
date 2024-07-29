@@ -3435,75 +3435,6 @@ angle_t K_MomentumAngle(mobj_t *mo)
 	}
 }
 
-void K_AddHitLag(mobj_t *mo, INT32 tics, boolean fromDamage)
-{
-	if (mo == NULL || P_MobjWasRemoved(mo) || (mo->flags & MF_NOHITLAGFORME && mo->type != MT_PLAYER))
-	{
-		return;
-	}
-
-	mo->hitlag += tics;
-	mo->hitlag = min(mo->hitlag, MAXHITLAGTICS);
-
-	if (mo->player != NULL)
-	{
-		// Reset each time. We want to explicitly set this for bananas afterwards,
-		// so make sure an old value doesn't possibly linger.
-		mo->player->flipDI = false;
-	}
-
-	if (fromDamage == true)
-	{
-		// Dunno if this should flat-out &~ the flag out too.
-		// Decided it probably just just keep it since it's "adding" hitlag.
-		mo->eflags |= MFE_DAMAGEHITLAG;
-	}
-}
-
-void K_SetHitLagForObjects(mobj_t *mo1, mobj_t *mo2, INT32 tics, boolean fromDamage)
-{
-	INT32 finalTics = tics;
-
-	if (tics <= 0)
-	{
-		return;
-	}
-
-	if ((mo1 && !P_MobjWasRemoved(mo1)) == true && (mo2 && !P_MobjWasRemoved(mo2)) == true)
-	{
-		const fixed_t speedTicFactor = (mapobjectscale * 8);
-		const INT32 angleTicFactor = ANGLE_22h;
-
-		const fixed_t mo1speed = FixedHypot(FixedHypot(mo1->momx, mo1->momy), mo1->momz);
-		const fixed_t mo2speed = FixedHypot(FixedHypot(mo2->momx, mo2->momy), mo2->momz);
-		const fixed_t speedDiff = abs(mo2speed - mo1speed);
-
-		const fixed_t scaleDiff = abs(mo2->scale - mo1->scale);
-
-		angle_t mo1angle = K_MomentumAngle(mo1);
-		angle_t mo2angle = K_MomentumAngle(mo2);
-		INT32 angleDiff = 0;
-
-		if (mo1speed > 0 && mo2speed > 0)
-		{
-			// If either object is completely not moving, their speed doesn't matter.
-			angleDiff = AngleDelta(mo1angle, mo2angle);
-		}
-
-		// Add extra "damage" based on what was happening to the objects on impact.
-		finalTics += (FixedMul(speedDiff, FRACUNIT + scaleDiff) / speedTicFactor) + (angleDiff / angleTicFactor);
-
-		// This shouldn't happen anymore, but just in case something funky happens.
-		if (finalTics < tics)
-		{
-			finalTics = tics;
-		}
-	}
-
-	K_AddHitLag(mo1, finalTics, fromDamage);
-	K_AddHitLag(mo2, finalTics, false); // mo2 is the inflictor, so don't use the damage property.
-}
-
 void K_AwardPlayerRings(player_t *player, INT32 rings, boolean overload)
 {
 	UINT16 superring;
@@ -3557,8 +3488,6 @@ void K_DoPowerClash(player_t *t1, player_t *t2) {
 	t2->instashield = 1;
 
 	S_StartSound(t1->mo, sfx_parry);
-	K_AddHitLag(t1->mo, 6, false);
-	K_AddHitLag(t2->mo, 6, false);
 
 	clash = P_SpawnMobj((t1->mo->x/2) + (t2->mo->x/2), (t1->mo->y/2) + (t2->mo->y/2), (t1->mo->z/2) + (t2->mo->z/2), MT_POWERCLASH);
 
@@ -3759,10 +3688,6 @@ static void K_HandleTumbleBounce(player_t *player)
 		}
 	}
 
-	// A bit of damage hitlag.
-	// This gives a window for DI!!
-	K_AddHitLag(player->mo, 3, true);
-
 	if (P_IsDisplayPlayer(player) && player->tumbleHeight >= 40)
 		P_StartQuake((player->tumbleHeight*3/2)<<FRACBITS, 6);	// funny earthquakes for the FEEL
 
@@ -3812,7 +3737,6 @@ void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 		S_StartSound(player->mo, sfx_kc40);
 
 	player->tripwireState = state;
-	K_AddHitLag(player->mo, 10, false);
 
 	if (state == TRIPSTATE_PASSED && player->spinouttimer &&
 			player->speed > 2 * K_GetKartSpeed(player, false, true))
@@ -5279,9 +5203,6 @@ void K_PuntMine(mobj_t *origMine, mobj_t *punter)
 	if (!origMine || P_MobjWasRemoved(origMine))
 		return;
 
-	if (punter->hitlag > 0)
-		return;
-
 	// This guarantees you hit a mine being dragged
 	if (origMine->type == MT_SSMINE_SHIELD) // Create a new mine, and clean up the old one
 	{
@@ -5330,7 +5251,7 @@ void K_PuntMine(mobj_t *origMine, mobj_t *punter)
 	if (!mine || P_MobjWasRemoved(mine))
 		return;
 
-	if (mine->threshold > 0 || mine->hitlag > 0)
+	if (mine->threshold > 0)
 		return;
 
 	spd = FixedMul(82 * punter->scale, K_GetKartGameSpeedScalar(gamespeed)); // Avg Speed is 41 in Normal
@@ -5344,8 +5265,6 @@ void K_PuntMine(mobj_t *origMine, mobj_t *punter)
 	mine->momx = punter->momx + FixedMul(FINECOSINE(fa >> ANGLETOFINESHIFT), spd);
 	mine->momy = punter->momy + FixedMul(FINESINE(fa >> ANGLETOFINESHIFT), spd);
 	P_SetObjectMomZ(mine, z, false);
-
-	//K_SetHitLagForObjects(punter, mine, 5);
 
 	mine->flags &= ~MF_NOCLIPTHING;
 }
@@ -5687,7 +5606,7 @@ void K_DoPogoSpring(mobj_t *mo, fixed_t vertispeed, UINT8 sound)
 			thrust = FixedMul(thrust, 9*FRACUNIT/8);
 		}
 
-		mo->player->tricktime = 0; // Reset post-hitlag timer
+		mo->player->tricktime = 0;
 		// Setup the boost for potential upwards trick, at worse, make it your regular max speed. (boost = curr speed*1.25)
 		mo->player->trickboostpower = max(FixedDiv(mo->player->speed, K_GetKartSpeed(mo->player, false, false)) - FRACUNIT, 0)*125/100;
 		//CONS_Printf("Got boost: %d%\n", mo->player->trickboostpower*100 / FRACUNIT);
@@ -5926,7 +5845,6 @@ void K_DropHnextList(player_t *player, boolean keepshields)
 		dropwork->ceilingz = work->ceilingz;
 
 		dropwork->health = work->health; // will never be set to 0 as long as above guard exists
-		dropwork->hitlag = work->hitlag;
 
 		// Copy interp data
 		dropwork->old_angle = work->old_angle;
@@ -6002,15 +5920,6 @@ void K_DropHnextList(player_t *player, boolean keepshields)
 		{
 			dropwork->threshold = 10;
 			dropwork->flags &= ~MF_NOCLIPTHING;
-
-			if (type == MT_DROPTARGET && dropwork->hitlag)
-			{
-				dropwork->momx = work->momx;
-				dropwork->momy = work->momy;
-				dropwork->momz = work->momz;
-				dropwork->reactiontime = work->reactiontime;
-				P_SetMobjState(dropwork, mobjinfo[type].painstate);
-			}
 		}
 
 		P_RemoveMobj(work);
@@ -9246,7 +9155,7 @@ static void K_KartSpindash(player_t *player)
 	UINT16 buttons = K_GetKartButtons(player);
 	boolean spawnWind = (leveltime % 2 == 0);
 
-	if (player->mo->hitlag > 0 || P_PlayerInPain(player))
+	if (P_PlayerInPain(player))
 	{
 		player->spindash = 0;
 	}
@@ -9507,7 +9416,7 @@ void K_AdjustPlayerFriction(player_t *player)
 //
 // K_trickPanelTimingVisual
 // Spawns the timing visual for trick panels depending on the given player's momz.
-// If the player has tricked and is not in hitlag, this will send the half circles flying out.
+// If the player has tricked, this will send the half circles flying out.
 // if you tumble, they'll fall off instead.
 //
 
@@ -10440,9 +10349,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				// Finalise everything.
 				if (player->trickpanel != 1) // just changed from 1?
 				{
-					player->mo->hitlag = TRICKLAG;
-					player->mo->eflags &= ~MFE_DAMAGEHITLAG;
-
 					K_trickPanelTimingVisual(player, momz);
 
 					if (abs(momz) < FRACUNIT*99)	// Let's use that as baseline for PERFECT trick.
@@ -10657,9 +10563,6 @@ void K_HandleDirectionalInfluence(player_t *player)
 		// ded
 		return;
 	}
-
-	// DI attempted!!
-	player->justDI = MAXHITLAGTICS;
 
 	cmd = &player->cmd;
 

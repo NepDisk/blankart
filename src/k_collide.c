@@ -41,9 +41,6 @@ boolean K_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 	boolean damageitem = false;
 	boolean sprung = false;
 
-	if ((t1->threshold > 0 && t2->hitlag > 0) || (t2->threshold > 0 && t1->hitlag > 0))
-		return true;
-
 	if (((t1->target == t2) || (!(t2->flags & (MF_ENEMY|MF_BOSS)) && (t1->target == t2->target))) && (t1->threshold > 0 || (t2->type != MT_PLAYER && t2->threshold > 0)))
 		return true;
 
@@ -57,9 +54,6 @@ boolean K_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 
 	if (t2->player)
 	{
-		if ((t2->player->flashing > 0 && t2->hitlag == 0)
-			&& !(t1->type == MT_ORBINAUT || t1->type == MT_JAWZ || t1->type == MT_JAWZ_DUD))
-			return true;
 
 		if (t2->player->hyudorotimer)
 			return true; // no interaction
@@ -138,9 +132,6 @@ boolean K_BananaBallhogCollide(mobj_t *t1, mobj_t *t2)
 {
 	boolean damageitem = false;
 
-	if ((t1->threshold > 0 && t2->hitlag > 0) || (t2->threshold > 0 && t1->hitlag > 0))
-		return true;
-
 	if (((t1->target == t2) || (!(t2->flags & (MF_ENEMY|MF_BOSS)) && (t1->target == t2->target))) && (t1->threshold > 0 || (t2->type != MT_PLAYER && t2->threshold > 0)))
 		return true;
 
@@ -156,8 +147,6 @@ boolean K_BananaBallhogCollide(mobj_t *t1, mobj_t *t2)
 
 	if (t2->player)
 	{
-		if (t2->player->flashing > 0 && t2->hitlag == 0)
-			return true;
 
 		// Banana snipe!
 		if (t1->type == MT_BANANA && t1->health > 1)
@@ -223,9 +212,6 @@ boolean K_BananaBallhogCollide(mobj_t *t1, mobj_t *t2)
 
 boolean K_EggItemCollide(mobj_t *t1, mobj_t *t2)
 {
-	if ((t1->threshold > 0 && t2->hitlag > 0) || (t2->threshold > 0 && t1->hitlag > 0))
-		return true;
-
 	// Push fakes out of other item boxes
 	if (t2->type == MT_RANDOMITEM || t2->type == MT_EGGMANITEM)
 	{
@@ -407,9 +393,6 @@ void K_MineExplodeAttack(mobj_t *actor, fixed_t size, boolean spin)
 
 boolean K_MineCollide(mobj_t *t1, mobj_t *t2)
 {
-	if ((t1->threshold > 0 && t2->hitlag > 0) || (t2->threshold > 0 && t1->hitlag > 0))
-		return true;
-
 	if (((t1->target == t2) || (!(t2->flags & (MF_ENEMY|MF_BOSS)) && (t1->target == t2->target))) && (t1->threshold > 0 || (t2->type != MT_PLAYER && t2->threshold > 0)))
 		return true;
 
@@ -418,7 +401,7 @@ boolean K_MineCollide(mobj_t *t1, mobj_t *t2)
 
 	if (t2->player)
 	{
-		if (t2->player->flashing > 0 && t2->hitlag == 0)
+		if (t2->player->flashing > 0)
 			return true;
 
 		// Bomb punting
@@ -460,9 +443,6 @@ boolean K_MineCollide(mobj_t *t1, mobj_t *t2)
 
 boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 {
-	if ((t1->threshold > 0 && t2->hitlag > 0) || (t2->threshold > 0 && t1->hitlag > 0))
-		return true;
-
 	if (((t1->target == t2) || (!(t2->flags & (MF_ENEMY|MF_BOSS)) && (t1->target == t2->target))) && (t1->threshold > 0 || (t2->type != MT_PLAYER && t2->threshold > 0)))
 		return true;
 
@@ -534,7 +514,7 @@ boolean K_DropTargetCollide(mobj_t *t1, mobj_t *t2)
 {
 	mobj_t *draggeddroptarget = (t1->type == MT_DROPTARGET_SHIELD) ? t1->target : NULL;
 
-	if ((t1->threshold > 0 && (t2->hitlag > 0 || !draggeddroptarget)) || (t2->threshold > 0 && t1->hitlag > 0))
+	if ((t1->threshold > 0 && (!draggeddroptarget)) || (t2->threshold > 0))
 		return true;
 
 	if (((t1->target == t2) || (t1->target == t2->target)) && (t1->threshold > 0 || (t2->type != MT_PLAYER && t2->threshold > 0)))
@@ -593,12 +573,7 @@ boolean K_DropTargetCollide(mobj_t *t1, mobj_t *t2)
 		t1->momx = (t1->momx + t2->momx)/2;
 		t1->momy = (t1->momy + t2->momy)/2;
 		t1->momz = (t1->momz + t2->momz)/2;
-
-		K_AddHitLag(t1->target, 6, false);
 	}
-
-	K_AddHitLag(t1, 6, true);
-	K_AddHitLag(t2, 6, false);
 
 	{
 		mobj_t *ghost = P_SpawnGhostMobj(t1);
@@ -793,15 +768,12 @@ boolean K_BubbleShieldCollide(mobj_t *t1, mobj_t *t2)
 
 boolean K_KitchenSinkCollide(mobj_t *t1, mobj_t *t2)
 {
-	if ((t1->threshold > 0 && t2->hitlag > 0) || (t2->threshold > 0 && t1->hitlag > 0))
-		return true;
-
 	if (((t1->target == t2) || (!(t2->flags & (MF_ENEMY|MF_BOSS)) && (t1->target == t2->target))) && (t1->threshold > 0 || (t2->type != MT_PLAYER && t2->threshold > 0)))
 		return true;
 
 	if (t2->player)
 	{
-		if (t2->player->flashing > 0 && t2->hitlag == 0)
+		if (t2->player->flashing > 0)
 			return true;
 
 		S_StartSound(NULL, sfx_bsnipe); // let all players hear it.
@@ -951,16 +923,6 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		}
 
 		P_PlayerRingBurst(t1->player, 1);
-	}
-
-	// No damage hitlag for stinging.
-	if (stungT1 == true && stungT2 == false)
-	{
-		t2->eflags &= ~MFE_DAMAGEHITLAG;
-	}
-	else if (stungT2 == true && stungT1 == false)
-	{
-		t1->eflags &= ~MFE_DAMAGEHITLAG;
 	}
 
 	return (stungT1 || stungT2);

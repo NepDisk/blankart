@@ -46,7 +46,7 @@
 
 // SRB2kart
 #include "k_color.h"
-#include "k_kart.h" // HITLAGJITTERS
+#include "k_kart.h"
 #include "r_fps.h"
 
 #define MINZ (FRACUNIT*4)
@@ -789,13 +789,6 @@ void R_DrawFlippedMaskedColumn(column_t *column, column_t *brightmap)
 	dc_texturemid = basetexturemid;
 }
 
-static boolean hitlag_is_flashing(mobj_t *thing)
-{
-	return
-		(thing->hitlag > 0) &&
-		(thing->eflags & (MFE_DAMAGEHITLAG));
-}
-
 static boolean baddie_is_flashing(mobj_t *thing)
 {
 	return
@@ -807,17 +800,11 @@ static boolean baddie_is_flashing(mobj_t *thing)
 boolean R_ThingIsFlashing(mobj_t *thing)
 {
 	return
-		hitlag_is_flashing(thing) ||
 		baddie_is_flashing(thing);
 }
 
 UINT8 *R_GetSpriteTranslation(vissprite_t *vis)
 {
-	if (!(vis->cut & SC_PRECIP) &&
-			R_ThingIsFlashing(vis->mobj))
-	{
-		return R_GetTranslationColormap(TC_HITLAG, 0, GTC_CACHE);
-	}
 	/*
 	else if (R_SpriteIsFlashing(vis)) // Bosses "flash"
 	{
@@ -829,7 +816,7 @@ UINT8 *R_GetSpriteTranslation(vissprite_t *vis)
 			return R_GetTranslationColormap(TC_BOSS, 0, GTC_CACHE);
 	}
 	*/
-	else if (vis->mobj->color)
+	if (vis->mobj->color)
 	{
 		// New colormap stuff for skins Tails 06-07-2002
 		if (!(vis->cut & SC_PRECIP) && vis->mobj->colorized)
@@ -1537,21 +1524,6 @@ static void R_ProjectSprite(mobj_t *thing)
 
 	this_scale = interp.scale;
 
-	// hitlag vibrating (todo: interp somehow?)
-	if (thing->hitlag > 0 && (thing->eflags & MFE_DAMAGEHITLAG))
-	{
-		fixed_t mul = thing->hitlag * HITLAGJITTERS;
-
-		if (leveltime & 1)
-		{
-			mul = -mul;
-		}
-
-		interp.x += FixedMul(thing->momx, mul);
-		interp.y += FixedMul(thing->momy, mul);
-		interp.z += FixedMul(thing->momz, mul);
-	}
-
 	// sprite offset
 	interp.x += thing->sprxoff;
 	interp.y += thing->spryoff;
@@ -1875,21 +1847,6 @@ static void R_ProjectSprite(mobj_t *thing)
 		else
 		{
 			R_InterpolateMobjState(thing, FRACUNIT, &tracer_interp);
-		}
-
-		// hitlag vibrating (todo: interp somehow?)
-		if (thing->hitlag > 0 && (thing->eflags & MFE_DAMAGEHITLAG))
-		{
-			fixed_t mul = thing->hitlag * (FRACUNIT / 10);
-
-			if (leveltime & 1)
-			{
-				mul = -mul;
-			}
-
-			tracer_interp.x += FixedMul(thing->momx, mul);
-			tracer_interp.y += FixedMul(thing->momy, mul);
-			tracer_interp.z += FixedMul(thing->momz, mul);
 		}
 
 		// sprite offset
