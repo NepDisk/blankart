@@ -2010,9 +2010,13 @@ static void P_3dMovement(player_t *player)
 //
 static void P_UpdatePlayerAngle(player_t *player)
 {
-	angle_t angleChange = ANGLE_MAX;
+	INT16 angle_diff, max_left_turn, max_right_turn;
+	boolean add_delta = true;
+	fixed_t currentSpeed = 0;
+	ticcmd_t *cmd = &player->cmd;
+	angle_t anglechange = player->angleturn;
+	int i;
 	UINT8 p = UINT8_MAX;
-	UINT8 i;
 
 	for (i = 0; i <= splitscreen; i++)
 	{
@@ -2023,33 +2027,60 @@ static void P_UpdatePlayerAngle(player_t *player)
 		}
 	}
 
-	player->steering = K_UpdateSteeringValue(player->steering, player->cmd.turning);
-	angleChange = K_GetKartTurnValue(player, player->steering) << TICCMD_REDUCE;
+	player->steering = cmd->turning; // Set this so functions that rely on steering still work.
+
+	if (K_GetKartTurnValue(player, KART_FULLTURN) != 0)
+	{
+		player->lturn_max[leveltime%MAXPREDICTTICS] = K_GetKartTurnValue(player, KART_FULLTURN)+1;
+		player->rturn_max[leveltime%MAXPREDICTTICS] = K_GetKartTurnValue(player, -KART_FULLTURN)-1;
+	}
+	else
+	{
+		player->rturn_max[leveltime%MAXPREDICTTICS] = player->lturn_max[leveltime%MAXPREDICTTICS] = 0;
+	}
+
+	// KART: Don't directly apply angleturn! It may have been either A) forged by a malicious client, or B) not be a smooth turn due to a player dropping frames.
+	// Instead, turn the player only up to the amount they're supposed to turn accounting for latency. Allow exactly 1 extra turn unit to try to keep old replays synced.
+	angle_diff = cmd->angle - (player->mo->angle>>16);
+	max_left_turn = player->lturn_max[(leveltime + MAXPREDICTTICS - cmd->latency) % MAXPREDICTTICS];
+	max_right_turn = player->rturn_max[(leveltime + MAXPREDICTTICS - cmd->latency) % MAXPREDICTTICS];
+
+	CONS_Printf("----------------\nangle diff: %d - turning options: %d to %d - ", angle_diff, max_left_turn, max_right_turn);
+
+	if (angle_diff > max_left_turn)
+		angle_diff = max_left_turn;
+	else if (angle_diff < max_right_turn)
+		angle_diff = max_right_turn;
+	else
+	{
+		// Try to keep normal turning as accurate to 1.0.1 as possible to reduce replay desyncs.
+		anglechange = cmd->angle<<TICCMD_REDUCE;
+		add_delta = false;
+	}
+	CONS_Printf("applied turn: %d\n", angle_diff);
+
+	if (add_delta) {
+		anglechange += angle_diff<<TICCMD_REDUCE;
+		anglechange &= ~0xFFFF; // Try to keep the turning somewhat similar to how it was before?
+		CONS_Printf("leftover turn (%s): %5d or %4d%%\n",
+						player_names[player-players],
+						(INT16) (cmd->angle - (player->mo->angle>>TICCMD_REDUCE)),
+						(INT16) (cmd->angle - (player->mo->angle>>TICCMD_REDUCE)) * 100 / (angle_diff ? angle_diff : 1));
+	}
+
+
+	// CONS_Printf("Playerid:%d\n",p);
 
 	if (p == UINT8_MAX)
 	{
 		// When F12ing players, set local angle directly.
-		P_SetPlayerAngle(player, player->angleturn + angleChange);
+		P_SetPlayerAngle(player, player->angleturn + anglechange);
 		player->mo->angle = player->angleturn;
 	}
 	else
 	{
-		UINT8 lateTic = ((leveltime - player->cmd.latency) & TICCMD_LATENCYMASK);
-		UINT8 clearTic = ((localtic + 1) & TICCMD_LATENCYMASK);
-
-		player->angleturn += angleChange;
+		player->angleturn = anglechange;
 		player->mo->angle = player->angleturn;
-
-		// Undo the ticcmd's old emulated angle,
-		// now that we added the actual game logic angle.
-
-		while (lateTic != clearTic)
-		{
-			localdelta[p] -= localstoredeltas[p][lateTic];
-			localstoredeltas[p][lateTic] = 0;
-
-			lateTic = (lateTic - 1) & TICCMD_LATENCYMASK;
-		}
 	}
 
 	if (!cv_allowmlook.value || player->spectator == false)
@@ -2059,12 +2090,16 @@ static void P_UpdatePlayerAngle(player_t *player)
 	else
 	{
 		player->aiming += (player->cmd.aiming << TICCMD_REDUCE);
-		player->aiming = G_ClipAimingPitch((INT32 *)&player->aiming);
+		player->aiming = G_ClipAimingPitch((INT32*) &player->aiming);
 	}
 
-	if (p != UINT8_MAX)
+	for (i = 0; i <= r_splitscreen; i++)
 	{
-		localaiming[p] = player->aiming;
+		if (player == &players[displayplayers[i]])
+		{
+			localaiming[i] = player->aiming;
+			break;
+		}
 	}
 }
 
@@ -4589,7 +4624,6 @@ void P_ForceLocalAngle(player_t *player, angle_t angle)
 		if (player == &players[displayplayers[i]])
 		{
 			localangle[i] = angle;
-			G_ResetAnglePrediction(player);
 			break;
 		}
 	}

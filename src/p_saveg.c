@@ -226,6 +226,12 @@ static void P_NetArchivePlayers(void)
 		// SRB2kart
 		WRITEUINT8(save_p, players[i].kartspeed);
 		WRITEUINT8(save_p, players[i].kartweight);
+		
+		for (j = 0; j < MAXPREDICTTICS; j++)
+		{
+			WRITEINT16(save_p, players[i].lturn_max[j]);
+			WRITEINT16(save_p, players[i].rturn_max[j]);
+		}
 
 		WRITEUINT8(save_p, players[i].followerskin);
 		WRITEUINT8(save_p, players[i].followerready);	// booleans are really just numbers eh??
@@ -508,6 +514,12 @@ static void P_NetUnArchivePlayers(void)
 		// SRB2kart
 		players[i].kartspeed = READUINT8(save_p);
 		players[i].kartweight = READUINT8(save_p);
+		
+		for (j = 0; j < MAXPREDICTTICS; j++)
+		{
+			players[i].lturn_max[j] = READINT16(save_p);
+			players[i].rturn_max[j] = READINT16(save_p);
+		}
 
 		players[i].followerskin = READUINT8(save_p);
 		players[i].followerready = READUINT8(save_p);
