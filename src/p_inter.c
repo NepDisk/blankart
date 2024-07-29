@@ -1033,27 +1033,11 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 	{
 		if (target->flags & MF_MONITOR || target->type == MT_RANDOMITEM)
 		{
-			UINT8 i;
-
 			P_SetTarget(&target->target, source);
-
-			for (i = 0; i < MAXPLAYERS; i++)
+			//source->player->numboxes++;
+			if (cv_itemrespawn.value && (netgame || multiplayer))
 			{
-				if (&players[i] == source->player)
-				{
-					continue;
-				}
-
-				if (playeringame[i] && !players[i].spectator && players[i].lives != 0)
-				{
-					break;
-				}
-			}
-
-			if (i < MAXPLAYERS)
-			{
-				// Respawn items in multiplayer, don't respawn them when alone
-				target->fuse = 2*TICRATE + 2;
+				target->fuse = cv_itemrespawntime.value*TICRATE + 2; // Random box generation
 			}
 		}
 	}
