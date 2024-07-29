@@ -13195,12 +13195,6 @@ void A_ItemPop(mobj_t *actor)
 	actor->flags |= MF_NOCLIP;
 	P_SetThingPosition(actor);
 
-	// RF_DONTDRAW will flicker as the object's fuse gets
-	// closer to running out (see P_FuseThink)
-	actor->renderflags |= RF_DONTDRAW|RF_TRANS50;
-	actor->color = SKINCOLOR_GREY;
-	actor->colorized = true;
-
 	// item explosion
 	explode = mobjinfo[actor->info->damage].mass;
 	remains = P_SpawnMobj(actor->x, actor->y,
@@ -13245,7 +13239,7 @@ void A_ItemPop(mobj_t *actor)
 
 	if (actor->info->deathsound)
 		S_StartSound(remains, actor->info->deathsound);
-
+	
 	if (locvar1 == 1)
 		P_GivePlayerSpheres(actor->target->player, actor->extravalue1);
 	else if (locvar1 == 0)
@@ -13256,6 +13250,8 @@ void A_ItemPop(mobj_t *actor)
 	// Here at mapload in battle?
 	if ((gametyperules & GTR_BUMPERS) && (actor->flags2 & MF2_BOSSNOTRAP))
 		numgotboxes++;
+
+	P_RemoveMobj(actor);
 }
 
 void A_JawzChase(mobj_t *actor)
