@@ -11,27 +11,27 @@
 
 #ifdef CMAKECONFIG
 
-#define ASSET_HASH_MAIN_KART     "${SRB2_ASSET_main.pk3_HASH}"
-#define ASSET_HASH_GFX_PK3       "${SRB2_ASSET_gfx.pk3_HASH}"
-#define ASSET_HASH_TEXTURES_PK3  "${SRB2_ASSET_textures.pk3_HASH}"
-#define ASSET_HASH_CHARS_PK3     "${SRB2_ASSET_chars.pk3_HASH}"
-#define ASSET_HASH_MAPS_PK3      "${SRB2_ASSET_maps.pk3_HASH}"
+#define ASSET_HASH_MAIN_KART     ""
+#define ASSET_HASH_GFX_PK3       ""
+#define ASSET_HASH_TEXTURES_PK3  ""
+#define ASSET_HASH_CHARS_PK3     ""
+#define ASSET_HASH_MAPS_PK3      ""
 #ifdef USE_PATCH_FILE
-#define ASSET_HASH_PATCH_PK3     "${SRB2_ASSET_patch.pk3_HASH}"
+#define ASSET_HASH_PATCH_PK3     ""
 #endif
 
-#define SRB2_COMP_REVISION       "${SRB2_COMP_REVISION}"
-#define SRB2_COMP_BRANCH         "${SRB2_COMP_BRANCH}"
+#define SRB2_COMP_REVISION       "209e81c9b"
+#define SRB2_COMP_BRANCH         "v2dev3"
 // This is done with configure_file instead of defines in order to avoid
 // recompiling the whole target whenever the working directory state changes
-#cmakedefine SRB2_COMP_UNCOMMITTED
+#define SRB2_COMP_UNCOMMITTED
 #ifdef SRB2_COMP_UNCOMMITTED
 #define COMPVERSION_UNCOMMITTED
 #endif
 
-#define SRB2_COMP_LASTCOMMIT         "${SRB2_COMP_LASTCOMMIT}"
+#define SRB2_COMP_LASTCOMMIT         "Add support to cmake for uncommited changes text and clean up git utils"
 
-#define CMAKE_ASSETS_DIR         "${CMAKE_SOURCE_DIR}/assets"
+#define CMAKE_ASSETS_DIR         "/home/maple/build/blankart/assets"
 
 #else
 

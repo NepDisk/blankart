@@ -613,7 +613,7 @@ UINT32 quickncasehash (const char *p, size_t n)
 #define PUNCTUATION "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 
 // Compile date and time and revision.
-extern const char *compdate, *comptime, *comprevision, *compbranch;
+extern const char *compdate, *comptime, *comprevision, *compbranch, *complast;
 extern int compuncommitted;
 
 // Disabled code and code under testing

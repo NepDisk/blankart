@@ -2013,13 +2013,15 @@ void F_TitleScreenDrawer(void)
 					addtext(V_ALLOWLOWERCASE|V_REDMAP, "Netgame host for testers");
 					addtext(V_ALLOWLOWERCASE|V_TRANSLUCENT, va("%s", compdate));
 #elif defined(DEVELOP)
-					addtext(V_ALLOWLOWERCASE|V_TRANSLUCENT, comprevision);
-					addtext(V_ALLOWLOWERCASE|V_TRANSLUCENT, compbranch);
+					addtext(V_ALLOWLOWERCASE|V_GREENMAP|V_TRANSLUCENT, comprevision);
+					addtext(V_ALLOWLOWERCASE|V_YELLOWMAP|V_TRANSLUCENT, compbranch);
+					addtext(V_ALLOWLOWERCASE|V_ORANGEMAP|V_TRANSLUCENT, va("%s", complast));
+					
 #else // Regular build
 					addtext(V_ALLOWLOWERCASE|V_TRANSLUCENT, va("%s", VERSIONSTRING));
 #endif
 					if (compuncommitted)
-						addtext(V_REDMAP|V_STRINGDANCE, "! UNCOMMITTED CHANGES !");
+						addtext(V_REDMAP|V_STRINGDANCE|V_TRANSLUCENT, "! UNCOMMITTED CHANGES !");
 				}
 #undef addtext
 			}
