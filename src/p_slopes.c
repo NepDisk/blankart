@@ -1069,46 +1069,42 @@ void P_ButteredSlope(mobj_t *mo)
 {
 	fixed_t thrust;
 
+	if (!mo->standingslope)
+		return;
+
+	if (mo->standingslope->flags & SL_NOPHYSICS)
+		return; // No physics, no butter.
+
 	if (mo->flags & (MF_NOCLIPHEIGHT|MF_NOGRAVITY))
 		return; // don't slide down slopes if you can't touch them or you're not affected by gravity
 
-	if (P_CanApplySlopePhysics(mo, mo->standingslope) == false)
-		return; // No physics, no butter.
+	if (mo->player) {
+		if (abs(mo->standingslope->zdelta) < FRACUNIT/4)
+			return; // Don't slide on non-steep slopes unless spinning
 
-	if (mo->player != NULL)
-	{
-		if (abs(mo->standingslope->zdelta) < FRACUNIT/21)
-		{
-			// Don't slide on non-steep slopes.
-			// Changed in Ring Racers to only not apply physics on very slight slopes.
-			// (I think about 4 degree angles.)
-			return;
-		}
-
-		if (abs(mo->standingslope->zdelta) < FRACUNIT/2
-			&& !(mo->player->rmomx || mo->player->rmomy))
-		{
-			// Allow the player to stand still on slopes below a certain steepness.
-			// 45 degree angle steep, to be exact.
-			return; 
-		}
+		if (abs(mo->standingslope->zdelta) < FRACUNIT/2 && !(mo->player->rmomx || mo->player->rmomy))
+			return; // Allow the player to stand still on slopes below a certain steepness
 	}
 
-	thrust = FINESINE(mo->standingslope->zangle>>ANGLETOFINESHIFT) * 5 / 4 * (mo->eflags & MFE_VERTICALFLIP ? 1 : -1);
+	thrust = FINESINE(mo->standingslope->zangle>>ANGLETOFINESHIFT) * 15 / 16 * (mo->eflags & MFE_VERTICALFLIP ? 1 : -1);
 
 	if (mo->player) {
-		fixed_t mult = FRACUNIT;
+		fixed_t mult = 0;
 		if (mo->momx || mo->momy) {
 			angle_t angle = R_PointToAngle2(0, 0, mo->momx, mo->momy) - mo->standingslope->xydirection;
 
 			if (P_MobjFlip(mo) * mo->standingslope->zdelta < 0)
 				angle ^= ANGLE_180;
 
-			mult = FRACUNIT + (FRACUNIT + FINECOSINE(angle>>ANGLETOFINESHIFT))*4/3;
+			mult = FINECOSINE(angle >> ANGLETOFINESHIFT);
 		}
 
-		thrust = FixedMul(thrust, mult);
+		thrust = FixedMul(thrust, FRACUNIT*2/3 + mult/8);
 	}
+
+	if (mo->momx || mo->momy) // Slightly increase thrust based on the object's speed
+		thrust = FixedMul(thrust, FRACUNIT+P_AproxDistance(mo->momx, mo->momy)/16);
+	// This makes it harder to zigzag up steep slopes, as well as allows greater top speed when rolling down
 
 	// Let's get the gravity strength for the object...
 	thrust = FixedMul(thrust, abs(P_GetMobjGravity(mo)));
