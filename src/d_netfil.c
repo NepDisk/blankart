@@ -1328,7 +1328,7 @@ void PT_FileFragment(void)
 	filename = va("%s", file->filename);
 	nameonly(filename);
 
-	if (!strcmp(filename, "main.kart")
+	if (!strcmp(filename, "main.pk3")
 		|| !strcmp(filename, "gfx.pk3")
 		|| !strcmp(filename, "textures.pk3")
 		|| !strcmp(filename, "chars.pk3")
