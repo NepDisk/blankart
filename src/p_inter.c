@@ -1033,34 +1033,27 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 	{
 		if (target->flags & MF_MONITOR || target->type == MT_RANDOMITEM)
 		{
+			UINT8 i;
+
 			P_SetTarget(&target->target, source);
 
-			if (gametyperules & GTR_BUMPERS)
+			for (i = 0; i < MAXPLAYERS; i++)
 			{
-				target->fuse = 2;
+				if (&players[i] == source->player)
+				{
+					continue;
+				}
+
+				if (playeringame[i] && !players[i].spectator && players[i].lives != 0)
+				{
+					break;
+				}
 			}
-			else
+
+			if (i < MAXPLAYERS)
 			{
-				UINT8 i;
-
-				for (i = 0; i < MAXPLAYERS; i++)
-				{
-					if (&players[i] == source->player)
-					{
-						continue;
-					}
-
-					if (playeringame[i] && !players[i].spectator && players[i].lives != 0)
-					{
-						break;
-					}
-				}
-
-				if (i < MAXPLAYERS)
-				{
-					// Respawn items in multiplayer, don't respawn them when alone
-					target->fuse = 2*TICRATE + 2;
-				}
+				// Respawn items in multiplayer, don't respawn them when alone
+				target->fuse = 2*TICRATE + 2;
 			}
 		}
 	}

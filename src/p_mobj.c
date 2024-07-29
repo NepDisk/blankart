@@ -9253,7 +9253,7 @@ static boolean P_FuseThink(mobj_t *mobj)
 		{
 			;
 		}
-		else if ((gametyperules & GTR_BUMPERS) && (mobj->state == &states[S_INVISIBLE]))
+		else if ((gametyperules & GTR_BUMPERS) && (mobj->threshold != 70))
 		{
 			break;
 		}
@@ -11064,6 +11064,7 @@ void P_RespawnBattleBoxes(void)
 	for (th = thlist[THINK_MOBJ].next; th != &thlist[THINK_MOBJ]; th = th->next)
 	{
 		mobj_t *box;
+		mobj_t *newmobj;
 
 		if (th->function.acp1 == (actionf_p1)P_RemoveThinkerDelayed)
 			continue;
@@ -11072,12 +11073,25 @@ void P_RespawnBattleBoxes(void)
 
 		if (box->type != MT_RANDOMITEM
 			|| (box->flags2 & MF2_DONTRESPAWN)
-			|| box->health > 0
-			|| box->fuse)
+			|| box->threshold != 68
+			|| box->fuse
+			|| ((tic_t)box->cvmem+1 >= leveltime))
 			continue; // only popped items
 
-		box->fuse = TICRATE; // flicker back in (A_ItemPop preps this effect)
-		P_SetMobjState(box, box->info->raisestate);
+		// Respawn from mapthing if you have one!
+		if (box->spawnpoint)
+		{
+			P_SpawnMapThing(box->spawnpoint);
+			newmobj = box->spawnpoint->mobj; // this is set to the new mobj in P_SpawnMapThing
+		}
+		else
+		{
+			newmobj = P_SpawnMobj(box->x, box->y, box->z, box->type);
+		}
+
+		// Transfer flags2 (strongbox, objectflip, bossnotrap)
+		newmobj->flags2 = box->flags2;
+		P_RemoveMobj(box); // make sure they disappear
 
 		if (numgotboxes > 0)
 			numgotboxes--; // you've restored a box, remove it from the count
