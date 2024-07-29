@@ -9054,11 +9054,6 @@ SINT8 K_Sliptiding(player_t *player)
 	return player->drift ? 0 : player->aizdriftstrat;
 }
 
-INT32 K_StairJankFlip(INT32 value)
-{
-	return P_AltFlip(value, 2);
-}
-
 // Ebraking visuals for mo
 // we use mo->hprev for the hold bubble. If another hprev exists for some reason, remove it.
 

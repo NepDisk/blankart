@@ -424,26 +424,6 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		P_InstaThrust(mo, mo->angle, speed);
 	}
 
-	// Bumpy floor
-	if (terrain->flags & TRF_STAIRJANK)
-	{
-		/* use a shorter sound if not two tics have passed
-		 * since the last step */
-		S_StartSound(mo, player->stairjank
-				>= 16 ?  sfx_s23b : sfx_s268);
-
-		if (player->stairjank == 0)
-		{
-			mobj_t *spark = P_SpawnMobjFromMobj(mo,
-					0, 0, 0, MT_JANKSPARK);
-			spark->fuse = 9;
-			spark->cusval = K_StairJankFlip(ANGLE_90);
-			P_SetTarget(&spark->target, mo);
-		}
-
-		player->stairjank = 17;
-	}
-
 	// (Offroad is handled elsewhere!)
 }
 
@@ -1095,10 +1075,6 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	else if (stricmp(param, "sneakerPanel") == 0)
 	{
 		K_FlagBoolean(&terrain->flags, TRF_SNEAKERPANEL, val);
-	}
-	else if (stricmp(param, "bumpy") == 0 || stricmp(param, "stairJank") == 0)
-	{
-		K_FlagBoolean(&terrain->flags, TRF_STAIRJANK, val);
 	}
 	else if (stricmp(param, "tripwire") == 0)
 	{

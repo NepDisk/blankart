@@ -365,8 +365,6 @@ static void P_NetArchivePlayers(void)
 
 		WRITEUINT8(save_p, players[i].kickstartaccel);
 
-		WRITEUINT8(save_p, players[i].stairjank);
-
 		// respawnvars_t
 		WRITEUINT8(save_p, players[i].respawn.state);
 		WRITEUINT32(save_p, K_GetWaypointHeapIndex(players[i].respawn.wp));
@@ -651,8 +649,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].typing_duration = READUINT8(save_p);
 
 		players[i].kickstartaccel = READUINT8(save_p);
-
-		players[i].stairjank = READUINT8(save_p);
 
 		// respawnvars_t
 		players[i].respawn.state = READUINT8(save_p);

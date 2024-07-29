@@ -984,11 +984,6 @@ void P_SlopeLaunch(mobj_t *mo)
 	//CONS_Printf("Launched off of slope.\n");
 	mo->standingslope = NULL;
 	mo->terrain = NULL;
-
-	if (mo->player)
-	{
-		mo->player->stairjank = 0; // fuck you
-	}
 }
 
 //

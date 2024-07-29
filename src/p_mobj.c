@@ -7398,21 +7398,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 	case MT_BRAKEDUST:
 		//mobj->renderflags ^= RF_DONTDRAW;
 		break;
-	case MT_JANKSPARK:
-		if (!mobj->target)
-		{
-			P_RemoveMobj(mobj);
-			return false;
-		}
-		if (mobj->fuse == 1 && mobj->target->player &&
-				mobj->target->player->stairjank >= 8)
-		{
-			mobj->fuse = 9;
-		}
-		P_MoveOrigin(mobj, mobj->target->x,
-				mobj->target->y, mobj->target->z);
-		mobj->angle = mobj->target->angle + mobj->cusval;
-		break;
 	case MT_PLAYERRETICULE:
 		if (!mobj->target || !mobj->target->health)
 		{

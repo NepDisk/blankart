@@ -1769,11 +1769,7 @@ static void P_3dMovement(player_t *player)
 	// Get the old momentum; this will be needed at the end of the function! -SH
 	oldMagnitude = R_PointToDist2(player->mo->momx - player->cmomx, player->mo->momy - player->cmomy, 0, 0);
 
-	if (player->stairjank > 8 && leveltime & 3)
-	{
-		movepushangle = K_MomentumAngle(player->mo);
-	}
-	else if (player->drift != 0)
+	if (player->drift != 0)
 	{
 		movepushangle = player->mo->angle - (ANGLE_45/5) * player->drift;
 	}
@@ -4458,11 +4454,6 @@ void P_PlayerThink(player_t *player)
 	{
 		player->typing_timer = 0;
 		player->typing_duration = 0;
-	}
-
-	if (player->stairjank > 0)
-	{
-		player->stairjank--;
 	}
 
 	K_KartPlayerThink(player, cmd); // SRB2kart
