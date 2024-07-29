@@ -422,8 +422,8 @@ void F_WipeStageTitle(void)
 	// draw level title
 	if ((WipeStageTitle) && G_IsTitleCardAvailable())
 	{
-		ST_runTitleCard();
-		ST_drawTitleCard();
+		//ST_runTitleCard();
+		//ST_drawTitleCard();
 	}
 }
 

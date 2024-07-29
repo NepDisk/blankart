@@ -369,7 +369,7 @@ static void P_ClearSingleMapHeaderInfo(INT16 i)
 	mapheaderinfo[num]->ltzzpatch[0] = '\0';
 	mapheaderinfo[num]->ltzztext[0] = '\0';
 	mapheaderinfo[num]->ltactdiamond[0] = '\0';
-	mapheaderinfo[num]->actnum = 0;
+	mapheaderinfo[num]->actnum[0] = '\0';
 	mapheaderinfo[num]->typeoflevel = 0;
 	mapheaderinfo[num]->nextlevel = (INT16)(i + 1);
 	mapheaderinfo[num]->marathonnext = 0;
@@ -3637,7 +3637,7 @@ lumpnum_t lastloadedmaplumpnum; // for comparative savegame
 //
 // Some player initialization for map start.
 //
-static void P_InitLevelSettings(void)
+static void P_InitLevelSettings(boolean reloadinggamestate)
 {
 	INT32 i;
 	UINT8 p = 0;
@@ -3674,7 +3674,9 @@ static void P_InitLevelSettings(void)
 	// circuit, race and competition stuff
 	circuitmap = false;
 	numstarposts = 0;
-	ssspheres = timeinmap = 0;
+	ssspheres = 0;
+	if (!reloadinggamestate)
+		timeinmap = 0;
 
 	// special stage
 	stagefailed = true; // assume failed unless proven otherwise - P_GiveEmerald or emerald touchspecial
@@ -3778,7 +3780,7 @@ void P_RespawnThings(void)
 		P_RemoveMobj((mobj_t *)think);
 	}
 
-	P_InitLevelSettings();
+	P_InitLevelSettings(false);
 
 	memset(localaiming, 0, sizeof(localaiming));
 
@@ -4119,7 +4121,7 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	if (cv_runscripts.value && mapheaderinfo[gamemap-1]->scriptname[0] != '#')
 		P_RunLevelScript(mapheaderinfo[gamemap-1]->scriptname);
 
-	P_InitLevelSettings();
+	P_InitLevelSettings(reloadinggamestate);
 
 	for (i = 0; i <= r_splitscreen; i++)
 		postimgtype[i] = postimg_none;
@@ -4252,18 +4254,26 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 			// Don't do this during titlemap, because the menu code handles music by itself.
 			S_Start();
 		}
+	}
 
-		levelfadecol = (encoremode ? 0 : 31);
+	levelfadecol = (encoremode && !ranspecialwipe ? 122 : 120);
 
-		if (rendermode != render_none)
-		{
-			F_WipeStartScreen();
+	// Let's fade to white here
+	// But only if we didn't do the encore startup wipe
+	if (!ranspecialwipe && !demo.rewinding && !reloadinggamestate)
+	{
+			if(rendermode != render_none)
+			{
+				F_WipeStartScreen();
+				V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, levelfadecol);
 
-			V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, levelfadecol);
-			F_WipeEndScreen();
-		}
-
-		F_RunWipe(wipedefs[wipe_level_toblack], false, ((levelfadecol == 0) ? "FADEMAP1" : "FADEMAP0"), false, false);
+				F_WipeEndScreen();
+				F_RunWipe(wipedefs[(encoremode ? wipe_level_final : wipe_level_toblack)], false,  "FADEMAP0", false, false);
+			}
+			else //dedicated servers
+			{
+				F_RunWipe(wipedefs[(encoremode ? wipe_level_final : wipe_level_toblack)], false, "FADEMAP0", false, false);
+			}
 	}
 	/*if (!titlemapinaction)
 		wipegamestate = GS_LEVEL;*/

@@ -236,10 +236,10 @@ static void Y_CalculateMatchData(UINT8 rankingsmode, void (*comparison)(INT32))
 		}
 		else if (mapheaderinfo[prevmap]->levelflags & LF_NOZONE)
 		{
-			if (mapheaderinfo[prevmap]->actnum > 0)
+			if (mapheaderinfo[prevmap]->actnum[0])
 				snprintf(data.levelstring,
 					sizeof data.levelstring,
-					"* %s %d *",
+					"* %s %s *",
 					mapheaderinfo[prevmap]->lvlttl, mapheaderinfo[prevmap]->actnum);
 			else
 				snprintf(data.levelstring,
@@ -250,10 +250,10 @@ static void Y_CalculateMatchData(UINT8 rankingsmode, void (*comparison)(INT32))
 		else
 		{
 			const char *zonttl = (mapheaderinfo[prevmap]->zonttl[0] ? mapheaderinfo[prevmap]->zonttl : "ZONE");
-			if (mapheaderinfo[prevmap]->actnum > 0)
+			if (mapheaderinfo[prevmap]->actnum[0])
 				snprintf(data.levelstring,
 					sizeof data.levelstring,
-					"* %s %s %d *",
+					"* %s %s %s *",
 					mapheaderinfo[prevmap]->lvlttl, zonttl, mapheaderinfo[prevmap]->actnum);
 			else
 				snprintf(data.levelstring,
@@ -1637,10 +1637,10 @@ void Y_StartVote(void)
 		// set up the levelstring
 		if (mapheaderinfo[votelevels[i][0]]->levelflags & LF_NOZONE || !mapheaderinfo[votelevels[i][0]]->zonttl[0])
 		{
-			if (mapheaderinfo[votelevels[i][0]]->actnum > 0)
+			if (mapheaderinfo[votelevels[i][0]]->actnum[0])
 				snprintf(levelinfo[i].str,
 					sizeof levelinfo[i].str,
-					"%s %d",
+					"%s %s",
 					mapheaderinfo[votelevels[i][0]]->lvlttl, mapheaderinfo[votelevels[i][0]]->actnum);
 			else
 				snprintf(levelinfo[i].str,
@@ -1650,10 +1650,10 @@ void Y_StartVote(void)
 		}
 		else
 		{
-			if (mapheaderinfo[votelevels[i][0]]->actnum > 0)
+			if (mapheaderinfo[votelevels[i][0]]->actnum[0])
 				snprintf(levelinfo[i].str,
 					sizeof levelinfo[i].str,
-					"%s %s %d",
+					"%s %s %s",
 					mapheaderinfo[votelevels[i][0]]->lvlttl, mapheaderinfo[votelevels[i][0]]->zonttl, mapheaderinfo[votelevels[i][0]]->actnum);
 			else
 				snprintf(levelinfo[i].str,

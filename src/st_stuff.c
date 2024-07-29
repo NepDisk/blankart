@@ -55,6 +55,11 @@
 
 #include "r_fps.h"
 
+// variable to stop mayonaka static from flickering
+consvar_t cv_lessflicker = CVAR_INIT ("lessflicker", "Off", CV_SAVE, CV_OnOff, NULL);
+
+consvar_t cv_stagetitle = CVAR_INIT ("maptitle", "On", CV_SAVE, CV_OnOff, NULL);
+
 UINT16 objectsdrawn = 0;
 
 //
@@ -757,209 +762,83 @@ void ST_runTitleCard(void)
 void ST_drawTitleCard(void)
 {
 	char *lvlttl = mapheaderinfo[gamemap-1]->lvlttl;
+	char *subttl = mapheaderinfo[gamemap-1]->subttl;
 	char *zonttl = mapheaderinfo[gamemap-1]->zonttl; // SRB2kart
-	UINT8 actnum = mapheaderinfo[gamemap-1]->actnum;
-	boolean gp = (grandprixinfo.gp && grandprixinfo.roundnum);
-
-	INT32 acttimer;
-	fixed_t actscale;
-	angle_t fakeangle;
-
-	INT32 pad = ((vid.width/vid.dupx) - BASEVIDWIDTH)/2;
-	INT32 bx = bannerx;	// We need to make a copy of that otherwise pausing will cause problems.
-
-	if (!G_IsTitleCardAvailable())
+	char *actnum = mapheaderinfo[gamemap-1]->actnum;
+	INT32 lvlttlxpos;
+	INT32 ttlnumxpos;
+	INT32 zonexpos;
+	INT32 dupcalc = (vid.width/vid.dupx);
+	UINT8 gtc = G_GetGametypeColor(gametype);
+	INT32 sub = 0;
+	INT32 bary = (splitscreen)
+		? BASEVIDHEIGHT/2
+		: 163;
+	INT32 lvlw;
+	
+	if (!cv_stagetitle.value)
 		return;
-
+	
 	if (!LUA_HudEnabled(hud_stagetitle))
 		goto luahook;
 
-	if (lt_ticker >= (lt_endtime + TICRATE))
+	if (timeinmap > 113)
 		goto luahook;
 
-	if ((lt_ticker-lt_lasttic) > 1)
-		lt_ticker = lt_lasttic+1;
+	lvlw = V_LevelNameWidth(lvlttl);
 
-	// Avoid HOMs while drawing the start of the titlecard
-	if (lt_ticker < TTANIMSTART)
-		V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, levelfadecol);
+	if (actnum[0])
+		lvlttlxpos = ((BASEVIDWIDTH/2) - (lvlw/2)) - V_LevelNameWidth(actnum);
+	else
+		lvlttlxpos = ((BASEVIDWIDTH/2) - (lvlw/2));
 
-	if (bossinfo.boss == true)
-	{
-		// WARNING!
-		// https://twitter.com/matthewseiji/status/1485003284196716544
-		// the above tweet is directly responsible for the existence of bosses in this game at all
-		{
-#define LOTIME 5
-#define HITIME 15
-			patch_t *localwarn = (encoremode ? twarn2 : twarn);
-			INT32 transp = (lt_ticker+HITIME) % (LOTIME+HITIME);
-			boolean encorehack = (encoremode && lt_ticker <= PRELEVELTIME+4);
-
-			if ((localwarn->width > 0) && (lt_ticker + (HITIME-transp) <= lt_endtime))
-			{
-				if (transp > HITIME-1)
-				{
-					transp = HITIME-1;
-				}
-
-				transp = (((10*transp)/HITIME)<<V_ALPHASHIFT) | (encorehack ? V_SUBTRACT : V_ADD);
-
-				while (bx > -pad)
-					bx -= localwarn->width;
-				while (bx < BASEVIDWIDTH+pad)
-				{
-					V_DrawFixedPatch(bx*FRACUNIT, 55*FRACUNIT, FRACUNIT, V_SNAPTOLEFT|transp, localwarn, NULL);
-					bx += localwarn->width;
-				}
-			}
-#undef LOTIME
-#undef HITIME
-		}
-
-		// Everything else...
-		if (bossinfo.enemyname)
-		{
-			bx = V_TitleCardStringWidth(bossinfo.enemyname);
-
-			// Name.
-			V_DrawTitleCardString((BASEVIDWIDTH - bx)/2, 75, bossinfo.enemyname, 0, true, bossinfo.titleshow, lt_exitticker);
-
-			// Under-bar.
-			{
-				angle_t fakeang = 0;
-				fixed_t scalex = FRACUNIT;
-
-				// Handle scaling.
-				if (lt_ticker <= 3)
-				{
-					fakeang = (lt_ticker*ANGLE_45)/2;
-					scalex = FINESINE(fakeang>>ANGLETOFINESHIFT);
-				}
-				else if (lt_exitticker > 1)
-				{
-					if (lt_exitticker <= 4)
-					{
-						fakeang = ((lt_exitticker-1)*ANGLE_45)/2;
-						scalex = FINECOSINE(fakeang>>ANGLETOFINESHIFT);
-					}
-					else
-					{
-						scalex = 0;
-					}
-				}
-				// Handle subtitle.
-				else if (bossinfo.subtitle && lt_ticker >= TICRATE/2)
-				{
-					INT32 by = 75+32;
-					if (lt_ticker == TICRATE/2 || lt_exitticker == 1)
-					{
-						;
-					}
-					else if (lt_ticker == (TICRATE/2)+1 || lt_ticker == lt_endtime)
-					{
-						by += 3;
-					}
-					else
-					{
-						by += 5;
-					}
-
-					V_DrawRightAlignedThinString((BASEVIDWIDTH+bx)/2, by, V_6WIDTHSPACE, bossinfo.subtitle);
-				}
-
-				// Now draw the under-bar itself.
-				if (scalex > 0)
-				{
-					bx = FixedMul(bx, scalex);
-					V_DrawFill((BASEVIDWIDTH-(bx+2))/2, 75+32, bx+2, 3, 31);
-					V_DrawFill((BASEVIDWIDTH-(bx))/2, 75+32+1, bx, 1, 0);
-				}
-			}
-		}
-		lt_lasttic = lt_ticker;
-		goto luahook;
-	}
-
-	// Background zig-zags
-	V_DrawFixedPatch((chev1x)*FRACUNIT, (chev1y)*FRACUNIT, FRACUNIT, chevtflag, tcchev1, NULL);
-	V_DrawFixedPatch((chev2x)*FRACUNIT, (chev2y)*FRACUNIT, FRACUNIT, chevtflag, tcchev2, NULL);
-
-
-	// Draw ROUND bar, scroll it downwards.
-	V_DrawFixedPatch(roundx*FRACUNIT, ((-32) + (lt_ticker%32))*FRACUNIT, FRACUNIT, V_SNAPTOTOP|V_SNAPTOLEFT, tcroundbar, NULL);
-	// Draw ROUND text
-	if (gp)
-		V_DrawFixedPatch((roundx+10)*FRACUNIT, roundy*FRACUNIT, FRACUNIT, V_SNAPTOTOP|V_SNAPTOLEFT, tcround, NULL);
-
-	// round num background
-	V_DrawFixedPatch(roundnumx*FRACUNIT, roundnumy*FRACUNIT, FRACUNIT, V_SNAPTOBOTTOM|V_SNAPTOLEFT, tccirclebg, NULL);
-
-	// Scrolling banner
-	if (tcbanner->width > 0)
-	{
-		while (bx > -pad)
-			bx -= tcbanner->width;
-		while (bx < BASEVIDWIDTH+pad)
-		{
-			V_DrawFixedPatch(bx*FRACUNIT, (bannery)*FRACUNIT, FRACUNIT, V_SNAPTOBOTTOM|V_SNAPTOLEFT, tcbanner, NULL);
-			bx += tcbanner->width;
-		}
-	}
-
-	// If possible, draw round number
-	if (gp && grandprixinfo.roundnum > 0 && grandprixinfo.roundnum < 11)	// Check boundaries JUST IN CASE.
-		V_DrawFixedPatch(roundnumx*FRACUNIT, roundnumy*FRACUNIT, FRACUNIT, V_SNAPTOBOTTOM|V_SNAPTOLEFT, tcroundnum[grandprixinfo.roundnum-1], NULL);
-
-	// Draw both halves of the egg
-	V_DrawFixedPatch(eggx1*FRACUNIT, eggy1*FRACUNIT, FRACUNIT, V_SNAPTOBOTTOM|V_SNAPTOLEFT, tccircletop, NULL);
-	V_DrawFixedPatch(eggx2*FRACUNIT, eggy2*FRACUNIT, FRACUNIT, V_SNAPTOBOTTOM|V_SNAPTOLEFT, tccirclebottom, NULL);
-
-	// Now the level name.
-	V_DrawTitleCardString((actnum) ? 265 : 280, 60, lvlttl, V_SNAPTORIGHT, false, lt_ticker, TTANIMENDTHRESHOLD);
-
+	zonexpos = ttlnumxpos = lvlttlxpos + lvlw;
 	if (!(mapheaderinfo[gamemap-1]->levelflags & LF_NOZONE))
-		V_DrawTitleCardString((actnum) ? 265 : 280, 60+32, strlen(zonttl) ? zonttl : "ZONE", V_SNAPTORIGHT, false, lt_ticker - strlen(lvlttl), TTANIMENDTHRESHOLD);
-
-	// the act has a similar graphic animation, but we'll handle it here since it's only like 2 graphics lmfao.
-	if (actnum && actnum < 10)
 	{
-
-		// compute delay before the act should appear.
-		acttimer = lt_ticker - strlen(lvlttl);
-		if (!(mapheaderinfo[gamemap-1]->levelflags & LF_NOZONE))
-			acttimer -= strlen((strlen(zonttl)) ? (zonttl) : ("ZONE"));
-
-		actscale = 0;
-		fakeangle = 0;
-
-		if (acttimer >= 0)
-		{
-
-			if (acttimer < TTANIMENDTHRESHOLD)	// spin in
-			{
-				fakeangle = min(360 + 90, acttimer*41) * ANG1;
-				actscale = FINESINE(fakeangle>>ANGLETOFINESHIFT);
-			}
-			else								// spin out
-			{
-				// Make letters disappear...
-				acttimer -= TTANIMENDTHRESHOLD;
-
-				fakeangle = max(0, (360+90) - acttimer*41)*ANG1;
-				actscale = FINESINE(fakeangle>>ANGLETOFINESHIFT);
-			}
-
-			if (actscale)
-			{
-				// draw the top:
-				V_DrawStretchyFixedPatch(286*FRACUNIT, 76*FRACUNIT, abs(actscale), FRACUNIT, V_SNAPTORIGHT|(actscale < 0 ? V_FLIP : 0), tcact, NULL);
-				V_DrawStretchyFixedPatch(286*FRACUNIT, 123*FRACUNIT, abs(actscale), FRACUNIT, V_SNAPTORIGHT|(actscale < 0 ? V_FLIP : 0), tcactnum[actnum], NULL);
-			}
-		}
+		if (zonttl[0])
+			zonexpos -= V_LevelNameWidth(zonttl); // SRB2kart
+		else
+			zonexpos -= V_LevelNameWidth(M_GetText("Zone"));
 	}
 
-	lt_lasttic = lt_ticker;
+	if (lvlttlxpos < 0)
+		lvlttlxpos = 0;
+
+	if (timeinmap > 105)
+	{
+		INT32 count = (113 - (INT32)(timeinmap));
+		sub = dupcalc;
+		while (count-- > 0)
+			sub >>= 1;
+		sub = -sub;
+	}
+
+	{
+		dupcalc = (dupcalc - BASEVIDWIDTH)>>1;
+		V_DrawFill(sub - dupcalc, bary+9, ttlnumxpos+dupcalc + 1, 2, 31|V_SNAPTOBOTTOM);
+		V_DrawDiag(sub + ttlnumxpos + 1, bary, 11, 31|V_SNAPTOBOTTOM);
+		V_DrawFill(sub - dupcalc, bary, ttlnumxpos+dupcalc, 10, gtc|V_SNAPTOBOTTOM);
+		V_DrawDiag(sub + ttlnumxpos, bary, 10, gtc|V_SNAPTOBOTTOM);
+
+		if (subttl[0])
+			V_DrawRightAlignedString(sub + zonexpos - 8, bary+1, V_ALLOWLOWERCASE|V_SNAPTOBOTTOM, subttl);
+		//else
+			//V_DrawRightAlignedString(sub + zonexpos - 8, bary+1, V_ALLOWLOWERCASE, va("%s Mode", gametype_cons_t[gametype].strvalue));
+	}
+
+	ttlnumxpos += sub;
+	lvlttlxpos += sub;
+	zonexpos += sub;
+
+	V_DrawLevelTitle(lvlttlxpos, bary-18, V_SNAPTOBOTTOM, lvlttl);
+
+	if (strlen(zonttl) > 0)
+		V_DrawLevelTitle(zonexpos, bary+6, V_SNAPTOBOTTOM, zonttl);
+	else if (!(mapheaderinfo[gamemap-1]->levelflags & LF_NOZONE))
+		V_DrawLevelTitle(zonexpos, bary+6, V_SNAPTOBOTTOM, M_GetText("Zone"));
+
+	if (actnum[0])
+		V_DrawLevelTitle(ttlnumxpos+12, bary+6, V_SNAPTOBOTTOM, actnum);
 
 luahook:
 	if (renderisnewtic)
@@ -1119,7 +998,11 @@ void ST_DrawDemoTitleEntry(void)
 // MayonakaStatic: draw Midnight Channel's TV-like borders
 static void ST_MayonakaStatic(void)
 {
-	INT32 flag = (leveltime%2) ? V_90TRANS : V_70TRANS;
+	INT32 flag;
+	if (cv_lessflicker.value)
+		flag = V_70TRANS;
+	else
+		flag = (leveltime%2) ? V_90TRANS : V_70TRANS;
 
 	V_DrawFixedPatch(0, 0, FRACUNIT, V_SNAPTOTOP|V_SNAPTOLEFT|flag, hud_tv1, NULL);
 	V_DrawFixedPatch(320<<FRACBITS, 0, FRACUNIT, V_SNAPTOTOP|V_SNAPTORIGHT|V_FLIP|flag, hud_tv1, NULL);
@@ -1204,9 +1087,14 @@ void ST_Drawer(void)
 			ST_MayonakaStatic();
 	}
 
-	// Draw a fade on level opening
-	if (timeinmap < 16)
-		V_DrawCustomFadeScreen(((levelfadecol == 0) ? "FADEMAP1" : "FADEMAP0"), 31-(timeinmap*2)); // Then gradually fade out from there
+	// Draw a white fade on level opening
+	if (timeinmap < 15)
+	{
+		if (timeinmap <= 5)
+			V_DrawFill(0,0,BASEVIDWIDTH,BASEVIDHEIGHT,120); // Pure white on first few frames, to hide SRB2's awful level load artifacts
+		else
+			V_DrawFadeScreen(120, 15-timeinmap); // Then gradually fade out from there
+	}
 
 	if (stagetitle)
 		ST_drawTitleCard();

@@ -342,7 +342,7 @@ typedef struct
 	char lvlttl[22];       ///< Level name without "Zone". (21 character limit instead of 32, 21 characters can display on screen max anyway)
 	char subttl[33];       ///< Subtitle for level
 	char zonttl[22];       ///< "ZONE" replacement name
-	UINT8 actnum;          ///< Act number or 0 for none.
+	char actnum[3];        ///< SRB2Kart: Now a 2 character long string.
 	UINT32 typeoflevel;    ///< Combination of typeoflevel flags.
 	INT16 nextlevel;       ///< Map number of next level, or 1100-1102 to end.
 	INT16 marathonnext;    ///< See nextlevel, but for Marathon mode. Necessary to support hub worlds ala SUGOI.

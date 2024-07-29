@@ -267,6 +267,10 @@ void K_RegisterKartStuff(void)
 	CV_RegisterVar(&cv_kartdebugnodes);
 	CV_RegisterVar(&cv_kartdebugcolorize);
 	CV_RegisterVar(&cv_kartdebugdirector);
+	
+	CV_RegisterVar(&cv_stagetitle);	
+	
+	CV_RegisterVar(&cv_lessflicker);
 }
 
 //}
@@ -9347,7 +9351,8 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 			|| player->itemamount
 			|| player->itemroulette
 			|| player->rocketsneakertimer
-			|| player->eggmanexplode))
+			|| player->eggmanexplode
+			|| (player->growshrinktimer > 0)))
 			player->pflags |= PF_USERINGS;
 		else
 			player->pflags &= ~PF_USERINGS;
