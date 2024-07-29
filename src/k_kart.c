@@ -3076,7 +3076,7 @@ static void K_GetKartBoostPower(player_t *player)
 
 	if (player->growshrinktimer > 0) // Grow
 	{
-		ADDBOOST(0, 0, sliptidehandling/2); // + 0% top speed, + 0% acceleration, +25% handling
+		ADDBOOST(FRACUNIT/5, 0, sliptidehandling/2); // + 20% top speed, + 0% acceleration, +25% handling
 	}
 
 	if (player->flamedash) // Flame Shield dash
@@ -3181,28 +3181,6 @@ static void K_GetKartBoostPower(player_t *player)
 	player->numboosts = numboosts;
 }
 
-fixed_t K_GrowShrinkSpeedMul(player_t *player)
-{
-	fixed_t scaleDiff = player->mo->scale - mapobjectscale;
-	fixed_t playerScale = FixedDiv(player->mo->scale, mapobjectscale);
-	fixed_t speedMul = FRACUNIT;
-
-	if (scaleDiff > 0)
-	{
-		// Grown
-		// Change x2 speed into x1.5
-		speedMul = FixedDiv(FixedMul(playerScale, GROW_PHYSICS_SCALE), GROW_SCALE);
-	}
-	else if (scaleDiff < 0)
-	{
-		// Shrunk
-		// Change x0.5 speed into x0.75
-		speedMul = FixedDiv(FixedMul(playerScale, SHRINK_PHYSICS_SCALE), SHRINK_SCALE);
-	}
-
-	return speedMul;
-}
-
 // Returns kart speed from a stat. Boost power and scale are NOT taken into account, no player or object is necessary.
 fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed)
 {
@@ -3251,7 +3229,7 @@ fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberb
 		if (mobjValid == true)
 		{
 			// Scale with the player.
-			finalspeed = FixedMul(finalspeed, K_GrowShrinkSpeedMul(player));
+			finalspeed = FixedMul(finalspeed, player->mo->scale);
 		}
 
 		finalspeed = FixedMul(finalspeed, player->boostpower + player->speedboost);
@@ -3587,6 +3565,7 @@ static void K_RemoveGrowShrink(player_t *player)
 	}
 
 	player->growshrinktimer = 0;
+	player->growcancel = -1;
 
 	P_RestoreMusic(player);
 }
@@ -3940,7 +3919,7 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 		if (source->player->itemscale == ITEMSCALE_SHRINK)
 		{
 			// Nerf the base item speed a bit.
-			finalspeed = FixedMul(finalspeed, SHRINK_PHYSICS_SCALE);
+			finalspeed = FixedMul(finalspeed, SHRINK_SCALE);
 		}
 
 		if (source->player->speed > topspeed)
@@ -9312,11 +9291,11 @@ void K_SetItemOut(player_t *player)
 {
 	player->pflags |= PF_ITEMOUT;
 
-	if (player->mo->scale >= FixedMul(GROW_PHYSICS_SCALE, mapobjectscale))
+	if (player->mo->scale >= FixedMul(GROW_SCALE, mapobjectscale))
 	{
 		player->itemscale = ITEMSCALE_GROW;
 	}
-	else if (player->mo->scale <= FixedMul(SHRINK_PHYSICS_SCALE, mapobjectscale))
+	else if (player->mo->scale <= FixedMul(SHRINK_SCALE, mapobjectscale))
 	{
 		player->itemscale = ITEMSCALE_SHRINK;
 	}
@@ -9429,6 +9408,28 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							player->rocketsneakertimer = 1;
 						else
 							player->rocketsneakertimer -= 3*TICRATE;
+					}
+				}
+				// Grow Canceling
+				else if (player->growshrinktimer > 0)
+				{
+					if (player->growcancel >= 0)
+					{
+						if (cmd->buttons & BT_ATTACK)
+						{
+							player->growcancel++;
+							if (player->growcancel > 26)
+								K_RemoveGrowShrink(player);
+						}
+						else
+							player->growcancel = 0;
+					}
+					else
+					{
+						if ((cmd->buttons & BT_ATTACK) || (player->pflags & PF_ATTACKDOWN))
+							player->growcancel = -1;
+						else
+							player->growcancel = 0;
 					}
 				}
 				else if (player->itemamount == 0)
@@ -9999,6 +10000,9 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 
 		if (spbplace == -1 || player->position != spbplace)
 			player->pflags &= ~PF_RINGLOCK; // reset ring lock
+			
+		if (player->growshrinktimer <= 0)
+			player->growcancel = -1;
 
 		if (player->itemtype == KITEM_SPB
 			|| player->itemtype == KITEM_SHRINK

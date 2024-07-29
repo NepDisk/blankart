@@ -492,6 +492,7 @@ typedef struct player_s
 	UINT8 floorboost;		// (0 to 3) - Prevents Sneaker sounds for a brief duration when triggered by a floor panel
 
 	INT16 growshrinktimer;		// > 0 = Big, < 0 = small
+	INT16 growcancel;			// Duration of grow canceling 
 	UINT16 rocketsneakertimer;	// Rocket Sneaker duration timer
 	UINT16 invincibilitytimer;	// Invincibility timer
 

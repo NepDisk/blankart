@@ -19,11 +19,8 @@ Make sure this matches the actual number of states
 */
 #define KART_NUMINVSPARKLESANIM 12
 
-#define GROW_SCALE (2*FRACUNIT)
-#define SHRINK_SCALE (FRACUNIT/2)
-
-#define GROW_PHYSICS_SCALE (3*FRACUNIT/2)
-#define SHRINK_PHYSICS_SCALE (3*FRACUNIT/4)
+#define GROW_SCALE ((3*FRACUNIT)/2)
+#define SHRINK_SCALE ((6*FRACUNIT)/8)
 
 player_t *K_GetItemBoxPlayer(mobj_t *mobj);
 angle_t K_ReflectAngle(angle_t angle, angle_t against, fixed_t maxspeed, fixed_t yourspeed);
@@ -119,7 +116,6 @@ boolean K_WaterRun(player_t *player);
 void K_ApplyTripWire(player_t *player, tripwirestate_t state);
 INT16 K_GetSpindashChargeTime(player_t *player);
 fixed_t K_GetSpindashChargeSpeed(player_t *player);
-fixed_t K_GrowShrinkSpeedMul(player_t *player);
 fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed);
 fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberbanding);
 fixed_t K_GetKartAccel(player_t *player);

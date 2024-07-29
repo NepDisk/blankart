@@ -833,10 +833,10 @@ void P_RestoreMusic(player_t *player)
 #define setbests(p) \
 	if (players[p].playerstate == PST_LIVE) \
 	{ \
-		if (players[p].invincibilitytimer > bestlocaltimer) \
-		{ wantedmus = 1; bestlocaltimer = players[p].invincibilitytimer; } \
-		else if (players[p].growshrinktimer > bestlocaltimer) \
-		{ wantedmus = 2; bestlocaltimer = players[p].growshrinktimer; } \
+		if (players[p].growshrinktimer > bestlocaltimer) \
+		{ wantedmus = 1; bestlocaltimer = players[p].growshrinktimer; } \
+		else if (players[p].invincibilitytimer > bestlocaltimer) \
+		{ wantedmus = 2; bestlocaltimer = players[p].invincibilitytimer; } \
 	}
 			setbests(localplayertable[0]);
 			setbests(localplayertable[1]);
@@ -850,21 +850,22 @@ void P_RestoreMusic(player_t *player)
 		{
 			if (player->playerstate == PST_LIVE)
 			{
-				if (player->invincibilitytimer > 1)
+				if (player->growshrinktimer > 1)
 					wantedmus = 1;
-				else if (player->growshrinktimer > 1)
+				else if (player->invincibilitytimer > 1)
 					wantedmus = 2;
+				
 			}
 		}
 
 		// Item - Grow
-		if (wantedmus == 2)
+		if (wantedmus == 1)
 		{
 			S_ChangeMusicInternal("kgrow", true);
 			S_SetRestoreMusicFadeInCvar(&cv_growmusicfade);
 		}
 		// Item - Invincibility
-		else if (wantedmus == 1)
+		else if (wantedmus == 2)
 		{
 			S_ChangeMusicInternal("kinvnc", true);
 			S_SetRestoreMusicFadeInCvar(&cv_invincmusicfade);

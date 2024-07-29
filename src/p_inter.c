@@ -139,7 +139,8 @@ boolean P_CanPickupItem(player_t *player, UINT8 weapon)
 			// Item-specific timer going off
 			if (player->stealingtimer
 				|| player->rocketsneakertimer
-				|| player->eggmanexplode)
+				|| player->eggmanexplode
+				|| (player->growshrinktimer > 0))
 				return false;
 
 			// Item slot already taken up

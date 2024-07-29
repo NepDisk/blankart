@@ -6081,6 +6081,17 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 					else
 						mobj->tracer->renderflags |= RF_DONTDRAW;
 				}
+				else if (mobj->target->player->growshrinktimer > 0)
+				{
+					P_SetMobjState(mobj, S_PLAYERARROW_BOX);
+					mobj->tracer->sprite = SPR_ITEM;
+					mobj->tracer->frame = FF_FULLBRIGHT|KITEM_GROW;
+
+					if (leveltime & 1)
+						mobj->tracer->renderflags &= ~RF_DONTDRAW;
+					else
+						mobj->tracer->renderflags |= RF_DONTDRAW;
+				}
 				else if (mobj->target->player->itemtype && mobj->target->player->itemamount > 0)
 				{
 					P_SetMobjState(mobj, S_PLAYERARROW_BOX);
