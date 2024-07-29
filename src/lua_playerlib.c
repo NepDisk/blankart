@@ -234,10 +234,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->wipeoutslow);
 	else if (fastcmp(field,"justbumped"))
 		lua_pushinteger(L, plr->justbumped);
-	else if (fastcmp(field,"tumbleBounces"))
-		lua_pushinteger(L, plr->tumbleBounces);
-	else if (fastcmp(field,"tumbleHeight"))
-		lua_pushinteger(L, plr->tumbleHeight);
 	else if (fastcmp(field,"justDI"))
 		lua_pushinteger(L, plr->justDI);
 	else if (fastcmp(field,"flipDI"))
@@ -596,10 +592,6 @@ static int player_set(lua_State *L)
 		plr->wipeoutslow = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"justbumped"))
 		plr->justbumped = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"tumbleBounces"))
-		plr->tumbleBounces = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"tumbleHeight"))
-		plr->tumbleHeight = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"justDI"))
 		plr->justDI = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"flipDI"))

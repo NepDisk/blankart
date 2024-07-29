@@ -453,7 +453,7 @@ UINT8 P_FindHighestLap(void)
 //
 boolean P_PlayerInPain(player_t *player)
 {
-	if (player->spinouttimer || (player->tumbleBounces > 0) || (player->pflags & PF_FAULT))
+	if (player->spinouttimer || (player->pflags & PF_FAULT))
 		return true;
 
 	return false;
@@ -2153,34 +2153,7 @@ void P_MovePlayer(player_t *player)
 		player->justDI = 0;
 	}
 
-	// Kart frames
-	if (player->tumbleBounces > 0)
-	{
-		fixed_t playerSpeed = P_AproxDistance(player->mo->momx, player->mo->momy); // maybe momz too?
-
-		const UINT8 minSpinSpeed = 4;
-		UINT8 spinSpeed = max(minSpinSpeed, min(8 + minSpinSpeed, (playerSpeed / player->mo->scale) * 2));
-
-		UINT8 rollSpeed = max(1, min(8, player->tumbleHeight / 10));
-
-		if (player->pflags & PF_TUMBLELASTBOUNCE)
-			spinSpeed = 2;
-
-		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
-		player->drawangle -= (ANGLE_11hh * spinSpeed);
-
-		player->mo->rollangle -= (ANGLE_11hh * rollSpeed);
-
-		if (player->pflags & PF_TUMBLELASTBOUNCE)
-		{
-			if (abs((signed)(player->mo->angle - player->drawangle)) < ANGLE_22h)
-				player->drawangle = player->mo->angle;
-
-			if (abs((signed)player->mo->rollangle) < ANGLE_22h)
-				player->mo->rollangle = 0;
-		}
-	}
-	else if (player->carry == CR_SLIDING)
+	if (player->carry == CR_SLIDING)
 	{
 		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
 		player->drawangle -= ANGLE_22h;

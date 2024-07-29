@@ -5710,9 +5710,6 @@ const char *const PLAYERFLAG_LIST[] = {
 	"AIRFAILSAFE", // Whenever or not try the air boost
 	"TRICKDELAY", // Prevent tricks until control stick is neutral
 
-	"TUMBLELASTBOUNCE", // One more time for the funny
-	"TUMBLESOUND", // Don't play more than once
-
 	"HITFINISHLINE", // Already hit the finish line this tic
 	"WRONGWAY", // Moving the wrong way with respect to waypoints?
 
@@ -6353,7 +6350,6 @@ struct int_const_s const INT_CONST[] = {
 	{"DMG_NORMAL",DMG_NORMAL},
 	{"DMG_WIPEOUT",DMG_WIPEOUT},
 	{"DMG_EXPLODE",DMG_EXPLODE},
-	{"DMG_TUMBLE",DMG_TUMBLE},
 	{"DMG_STING",DMG_STING},
 	{"DMG_KARMA",DMG_KARMA},
 	//// Death types

@@ -417,7 +417,6 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 			P_SetTarget(&spring->target, object);
 		}
 
-		K_TumbleInterrupt(object->player);
 		P_ResetPlayer(object->player);
 
 		object->player->springstars = max(vertispeed, horizspeed) / FRACUNIT / 2;
@@ -452,18 +451,6 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 				//CONS_Printf("Got boost: %d%\n", mo->player->trickboostpower*100 / FRACUNIT);
 				object->player->trickpanel = 1;
 				object->player->pflags |= PF_TRICKDELAY;
-			}
-			else
-			{
-				raisestate = spring->info->seestate;
-
-				object->player->tumbleBounces = 1;
-				object->player->pflags &= ~PF_TUMBLESOUND;
-				object->player->tumbleHeight = 50;
-				P_SetPlayerMobjState(object->player->mo, S_KART_SPINOUT);
-
-				// FIXME: try to compensate tumbling gravity
-				object->momz = 3 * object->momz / 2;
 			}
 
 			spring->reactiontime++;
@@ -1357,7 +1344,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 
 			// collide
 			if (tmthing->z < thing->z && thing->momz < 0)
-				P_DamageMobj(tmthing, thing, thing, 1, DMG_TUMBLE);
+				;//P_DamageMobj(tmthing, thing, thing, 1, DMG_SQUISH);
 			else
 			{
 				if ((K_KartSolidBounce(tmthing, thing) == true) && (thing->flags2 & MF2_AMBUSH))

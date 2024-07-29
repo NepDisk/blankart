@@ -1128,11 +1128,6 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 			gravityadd = (5*gravityadd)/2;
 		}
 
-		if (mo->player->tumbleBounces > 0)
-		{
-			gravityadd = FixedMul(TUMBLEGRAVITY, gravityadd);
-		}
-
 		if (mo->player->fastfall != 0)
 		{
 			// Fast falling
@@ -2777,7 +2772,7 @@ void P_PlayerZMovement(mobj_t *mo)
 		K_UpdateMobjTerrain(mo, (mo->eflags & MFE_VERTICALFLIP ? tmceilingpic : tmfloorpic));
 
 		// Get up if you fell.
-		if (mo->player->panim == PA_HURT && mo->player->spinouttimer == 0 && mo->player->tumbleBounces == 0)
+		if (mo->player->panim == PA_HURT && mo->player->spinouttimer == 0)
 		{
 			P_SetPlayerMobjState(mo, S_KART_STILL);
 		}

@@ -466,7 +466,7 @@ boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 		else
 		{
 			// Player Damage
-			P_DamageMobj(t2, t1, t1->target, 1, DMG_TUMBLE);
+			P_DamageMobj(t2, t1, t1->target, 1, DMG_EXPLODE);
 		}
 
 		P_KillMobj(t1, t2, t2, DMG_NORMAL);
@@ -852,12 +852,12 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 	}
 	else if (t1Condition == true && t2Condition == false)
 	{
-		P_DamageMobj(t2, t1, t1, 1, DMG_TUMBLE);
+		P_DamageMobj(t2, t1, t1, 1, DMG_WIPEOUT);
 		return true;
 	}
 	else if (t1Condition == false && t2Condition == true)
 	{
-		P_DamageMobj(t1, t2, t2, 1, DMG_TUMBLE);
+		P_DamageMobj(t1, t2, t2, 1, DMG_WIPEOUT);
 		return true;
 	}
 

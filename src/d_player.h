@@ -93,8 +93,8 @@ typedef enum
 	PF_AIRFAILSAFE		= 1<<22, // Whenever or not try the air boost
 	PF_TRICKDELAY		= 1<<23, // Prevent tricks until control stick is neutral
 
-	PF_TUMBLELASTBOUNCE	= 1<<24, // One more time for the funny
-	PF_TUMBLESOUND		= 1<<25, // Don't play more than once
+	//free	= 1<<24,
+	//free		= 1<<25,
 
 	PF_HITFINISHLINE	= 1<<26, // Already hit the finish line this tic
 	PF_WRONGWAY			= 1<<27, // Moving the wrong way with respect to waypoints?
@@ -265,9 +265,6 @@ typedef enum
 #define TRICKLAG (9)
 #define TRICKDELAY (TICRATE/4)
 
-#define TUMBLEBOUNCES 3
-#define TUMBLEGRAVITY (4*FRACUNIT)
-
 #define TRIPWIRETIME (TICRATE)
 
 //}
@@ -415,8 +412,6 @@ typedef struct player_s
 	UINT8 instashield;		// Instashield no-damage animation timer
 	UINT8 wipeoutslow;		// Timer before you slowdown when getting wiped out
 	UINT8 justbumped;		// Prevent players from endlessly bumping into each other
-	UINT8 tumbleBounces;
-	UINT16 tumbleHeight;	// In *mobjscaled* fracunits, or mfu, not raw fu
 	UINT8 justDI;			// Turn-lockout timer to briefly prevent unintended turning after DI, resets when actionable or no input
 	boolean flipDI;			// Bananas flip the DI direction. Was a bug, but it made bananas much more interesting.
 

@@ -3596,139 +3596,6 @@ static void K_RemoveGrowShrink(player_t *player)
 	P_RestoreMusic(player);
 }
 
-static fixed_t K_TumbleZ(mobj_t *mo, fixed_t input)
-{
-	// Scales base tumble gravity to FRACUNIT
-	const fixed_t baseGravity = FixedMul(DEFAULT_GRAVITY, TUMBLEGRAVITY);
-
-	// Adapt momz w/ gravity
-	fixed_t gravityAdjust = FixedDiv(P_GetMobjGravity(mo), baseGravity);
-
-	if (mo->eflags & MFE_UNDERWATER)
-	{
-		// Reverse doubled falling speed.
-		gravityAdjust /= 2;
-	}
-
-	return FixedMul(input, -gravityAdjust);
-}
-
-void K_TumblePlayer(player_t *player, mobj_t *inflictor, mobj_t *source)
-{
-	(void)source;
-
-	K_DirectorFollowAttack(player, inflictor, source);
-
-	player->tumbleBounces = 1;
-
-	if (player->tripwireState == TRIPSTATE_PASSED)
-	{
-		player->tumbleHeight = 50;
-	}
-	else
-	{
-		player->mo->momx = 2 * player->mo->momx / 3;
-		player->mo->momy = 2 * player->mo->momy / 3;
-
-		player->tumbleHeight = 30;
-	}
-
-	player->pflags &= ~PF_TUMBLESOUND;
-
-	if (inflictor && !P_MobjWasRemoved(inflictor))
-	{
-		const fixed_t addHeight = FixedHypot(FixedHypot(inflictor->momx, inflictor->momy) / 2, FixedHypot(player->mo->momx, player->mo->momy) / 2);
-		player->tumbleHeight += (addHeight / player->mo->scale);
-	}
-
-	S_StartSound(player->mo, sfx_s3k9b);
-
-	player->mo->momz = K_TumbleZ(player->mo, player->tumbleHeight * FRACUNIT);
-
-	P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
-
-	if (P_IsDisplayPlayer(player))
-		P_StartQuake(64<<FRACBITS, 10);
-}
-
-static boolean K_LastTumbleBounceCondition(player_t *player)
-{
-	return (player->tumbleBounces > TUMBLEBOUNCES && player->tumbleHeight < 60);
-}
-
-static void K_HandleTumbleBounce(player_t *player)
-{
-	player->tumbleBounces++;
-	player->tumbleHeight = (player->tumbleHeight * ((player->tumbleHeight > 100) ? 3 : 4)) / 5;
-	player->pflags &= ~PF_TUMBLESOUND;
-
-	if (player->tumbleHeight < 10)
-	{
-		// 10 minimum bounce height
-		player->tumbleHeight = 10;
-	}
-
-	if (K_LastTumbleBounceCondition(player))
-	{
-		// Leave tumble state when below 40 height, and have bounced off the ground enough
-
-		if (player->pflags & PF_TUMBLELASTBOUNCE)
-		{
-			// End tumble state
-			player->tumbleBounces = 0;
-			player->pflags &= ~PF_TUMBLELASTBOUNCE; // Reset for next time
-			return;
-		}
-		else
-		{
-			// One last bounce at the minimum height, to reset the animation
-			player->tumbleHeight = 10;
-			player->pflags |= PF_TUMBLELASTBOUNCE;
-			player->mo->rollangle = 0;	// p_user.c will stop rotating the player automatically
-		}
-	}
-
-	if (P_IsDisplayPlayer(player) && player->tumbleHeight >= 40)
-		P_StartQuake((player->tumbleHeight*3/2)<<FRACBITS, 6);	// funny earthquakes for the FEEL
-
-	S_StartSound(player->mo, (player->tumbleHeight < 40) ? sfx_s3k5d : sfx_s3k5f);	// s3k5d is bounce < 50, s3k5f otherwise!
-
-	player->mo->momx = player->mo->momx / 2;
-	player->mo->momy = player->mo->momy / 2;
-
-	// and then modulate momz like that...
-	player->mo->momz = K_TumbleZ(player->mo, player->tumbleHeight * FRACUNIT);
-}
-
-// Play a falling sound when you start falling while tumbling and you're nowhere near done bouncing
-static void K_HandleTumbleSound(player_t *player)
-{
-	fixed_t momz;
-	momz = player->mo->momz * P_MobjFlip(player->mo);
-
-	if (!K_LastTumbleBounceCondition(player) &&
-			!(player->pflags & PF_TUMBLESOUND) && momz < -10*player->mo->scale)
-	{
-		S_StartSound(player->mo, sfx_s3k51);
-		player->pflags |= PF_TUMBLESOUND;
-	}
-}
-
-void K_TumbleInterrupt(player_t *player)
-{
-	// If player was tumbling, set variables so that they don't tumble like crazy after they're done respawning
-	if (player->tumbleBounces > 0)
-	{
-		player->tumbleBounces = 0; // MAXBOUNCES-1;
-		player->pflags &= ~PF_TUMBLELASTBOUNCE;
-		//players->tumbleHeight = 20;
-
-		players->mo->rollangle = 0;
-		player->spinouttype = KSPIN_WIPEOUT;
-		player->spinouttimer = player->wipeoutslow = TICRATE+2;
-	}
-}
-
 void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 {
 	if (state == TRIPSTATE_PASSED)
@@ -3737,12 +3604,6 @@ void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 		S_StartSound(player->mo, sfx_kc40);
 
 	player->tripwireState = state;
-
-	if (state == TRIPSTATE_PASSED && player->spinouttimer &&
-			player->speed > 2 * K_GetKartSpeed(player, false, true))
-	{
-		K_TumblePlayer(player, NULL, NULL);
-	}
 }
 
 INT32 K_ExplodePlayer(player_t *player, mobj_t *inflictor, mobj_t *source) // A bit of a hack, we just throw the player up higher here and extend their spinout timer
@@ -7533,13 +7394,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->tiregrease)
 		player->tiregrease--;
 
-	if (player->tumbleBounces > 0)
-	{
-		K_HandleTumbleSound(player);
-		if (P_IsObjectOnGround(player->mo) && player->mo->momz * P_MobjFlip(player->mo) <= 0)
-			K_HandleTumbleBounce(player);
-	}
-
 	K_UpdateTripwire(player);
 
 	K_KartPlayerHUDUpdate(player);
@@ -9417,7 +9271,6 @@ void K_AdjustPlayerFriction(player_t *player)
 // K_trickPanelTimingVisual
 // Spawns the timing visual for trick panels depending on the given player's momz.
 // If the player has tricked, this will send the half circles flying out.
-// if you tumble, they'll fall off instead.
 //
 
 #define RADIUSSCALING 6
@@ -9452,14 +9305,6 @@ static void K_trickPanelTimingVisual(player_t *player, fixed_t momz)
 		flame->sprite = SPR_TRCK;
 		flame->frame = i|FF_FULLBRIGHT;
 
-		if (player->trickpanel <= 1 && !player->tumbleBounces)
-		{
-			flame->tics = 2;
-			flame->momx = player->mo->momx;
-			flame->momy = player->mo->momy;
-			flame->momz = player->mo->momz;
-		}
-		else
 		{
 			flame->tics = TICRATE;
 
@@ -10280,18 +10125,8 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 
 			// debug shit
 			//CONS_Printf("%d\n", player->mo->momz / mapobjectscale);
-			if (momz < -10*FRACUNIT)	// :youfuckedup:
-			{
-				// tumble if you let your chance pass!!
-				player->tumbleBounces = 1;
-				player->pflags &= ~PF_TUMBLESOUND;
-				player->tumbleHeight = 30;	// Base tumble bounce height
-				player->trickpanel = 0;
-				K_trickPanelTimingVisual(player, momz);	// fail trick visual
-				P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
-			}
 
-			else if (!(player->pflags & PF_TRICKDELAY))	// don't allow tricking at the same frame you tumble obv
+			else if (!(player->pflags & PF_TRICKDELAY))	// don't allow tricking
 			{
 				INT16 aimingcompare = abs(cmd->throwdir) - abs(cmd->turning);
 
@@ -10587,12 +10422,6 @@ void K_HandleDirectionalInfluence(player_t *player)
 	if (inputLen > KART_FULLTURN)
 	{
 		inputLen = KART_FULLTURN;
-	}
-
-	if (player->tumbleBounces > 0)
-	{
-		// Very strong DI for tumble.
-		strength *= 3;
 	}
 
 	sideAngle = player->mo->angle - ANGLE_90;

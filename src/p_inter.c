@@ -1896,7 +1896,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 		else
 		{
 			const UINT8 type = (damagetype & DMG_TYPEMASK);
-			const boolean hardhit = (type == DMG_EXPLODE || type == DMG_KARMA || type == DMG_TUMBLE); // This damage type can do evil stuff like ALWAYS combo
+			const boolean hardhit = (type == DMG_EXPLODE || type == DMG_KARMA); // This damage type can do evil stuff like ALWAYS combo
 			INT16 ringburst = 5;
 
 			// Check if the player is allowed to be damaged!
@@ -1932,14 +1932,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				{
 					// Check if we should allow wombo combos (hard hits by default, inverted by the presence of DMG_WOMBO).
 					boolean allowcombo = (hardhit == !(damagetype & DMG_WOMBO));
-
-					// Tumble is a special case.
-					if (type == DMG_TUMBLE)
-					{
-						// don't allow constant combo
-						if (player->tumbleBounces == 1 && (P_MobjFlip(target)*target->momz > 0))
-							allowcombo = false;
-					}
 
 					if ((allowcombo == false) && player->flashing > 0)
 					{
@@ -2035,10 +2027,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 					K_DebtStingPlayer(player, source);
 					K_KartPainEnergyFling(player);
 					ringburst = 0;
-					break;
-				case DMG_TUMBLE:
-					K_TumblePlayer(player, inflictor, source);
-					ringburst = 10;
 					break;
 				case DMG_EXPLODE:
 				case DMG_KARMA:
