@@ -23,8 +23,6 @@
 #pragma interface
 #endif
 
-#define MISSING_TEXTURE "AASMELLY" // Replacement for invalid textures
-
 // A single patch from a texture definition,
 //  basically a rectangular area within
 //  the texture rectangle.
