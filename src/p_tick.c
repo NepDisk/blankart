@@ -31,7 +31,6 @@
 
 // SRB2Kart
 #include "k_kart.h"
-#include "k_race.h"
 #include "k_battle.h"
 #include "k_boss.h"
 #include "k_waypoint.h"
@@ -343,9 +342,6 @@ static inline void P_RunThinkers(void)
 		ps_thlist_times[i] = I_GetPreciseTime() - ps_thlist_times[i];
 	}
 
-	if (gametyperules & GTR_CIRCUIT)
-		K_RunFinishLineBeam();
-
 	if (gametyperules & GTR_PAPERITEMS)
 		K_RunPaperItemSpawners();
 
@@ -626,7 +622,7 @@ void P_Ticker(boolean run)
 		{
 			if (leveltime == 3)
 			{
-				S_ChangeMusic(mapmusname, mapmusflags, true);
+				S_ChangeMusicEx(mapmusname, mapmusflags, true, mapmusposition, 0, 0);
 				S_ShowMusicCredit();
 			}
 		}
@@ -635,21 +631,8 @@ void P_Ticker(boolean run)
 		{
 			if (leveltime == (starttime + (TICRATE/2)))
 			{
-				S_ChangeMusic(mapmusname, mapmusflags, true);
+				S_ChangeMusicEx(mapmusname, mapmusflags, true, mapmusposition, 0, 0);
 				S_ShowMusicCredit();
-			}
-
-			if (encoremode)
-			{
-				// Encore humming starts immediately.
-				if (leveltime == 3)
-					S_ChangeMusicInternal("encore", true);
-			}
-			else
-			{
-				// Plays the POSITION music after the camera spin
-				if (leveltime == introtime)
-					S_ChangeMusicInternal("postn", true);
 			}
 		}
 
@@ -760,13 +743,6 @@ void P_Ticker(boolean run)
 
 	if (demo.playback)
 		G_StoreRewindInfo();
-
-	if (leveltime == 2)
-	{
-		// The values needed to set this properly are not correct at map load,
-		// so we have to do it at the second tick instead...
-		K_TimerInit();
-	}
 
 //	Z_CheckMemCleanup();
 }

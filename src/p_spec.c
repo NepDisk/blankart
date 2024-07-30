@@ -1869,12 +1869,7 @@ static void K_HandleLapIncrement(player_t *player)
 {
 	if (player)
 	{
-		if (leveltime < starttime)
-		{
-			// Will fault the player
-			K_DoIngameRespawn(player);
-		}
-		else if ((player->starpostnum == numstarposts) || (player->laps == 0))
+		if ((player->starpostnum == numstarposts) || (player->laps == 0))
 		{
 			size_t i = 0;
 			UINT8 nump = 0;
@@ -1908,17 +1903,6 @@ static void K_HandleLapIncrement(player_t *player)
 					player->karthud[khud_laphand] = 0; // No hands in FREE PLAY
 
 				player->karthud[khud_lapanimation] = 80;
-			}
-
-			if (rainbowstartavailable == true)
-			{
-				S_StartSound(player->mo, sfx_s23c);
-				player->startboost = 125;
-
-				K_SpawnDriftBoostExplosion(player, 4);
-				K_SpawnDriftElectricSparks(player);
-
-				rainbowstartavailable = false;
 			}
 
 			if (netgame && player->laps >= numlaps)

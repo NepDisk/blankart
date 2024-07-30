@@ -72,7 +72,7 @@ typedef enum
 	PF_WANTSTOJOIN		= 1<<7, // Spectator that wants to join
 
 	PF_STASIS			= 1<<8, // Player is not allowed to move
-	PF_FAULT			= 1<<9, // F A U L T
+	PF_SKIDDOWN			= 1<<9, // SKIDDOWN
 	PF_ELIMINATED		= 1<<10, // Battle-style elimination, no extra penalty
 	PF_NOCONTEST 		= 1<<11, // Did not finish (last place explosion)
 	PF_LOSTLIFE			= 1<<12, // Do not lose life more than once
@@ -233,9 +233,6 @@ typedef enum
 	// Lap finish
 	khud_lapanimation,	// Used to show the lap start wing logo animation
 	khud_laphand,		// Lap hand gfx to use; 0 = none, 1 = :ok_hand:, 2 = :thumbs_up:, 3 = :thumps_down:
-
-	// Start
-	khud_fault,			// Set when faulting during the starting countdown
 
 	// Camera
 	khud_boostcam,		// Camera push forward on boost
@@ -491,6 +488,8 @@ typedef struct player_s
 	UINT8 numsneakers;		// Number of stacked sneaker effects
 	UINT8 floorboost;		// (0 to 3) - Prevents Sneaker sounds for a brief duration when triggered by a floor panel
 
+	UINT8 boostcharge; 		// Charge during race start
+	
 	INT16 growshrinktimer;		// > 0 = Big, < 0 = small
 	INT16 growcancel;			// Duration of grow canceling 
 	UINT16 rocketsneakertimer;	// Rocket Sneaker duration timer

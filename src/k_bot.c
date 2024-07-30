@@ -26,7 +26,6 @@
 #include "d_ticcmd.h"
 #include "m_random.h"
 #include "r_things.h" // numskins
-#include "k_race.h" // finishBeamLine
 #include "k_boss.h"
 #include "m_perfstats.h"
 
@@ -1307,98 +1306,14 @@ void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
 		predict->y = player->mo->y + FixedMul(dist, FINESINE(destangle >> ANGLETOFINESHIFT));
 		predict->radius = (DEFAULT_WAYPOINT_RADIUS / 4) * mapobjectscale;
 	}
-
-	if (leveltime <= starttime && finishBeamLine != NULL)
+	if (leveltime <= starttime)
 	{
-		// Handle POSITION!!
-		const fixed_t distBase = 384*mapobjectscale;
-		const fixed_t distAdjust = 64*mapobjectscale;
-
-		const fixed_t closeDist = distBase + (distAdjust * (9 - player->kartweight));
-		const fixed_t farDist = closeDist + (distAdjust * 2);
-
-		const tic_t futureSight = (TICRATE >> 1);
-
-		fixed_t distToFinish = K_DistanceOfLineFromPoint(
-			finishBeamLine->v1->x, finishBeamLine->v1->y,
-			finishBeamLine->v2->x, finishBeamLine->v2->y,
-			player->mo->x, player->mo->y
-		) - (K_BotSpeedScaled(player, player->speed) * futureSight);
-
-		// Don't run the spindash code at all until we're in the right place
 		trySpindash = false;
 
-		if (distToFinish < closeDist)
+		if (leveltime >= starttime-TICRATE-TICRATE/7)
 		{
-			// We're too close, we need to start backing up.
-			turnamt = K_HandleBotReverse(player, cmd, predict, destangle);
-		}
-		else if (distToFinish < farDist)
-		{
-			INT32 bullyTurn = INT32_MAX;
-
-			// We're in about the right place, let's do whatever we want to.
-
-			if (player->kartspeed >= 5)
-			{
-				// Faster characters want to spindash.
-				// Slower characters will use their momentum.
-				trySpindash = true;
-			}
-
-			// Look for characters to bully.
-			bullyTurn = K_PositionBully(player);
-			if (bullyTurn == INT32_MAX)
-			{
-				// No one to bully, just go for a spindash as anyone.
-				if (predict == NULL)
-				{
-					// Create a prediction.
-					if (player->nextwaypoint != NULL
-						&& player->nextwaypoint->mobj != NULL
-						&& !P_MobjWasRemoved(player->nextwaypoint->mobj))
-					{
-						predict = K_CreateBotPrediction(player);
-						K_NudgePredictionTowardsObjects(predict, player);
-						destangle = R_PointToAngle2(player->mo->x, player->mo->y, predict->x, predict->y);
-					}
-				}
-
-				turnamt = K_HandleBotTrack(player, cmd, predict, destangle);
-				cmd->buttons &= ~(BT_ACCELERATE|BT_BRAKE);
-				cmd->forwardmove = 0;
-				trySpindash = true;
-			}
-			else
-			{
-				turnamt = bullyTurn;
-
-				// If already spindashing, wait until we get a relatively OK charge first.
-				if (player->spindash == 0 || player->spindash > TICRATE)
-				{
-					trySpindash = false;
-					cmd->buttons |= BT_ACCELERATE;
-					cmd->forwardmove = MAXPLMOVE;
-				}
-			}
-		}
-		else
-		{
-			// Too far away, we need to just drive up.
-			if (predict == NULL)
-			{
-				// Create a prediction.
-				if (player->nextwaypoint != NULL
-					&& player->nextwaypoint->mobj != NULL
-					&& !P_MobjWasRemoved(player->nextwaypoint->mobj))
-				{
-					predict = K_CreateBotPrediction(player);
-					K_NudgePredictionTowardsObjects(predict, player);
-					destangle = R_PointToAngle2(player->mo->x, player->mo->y, predict->x, predict->y);
-				}
-			}
-
-			turnamt = K_HandleBotTrack(player, cmd, predict, destangle);
+			cmd->buttons |= BT_ACCELERATE;
+			cmd->forwardmove = MAXPLMOVE;
 		}
 	}
 	else

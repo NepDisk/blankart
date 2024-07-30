@@ -5,6 +5,7 @@
 ///        All of the SRB2kart-unique stuff.
 
 #include "k_kart.h"
+#include "d_player.h"
 #include "k_battle.h"
 #include "k_boss.h"
 #include "k_pwrlv.h"
@@ -49,16 +50,12 @@
 // indirectitemcooldown is timer before anyone's allowed another Shrink/SPB
 // mapreset is set when enough players fill an empty server
 
-void K_TimerReset(void)
-{
-	starttime = introtime = 3;
-	numbulbs = 1;
-}
-
 void K_TimerInit(void)
 {
 	UINT8 i;
 	UINT8 numPlayers = 0;//, numspec = 0;
+	
+	starttime = introtime = 0;
 
 	if (!bossinfo.boss)
 	{
@@ -78,35 +75,17 @@ void K_TimerInit(void)
 			numPlayers++;
 		}
 
-		if (numPlayers >= 2)
-		{
-			rainbowstartavailable = true;
-		}
-		else
-		{
-			rainbowstartavailable = false;
-		}
-
 		// No intro in Record Attack / 1v1
-		// Leave unset for the value in K_TimerReset
 		if (numPlayers > 2)
 		{
 			introtime = (108) + 5; // 108 for rotation, + 5 for white fade
 		}
 
-		numbulbs = 5;
-
-		if (numPlayers > 2)
-		{
-			numbulbs += (numPlayers-2);
-		}
-
-		starttime = (introtime + (3*TICRATE)) + ((2*TICRATE) + (numbulbs * bulbtime)); // Start countdown time, + buffer time
+		starttime = 6*TICRATE + (3*TICRATE/4);
 	}
 
 	// NOW you can try to spawn in the Battle capsules, if there's not enough players for a match
 	K_BattleInit();
-	//CONS_Printf("numbulbs set to %d (%d players, %d spectators) on tic %d\n", numbulbs, numPlayers, numspec, leveltime);
 }
 
 UINT32 K_GetPlayerDontDrawFlag(player_t *player)
@@ -4648,7 +4627,7 @@ void K_DriftDustHandling(mobj_t *spawner)
 
 	if (spawner->player)
 	{
-		if (spawner->player->pflags & PF_FAULT)
+		if (spawner->player->pflags & PF_SKIDDOWN)
 		{
 			anglediff = abs((signed)(spawner->angle - spawner->player->drawangle));
 			if (leveltime % 6 == 0)
@@ -6768,11 +6747,6 @@ void K_KartPlayerHUDUpdate(player_t *player)
 	if (player->karthud[khud_trickcool])
 		player->karthud[khud_trickcool]--;
 
-	if (!(player->pflags & PF_FAULT))
-		player->karthud[khud_fault] = 0;
-	else if (player->karthud[khud_fault] > 0 && player->karthud[khud_fault] < 2*TICRATE)
-		player->karthud[khud_fault]++;
-
 	if (player->karthud[khud_itemblink] && player->karthud[khud_itemblink]-- <= 0)
 	{
 		player->karthud[khud_itemblinkmode] = 0;
@@ -7022,6 +6996,84 @@ static void K_UpdateTripwire(player_t *player)
 			player->tripwirePass = TRIPWIRE_NONE;
 		}
 	}
+}
+
+static void K_RaceStart(player_t *player)
+{
+
+	if (leveltime <= starttime)
+		player->nocontrol = 1;
+
+	// Start charging once you're given the opportunity.
+	if (leveltime >= starttime-(2*TICRATE) && leveltime <= starttime)
+	{
+		if (player->cmd.buttons & BT_ACCELERATE)
+		{
+			if (player->boostcharge == 0)
+				player->boostcharge = player->cmd.latency;
+
+			player->boostcharge++;
+		}
+		else
+			player->boostcharge = 0;
+	}
+
+	// Increase your size while charging your engine.
+	if (leveltime < starttime+10)
+	{
+		player->mo->scalespeed = mapobjectscale/12;
+		player->mo->destscale = mapobjectscale + (FixedMul(mapobjectscale, player->boostcharge*131));
+		if ((player->pflags & PF_SHRINKME) && !modeattacking && !player->bot)
+			player->mo->destscale = (6*player->mo->destscale)/8;
+	}
+
+	// Determine the outcome of your charge.
+	if (leveltime > starttime && player->boostcharge)
+	{
+		// Not even trying?
+		if (player->boostcharge < 35)
+		{
+			if (player->boostcharge > 17)
+				S_StartSound(player->mo, sfx_cdfm00); // chosen instead of a conventional skid because it's more engine-like
+		}
+		// Get an instant boost!
+		else if (player->boostcharge <= 50)
+		{
+			player->startboost = (50-player->boostcharge)+20;
+
+			if (player->boostcharge <= 36)
+			{
+				player->startboost = 0;
+				K_DoSneaker(player, 0);
+				player->sneakertimer = 70; // PERFECT BOOST!!
+
+				if (!player->floorboost || player->floorboost == 3) // Let everyone hear this one
+					S_StartSound(player->mo, sfx_s25f);
+			}
+			else
+			{
+				K_SpawnDashDustRelease(player); // already handled for perfect boosts by K_DoSneaker
+				if ((!player->floorboost || player->floorboost == 3) && P_IsLocalPlayer(player))
+				{
+					if (player->boostcharge <= 40)
+						S_StartSound(player->mo, sfx_cdfm01); // You were almost there!
+					else
+						S_StartSound(player->mo, sfx_s23c); // Nope, better luck next time.
+				}
+			}
+		}
+		// You overcharged your engine? Those things are expensive!!!
+		else if (player->boostcharge > 50)
+		{
+			player->nocontrol = 40;
+			//S_StartSound(player->mo, sfx_kc34);
+			S_StartSound(player->mo, sfx_s3k83);
+			player->pflags |= PF_SKIDDOWN; // cheeky pflag reuse
+		}
+
+		player->boostcharge = 0;
+	}
+
 }
 
 /**	\brief	Decreases various kart timers and powers per frame. Called in P_PlayerThink in p_user.c
@@ -7501,6 +7553,8 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	}
 
 	K_HandleDelayedHitByEm(player);
+	
+	K_RaceStart(player);
 }
 
 void K_KartResetPlayerColor(player_t *player)
@@ -8155,6 +8209,12 @@ INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue)
 		// No turning during the intro
 		return 0;
 	}
+	
+	if (leveltime <= starttime)
+	{
+		// No turning during Race Start
+		return 0;
+	}
 
 	if (player->respawn.state == RESPAWNST_MOVE)
 	{
@@ -8218,34 +8278,10 @@ INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue)
 		turnfixed = FixedMul(turnfixed, FRACUNIT + player->handleboost);
 	}
 
-	if ((player->mo->eflags & MFE_UNDERWATER) &&
-			player->speed > 11 * player->mo->scale)
-	{
-		turnfixed /= 2;
-	}
-
 	// Weight has a small effect on turning
 	turnfixed = FixedMul(turnfixed, weightadjust);
 
 	return (turnfixed / FRACUNIT);
-}
-
-INT32 K_GetUnderwaterTurnAdjust(player_t *player)
-{
-	if ((player->mo->eflags & MFE_UNDERWATER) &&
-			player->speed > 11 * player->mo->scale)
-	{
-		INT32 steer = (K_GetKartTurnValue(player,
-					player->steering) << TICCMD_REDUCE);
-
-		if (!player->drift)
-			steer = 9 * steer / 5;
-
-		return FixedMul(steer, 8 * FixedDiv(player->speed,
-					2 * K_GetKartSpeed(player, false, true) / 3));
-	}
-	else
-		return 0;
 }
 
 INT32 K_GetKartDriftSparkValue(player_t *player)
@@ -9176,17 +9212,6 @@ void K_AdjustPlayerFriction(player_t *player)
 		player->mo->friction -= 512;
 	}
 	*/
-
-	// Water gets ice physics too
-	if ((player->mo->eflags & MFE_TOUCHWATER) &&
-			!player->offroad)
-	{
-		player->mo->friction += 614;
-	}
-	else if (player->mo->eflags & MFE_UNDERWATER)
-	{
-		player->mo->friction += 312;
-	}
 
 	// Wipeout slowdown
 	if (player->speed > 0 && player->spinouttimer && player->wipeoutslow)

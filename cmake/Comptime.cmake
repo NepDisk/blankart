@@ -15,3 +15,4 @@ git_latest_commit(SRB2_COMP_REVISION)
 git_subject(SRB2_COMP_LASTCOMMIT)
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/src/config.h")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/build/src/config.h")

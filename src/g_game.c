@@ -254,9 +254,6 @@ UINT8 ammoremovaltics = 2*TICRATE;
 tic_t introtime = 3;
 tic_t starttime = 3;
 
-const tic_t bulbtime = TICRATE/2;
-UINT8 numbulbs = 1;
-
 tic_t raceexittime = 5*TICRATE + (2*TICRATE/3);
 tic_t battleexittime = 8*TICRATE;
 
@@ -323,7 +320,6 @@ tic_t mapreset; // Map reset delay when enough players have joined an empty game
 boolean thwompsactive; // Thwomps activate on lap 2
 UINT8 lastLowestLap; // Last lowest lap, for activating race lap executors
 SINT8 spbplace; // SPB exists, give the person behind better items
-boolean rainbowstartavailable; // Boolean, keeps track of if the rainbow start was gotten
 
 // Client-sided, unsynched variables (NEVER use in anything that needs to be synced with other players)
 tic_t bombflashtimer = 0;	// Cooldown before another FlashPal can be intialized by a bomb exploding near a displayplayer. Avoids seizures.
@@ -1338,16 +1334,6 @@ void G_StartTitleCard(void)
 	// prepare status bar
 	ST_startTitleCard();
 
-	// play the sound
-	{
-		sfxenum_t kstart = sfx_kstart;
-		if (bossinfo.boss)
-			kstart = sfx_ssa021;
-		else if (encoremode)
-			kstart = sfx_ruby2;
-		S_StartSound(NULL, kstart);
-	}
-
 	// start the title card
 	WipeStageTitle = (!titlemapinaction);
 }
@@ -2264,8 +2250,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		rings = players[player].rings;
 		spheres = players[player].spheres;
 		kickstartaccel = players[player].kickstartaccel;
-
-		khudfault = players[player].karthud[khud_fault];
+		
 		nocontrol = players[player].nocontrol;
 
 		laps = players[player].laps;
@@ -2283,7 +2268,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 
 		follower = players[player].follower;
 
-		pflags |= (players[player].pflags & (PF_STASIS|PF_ELIMINATED|PF_NOCONTEST|PF_FAULT|PF_LOSTLIFE));
+		pflags |= (players[player].pflags & (PF_STASIS|PF_ELIMINATED|PF_NOCONTEST|PF_LOSTLIFE));
 	}
 
 	// As long as we're not in multiplayer, carry over cheatcodes from map to map
@@ -2349,7 +2334,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->overtimekarma = 0;
 	p->eggmanblame = -1;
 	p->lastdraft = -1;
-	p->karthud[khud_fault] = khudfault;
 	p->nocontrol = nocontrol;
 	p->kickstartaccel = kickstartaccel;
 

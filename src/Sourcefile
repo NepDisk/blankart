@@ -103,7 +103,6 @@ k_kart.c
 k_respawn.c
 k_collide.c
 k_color.c
-k_race.c
 k_battle.c
 k_pwrlv.c
 k_waypoint.c

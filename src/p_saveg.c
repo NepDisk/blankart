@@ -329,6 +329,8 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT16(save_p, players[i].sneakertimer);
 		WRITEUINT8(save_p, players[i].numsneakers);
 		WRITEUINT8(save_p, players[i].floorboost);
+		
+		WRITEUINT8(save_p, players[i].boostcharge);
 
 		WRITEINT16(save_p, players[i].growshrinktimer);
 		WRITEINT16(save_p, players[i].growcancel);
@@ -618,6 +620,8 @@ static void P_NetUnArchivePlayers(void)
 		players[i].sneakertimer = READUINT16(save_p);
 		players[i].numsneakers = READUINT8(save_p);
 		players[i].floorboost = READUINT8(save_p);
+		
+		players[i].boostcharge = READUINT8(save_p);
 
 		players[i].growshrinktimer = READINT16(save_p);
 		players[i].growcancel = READINT16(save_p);
@@ -4535,11 +4539,9 @@ static void P_NetArchiveMisc(boolean resending)
 	WRITEUINT8(save_p, thwompsactive);
 	WRITEUINT8(save_p, lastLowestLap);
 	WRITESINT8(save_p, spbplace);
-	WRITEUINT8(save_p, rainbowstartavailable);
 
 	WRITEUINT32(save_p, introtime);
 	WRITEUINT32(save_p, starttime);
-	WRITEUINT8(save_p, numbulbs);
 
 	// Is it paused?
 	if (paused)
@@ -4684,11 +4686,9 @@ static inline boolean P_NetUnArchiveMisc(boolean reloading)
 	thwompsactive = (boolean)READUINT8(save_p);
 	lastLowestLap = READUINT8(save_p);
 	spbplace = READSINT8(save_p);
-	rainbowstartavailable = (boolean)READUINT8(save_p);
 
 	introtime = READUINT32(save_p);
 	starttime = READUINT32(save_p);
-	numbulbs = READUINT8(save_p);
 
 	// Is it paused?
 	if (READUINT8(save_p) == 0x2f)

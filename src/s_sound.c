@@ -2369,10 +2369,8 @@ void S_StartEx(boolean reset)
 
 	if (leveltime < (starttime + (TICRATE/2))) // SRB2Kart
 	{
-		;
+		S_ChangeMusicEx((encoremode ? "estart" : "kstart"), 0, false, mapmusposition, 0, 0);
 	}
-	else
-		S_ChangeMusicEx(mapmusname, mapmusflags, true, mapmusposition, 0, 0);
 
 	S_ResetMusicStack();
 	music_stack_noposition = false;

@@ -14,6 +14,7 @@
 ///        Bobbing POV/weapon, movement.
 ///        Pending weapon.
 
+#include "d_player.h"
 #include "doomdef.h"
 #include "i_system.h"
 #include "d_event.h"
@@ -453,7 +454,7 @@ UINT8 P_FindHighestLap(void)
 //
 boolean P_PlayerInPain(player_t *player)
 {
-	if (player->spinouttimer || (player->pflags & PF_FAULT))
+	if (player->spinouttimer)
 		return true;
 
 	return false;
@@ -1849,55 +1850,6 @@ static void P_3dMovement(player_t *player)
 		if (player->mo->movefactor != FRACUNIT) // Friction-scaled acceleration...
 			movepushforward = FixedMul(movepushforward, player->mo->movefactor);
 
-		{
-			INT32 a = K_GetUnderwaterTurnAdjust(player);
-			INT32 adj = 0;
-
-			if (a)
-			{
-				const fixed_t maxadj = ANG10/4;
-
-				adj = a / 4;
-
-				if (adj > 0)
-				{
-					if (adj > maxadj)
-						adj = maxadj;
-				}
-				else if (adj < 0)
-				{
-					if (adj < -(maxadj))
-						adj = -(maxadj);
-				}
-
-				if (abs(player->underwatertilt + adj) > abs(a))
-					adj = (a - player->underwatertilt);
-
-				if (abs(a) < abs(player->underwatertilt))
-					adj = 0;
-
-				movepushangle += a;
-			}
-
-			if (adj)
-			{
-				player->underwatertilt += adj;
-
-				if (abs(player->underwatertilt) > ANG30)
-				{
-					player->underwatertilt =
-						player->underwatertilt > 0 ? ANG30
-						: -(ANG30);
-				}
-			}
-			else
-			{
-				player->underwatertilt =
-					FixedMul(player->underwatertilt,
-							7*FRACUNIT/8);
-			}
-		}
-
 		totalthrust.x += P_ReturnThrustX(player->mo, movepushangle, movepushforward);
 		totalthrust.y += P_ReturnThrustY(player->mo, movepushangle, movepushforward);
 	}
@@ -2197,9 +2149,9 @@ void P_MovePlayer(player_t *player)
 		player->glanceDir = 0;
 		player->pflags &= ~PF_LOOKDOWN;
 	}
-	else if ((player->pflags & PF_FAULT) || (player->spinouttimer > 0))
+	else if ((player->spinouttimer > 0))
 	{
-		UINT16 speed = ((player->pflags & PF_FAULT) ? player->nocontrol : player->spinouttimer)/8;
+		UINT16 speed = player->spinouttimer/8;
 		if (speed > 8)
 			speed = 8;
 		else if (speed < 1)
@@ -2213,6 +2165,16 @@ void P_MovePlayer(player_t *player)
 			player->drawangle -= (ANGLE_11hh * speed);
 
 		player->mo->rollangle = 0;
+	}
+	else if (player->nocontrol && player->pflags & PF_SKIDDOWN)
+	{
+		if (player->mo->state != &states[S_KART_SPINOUT])
+			P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
+
+		if (((player->nocontrol + 5) % 20) < 10)
+			player->drawangle += ANGLE_11hh;
+		else
+			player->drawangle -= ANGLE_11hh;
 	}
 	else
 	{
@@ -4381,7 +4343,7 @@ void P_PlayerThink(player_t *player)
 	if (player->nocontrol && player->nocontrol < UINT16_MAX)
 	{
 		if (!(--player->nocontrol))
-			player->pflags &= ~PF_FAULT;
+			player->pflags &= ~PF_SKIDDOWN;
 	}
 	else
 		player->nocontrol = 0;

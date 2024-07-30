@@ -1740,10 +1740,6 @@ static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source,
 			break;
 		default:
 			// Everything else REALLY kills
-			if (leveltime < starttime)
-			{
-				K_DoFault(player);
-			}
 			break;
 	}
 

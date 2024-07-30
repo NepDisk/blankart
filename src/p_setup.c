@@ -87,7 +87,6 @@
 
 // SRB2Kart
 #include "k_kart.h"
-#include "k_race.h"
 #include "k_battle.h" // K_BattleInit
 #include "k_pwrlv.h"
 #include "k_waypoint.h"
@@ -4067,6 +4066,7 @@ static void P_InitGametype(void)
 	spectateGriefed = 0;
 	K_CashInPowerLevels(); // Pushes power level changes even if intermission was skipped
 
+	K_TimerInit();
 	P_InitPlayers();
 
 	if (modeattacking && !demo.playback)
@@ -4293,7 +4293,7 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 			// As oddly named as this is, this handles music only.
 			// We should be fine starting it here.
 			// Don't do this during titlemap, because the menu code handles music by itself.
-			S_Start();
+			S_StartEx(true);
 		}
 	}
 
@@ -4410,7 +4410,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 
 	// The waypoint data that's in PU_LEVEL needs to be reset back to 0/NULL now since PU_LEVEL was cleared
 	K_ClearWaypoints();
-	K_ClearFinishBeamLine();
 
 	// Load the waypoints please!
 	if (gametyperules & GTR_CIRCUIT)
@@ -4418,11 +4417,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		if (K_SetupWaypointList() == false)
 		{
 			CONS_Alert(CONS_ERROR, "Waypoints were not able to be setup! Player positions will not work correctly.\n");
-		}
-
-		if (K_GenerateFinishBeamLine() == false)
-		{
-			CONS_Alert(CONS_ERROR, "No valid finish line beam setup could be found.\n");
 		}
 	}
 
@@ -4539,8 +4533,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		LUAh_MapLoad();
 		P_MapEnd(); // just in case MapLoad modifies tmthing
 	}
-
-	K_TimerReset();
 
 	// No render mode or reloading gamestate, stop here.
 	if (rendermode == render_none || reloadinggamestate)
