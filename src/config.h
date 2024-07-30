@@ -20,7 +20,7 @@
 #define ASSET_HASH_PATCH_PK3     ""
 #endif
 
-#define SRB2_COMP_REVISION       "80f496667"
+#define SRB2_COMP_REVISION       "9b307973e"
 #define SRB2_COMP_BRANCH         "v2dev3"
 // This is done with configure_file instead of defines in order to avoid
 // recompiling the whole target whenever the working directory state changes
@@ -29,7 +29,7 @@
 #define COMPVERSION_UNCOMMITTED
 #endif
 
-#define SRB2_COMP_LASTCOMMIT         "Add support to cmake for showing commit info"
+#define SRB2_COMP_LASTCOMMIT         "Assorted stuff"
 
 #define CMAKE_ASSETS_DIR         "/home/maple/build/blankart/assets"
 

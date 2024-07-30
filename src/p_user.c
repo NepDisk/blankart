@@ -1971,15 +1971,6 @@ static void P_UpdatePlayerAngle(player_t *player)
 	int i;
 	UINT8 p = UINT8_MAX;
 
-	for (i = 0; i <= splitscreen; i++)
-	{
-		if (player == &players[g_localplayers[i]])
-		{
-			p = i;
-			break;
-		}
-	}
-
 	player->steering = cmd->turning; // Set this so functions that rely on steering still work.
 
 	if (K_GetKartTurnValue(player, KART_FULLTURN) != 0)
@@ -2023,18 +2014,8 @@ static void P_UpdatePlayerAngle(player_t *player)
 
 
 	// CONS_Printf("Playerid:%d\n",p);
-
-	if (p == UINT8_MAX)
-	{
-		// When F12ing players, set local angle directly.
-		P_SetPlayerAngle(player, player->angleturn + anglechange);
-		player->mo->angle = player->angleturn;
-	}
-	else
-	{
-		player->angleturn = anglechange;
-		player->mo->angle = player->angleturn;
-	}
+	player->angleturn = anglechange;
+	player->mo->angle = player->angleturn;
 
 	if (!cv_allowmlook.value || player->spectator == false)
 	{
