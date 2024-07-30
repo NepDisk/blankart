@@ -80,7 +80,7 @@ static UINT32 demoIdleLeft;
 
 // customizable title screen graphics
 
-ttmode_enum ttmode = TTMODE_RINGRACERS;
+ttmode_enum ttmode = TTMODE_KART;
 UINT8 ttscale = 1; // FRACUNIT / ttscale
 // ttmode user vars
 char ttname[9];
@@ -99,20 +99,11 @@ INT16 curtty;
 INT16 curttloop;
 UINT16 curtttics;
 
-// ttmode old
-/*
+// ttmode kart
 static patch_t *ttbanner; // SONIC ROBO BLAST 2
 static patch_t *ttkart; // *vroom* KART
 static patch_t *ttcheckers; // *vroom* KART
 static patch_t *ttkflash; // flash screen
-*/
-
-static patch_t *kts_bumper; // DR ROBOTNIKS RING RACERS
-static patch_t *kts_eggman; // dr. robotnik himself
-static patch_t *kts_tails; // tails himself
-static patch_t *kts_tails_tails; // tails' tails
-static patch_t *kts_electricity[6]; // ring o' electricity
-static patch_t *kts_copyright; // (C) SEGA
 
 #define NOWAY
 
@@ -245,7 +236,7 @@ static void F_NewCutscene(const char *basetext)
 //
 // F_TitleBGScroll
 //
-/*
+
 static void F_TitleBGScroll(INT32 scrollspeed)
 {
 	INT32 x, y, w;
@@ -285,7 +276,7 @@ static void F_TitleBGScroll(INT32 scrollspeed)
 	W_UnlockCachedPatch(pat);
 	W_UnlockCachedPatch(pat2);
 }
-*/
+
 
 // =============
 //  INTRO SCENE
@@ -1814,19 +1805,11 @@ static void F_CacheTitleScreen(void)
 		case TTMODE_NONE:
 			break;
 
-		case TTMODE_OLD:
-			break; // idk do we still want this?
-
-		case TTMODE_RINGRACERS:
-			kts_bumper = W_CachePatchName("KTSBUMPR1", PU_PATCH_LOWPRIORITY);
-			kts_eggman = W_CachePatchName("KTSEGG01", PU_PATCH_LOWPRIORITY);
-			kts_tails = W_CachePatchName("KTSTAL01", PU_PATCH_LOWPRIORITY);
-			kts_tails_tails = W_CachePatchName("KTSTAL02", PU_PATCH_LOWPRIORITY);
-			for (i = 0; i < 6; i++)
-			{
-				kts_electricity[i] = W_CachePatchName(va("KTSELCT%.1d", i+1), PU_PATCH_LOWPRIORITY);
-			}
-			kts_copyright = W_CachePatchName("KTSCR", PU_PATCH_LOWPRIORITY);
+		case TTMODE_KART:
+			ttbanner = W_CachePatchName("TTKBANNR", PU_PATCH_LOWPRIORITY);
+			ttkart = W_CachePatchName("TTKART", PU_PATCH_LOWPRIORITY);
+			ttcheckers = W_CachePatchName("TTCHECK", PU_PATCH_LOWPRIORITY);
+			ttkflash = W_CachePatchName("TTKFLASH", PU_PATCH_LOWPRIORITY);
 			break;
 
 		case TTMODE_USER:
@@ -1957,80 +1940,8 @@ void F_TitleScreenDrawer(void)
 		case TTMODE_NONE:
 			break;
 
-		case TTMODE_RINGRACERS:
+		case TTMODE_KART:
 		{
-			const char *eggName = "eggman";
-			INT32 eggSkin = R_SkinAvailable(eggName);
-			skincolornum_t eggColor = SKINCOLOR_RED;
-			UINT8 *eggColormap = NULL;
-
-			const char *tailsName = "tails";
-			INT32 tailsSkin = R_SkinAvailable(tailsName);
-			skincolornum_t tailsColor = SKINCOLOR_ORANGE;
-			UINT8 *tailsColormap = NULL;
-
-			if (eggSkin != -1)
-			{
-				eggColor = skins[eggSkin].prefcolor;
-			}
-			eggColormap = R_GetTranslationColormap(TC_DEFAULT, eggColor, GTC_MENUCACHE);
-
-			if (tailsSkin != -1)
-			{
-				tailsColor = skins[tailsSkin].prefcolor;
-			}
-			tailsColormap = R_GetTranslationColormap(TC_DEFAULT, tailsColor, GTC_MENUCACHE);
-
-			V_DrawFixedPatch(0, 0, FRACUNIT, 0, kts_tails_tails, tailsColormap);
-			V_DrawFixedPatch(0, 0, FRACUNIT, V_ADD, kts_electricity[finalecount % 6], NULL);
-
-			V_DrawFixedPatch(0, 0, FRACUNIT, 0, kts_eggman, eggColormap);
-			V_DrawFixedPatch(0, 0, FRACUNIT, 0, kts_tails, tailsColormap);
-
-			V_DrawFixedPatch(0, 0, FRACUNIT, 0, kts_bumper, NULL);
-
-			V_DrawFixedPatch(0, 0, FRACUNIT, 0, kts_copyright, NULL);
-
-			// An adapted thing from old menus - most games have version info on the title screen now...
-			{
-				INT32 texty = vid.height - 10*vid.dupy;
-#define addtext(f, str) {\
-	V_DrawThinString(vid.dupx, texty, V_NOSCALESTART|f, str);\
-	texty -= 10*vid.dupy;\
-}
-				if (customversionstring[0] != '\0')
-				{
-					addtext(V_ALLOWLOWERCASE, customversionstring);
-					addtext(0, "Mod version:");
-				}
-				else
-				{
-// Development -- show revision / branch info
-#if defined(TESTERS)
-					addtext(V_ALLOWLOWERCASE|V_SKYMAP, "Tester client");
-					addtext(V_ALLOWLOWERCASE|V_TRANSLUCENT, va("%s", compdate));
-#elif defined(HOSTTESTERS)
-					addtext(V_ALLOWLOWERCASE|V_REDMAP, "Netgame host for testers");
-					addtext(V_ALLOWLOWERCASE|V_TRANSLUCENT, va("%s", compdate));
-#elif defined(DEVELOP)
-					addtext(V_ALLOWLOWERCASE|V_GREENMAP|V_TRANSLUCENT, comprevision);
-					addtext(V_ALLOWLOWERCASE|V_YELLOWMAP|V_TRANSLUCENT, compbranch);
-					addtext(V_ALLOWLOWERCASE|V_ORANGEMAP|V_TRANSLUCENT, va("%s", complast));
-					
-#else // Regular build
-					addtext(V_ALLOWLOWERCASE|V_TRANSLUCENT, va("%s", VERSIONSTRING));
-#endif
-					if (compuncommitted)
-						addtext(V_REDMAP|V_STRINGDANCE|V_TRANSLUCENT, "! UNCOMMITTED CHANGES !");
-				}
-#undef addtext
-			}
-
-			break;
-		}
-
-		case TTMODE_OLD:
-/*
 			if (finalecount < 50)
 			{
 				V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 31);
@@ -2054,6 +1965,8 @@ void F_TitleScreenDrawer(void)
 				if (finalecount <= (50+(9<<1)))
 					transval = (finalecount - 50)>>1;
 
+				F_TitleBGScroll(5);
+
 				V_DrawSciencePatch(0, 0 - FixedMul(40<<FRACBITS, FixedDiv(finalecount%70, 70)), V_SNAPTOTOP|V_SNAPTOLEFT, ttcheckers, FRACUNIT);
 				V_DrawSciencePatch(280<<FRACBITS, -(40<<FRACBITS) + FixedMul(40<<FRACBITS, FixedDiv(finalecount%70, 70)), V_SNAPTOTOP|V_SNAPTORIGHT, ttcheckers, FRACUNIT);
 
@@ -2069,19 +1982,9 @@ void F_TitleScreenDrawer(void)
 
 				V_DrawSmallScaledPatch(84, 36, transval<<V_ALPHASHIFT, ttkflash);
 			}
-*/
-			V_DrawCenteredString(BASEVIDWIDTH/2, 64, V_ALLOWLOWERCASE, "Dr. Robotnik's Ring Racers v2.0");
 
-#ifdef DEVELOP
-#if defined(TESTERS)
-			V_DrawCenteredString(BASEVIDWIDTH/2, 96, V_SKYMAP|V_ALLOWLOWERCASE, "Tester EXE");
-#elif defined(HOSTTESTERS)
-			V_DrawCenteredThinString(BASEVIDWIDTH/2, 96, V_REDMAP|V_ALLOWLOWERCASE, "Tester netgame host EXE");
-#else
-			V_DrawCenteredString(BASEVIDWIDTH/2, 96, V_ALLOWLOWERCASE, "Development EXE");
-#endif
-#endif
 			break;
+		}
 
 		case TTMODE_USER:
 			if (!ttuser[max(0, ttuser_count)])
@@ -2136,7 +2039,11 @@ void F_TitleScreenTicker(boolean run)
 	{
 		finalecount++;
 
-		if (finalecount == 1)
+		if (finalecount == 10)
+		{
+			S_StartSound(NULL, sfx_s23e);
+		}
+		else if (finalecount == 50)
 		{
 			// Now start the music
 			if (menupres[MN_MAIN].musname[0])

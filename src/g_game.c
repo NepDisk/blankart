@@ -2349,7 +2349,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->karmadelay = comebacktime;
 	p->overtimekarma = 0;
 	p->eggmanblame = -1;
-	p->lastdraft = -1;
 	p->nocontrol = nocontrol;
 	p->kickstartaccel = kickstartaccel;
 

@@ -8255,7 +8255,10 @@ void T_Friction(friction_t *f)
 		// apparently, all I had to do was comment out part of the next line and
 		// friction works for all mobj's
 		// (or at least MF_PUSHABLEs, which is all I care about anyway)
-		if (!(thing->flags & (MF_NOGRAVITY | MF_NOCLIP)) && thing->z == thing->floorz)
+		// Readded v1 kart condition - Nep
+		if (!(thing->flags & (MF_NOGRAVITY | MF_NOCLIP)) && thing->z == thing->floorz && (thing->player
+			&& (thing->player->invincibilitytimer == 0 && thing->player->hyudorotimer == 0
+			&& thing->player->sneakertimer == 0 && thing->player->growshrinktimer <= 0)))
 		{
 			if (f->roverfriction)
 			{

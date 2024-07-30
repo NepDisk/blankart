@@ -124,7 +124,7 @@ void K_DoIngameRespawn(player_t *player)
 	}
 
 	player->ringboost = 0;
-	player->driftboost = player->strongdriftboost = 0;
+	player->driftboost = 0;
 	
 	P_ResetPlayer(player);
 

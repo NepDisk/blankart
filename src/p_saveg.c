@@ -267,7 +267,6 @@ static void P_NetArchivePlayers(void)
 		WRITESINT8(save_p, players[i].drift);
 		WRITEFIXED(save_p, players[i].driftcharge);
 		WRITEUINT8(save_p, players[i].driftboost);
-		WRITEUINT8(save_p, players[i].strongdriftboost);
 
 		WRITESINT8(save_p, players[i].aizdriftstrat);
 		WRITEINT32(save_p, players[i].aizdrifttilt);
@@ -288,16 +287,11 @@ static void P_NetArchivePlayers(void)
 
 		WRITEFIXED(save_p, players[i].fastfall);
 
-		WRITEUINT8(save_p, players[i].numboosts);
 		WRITEFIXED(save_p, players[i].boostpower);
 		WRITEFIXED(save_p, players[i].speedboost);
 		WRITEFIXED(save_p, players[i].accelboost);
 		WRITEFIXED(save_p, players[i].handleboost);
 		WRITEANGLE(save_p, players[i].boostangle);
-
-		WRITEFIXED(save_p, players[i].draftpower);
-		WRITEUINT16(save_p, players[i].draftleeway);
-		WRITESINT8(save_p, players[i].lastdraft);
 
 		WRITEUINT8(save_p, players[i].tripwireState);
 		WRITEUINT8(save_p, players[i].tripwirePass);
@@ -330,7 +324,6 @@ static void P_NetArchivePlayers(void)
 		WRITESINT8(save_p, players[i].stealingtimer);
 
 		WRITEUINT16(save_p, players[i].sneakertimer);
-		WRITEUINT8(save_p, players[i].numsneakers);
 		WRITEUINT8(save_p, players[i].floorboost);
 		
 		WRITEUINT8(save_p, players[i].boostcharge);
@@ -563,7 +556,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].drift = READSINT8(save_p);
 		players[i].driftcharge = READFIXED(save_p);
 		players[i].driftboost = READUINT8(save_p);
-		players[i].strongdriftboost = READUINT8(save_p);
 
 		players[i].aizdriftstrat = READSINT8(save_p);
 		players[i].aizdrifttilt = READINT32(save_p);
@@ -584,16 +576,11 @@ static void P_NetUnArchivePlayers(void)
 
 		players[i].fastfall = READFIXED(save_p);
 
-		players[i].numboosts = READUINT8(save_p);
 		players[i].boostpower = READFIXED(save_p);
 		players[i].speedboost = READFIXED(save_p);
 		players[i].accelboost = READFIXED(save_p);
 		players[i].handleboost = READFIXED(save_p);
 		players[i].boostangle = READANGLE(save_p);
-
-		players[i].draftpower = READFIXED(save_p);
-		players[i].draftleeway = READUINT16(save_p);
-		players[i].lastdraft = READSINT8(save_p);
 
 		players[i].tripwireState = READUINT8(save_p);
 		players[i].tripwirePass = READUINT8(save_p);
@@ -626,7 +613,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].stealingtimer = READSINT8(save_p);
 
 		players[i].sneakertimer = READUINT16(save_p);
-		players[i].numsneakers = READUINT8(save_p);
 		players[i].floorboost = READUINT8(save_p);
 		
 		players[i].boostcharge = READUINT8(save_p);

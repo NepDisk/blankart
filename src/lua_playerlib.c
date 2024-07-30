@@ -244,8 +244,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->driftcharge);
 	else if (fastcmp(field,"driftboost"))
 		lua_pushinteger(L, plr->driftboost);
-	else if (fastcmp(field,"strongdriftboost"))
-		lua_pushinteger(L, plr->strongdriftboost);
 	else if (fastcmp(field,"aizdriftstraft"))
 		lua_pushinteger(L, plr->aizdriftstrat);
 	else if (fastcmp(field,"aizdrifttilt"))
@@ -270,8 +268,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->spindashboost);
 	else if (fastcmp(field,"fastfall"))
 		lua_pushfixed(L, plr->fastfall);
-	else if (fastcmp(field,"numboosts"))
-		lua_pushinteger(L, plr->numboosts);
 	else if (fastcmp(field,"boostpower"))
 		lua_pushinteger(L, plr->boostpower);
 	else if (fastcmp(field,"speedboost"))
@@ -282,12 +278,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->handleboost);
 	else if (fastcmp(field,"boostangle"))
 		lua_pushangle(L, plr->boostangle);
-	else if (fastcmp(field,"draftpower"))
-		lua_pushinteger(L, plr->draftpower);
-	else if (fastcmp(field,"draftleeway"))
-		lua_pushinteger(L, plr->draftleeway);
-	else if (fastcmp(field,"lastdraft"))
-		lua_pushinteger(L, plr->lastdraft);
 	else if (fastcmp(field,"tripwireState"))
 		lua_pushinteger(L, plr->tripwireState);
 	else if (fastcmp(field,"tripwirePass"))
@@ -336,8 +326,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->stealingtimer);
 	else if (fastcmp(field,"sneakertimer"))
 		lua_pushinteger(L, plr->sneakertimer);
-	else if (fastcmp(field,"numsneakers"))
-		lua_pushinteger(L, plr->numsneakers);
 	else if (fastcmp(field,"floorboost"))
 		lua_pushinteger(L, plr->floorboost);
 	else if (fastcmp(field,"growshrinktimer"))
@@ -624,8 +612,6 @@ static int player_set(lua_State *L)
 		plr->spindashboost = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"fastfall"))
 		plr->fastfall = luaL_checkfixed(L, 3);
-	else if (fastcmp(field,"numboosts"))
-		plr->numboosts = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"boostpower"))
 		plr->boostpower = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"speedboost"))
@@ -636,12 +622,6 @@ static int player_set(lua_State *L)
 		plr->handleboost = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"boostangle"))
 		plr->boostangle = luaL_checkangle(L, 3);
-	else if (fastcmp(field,"draftpower"))
-		plr->draftpower = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"draftleeway"))
-		plr->draftleeway = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"lastdraft"))
-		plr->lastdraft = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"tripwireState"))
 		plr->tripwireState = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"tripwirePass"))
@@ -690,8 +670,6 @@ static int player_set(lua_State *L)
 		plr->stealingtimer = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"sneakertimer"))
 		plr->sneakertimer = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"numsneakers"))
-		plr->numsneakers = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"floorboost"))
 		plr->floorboost = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"growshrinktimer"))

@@ -420,7 +420,6 @@ typedef struct player_s
 	SINT8 drift;			// (-5 to 5) - Drifting Left or Right, plus a bigger counter = sharper turn
 	fixed_t driftcharge;	// Charge your drift so you can release a burst of speed
 	UINT8 driftboost;		// (0 to 125) - Boost you get from drifting
-	UINT8 strongdriftboost; // (0 to 125) - While active, boost from drifting gives a stronger speed increase
 
 	SINT8 aizdriftstrat;	// (-1 to 1) - Let go of your drift while boosting? Helper for the SICK STRATZ (sliptiding!) you have just unlocked
 	INT32 aizdrifttilt;
@@ -440,17 +439,12 @@ typedef struct player_s
 	UINT8 spindashboost;	// Spindash release boost timer
 
 	fixed_t fastfall;		// Fast fall momentum
-
-	UINT8 numboosts;		// Count of how many boosts are being stacked, for after image spawning
+	
 	fixed_t boostpower;		// Base boost value, for offroad
 	fixed_t speedboost;		// Boost value smoothing for max speed
 	fixed_t accelboost;		// Boost value smoothing for acceleration
 	fixed_t handleboost;	// Boost value smoothing for handling
 	angle_t boostangle;		// angle set when not spun out OR boosted to determine what direction you should keep going at if you're spun out and boosted.
-
-	fixed_t draftpower;		// (0 to FRACUNIT) - Drafting power, doubles your top speed & acceleration at max
-	UINT16 draftleeway;		// Leniency timer before removing draft power
-	SINT8 lastdraft;		// (-1 to 15) - Last player being drafted
 
 	UINT8 tripwireState; // see tripwirestate_t
 	UINT8 tripwirePass; // see tripwirepass_t
@@ -487,7 +481,6 @@ typedef struct player_s
 	mobj_t *hoverhyudoro;   // First hyudoro hovering next to player
 
 	UINT16 sneakertimer;	// Duration of a Sneaker Boost (from Sneakers or level boosters)
-	UINT8 numsneakers;		// Number of stacked sneaker effects
 	UINT8 floorboost;		// (0 to 3) - Prevents Sneaker sounds for a brief duration when triggered by a floor panel
 
 	UINT8 boostcharge; 		// Charge during race start

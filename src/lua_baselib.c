@@ -3552,7 +3552,7 @@ static int lib_kSpawnWipeoutTrail(lua_State *L)
 	NOHUD
 	if (!mo)
 		return LUA_ErrInvalid(L, "mobj_t");
-	K_SpawnWipeoutTrail(mo);
+	K_SpawnWipeoutTrail(mo, false);
 	return 0;
 }
 

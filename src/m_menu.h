@@ -151,7 +151,7 @@ typedef struct
 	boolean bghide; // for titlemaps, hide the background.
 
 	SINT8 hidetitlepics; // hide title gfx per menu; -1 means undefined, inherits global setting
-	ttmode_enum ttmode; // title wing animation mode; default TTMODE_OLD
+	ttmode_enum ttmode; // title wing animation mode; default TTMODE_KART
 	UINT8 ttscale; // scale of title wing gfx (FRACUNIT / ttscale); -1 means undefined, inherits global setting
 	char ttname[9]; // lump name of title wing gfx. If name length is <= 6, engine will attempt to load numbered frames (TTNAMExx)
 	INT16 ttx; // X position of title wing

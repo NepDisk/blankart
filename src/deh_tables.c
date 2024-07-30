@@ -3324,16 +3324,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_DRIFTDUST3",
 	"S_DRIFTDUST4",
 
-	// Drift Sparkles
-	"S_DRIFTWARNSPARK1",
-	"S_DRIFTWARNSPARK2",
-	"S_DRIFTWARNSPARK3",
-	"S_DRIFTWARNSPARK4",
-
-	// Drift electricity
-	"S_DRIFTELECTRICITY",
-	"S_DRIFTELECTRICSPARK",
-
 	// Fast lines
 	"S_FASTLINE1",
 	"S_FASTLINE2",
@@ -3349,45 +3339,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_FASTDUST5",
 	"S_FASTDUST6",
 	"S_FASTDUST7",
-
-	// Drift boost effect
-	"S_DRIFTEXPLODE1",
-	"S_DRIFTEXPLODE2",
-	"S_DRIFTEXPLODE3",
-	"S_DRIFTEXPLODE4",
-	"S_DRIFTEXPLODE5",
-	"S_DRIFTEXPLODE6",
-	"S_DRIFTEXPLODE7",
-	"S_DRIFTEXPLODE8",
-
-	// Drift boost clip
-	"S_DRIFTCLIPA1",
-	"S_DRIFTCLIPA2",
-	"S_DRIFTCLIPA3",
-	"S_DRIFTCLIPA4",
-	"S_DRIFTCLIPA5",
-	"S_DRIFTCLIPA6",
-	"S_DRIFTCLIPA7",
-	"S_DRIFTCLIPA8",
-	"S_DRIFTCLIPA9",
-	"S_DRIFTCLIPA10",
-	"S_DRIFTCLIPA11",
-	"S_DRIFTCLIPA12",
-	"S_DRIFTCLIPA13",
-	"S_DRIFTCLIPA14",
-	"S_DRIFTCLIPA15",
-	"S_DRIFTCLIPA16",
-	"S_DRIFTCLIPB1",
-	"S_DRIFTCLIPB2",
-	"S_DRIFTCLIPB3",
-	"S_DRIFTCLIPB4",
-	"S_DRIFTCLIPB5",
-	"S_DRIFTCLIPB6",
-	"S_DRIFTCLIPB7",
-	"S_DRIFTCLIPB8",
-
-	// Drift boost clip spark
-	"S_DRIFTCLIPSPARK",
 
 	// Sneaker boost effect
 	"S_BOOSTFLAME",
@@ -3804,12 +3755,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_BATTLEBUMPER_EXBLAST8",
 	"S_BATTLEBUMPER_EXBLAST9",
 	"S_BATTLEBUMPER_EXBLAST10",
-
-	// Tripwire
-	"S_TRIPWIREBOOST_TOP",
-	"S_TRIPWIREBOOST_BOTTOM",
-	"S_TRIPWIREBOOST_BLAST_TOP",
-	"S_TRIPWIREBOOST_BLAST_BOTTOM",
 
 	// DEZ respawn laser
 	"S_DEZLASER",
@@ -4411,12 +4356,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_GAINAX_MID1",
 	"S_GAINAX_MID2",
 
-	"S_DRAFTDUST1",
-	"S_DRAFTDUST2",
-	"S_DRAFTDUST3",
-	"S_DRAFTDUST4",
-	"S_DRAFTDUST5",
-
 	"S_OVERTIME_BULB1",
 	"S_OVERTIME_BULB2",
 	"S_OVERTIME_LASER",
@@ -4466,16 +4405,7 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_DOWNLINE5",
 
 	"S_HOLDBUBBLE",
-
-	// Finish line beam
-	"S_FINISHBEAM1",
-	"S_FINISHBEAM2",
-	"S_FINISHBEAM3",
-	"S_FINISHBEAM4",
-	"S_FINISHBEAM5",
-	"S_FINISHBEAMEND1",
-	"S_FINISHBEAMEND2",
-
+	
 	// Funny Spike
 	"S_DEBTSPIKE1",
 	"S_DEBTSPIKE2",
@@ -5265,9 +5195,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 
 	"MT_FASTLINE",
 	"MT_FASTDUST",
-	"MT_DRIFTEXPLODE",
-	"MT_DRIFTCLIP",
-	"MT_DRIFTCLIPSPARK",
 	"MT_BOOSTFLAME",
 	"MT_BOOSTSMOKE",
 	"MT_SNEAKERTRAIL",
@@ -5279,8 +5206,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_BRAKEDRIFT",
 	"MT_BRAKEDUST",
 	"MT_DRIFTDUST",
-	"MT_DRIFTELECTRICITY",
-	"MT_DRIFTELECTRICSPARK",
 
 	"MT_ROCKETSNEAKER", // Rocket sneakers
 
@@ -5334,8 +5259,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_BATTLEBUMPER", // Battle Mode bumper
 	"MT_BATTLEBUMPER_DEBRIS",
 	"MT_BATTLEBUMPER_BLAST",
-
-	"MT_TRIPWIREBOOST",
 
 	"MT_DEZLASER",
 
@@ -5549,8 +5472,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_KARMAFIREWORK",
 	"MT_RINGSPARKS",
 	"MT_GAINAX",
-	"MT_DRAFTDUST",
-	"MT_SPBDUST",
 
 	"MT_OVERTIME_PARTICLE",
 	"MT_OVERTIME_CENTER",

@@ -2334,17 +2334,6 @@ boolean P_ZMovement(mobj_t *mo)
 			mom.z = P_MobjFlip(mo)*FixedMul(5*FRACUNIT, mo->scale);
 		else if (mo->type == MT_SPINFIRE) // elemental shield fire is another exception here
 			;
-		else if (mo->type == MT_DRIFTCLIP)
-		{
-			mom.z = -mom.z/2;
-			if (abs(mom.z) > 4 * mo->scale / 3)
-			{
-				K_SpawnDriftBoostClipSpark(mo);
-				S_StartSound(mo, sfx_tink);
-			}
-			else
-				mo->renderflags ^= RF_DONTDRAW;
-		}
 		else if (mo->type == MT_DEBTSPIKE)
 		{
 			mom.x = mom.y = 0;
@@ -6248,9 +6237,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 			mobj->renderflags ^= RF_DONTDRAW;
 		break;
 	case MT_SPINDASHWIND:
-	case MT_DRIFTELECTRICSPARK:
-		mobj->renderflags ^= RF_DONTDRAW;
-		break;
 	case MT_VWREF:
 	case MT_VWREB:
 	{
@@ -7125,188 +7111,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 
 			if (mobj->threshold > 0)
 				mobj->threshold--;
-		}
-		break;
-	case MT_DRIFTEXPLODE:
-		if (!mobj->target || !mobj->target->health)
-		{
-			P_RemoveMobj(mobj);
-			return false;
-		}
-
-		//mobj->angle = mobj->target->angle;
-		{
-			angle_t angle = K_MomentumAngle(mobj->target);
-			fixed_t nudge;
-
-			mobj->angle = angle;
-
-			if (( mobj->fuse & 1 ))
-			{
-				nudge = 4*mobj->target->radius;
-				/* unrotate interp angle */
-				mobj->old_angle -= ANGLE_90;
-			}
-			else
-			{
-				nudge = 2*mobj->target->radius;
-				/* rotate the papersprite frames to see the flat angle */
-				mobj->angle += ANGLE_90;
-				mobj->old_angle += ANGLE_90;
-			}
-
-			P_MoveOrigin(mobj,
-					mobj->target->x + P_ReturnThrustX(mobj, angle + ANGLE_180, nudge),
-					mobj->target->y + P_ReturnThrustY(mobj, angle + ANGLE_180, nudge),
-					mobj->target->z);
-		}
-		P_SetScale(mobj, mobj->target->scale);
-
-		mobj->roll = mobj->target->roll;
-		mobj->pitch = mobj->target->pitch;
-
-		if (mobj->fuse <= 16)
-		{
-			mobj->color = SKINCOLOR_GOLD;
-			/* don't draw papersprite frames after blue boost */
-			mobj->renderflags ^= RF_DONTDRAW;
-		}
-		else if (mobj->fuse <= 32)
-			mobj->color = SKINCOLOR_KETCHUP;
-		else if (mobj->fuse <= 48)
-			mobj->color = SKINCOLOR_SAPPHIRE;
-		else if (mobj->fuse > 48)
-			mobj->color = K_RainbowColor(
-				(SKINCOLOR_SAPPHIRE - SKINCOLOR_PINK) // Smoothly transition into the other state
-				+ ((mobj->fuse - 32) * 2) // Make the color flashing slow down while it runs out
-			);
-
-		switch (mobj->extravalue1)
-		{
-			case 4:/* rainbow boost */
-				/* every 20 tics, bang! */
-				if (( 120 - mobj->fuse ) % 10 == 0)
-				{
-					K_SpawnDriftBoostClip(mobj->target->player);
-					S_StartSound(mobj->target, sfx_s3k77);
-				}
-				break;
-
-			case 3:/* blue boost */
-				if ((mobj->fuse == 32)/* to red*/
-				|| (mobj->fuse == 16))/* to yellow*/
-					K_SpawnDriftBoostClip(mobj->target->player);
-				break;
-
-			case 2:/* red boost */
-				if (mobj->fuse == 16)/* to yellow*/
-					K_SpawnDriftBoostClip(mobj->target->player);
-				break;
-
-			case 0:/* air failsafe boost */
-				mobj->color = SKINCOLOR_SILVER; // force white
-				break;
-		}
-
-		{
-			player_t *p = NULL;
-			if (mobj->target->target && mobj->target->target->player)
-				p = mobj->target->target->player;
-			else if (mobj->target->player)
-				p = mobj->target->player;
-
-			if (p)
-			{
-				if (p->driftboost > mobj->movecount)
-				{
-					; // reset animation
-				}
-
-				mobj->movecount = p->driftboost;
-			}
-		}
-		break;
-	case MT_TRIPWIREBOOST:
-		if (!mobj->target || !mobj->target->health
-			|| !mobj->target->player || !mobj->target->player->tripwireLeniency)
-		{
-			P_RemoveMobj(mobj);
-			return false;
-		}
-
-		mobj->angle = K_MomentumAngle(mobj->target);
-		P_MoveOrigin(mobj, mobj->target->x, mobj->target->y, mobj->target->z + (mobj->target->height >> 1));
-		mobj->destscale = mobj->target->scale;
-		P_SetScale(mobj, mobj->target->scale);
-
-		if (mobj->extravalue1)
-		{
-			mobj->angle += ANGLE_180;
-		}
-
-		{
-			fixed_t convSpeed = (mobj->target->player->speed * 100) / K_GetKartSpeed(mobj->target->player, false, true);
-			UINT8 trans = ((mobj->target->player->tripwireLeniency + 1) * (NUMTRANSMAPS+1)) / TRIPWIRETIME;
-
-			if (trans > NUMTRANSMAPS)
-				trans = NUMTRANSMAPS;
-
-			trans = NUMTRANSMAPS - trans;
-
-			if ((trans >= NUMTRANSMAPS) // not a valid visibility
-				|| (convSpeed < 150 && (leveltime & 1)) // < 150% flickering
-				|| (mobj->target->player->tripwirePass < TRIPWIRE_BOOST) // Not strong enough to make an aura
-				|| mobj->target->player->flamedash) // Flameshield dash
-			{
-				mobj->renderflags |= RF_DONTDRAW;
-			}
-			else
-			{
-				boolean blastermode = (convSpeed >= 200) && (mobj->target->player->tripwirePass >= TRIPWIRE_BLASTER);
-
-				mobj->renderflags &= ~(RF_TRANSMASK|RF_DONTDRAW);
-				if (trans != 0)
-				{
-					mobj->renderflags |= (trans << RF_TRANSSHIFT);
-				}
-				mobj->renderflags |= (mobj->target->renderflags & RF_DONTDRAW);
-
-				if (mobj->target->player->invincibilitytimer > 0)
-				{
-					if (mobj->target->player->invincibilitytimer > itemtime+(2*TICRATE))
-					{
-						mobj->color = K_RainbowColor(leveltime / 2);
-					}
-					else
-					{
-						mobj->color = SKINCOLOR_INVINCFLASH;
-					}
-					mobj->colorized = true;
-				}
-				else if (mobj->target->player->curshield == KSHIELD_FLAME)
-				{
-					mobj->color = SKINCOLOR_KETCHUP;
-					mobj->colorized = true;
-				}
-				else
-				{
-					mobj->color = SKINCOLOR_NONE;
-					mobj->colorized = false;
-				}
-
-				if (blastermode == !(mobj->flags2 & MF2_AMBUSH))
-				{
-					mobj->flags2 ^= MF2_AMBUSH;
-					if (blastermode)
-					{
-						P_SetMobjState(mobj, (mobj->extravalue1) ? S_TRIPWIREBOOST_BLAST_BOTTOM : S_TRIPWIREBOOST_BLAST_TOP);
-					}
-					else
-					{
-						P_SetMobjState(mobj, (mobj->extravalue1) ? S_TRIPWIREBOOST_BOTTOM : S_TRIPWIREBOOST_TOP);
-					}
-				}
-			}
 		}
 		break;
 	case MT_BOOSTFLAME:
@@ -9831,9 +9635,6 @@ static void P_DefaultMobjShadowScale(mobj_t *thing)
 		case MT_ITEMCAPSULE:
 		case MT_POGOSPRING:
 			thing->shadowscale = FRACUNIT/2;
-			break;
-		case MT_DRIFTCLIP:
-			thing->shadowscale = FRACUNIT/3;
 			break;
 		default:
 			if (thing->flags & (MF_ENEMY|MF_BOSS))

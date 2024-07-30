@@ -6,6 +6,7 @@
 
 #include "k_kart.h"
 #include "d_player.h"
+#include "doomstat.h"
 #include "k_battle.h"
 #include "k_boss.h"
 #include "k_pwrlv.h"
@@ -1657,259 +1658,6 @@ static void K_UpdateOffroad(player_t *player)
 		player->offroad = 0;
 }
 
-static void K_DrawDraftCombiring(player_t *player, player_t *victim, fixed_t curdist, fixed_t maxdist, boolean transparent)
-{
-#define CHAOTIXBANDLEN 15
-#define CHAOTIXBANDCOLORS 9
-	static const UINT8 colors[CHAOTIXBANDCOLORS] = {
-		SKINCOLOR_SAPPHIRE,
-		SKINCOLOR_PLATINUM,
-		SKINCOLOR_TEA,
-		SKINCOLOR_GARDEN,
-		SKINCOLOR_BANANA,
-		SKINCOLOR_GOLD,
-		SKINCOLOR_ORANGE,
-		SKINCOLOR_SCARLET,
-		SKINCOLOR_TAFFY
-	};
-	fixed_t minimumdist = FixedMul(RING_DIST>>1, player->mo->scale);
-	UINT8 n = CHAOTIXBANDLEN;
-	UINT8 offset = ((leveltime / 3) % 3);
-	fixed_t stepx, stepy, stepz;
-	fixed_t curx, cury, curz;
-	UINT8 c;
-
-	if (maxdist == 0)
-	{
-		c = leveltime % CHAOTIXBANDCOLORS;
-	}
-	else
-	{
-		c = FixedMul(CHAOTIXBANDCOLORS<<FRACBITS, FixedDiv(curdist-minimumdist, maxdist-minimumdist)) >> FRACBITS;
-	}
-
-	stepx = (victim->mo->x - player->mo->x) / CHAOTIXBANDLEN;
-	stepy = (victim->mo->y - player->mo->y) / CHAOTIXBANDLEN;
-	stepz = ((victim->mo->z + (victim->mo->height / 2)) - (player->mo->z + (player->mo->height / 2))) / CHAOTIXBANDLEN;
-
-	curx = player->mo->x + stepx;
-	cury = player->mo->y + stepy;
-	curz = player->mo->z + stepz;
-
-	while (n)
-	{
-		if (offset == 0)
-		{
-			mobj_t *band = P_SpawnMobj(curx + (P_RandomRange(-12,12)*mapobjectscale),
-				cury + (P_RandomRange(-12,12)*mapobjectscale),
-				curz + (P_RandomRange(24,48)*mapobjectscale),
-				MT_SIGNSPARKLE);
-
-			if (maxdist == 0)
-			{
-				P_SetMobjState(band, S_KSPARK1 + (leveltime % 8));
-				P_SetScale(band, (band->destscale = player->mo->scale));
-			}
-			else
-			{
-				P_SetMobjState(band, S_SIGNSPARK1 + (leveltime % 11));
-				P_SetScale(band, (band->destscale = (3*player->mo->scale)/2));
-			}
-
-			band->color = colors[c];
-			band->colorized = true;
-
-			band->fuse = 2;
-
-			if (transparent)
-				band->renderflags |= RF_GHOSTLY;
-
-			band->renderflags |= RF_DONTDRAW & ~(K_GetPlayerDontDrawFlag(player) | K_GetPlayerDontDrawFlag(victim));
-		}
-
-		curx += stepx;
-		cury += stepy;
-		curz += stepz;
-
-		offset = abs(offset-1) % 3;
-		n--;
-	}
-#undef CHAOTIXBANDLEN
-}
-
-/**	\brief	Updates the player's drafting values once per frame
-
-	\param	player	player object passed from K_KartPlayerThink
-
-	\return	void
-*/
-static void K_UpdateDraft(player_t *player)
-{
-	fixed_t topspd = K_GetKartSpeed(player, false, false);
-	fixed_t draftdistance;
-	fixed_t minDist;
-	UINT8 leniency;
-	UINT8 i;
-
-	if (player->itemtype == KITEM_LIGHTNINGSHIELD)
-	{
-		// Lightning Shield gets infinite draft distance as its (other) passive effect.
-		draftdistance = 0;
-	}
-	else
-	{
-		// Distance you have to be to draft. If you're still accelerating, then this distance is lessened.
-		// This distance biases toward low weight! (min weight gets 4096 units, max weight gets 3072 units)
-		// This distance is also scaled based on game speed.
-		draftdistance = (3072 + (128 * (9 - player->kartweight))) * player->mo->scale;
-		if (player->speed < topspd)
-			draftdistance = FixedMul(draftdistance, FixedDiv(player->speed, topspd));
-		draftdistance = FixedMul(draftdistance, K_GetKartGameSpeedScalar(gamespeed));
-	}
-
-	// On the contrary, the leniency period biases toward high weight.
-	// (See also: the leniency variable in K_SpawnDraftDust)
-	leniency = (3*TICRATE)/4 + ((player->kartweight-1) * (TICRATE/4));
-
-	minDist = 640 * player->mo->scale;
-
-	if (gametype == GT_BATTLE)
-	{
-		// TODO: gametyperules
-		minDist /= 4;
-		draftdistance *= 2;
-		leniency *= 4;
-	}
-
-	// Not enough speed to draft.
-	if (player->speed >= 20*player->mo->scale)
-	{
-//#define EASYDRAFTTEST
-		// Let's hunt for players to draft off of!
-		for (i = 0; i < MAXPLAYERS; i++)
-		{
-			fixed_t dist, olddraft;
-#ifndef EASYDRAFTTEST
-			angle_t yourangle, theirangle, diff;
-#endif
-
-			if (!playeringame[i] || players[i].spectator || !players[i].mo)
-				continue;
-
-#ifndef EASYDRAFTTEST
-			// Don't draft on yourself :V
-			if (&players[i] == player)
-				continue;
-#endif
-
-			// Not enough speed to draft off of.
-			if (players[i].speed < 20*players[i].mo->scale)
-				continue;
-
-			// No tethering off of the guy who got the starting bonus :P
-			if (players[i].startboost > 0)
-				continue;
-
-#ifndef EASYDRAFTTEST
-			yourangle = K_MomentumAngle(player->mo);
-			theirangle = K_MomentumAngle(players[i].mo);
-
-			diff = R_PointToAngle2(player->mo->x, player->mo->y, players[i].mo->x, players[i].mo->y) - yourangle;
-			if (diff > ANGLE_180)
-				diff = InvAngle(diff);
-
-			// Not in front of this player.
-			if (diff > ANG10)
-				continue;
-
-			diff = yourangle - theirangle;
-			if (diff > ANGLE_180)
-				diff = InvAngle(diff);
-
-			// Not moving in the same direction.
-			if (diff > ANGLE_90)
-				continue;
-#endif
-
-			dist = P_AproxDistance(P_AproxDistance(players[i].mo->x - player->mo->x, players[i].mo->y - player->mo->y), players[i].mo->z - player->mo->z);
-
-#ifndef EASYDRAFTTEST
-			// TOO close to draft.
-			if (dist < minDist)
-				continue;
-
-			// Not close enough to draft.
-			if (dist > draftdistance && draftdistance > 0)
-				continue;
-#endif
-
-			olddraft = player->draftpower;
-
-			player->draftleeway = leniency;
-			player->lastdraft = i;
-
-			// Draft power is used later in K_GetKartBoostPower, ranging from 0 for normal speed and FRACUNIT for max draft speed.
-			// How much this increments every tic biases toward acceleration! (min speed gets 1.5% per tic, max speed gets 0.5% per tic)
-			if (player->draftpower < FRACUNIT)
-			{
-				fixed_t add = (FRACUNIT/200) + ((9 - player->kartspeed) * ((3*FRACUNIT)/1600));;
-				player->draftpower += add;
-
-				if (player->bot && player->botvars.rival)
-				{
-					// Double speed for the rival!
-					player->draftpower += add;
-				}
-
-				if (gametype == GT_BATTLE)
-				{
-					// TODO: gametyperules
-					// Double speed in Battle
-					player->draftpower += add;
-				}
-			}
-
-			if (player->draftpower > FRACUNIT)
-				player->draftpower = FRACUNIT;
-
-			// Play draft finish noise
-			if (olddraft < FRACUNIT && player->draftpower >= FRACUNIT)
-				S_StartSound(player->mo, sfx_cdfm62);
-
-			// Spawn in the visual!
-			K_DrawDraftCombiring(player, &players[i], dist, draftdistance, false);
-
-			return; // Finished doing our draft.
-		}
-	}
-
-	// No one to draft off of? Then you can knock that off.
-	if (player->draftleeway > 0) // Prevent small disruptions from stopping your draft.
-	{
-		if (P_IsObjectOnGround(player->mo) == true)
-		{
-			// Allow maintaining tether in air setpieces.
-			player->draftleeway--;
-		}
-
-		if (player->lastdraft >= 0
-			&& player->lastdraft < MAXPLAYERS
-			&& playeringame[player->lastdraft]
-			&& !players[player->lastdraft].spectator
-			&& players[player->lastdraft].mo)
-		{
-			player_t *victim = &players[player->lastdraft];
-			fixed_t dist = P_AproxDistance(P_AproxDistance(victim->mo->x - player->mo->x, victim->mo->y - player->mo->y), victim->mo->z - player->mo->z);
-			K_DrawDraftCombiring(player, victim, dist, draftdistance, true);
-		}
-	}
-	else // Remove draft speed boost.
-	{
-		player->draftpower = 0;
-		player->lastdraft = -1;
-	}
-}
-
 void K_KartPainEnergyFling(player_t *player)
 {
 	static const UINT8 numfling = 5;
@@ -2073,12 +1821,7 @@ static void K_SpawnBrakeDriftSparks(player_t *player) // Be sure to update the m
 	sparks->renderflags |= RF_DONTDRAW;
 }
 
-static void
-spawn_brake_dust
-(		mobj_t * master,
-		angle_t aoff,
-		fixed_t rad,
-		fixed_t scale)
+static void spawn_brake_dust(mobj_t * master, angle_t aoff, fixed_t rad, fixed_t scale)
 {
 	const angle_t a = master->angle + aoff;
 
@@ -2146,49 +1889,6 @@ static void K_SpawnBrakeVisuals(player_t *player)
 	player->mo->spriteyoffset = P_RandomFlip(2 * scale);
 }
 
-void K_SpawnDriftBoostClip(player_t *player)
-{
-	mobj_t *clip;
-	fixed_t scale = 115*FRACUNIT/100;
-	fixed_t momz = P_GetMobjZMovement(player->mo);
-	fixed_t z;
-
-	if (( player->mo->eflags & MFE_VERTICALFLIP ))
-		z = player->mo->z;
-	else
-		z = player->mo->z + player->mo->height;
-
-	clip = P_SpawnMobj(player->mo->x, player->mo->y, z, MT_DRIFTCLIP);
-
-	P_SetTarget(&clip->target, player->mo);
-	P_SetScale(clip, ( clip->destscale = FixedMul(scale, player->mo->scale) ));
-	K_MatchGenericExtraFlags(clip, player->mo);
-
-	clip->fuse = 105;
-	clip->momz = 7 * P_MobjFlip(clip) * clip->scale;
-
-	if (momz > 0)
-		clip->momz += momz;
-
-	P_InstaThrust(clip, player->mo->angle +
-			P_RandomFlip(P_RandomRange(FRACUNIT/2, FRACUNIT)),
-			FixedMul(scale, player->speed));
-}
-
-void K_SpawnDriftBoostClipSpark(mobj_t *clip)
-{
-	mobj_t *spark;
-
-	spark = P_SpawnMobj(clip->x, clip->y, clip->z, MT_DRIFTCLIPSPARK);
-
-	P_SetTarget(&spark->target, clip);
-	P_SetScale(spark, ( spark->destscale = clip->scale ));
-	K_MatchGenericExtraFlags(spark, clip);
-
-	spark->momx = clip->momx/2;
-	spark->momy = clip->momx/2;
-}
-
 void K_SpawnNormalSpeedLines(player_t *player)
 {
 	mobj_t *fast = P_SpawnMobj(player->mo->x + (P_RandomRange(-36,36) * player->mo->scale),
@@ -2235,6 +1935,11 @@ void K_SpawnNormalSpeedLines(player_t *player)
 		fast->color = (leveltime & 1) ? SKINCOLOR_LILAC : SKINCOLOR_JAWZ;
 		fast->colorized = true;
 		fast->renderflags |= RF_ADD;
+	}
+	else if (player->pflags & PF_AIRFAILSAFE)
+	{
+		fast->color = SKINCOLOR_WHITE;
+		fast->colorized = true;
 	}
 }
 
@@ -3007,17 +2712,12 @@ fixed_t K_GetSpindashChargeSpeed(player_t *player)
 // sets boostpower, speedboost, accelboost, and handleboost to whatever we need it to be
 static void K_GetKartBoostPower(player_t *player)
 {
-	// Light weights have stronger boost stacking -- aka, better metabolism than heavies XD
-	const fixed_t maxmetabolismincrease = FRACUNIT/2;
-	const fixed_t metabolism = FRACUNIT - ((9-player->kartweight) * maxmetabolismincrease / 8);
-
 	// v2 almost broke sliptiding when it fixed turning bugs!
 	// This value is fine-tuned to feel like v1 again without reverting any of those changes.
 	const fixed_t sliptidehandling = FRACUNIT/2;
 
 	fixed_t boostpower = FRACUNIT;
 	fixed_t speedboost = 0, accelboost = 0, handleboost = 0;
-	UINT8 numboosts = 0;
 
 	if (player->spinouttimer && player->wipeoutslow == 1) // Slow down after you've been bumped
 	{
@@ -3031,26 +2731,41 @@ static void K_GetKartBoostPower(player_t *player)
 
 	if (player->bananadrag > TICRATE)
 		boostpower = (4*boostpower)/5;
+	
+	// Banana drag/offroad dust
+	if (boostpower < FRACUNIT
+		&& player->mo && P_IsObjectOnGround(player->mo)
+		&& player->speed > 0
+		&& !player->spectator)
+	{
+		K_SpawnWipeoutTrail(player->mo, true);
+		if (leveltime % 6 == 0)
+			S_StartSound(player->mo, sfx_cdfm70);
+	}
 
-	// Note: Handling will ONLY stack when sliptiding!
-	// When you're not, it just uses the best instead of adding together, like the old behavior.
 #define ADDBOOST(s,a,h) { \
-	numboosts++; \
-	speedboost += FixedDiv(s, FRACUNIT + (metabolism * (numboosts-1))); \
-	accelboost += FixedDiv(a, FRACUNIT + (metabolism * (numboosts-1))); \
-	if (player->aizdriftstrat) \
-		handleboost += FixedDiv(h, FRACUNIT + (metabolism * (numboosts-1))); \
-	else \
-		handleboost = max(h, handleboost); \
+	speedboost = max(speedboost,s); \
+	accelboost = max(accelboost,a); \
+	handleboost = max(h, handleboost); \
 }
 
 	if (player->sneakertimer) // Sneaker
 	{
-		UINT8 i;
-		for (i = 0; i < player->numsneakers; i++)
+		fixed_t sneakerspeedboost = 0;
+		switch (gamespeed)
 		{
-			ADDBOOST(FRACUNIT/2, 8*FRACUNIT, sliptidehandling); // + 50% top speed, + 800% acceleration, +50% handling
+			case 0:
+				sneakerspeedboost = max(speedboost, 53740+768);
+				break;
+			case 2:
+				sneakerspeedboost = max(speedboost, 17294+768);
+				break;
+			default:
+				sneakerspeedboost = max(speedboost, 32768);
+				break;
 		}
+		ADDBOOST(sneakerspeedboost, 8*FRACUNIT, sliptidehandling); // + ???% top speed, + 800% acceleration, +50% handlin
+		
 	}
 
 	if (player->invincibilitytimer) // Invincibility
@@ -3088,27 +2803,12 @@ static void K_GetKartBoostPower(player_t *player)
 
 	if (player->startboost) // Startup Boost
 	{
-		ADDBOOST(FRACUNIT, 4*FRACUNIT, sliptidehandling/2); // + 100% top speed, + 400% acceleration, +25% handling
+		ADDBOOST(FRACUNIT/4, 6*FRACUNIT, sliptidehandling/2); // + 25% top speed, + 300% acceleration, +25% handling
 	}
 
 	if (player->driftboost) // Drift Boost
 	{
-		// Rebuff Eggman's stat block corner
-		const INT32 heavyAccel = ((9 - player->kartspeed) * 2) + (player->kartweight - 1);
-		const fixed_t heavyAccelBonus = FRACUNIT + ((heavyAccel * maxmetabolismincrease * 2) / 24);
-
-		fixed_t driftSpeed = FRACUNIT/4; // 25% base
-
-		if (player->strongdriftboost > 0)
-		{
-			// Purple/Rainbow drift boost
-			driftSpeed = FixedMul(driftSpeed, 4*FRACUNIT/3); // 25% -> 33%
-		}
-
-		// Bottom-left bonus
-		driftSpeed = FixedMul(driftSpeed, heavyAccelBonus);
-
-		ADDBOOST(driftSpeed, 4*FRACUNIT, 0); // + variable top speed, + 400% acceleration, +0% handling
+		ADDBOOST(FRACUNIT/4, 4*FRACUNIT, 0); // + 25% top speed, + 400% acceleration, +0% handling
 	}
 
 	if (player->trickboost)	// Trick pannel up-boost
@@ -3126,27 +2826,6 @@ static void K_GetKartBoostPower(player_t *player)
 		ADDBOOST(3*FRACUNIT/20, FRACUNIT, 0); // + 15% top speed, + 100% acceleration, +0% handling
 	}
 
-	if (player->draftpower > 0) // Drafting
-	{
-		// 30% - 44%, each point of speed adds 1.75%
-		fixed_t draftspeed = ((3*FRACUNIT)/10) + ((player->kartspeed-1) * ((7*FRACUNIT)/400));
-
-		if (gametype == GT_BATTLE)
-		{
-			// TODO: gametyperules
-			draftspeed *= 2;
-		}
-
-		if (player->itemtype == KITEM_LIGHTNINGSHIELD)
-		{
-			// infinite tether
-			draftspeed *= 2;
-		}
-
-		speedboost += FixedMul(draftspeed, player->draftpower); // (Drafting suffers no boost stack penalty.)
-		numboosts++;
-	}
-
 	player->boostpower = boostpower;
 
 	// value smoothing
@@ -3161,19 +2840,30 @@ static void K_GetKartBoostPower(player_t *player)
 
 	player->accelboost = accelboost;
 	player->handleboost = handleboost;
-
-	player->numboosts = numboosts;
 }
 
 // Returns kart speed from a stat. Boost power and scale are NOT taken into account, no player or object is necessary.
 fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed)
 {
-	const fixed_t xspd = (3*FRACUNIT)/64;
-	fixed_t g_cc = K_GetKartGameSpeedScalar(gamespeed) + xspd;
-	fixed_t k_speed = 148;
+	const fixed_t xspd = 3072;
+	fixed_t g_cc = FRACUNIT;
+	fixed_t k_speed = 150;
 	fixed_t finalspeed;
 
-	k_speed += kartspeed*4; // 152 - 184
+	switch (gamespeed)
+	{
+		case 0:
+			g_cc = 53248 + xspd; //  50cc =  81.25 + 4.69 =  85.94%
+			break;
+		case 2:
+			g_cc = 77824 + xspd; // 150cc = 118.75 + 4.69 = 123.44%
+			break;
+		default:
+			g_cc = 65536 + xspd; // 100cc = 100.00 + 4.69 = 104.69%
+			break;
+	}
+
+	k_speed += kartspeed*3; // 153 - 177
 
 	finalspeed = FixedMul(k_speed<<14, g_cc);
 	return finalspeed;
@@ -3181,15 +2871,21 @@ fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed)
 
 fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberband)
 {
+	UINT8 kartspeed = player->kartspeed;
+	fixed_t finalspeed = 0;
 	const boolean mobjValid = (player->mo != NULL && P_MobjWasRemoved(player->mo) == false);
-	fixed_t finalspeed = K_GetKartSpeedFromStat(player->kartspeed);
 
-	if (gametyperules & GTR_BUMPERS && player->bumpers <= 0)
-		finalspeed = 3 * finalspeed / 2;
+	if (doboostpower && /*!player->pogospring &&*/ !P_IsObjectOnGround(player->mo))
+		return (75*mapobjectscale); // air speed cap
+		
+	if ((gametyperules & GTR_KARMA) && (player->bumpers <= 0))
+		kartspeed = 1;
+
+	finalspeed = K_GetKartSpeedFromStat(kartspeed);
 
 	if (player->spheres > 0)
 	{
-		fixed_t sphereAdd = (FRACUNIT/40); // 100% at max
+		fixed_t sphereAdd = (FRACUNIT/60); // 66% at max
 		finalspeed = FixedMul(finalspeed, FRACUNIT + (sphereAdd * player->spheres));
 	}
 
@@ -3218,8 +2914,8 @@ fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberb
 
 		finalspeed = FixedMul(finalspeed, player->boostpower + player->speedboost);
 	}
-
-	if (dorubberband == true && K_PlayerUsesBotMovement(player) == true)
+	
+	if (dorubberband == true && player->botvars.rubberband < FRACUNIT && K_PlayerUsesBotMovement(player) == true)
 	{
 		finalspeed = FixedMul(finalspeed, player->botvars.rubberband);
 	}
@@ -3229,15 +2925,15 @@ fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberb
 
 fixed_t K_GetKartAccel(player_t *player)
 {
-	fixed_t k_accel = 121;
+	fixed_t k_accel = 32; // 36;
+	UINT8 kartspeed = player->kartspeed;
 
-	k_accel += 17 * (9 - player->kartspeed); // 121 - 257
+	if ((gametyperules & GTR_KARMA) && player->bumpers <= 0)
+		kartspeed = 1;
 
-	// karma bomb gets 2x acceleration
-	if (gametype == GT_BATTLE && player->bumpers <= 0)
-		k_accel *= 2;
+	k_accel += 4 * (9 - kartspeed); // 32 - 64
 
-	return FixedMul(k_accel, (FRACUNIT + player->accelboost) / 4);
+	return FixedMul(k_accel, FRACUNIT+player->accelboost);
 }
 
 UINT16 K_GetKartFlashing(player_t *player)
@@ -3873,69 +3569,39 @@ void K_SpawnMineExplosion(mobj_t *source, UINT8 color)
 
 #undef MINEQUAKEDIST
 
-fixed_t K_ItemScaleForPlayer(player_t *player)
-{
-	switch (player->itemscale)
-	{
-		case ITEMSCALE_GROW:
-			return FixedMul(GROW_SCALE, mapobjectscale);
-
-		case ITEMSCALE_SHRINK:
-			return FixedMul(SHRINK_SCALE, mapobjectscale);
-
-		default:
-			return mapobjectscale;
-	}
-}
-
 static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, INT32 flags2, fixed_t speed)
 {
 	mobj_t *th;
 	fixed_t x, y, z;
-	fixed_t topspeed = K_GetKartSpeed(source->player, false, false);
 	fixed_t finalspeed = speed;
-	fixed_t finalscale = mapobjectscale;
 	mobj_t *throwmo;
 
-	if (source->player != NULL)
+	if (source->player && source->player->speed > K_GetKartSpeed(source->player, false, false))
 	{
-		
-		if (source->player->itemscale == ITEMSCALE_SHRINK)
-		{
-			// Nerf the base item speed a bit.
-			finalspeed = FixedMul(finalspeed, SHRINK_SCALE);
-		}
+		angle_t input = source->angle - an;
+		boolean invert = (input > ANGLE_180);
+		if (invert)
+			input = InvAngle(input);
 
-		if (source->player->speed > topspeed)
-		{
-			angle_t input = source->angle - an;
-			boolean invert = (input > ANGLE_180);
-			if (invert)
-				input = InvAngle(input);
-
-			finalspeed = max(speed, FixedMul(speed, FixedMul(
-				FixedDiv(source->player->speed, topspeed), // Multiply speed to be proportional to your own, boosted maxspeed.
-				(((180<<FRACBITS) - AngleFixed(input)) / 180) // multiply speed based on angle diff... i.e: don't do this for firing backward :V
-				)));
-		}
-
-		finalscale = K_ItemScaleForPlayer(source->player);
-	}
-
-	if (type == MT_BUBBLESHIELDTRAP)
-	{
-		finalscale = source->scale;
+		finalspeed = max(speed, FixedMul(speed, FixedMul(
+			FixedDiv(source->player->speed, K_GetKartSpeed(source->player, false, false)), // Multiply speed to be proportional to your own, boosted maxspeed.
+			(((180<<FRACBITS) - AngleFixed(input)) / 180) // multiply speed based on angle diff... i.e: don't do this for firing backward :V
+			)));
 	}
 
 	x = source->x + source->momx + FixedMul(finalspeed, FINECOSINE(an>>ANGLETOFINESHIFT));
 	y = source->y + source->momy + FixedMul(finalspeed, FINESINE(an>>ANGLETOFINESHIFT));
 	z = source->z; // spawn on the ground please
 
-	th = P_SpawnMobj(x, y, z, type); // this will never return null because collision isn't processed here
+	if (P_MobjFlip(source) < 0)
+	{
+		z = source->z+source->height - mobjinfo[type].height;
+	}
 
-	K_FlipFromObject(th, source);
+	th = P_SpawnMobj(x, y, z, type);
 
 	th->flags2 |= flags2;
+
 	th->threshold = 10;
 
 	if (th->info->seesound)
@@ -3943,17 +3609,11 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 
 	P_SetTarget(&th->target, source);
 
-	P_SetScale(th, finalscale);
-	th->destscale = finalscale;
-
 	if (P_IsObjectOnGround(source))
 	{
 		// floorz and ceilingz aren't properly set to account for FOFs and Polyobjects on spawn
 		// This should set it for FOFs
-		P_SetOrigin(th, th->x, th->y, th->z); // however, THIS can fuck up your day. just absolutely ruin you.
-		if (P_MobjWasRemoved(th))
-			return NULL;
-
+		P_SetOrigin(th, th->x, th->y, th->z);
 		// spawn on the ground if the player is on the ground
 		if (P_MobjFlip(source) < 0)
 		{
@@ -3964,16 +3624,9 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 			th->z = th->floorz;
 	}
 
-	P_InitAngle(th, an);
-
+	th->angle = an;
 	th->momx = FixedMul(finalspeed, FINECOSINE(an>>ANGLETOFINESHIFT));
 	th->momy = FixedMul(finalspeed, FINESINE(an>>ANGLETOFINESHIFT));
-	th->momz = source->momz;
-
-	if (source->player != NULL)
-	{
-		th->cusval = source->player->itemscale;
-	}
 
 	switch (type)
 	{
@@ -4026,27 +3679,23 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 		P_SetTarget(&throwmo->target, source);
 	}
 
-	return th;
+	return NULL;
 }
 
 UINT16 K_DriftSparkColor(player_t *player, INT32 charge)
 {
-	const INT32 dsone = K_GetKartDriftSparkValueForStage(player, 1);
-	const INT32 dstwo = K_GetKartDriftSparkValueForStage(player, 2);
-	const INT32 dsthree = K_GetKartDriftSparkValueForStage(player, 3);
-	const INT32 dsfour = K_GetKartDriftSparkValueForStage(player, 4);
-
+	INT32 ds = K_GetKartDriftSparkValue(player);
 	UINT16 color = SKINCOLOR_NONE;
 
 	if (charge < 0)
 	{
-		// Stage 0: Grey
-		color = SKINCOLOR_SILVER;
+		// Stage 0: GREY
+		color = SKINCOLOR_GREY;
 	}
-	else if (charge >= dsfour)
+	else if (charge >= ds*4)
 	{
-		// Stage 4: Rainbow
-		if (charge <= dsfour+(32*3))
+		// Stage 3: Rainbow
+		if (charge <= (ds*4)+(32*3))
 		{
 			// transition
 			color = SKINCOLOR_SILVER;
@@ -4056,28 +3705,10 @@ UINT16 K_DriftSparkColor(player_t *player, INT32 charge)
 			color = K_RainbowColor(leveltime);
 		}
 	}
-	else if (charge >= dsthree)
-	{
-		// Stage 3: Blue
-		if (charge <= dsthree+(16*3))
-		{
-			// transition 1
-			color = SKINCOLOR_TAFFY;
-		}
-		else if (charge <= dsthree+(32*3))
-		{
-			// transition 2
-			color = SKINCOLOR_NOVA;
-		}
-		else
-		{
-			color = SKINCOLOR_SAPPHIRE;
-		}
-	}
-	else if (charge >= dstwo)
+	else if (charge >= ds*2)
 	{
 		// Stage 2: Red
-		if (charge <= dstwo+(32*3))
+		if (charge <= (ds*2)+(32*3))
 		{
 			// transition
 			color = SKINCOLOR_TANGERINE;
@@ -4087,123 +3718,26 @@ UINT16 K_DriftSparkColor(player_t *player, INT32 charge)
 			color = SKINCOLOR_KETCHUP;
 		}
 	}
-	else if (charge >= dsone)
+	else if (charge >= ds)
 	{
-		// Stage 1: Yellow
-		if (charge <= dsone+(32*3))
+		// Stage 1: Blue
+		if (charge <= (ds)+(32*3))
 		{
 			// transition
-			color = SKINCOLOR_TAN;
+			color = SKINCOLOR_PURPLE;
 		}
 		else
 		{
-			color = SKINCOLOR_GOLD;
+			color = SKINCOLOR_SAPPHIRE;
 		}
 	}
 
 	return color;
 }
 
-static void K_SpawnDriftElectricity(player_t *player)
-{
-	UINT8 i;
-	UINT16 color = K_DriftSparkColor(player, player->driftcharge);
-	mobj_t *mo = player->mo;
-	fixed_t vr = FixedDiv(mo->radius/3, mo->scale); // P_SpawnMobjFromMobj will rescale
-	fixed_t horizontalradius = FixedDiv(5*mo->radius/3, mo->scale);
-	angle_t verticalangle = K_MomentumAngle(mo) + ANGLE_180; // points away from the momentum angle
-
-	for (i = 0; i < 2; i++)
-	{
-		// i == 0 is right, i == 1 is left
-		mobj_t *spark;
-		angle_t horizonatalangle = verticalangle + (i ? ANGLE_90 : ANGLE_270);
-		angle_t sparkangle = verticalangle + ANGLE_180;
-		fixed_t verticalradius = vr; // local version of the above so we can modify it
-		fixed_t scalefactor = 0; // positive values enlarge sparks, negative values shrink them
-		fixed_t x, y;
-
-		if (player->drift == 0)
-			; // idk what you're doing spawning drift sparks when you're not drifting but you do you
-		else
-		{
-			scalefactor = -(2*i - 1) * min(max(player->steering, -1), 1) * FRACUNIT;
-			if ((player->drift > 0) == !(i)) // inwards spark should be closer to the player
-				verticalradius = 0;
-		}
-
-		x = P_ReturnThrustX(mo, verticalangle, verticalradius)
-			+ P_ReturnThrustX(mo, horizonatalangle, horizontalradius);
-		y = P_ReturnThrustY(mo, verticalangle, verticalradius)
-			+ P_ReturnThrustY(mo, horizonatalangle, horizontalradius);
-		spark = P_SpawnMobjFromMobj(mo, x, y, 0, MT_DRIFTELECTRICITY);
-		P_InitAngle(spark, sparkangle);
-		spark->momx = mo->momx;
-		spark->momy = mo->momy;
-		spark->momz = mo->momz;
-		spark->color = color;
-		K_GenericExtraFlagsNoZAdjust(spark, mo);
-
-		spark->spritexscale += scalefactor/3;
-		spark->spriteyscale += scalefactor/8;
-	}
-}
-
-void K_SpawnDriftElectricSparks(player_t *player)
-{
-	SINT8 hdir, vdir, i;
-
-	mobj_t *mo = player->mo;
-	angle_t momangle = K_MomentumAngle(mo) + ANGLE_180;
-	fixed_t radius = 2 * FixedDiv(mo->radius, mo->scale); // P_SpawnMobjFromMobj will rescale
-	fixed_t x = P_ReturnThrustX(mo, momangle, radius);
-	fixed_t y = P_ReturnThrustY(mo, momangle, radius);
-	fixed_t z = FixedDiv(mo->height, 2 * mo->scale); // P_SpawnMobjFromMobj will rescale
-
-	fixed_t sparkspeed = mobjinfo[MT_DRIFTELECTRICSPARK].speed;
-	fixed_t sparkradius = 2 * mobjinfo[MT_DRIFTELECTRICSPARK].radius;
-	UINT16 color = K_DriftSparkColor(player, player->driftcharge);
-
-	// if the sparks are spawned from first blood rather than drift boost, color will be SKINCOLOR_NONE. ew!
-	if (color == SKINCOLOR_NONE)
-		color = SKINCOLOR_SILVER;
-
-	for (hdir = -1; hdir <= 1; hdir += 2)
-	{
-		for (vdir = -1; vdir <= 1; vdir += 2)
-		{
-			fixed_t hspeed = FixedMul(hdir * sparkspeed, mo->scale); // P_InstaThrust treats speed as absolute
-			fixed_t vspeed = vdir * sparkspeed; // P_SetObjectMomZ scales speed with object scale
-			angle_t sparkangle = mo->angle + ANGLE_45;
-
-			for (i = 0; i < 4; i++)
-			{
-				fixed_t xoff = P_ReturnThrustX(mo, sparkangle, sparkradius);
-				fixed_t yoff = P_ReturnThrustY(mo, sparkangle, sparkradius);
-				mobj_t *spark = P_SpawnMobjFromMobj(mo, x + xoff, y + yoff, z, MT_DRIFTELECTRICSPARK);
-
-				P_InitAngle(spark, sparkangle);
-				spark->color = color;
-				P_InstaThrust(spark, mo->angle + ANGLE_90, hspeed);
-				P_SetObjectMomZ(spark, vspeed, false);
-				spark->momx += mo->momx; // copy player speed
-				spark->momy += mo->momy;
-				spark->momz += P_GetMobjZMovement(mo);
-
-				sparkangle += ANGLE_90;
-			}
-		}
-	}
-	S_StartSound(mo, sfx_s3k45);
-}
-
 static void K_SpawnDriftSparks(player_t *player)
 {
-	const INT32 dsone = K_GetKartDriftSparkValueForStage(player, 1);
-	const INT32 dstwo = K_GetKartDriftSparkValueForStage(player, 2);
-	const INT32 dsthree = K_GetKartDriftSparkValueForStage(player, 3);
-	const INT32 dsfour = K_GetKartDriftSparkValueForStage(player, 4);
-
+	INT32 ds = K_GetKartDriftSparkValue(player);
 	fixed_t newx;
 	fixed_t newy;
 	mobj_t *spark;
@@ -4218,7 +3752,7 @@ static void K_SpawnDriftSparks(player_t *player)
 		return;
 
 	if (!player->drift
-		|| (player->driftcharge < dsone && !(player->driftcharge < 0)))
+		|| (player->driftcharge < ds && !(player->driftcharge < 0)))
 		return;
 
 	travelangle = player->mo->angle-(ANGLE_45/5)*player->drift;
@@ -4233,57 +3767,44 @@ static void K_SpawnDriftSparks(player_t *player)
 		spark = P_SpawnMobj(newx, newy, player->mo->z, MT_DRIFTSPARK);
 
 		P_SetTarget(&spark->target, player->mo);
-		P_InitAngle(spark, travelangle-(ANGLE_45/5)*player->drift);
+		spark->angle = travelangle-(ANGLE_45/5)*player->drift;
 		spark->destscale = player->mo->scale;
 		P_SetScale(spark, player->mo->scale);
 
 		spark->momx = player->mo->momx/2;
 		spark->momy = player->mo->momy/2;
-		spark->momz = P_GetMobjZMovement(player->mo)/2;
+		//spark->momz = player->mo->momz/2;
 
 		spark->color = K_DriftSparkColor(player, player->driftcharge);
 
 		if (player->driftcharge < 0)
 		{
-			// Stage 0: Yellow
+			// Stage 0: Grey
 			size = 0;
 		}
-		else if (player->driftcharge >= dsfour)
+		else if (player->driftcharge >= ds*4)
 		{
-			// Stage 4: Rainbow
+			// Stage 3: Rainbow
 			size = 2;
 			trail = 2;
 
-			if (player->driftcharge <= (dsfour)+(32*3))
+			if (player->driftcharge <= (ds*4)+(32*3))
 			{
 				// transition
 				P_SetScale(spark, (spark->destscale = spark->scale*3/2));
-				S_StartSound(player->mo, sfx_cock);
 			}
 			else
 			{
 				spark->colorized = true;
 			}
 		}
-		else if (player->driftcharge >= dsthree)
-		{
-			// Stage 3: Purple
-			size = 2;
-			trail = 1;
-
-			if (player->driftcharge <= dsthree+(32*3))
-			{
-				// transition
-				P_SetScale(spark, (spark->destscale = spark->scale*3/2));
-			}
-		}
-		else if (player->driftcharge >= dstwo)
+		else if (player->driftcharge >= ds*2)
 		{
 			// Stage 2: Blue
 			size = 2;
 			trail = 1;
 
-			if (player->driftcharge <= dstwo+(32*3))
+			if (player->driftcharge <= (ds*2)+(32*3))
 			{
 				// transition
 				P_SetScale(spark, (spark->destscale = spark->scale*3/2));
@@ -4294,15 +3815,15 @@ static void K_SpawnDriftSparks(player_t *player)
 			// Stage 1: Red
 			size = 1;
 
-			if (player->driftcharge <= dsone+(32*3))
+			if (player->driftcharge <= (ds)+(32*3))
 			{
 				// transition
 				P_SetScale(spark, (spark->destscale = spark->scale*2));
 			}
 		}
 
-		if ((player->drift > 0 && player->steering > 0) // Inward drifts
-			|| (player->drift < 0 && player->steering < 0))
+		if ((player->drift > 0 && player->cmd.turning > 0) // Inward drifts
+			|| (player->drift < 0 && player->cmd.turning < 0))
 		{
 			if ((player->drift < 0 && (i & 1))
 				|| (player->drift > 0 && !(i & 1)))
@@ -4315,8 +3836,8 @@ static void K_SpawnDriftSparks(player_t *player)
 				size--;
 			}
 		}
-		else if ((player->drift > 0 && player->steering < 0) // Outward drifts
-			|| (player->drift < 0 && player->steering > 0))
+		else if ((player->drift > 0 && player->cmd.turning < 0) // Outward drifts
+			|| (player->drift < 0 && player->cmd.turning > 0))
 		{
 			if ((player->drift < 0 && (i & 1))
 				|| (player->drift > 0 && !(i & 1)))
@@ -4342,12 +3863,8 @@ static void K_SpawnDriftSparks(player_t *player)
 
 		K_MatchGenericExtraFlags(spark, player->mo);
 	}
-
-	if (player->driftcharge >= dsthree)
-	{
-		K_SpawnDriftElectricity(player);
-	}
 }
+
 
 static void K_SpawnAIZDust(player_t *player)
 {
@@ -4503,7 +4020,7 @@ void K_SpawnSparkleTrail(mobj_t *mo)
 	}
 }
 
-void K_SpawnWipeoutTrail(mobj_t *mo)
+void K_SpawnWipeoutTrail(mobj_t *mo, boolean translucent)
 {
 	mobj_t *dust;
 	angle_t aoff;
@@ -4526,89 +4043,20 @@ void K_SpawnWipeoutTrail(mobj_t *mo)
 		mo->z, MT_WIPEOUTTRAIL);
 
 	P_SetTarget(&dust->target, mo);
-	P_InitAngle(dust, K_MomentumAngle(mo));
+	dust->angle = R_PointToAngle2(0,0,mo->momx,mo->momy);
 	dust->destscale = mo->scale;
 	P_SetScale(dust, mo->scale);
 	K_FlipFromObject(dust, mo);
-}
 
-void K_SpawnDraftDust(mobj_t *mo)
-{
-	UINT8 i;
-
-	I_Assert(mo != NULL);
-	I_Assert(!P_MobjWasRemoved(mo));
-
-	for (i = 0; i < 2; i++)
+	if (translucent) // offroad effect
 	{
-		angle_t ang, aoff;
-		SINT8 sign = 1;
-		UINT8 foff = 0;
-		mobj_t *dust;
-		boolean drifting = false;
-
-		if (mo->player)
-		{
-			UINT8 leniency = (3*TICRATE)/4 + ((mo->player->kartweight-1) * (TICRATE/4));
-
-			if (gametype == GT_BATTLE)
-				leniency *= 4;
-
-			ang = mo->player->drawangle;
-
-			if (mo->player->drift != 0)
-			{
-				drifting = true;
-				ang += (mo->player->drift * ((ANGLE_270 + ANGLE_22h) / 5)); // -112.5 doesn't work. I fucking HATE SRB2 angles
-				if (mo->player->drift < 0)
-					sign = 1;
-				else
-					sign = -1;
-			}
-
-			foff = 5 - ((mo->player->draftleeway * 5) / leniency);
-
-			// this shouldn't happen
-			if (foff > 4)
-				foff = 4;
-		}
-		else
-			ang = mo->angle;
-
-		if (!drifting)
-		{
-			if (i & 1)
-				sign = -1;
-			else
-				sign = 1;
-		}
-
-		aoff = (ang + ANGLE_180) + (ANGLE_45 * sign);
-
-		dust = P_SpawnMobj(mo->x + FixedMul(24*mo->scale, FINECOSINE(aoff>>ANGLETOFINESHIFT)),
-			mo->y + FixedMul(24*mo->scale, FINESINE(aoff>>ANGLETOFINESHIFT)),
-			mo->z, MT_DRAFTDUST);
-
-		P_SetMobjState(dust, S_DRAFTDUST1 + foff);
-
-		P_SetTarget(&dust->target, mo);
-		P_InitAngle(dust, ang - (ANGLE_90 * sign)); // point completely perpendicular from the player
-		dust->destscale = mo->scale;
-		P_SetScale(dust, mo->scale);
-		K_FlipFromObject(dust, mo);
-
-		if (leveltime & 1)
-			dust->tics++; // "randomize" animation
-
-		dust->momx = (4*mo->momx)/5;
-		dust->momy = (4*mo->momy)/5;
-		dust->momz = (4*P_GetMobjZMovement(mo))/5;
-
-		P_Thrust(dust, dust->angle, 4*mo->scale);
-
-		if (drifting) // only 1 trail while drifting
-			break;
+		dust->momx = mo->momx/2;
+		dust->momy = mo->momy/2;
+		dust->momz = mo->momz/2;
 	}
+
+	if (translucent)
+		dust->renderflags |= RF_TRANS50;
 }
 
 //	K_DriftDustHandling
@@ -4621,7 +4069,7 @@ void K_SpawnDraftDust(mobj_t *mo)
 void K_DriftDustHandling(mobj_t *spawner)
 {
 	angle_t anglediff;
-	const INT16 spawnrange = spawner->radius >> FRACBITS;
+	const INT16 spawnrange = spawner->radius>>FRACBITS;
 
 	if (!P_IsObjectOnGround(spawner) || leveltime % 2 != 0)
 		return;
@@ -4638,10 +4086,10 @@ void K_DriftDustHandling(mobj_t *spawner)
 		{
 			angle_t playerangle = spawner->angle;
 
-			if (spawner->player->speed < 5*spawner->scale)
+			if (spawner->player->speed < 5<<FRACBITS)
 				return;
 
-			if (K_GetForwardMove(spawner->player) < 0)
+			if (spawner->player->cmd.forwardmove < 0)
 				playerangle += ANGLE_180;
 
 			anglediff = abs((signed)(playerangle - R_PointToAngle2(0, 0, spawner->player->rmomx, spawner->player->rmomy)));
@@ -4649,10 +4097,10 @@ void K_DriftDustHandling(mobj_t *spawner)
 	}
 	else
 	{
-		if (P_AproxDistance(spawner->momx, spawner->momy) < 5*spawner->scale)
+		if (P_AproxDistance(spawner->momx, spawner->momy) < 5<<FRACBITS)
 			return;
 
-		anglediff = abs((signed)(spawner->angle - K_MomentumAngle(spawner)));
+		anglediff = abs((signed)(spawner->angle - R_PointToAngle2(0, 0, spawner->momx, spawner->momy)));
 	}
 
 	if (anglediff > ANGLE_180)
@@ -4660,50 +4108,22 @@ void K_DriftDustHandling(mobj_t *spawner)
 
 	if (anglediff > ANG10*4) // Trying to turn further than 40 degrees
 	{
-		fixed_t spawnx = P_RandomRange(-spawnrange, spawnrange) << FRACBITS;
-		fixed_t spawny = P_RandomRange(-spawnrange, spawnrange) << FRACBITS;
+		fixed_t spawnx = P_RandomRange(-spawnrange, spawnrange)<<FRACBITS;
+		fixed_t spawny = P_RandomRange(-spawnrange, spawnrange)<<FRACBITS;
 		INT32 speedrange = 2;
 		mobj_t *dust = P_SpawnMobj(spawner->x + spawnx, spawner->y + spawny, spawner->z, MT_DRIFTDUST);
-		dust->momx = FixedMul(spawner->momx + (P_RandomRange(-speedrange, speedrange) * spawner->scale), 3*FRACUNIT/4);
-		dust->momy = FixedMul(spawner->momy + (P_RandomRange(-speedrange, speedrange) * spawner->scale), 3*FRACUNIT/4);
+		dust->momx = FixedMul(spawner->momx + (P_RandomRange(-speedrange, speedrange)<<FRACBITS), 3*(spawner->scale)/4);
+		dust->momy = FixedMul(spawner->momy + (P_RandomRange(-speedrange, speedrange)<<FRACBITS), 3*(spawner->scale)/4);
 		dust->momz = P_MobjFlip(spawner) * (P_RandomRange(1, 4) * (spawner->scale));
 		P_SetScale(dust, spawner->scale/2);
 		dust->destscale = spawner->scale * 3;
 		dust->scalespeed = spawner->scale/12;
+		dust->target = spawner;
 
 		if (leveltime % 6 == 0)
 			S_StartSound(spawner, sfx_screec);
 
 		K_MatchGenericExtraFlags(dust, spawner);
-
-		// Sparkle-y warning for when you're about to change drift sparks!
-		if (spawner->player && spawner->player->drift)
-		{
-			INT32 driftval = K_GetKartDriftSparkValue(spawner->player);
-			INT32 warntime = driftval/3;
-			INT32 dc = spawner->player->driftcharge;
-			UINT8 c = SKINCOLOR_NONE;
-			boolean rainbow = false;
-
-			if (dc >= 0)
-			{
-				dc += warntime;
-			}
-
-			c = K_DriftSparkColor(spawner->player, dc);
-
-			if (dc > (4*driftval)+(32*3))
-			{
-				rainbow = true;
-			}
-
-			if (c != SKINCOLOR_NONE)
-			{
-				P_SetMobjState(dust, S_DRIFTWARNSPARK1);
-				dust->color = c;
-				dust->colorized = rainbow;
-			}
-		}
 	}
 }
 
@@ -4779,15 +4199,29 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 		return NULL;
 
 	// Figure out projectile speed by game speed
-	if (missile)
+	if (missile && mapthing != MT_BALLHOG) // Trying to keep compatability...
 	{
-		// Use info->speed for missiles
-		PROJSPEED = FixedMul(mobjinfo[mapthing].speed, K_GetKartGameSpeedScalar(gamespeed));
+		PROJSPEED = mobjinfo[mapthing].speed;
+		if (gamespeed == 0)
+			PROJSPEED = FixedMul(PROJSPEED, FRACUNIT-FRACUNIT/4);
+		else if (gamespeed == 2)
+			PROJSPEED = FixedMul(PROJSPEED, FRACUNIT+FRACUNIT/4);
+		PROJSPEED = FixedMul(PROJSPEED, mapobjectscale);
 	}
 	else
 	{
-		// Use pre-determined speed for tossing
-		PROJSPEED = FixedMul(82 * FRACUNIT, K_GetKartGameSpeedScalar(gamespeed));
+		switch (gamespeed)
+		{
+			case 0:
+				PROJSPEED = 68*mapobjectscale; // Avg Speed is 34
+				break;
+			case 2:
+				PROJSPEED = 96*mapobjectscale; // Avg Speed is 48
+				break;
+			default:
+				PROJSPEED = 82*mapobjectscale; // Avg Speed is 41
+				break;
+		}
 	}
 
 	// Scale to map scale
@@ -4876,21 +4310,19 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 	}
 	else
 	{
-		fixed_t finalscale = K_ItemScaleForPlayer(player);
-
 		player->bananadrag = 0; // RESET timer, for multiple bananas
 
 		if (dir > 0)
 		{
 			// Shoot forward
 			mo = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + player->mo->height/2, mapthing);
-
+			//K_FlipFromObject(mo, player->mo);
 			// These are really weird so let's make it a very specific case to make SURE it works...
 			if (player->mo->eflags & MFE_VERTICALFLIP)
 			{
 				mo->z -= player->mo->height;
+				mo->flags2 |= MF2_OBJECTFLIP;
 				mo->eflags |= MFE_VERTICALFLIP;
-				mo->flags2 |= (player->mo->flags2 & MF2_OBJECTFLIP);
 			}
 
 			mo->threshold = 10;
@@ -4901,9 +4333,9 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 			if (mo)
 			{
 				angle_t fa = player->mo->angle>>ANGLETOFINESHIFT;
-				fixed_t HEIGHT = ((20 + (dir*10)) * FRACUNIT) + (FixedDiv(player->mo->momz, mapobjectscale)*P_MobjFlip(player->mo)); // Also intentionally not player scale
+				fixed_t HEIGHT = (20 + (dir*10))*mapobjectscale + (player->mo->momz*P_MobjFlip(player->mo));
 
-				P_SetObjectMomZ(mo, HEIGHT, false);
+				mo->momz = HEIGHT*P_MobjFlip(mo);
 				mo->momx = player->mo->momx + FixedMul(FINECOSINE(fa), PROJSPEED*dir);
 				mo->momy = player->mo->momy + FixedMul(FINESINE(fa), PROJSPEED*dir);
 
@@ -4911,9 +4343,6 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 
 				if (mo->eflags & MFE_UNDERWATER)
 					mo->momz = (117 * mo->momz) / 200;
-
-				P_SetScale(mo, finalscale);
-				mo->destscale = finalscale;
 			}
 
 			// this is the small graphic effect that plops in you when you throw an item:
@@ -4923,29 +4352,18 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 			if (player->mo->eflags & MFE_VERTICALFLIP)
 			{
 				throwmo->z -= player->mo->height;
+				throwmo->flags2 |= MF2_OBJECTFLIP;
 				throwmo->eflags |= MFE_VERTICALFLIP;
-				mo->flags2 |= (player->mo->flags2 & MF2_OBJECTFLIP);
 			}
 
 			throwmo->movecount = 0; // above player
-
-			P_SetScale(throwmo, finalscale);
-			throwmo->destscale = finalscale;
 		}
 		else
 		{
 			mobj_t *lasttrail = K_FindLastTrailMobj(player);
 
-			if (mapthing == MT_BUBBLESHIELDTRAP) // Drop directly on top of you.
+			if (lasttrail)
 			{
-				newangle = player->mo->angle;
-				newx = player->mo->x + player->mo->momx;
-				newy = player->mo->y + player->mo->momy;
-				newz = player->mo->z;
-			}
-			else if (lasttrail)
-			{
-				newangle = lasttrail->angle;
 				newx = lasttrail->x;
 				newy = lasttrail->y;
 				newz = lasttrail->z;
@@ -4967,9 +4385,6 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 
 			mo->threshold = 10;
 			P_SetTarget(&mo->target, player->mo);
-
-			P_SetScale(mo, finalscale);
-			mo->destscale = finalscale;
 
 			if (P_IsObjectOnGround(player->mo))
 			{
@@ -5250,29 +4665,35 @@ static void K_DoHyudoroSteal(player_t *player)
 
 void K_DoSneaker(player_t *player, INT32 type)
 {
-	const fixed_t intendedboost = FRACUNIT/2;
+	fixed_t intendedboost;
+
+	switch (gamespeed)
+	{
+		case 0:
+			intendedboost = 53740+768;
+			break;
+		case 2:
+			intendedboost = 17294+768;
+			break;
+		//expert
+		case 3:
+			intendedboost = 14706;
+			break;
+			
+		default:
+			intendedboost = 32768;
+			break;
+	}
 
 	if (player->floorboost == 0 || player->floorboost == 3)
 	{
-		const sfxenum_t normalsfx = sfx_cdfm01;
-		const sfxenum_t smallsfx = sfx_cdfm40;
-		sfxenum_t sfx = normalsfx;
-
-		if (player->numsneakers)
-		{
-			// Use a less annoying sound when stacking sneakers.
-			sfx = smallsfx;
-		}
-
-		S_StopSoundByID(player->mo, normalsfx);
-		S_StopSoundByID(player->mo, smallsfx);
-		S_StartSound(player->mo, sfx);
+		S_StopSoundByID(player->mo, sfx_cdfm01);
+		S_StartSound(player->mo, sfx_cdfm01);
 
 		K_SpawnDashDustRelease(player);
 		if (intendedboost > player->speedboost)
 			player->karthud[khud_destboostcam] = FixedMul(FRACUNIT, FixedDiv((intendedboost - player->speedboost), intendedboost));
 
-		player->numsneakers++;
 	}
 
 	if (player->sneakertimer == 0)
@@ -5645,8 +5066,6 @@ void K_DropHnextList(player_t *player, boolean keepshields)
 
 		dropwork->angle = work->angle;
 
-		P_SetScale(dropwork, work->scale);
-		dropwork->destscale = K_ItemScaleForPlayer(player); //work->destscale;
 		dropwork->scalespeed = work->scalespeed;
 		dropwork->spritexscale = work->spritexscale;
 		dropwork->spriteyscale = work->spriteyscale;
@@ -5695,17 +5114,6 @@ void K_DropHnextList(player_t *player, boolean keepshields)
 
 		if (orbit) // splay out
 		{
-			if (dropwork->destscale > work->destscale)
-			{
-				fixed_t radius = FixedMul(work->info->radius, dropwork->destscale);
-				radius = FixedHypot(player->mo->radius, player->mo->radius) + FixedHypot(radius, radius); // mobj's distance from its Target, or Radius.
-				dropwork->flags |= MF_NOCLIPTHING;
-				work->momx = FixedMul(FINECOSINE(work->angle>>ANGLETOFINESHIFT), radius);
-				work->momy = FixedMul(FINESINE(work->angle>>ANGLETOFINESHIFT), radius);
-				P_MoveOrigin(dropwork, player->mo->x + work->momx, player->mo->y + work->momy, player->mo->z);
-				dropwork->flags &= ~MF_NOCLIPTHING;
-			}
-
 			dropwork->flags2 |= MF2_AMBUSH;
 
 			dropwork->z += flip;
@@ -6132,8 +5540,6 @@ void K_CalculateBananaSlope(mobj_t *mobj, fixed_t x, fixed_t y, fixed_t z, fixed
 // Move the hnext chain!
 static void K_MoveHeldObjects(player_t *player)
 {
-	fixed_t finalscale = INT32_MAX;
-
 	if (!player->mo)
 		return;
 
@@ -6166,8 +5572,6 @@ static void K_MoveHeldObjects(player_t *player)
 		}
 		return;
 	}
-
-	finalscale = K_ItemScaleForPlayer(player);
 
 	switch (player->mo->hnext->type)
 	{
@@ -6207,7 +5611,7 @@ static void K_MoveHeldObjects(player_t *player)
 						cur->eflags &= ~MFE_VERTICALFLIP;
 
 					// Shrink your items if the player shrunk too.
-					P_SetScale(cur, (cur->destscale = FixedMul(FixedDiv(cur->extravalue1, radius), finalscale)));
+					P_SetScale(cur, (cur->destscale = FixedMul(FixedDiv(cur->extravalue1, radius), player->mo->scale)));
 
 					if (P_MobjFlip(cur) > 0)
 						z = player->mo->z;
@@ -6238,7 +5642,7 @@ static void K_MoveHeldObjects(player_t *player)
 					}
 
 					// Center it during the scale up animation
-					z += (FixedMul(mobjinfo[cur->type].height, finalscale - cur->scale)>>1) * P_MobjFlip(cur);
+					z += (FixedMul(mobjinfo[cur->type].height, player->mo->scale - cur->scale)>>1) * P_MobjFlip(cur);
 
 					cur->z = z;
 					cur->momx = cur->momy = 0;
@@ -6311,7 +5715,7 @@ static void K_MoveHeldObjects(player_t *player)
 					}
 
 					// Shrink your items if the player shrunk too.
-					P_SetScale(cur, (cur->destscale = FixedMul(FixedDiv(cur->extravalue1, radius), finalscale)));
+					P_SetScale(cur, (cur->destscale = FixedMul(FixedDiv(cur->extravalue1, radius), player->mo->scale)));
 
 					ang = targ->angle;
 					targx = targ->x + P_ReturnThrustX(cur, ang + ANGLE_180, dist);
@@ -6962,21 +6366,6 @@ static void K_UpdateTripwire(player_t *player)
 
 	if (triplevel != TRIPWIRE_NONE)
 	{
-		if (!boostExists)
-		{
-			mobj_t *front = P_SpawnMobjFromMobj(player->mo, 0, 0, 0, MT_TRIPWIREBOOST);
-			mobj_t *back = P_SpawnMobjFromMobj(player->mo, 0, 0, 0, MT_TRIPWIREBOOST);
-
-			P_SetTarget(&front->target, player->mo);
-			P_SetTarget(&back->target, player->mo);
-
-			front->dispoffset = 1;
-			front->old_angle = back->old_angle = K_MomentumAngle(player->mo);
-			back->dispoffset = -1;
-			back->extravalue1 = 1;
-			P_SetMobjState(back, S_TRIPWIREBOOST_BOTTOM);
-		}
-
 		player->tripwirePass = triplevel;
 		player->tripwireLeniency = max(player->tripwireLeniency, TRIPWIRETIME);
 	}
@@ -7024,7 +6413,7 @@ static void K_RaceStart(player_t *player)
 	{
 		player->mo->scalespeed = mapobjectscale/12;
 		player->mo->destscale = mapobjectscale + (FixedMul(mapobjectscale, player->boostcharge*131));
-		if ((player->pflags & PF_SHRINKME) && !modeattacking && !player->bot)
+		if (K_PlayerShrinkCheat(player) && !modeattacking && !player->bot)
 			player->mo->destscale = (6*player->mo->destscale)/8;
 	}
 
@@ -7089,7 +6478,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	const boolean onground = P_IsObjectOnGround(player->mo);
 
 	K_UpdateOffroad(player);
-	K_UpdateDraft(player);
 	K_UpdateEngineSounds(player); // Thanks, VAda!
 
 	// update boost angle if not spun out
@@ -7127,36 +6515,8 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 					K_SpawnNormalSpeedLines(player);
 			}
 
-			if (player->numboosts > 0) // Boosting after images
-			{
-				mobj_t *ghost;
-				ghost = P_SpawnGhostMobj(player->mo);
-				ghost->extravalue1 = player->numboosts+1;
-				ghost->extravalue2 = (leveltime % ghost->extravalue1);
-				ghost->fuse = ghost->extravalue1;
-				ghost->renderflags |= RF_FULLBRIGHT;
-				ghost->colorized = true;
-				//ghost->color = player->skincolor;
-				//ghost->momx = (3*player->mo->momx)/4;
-				//ghost->momy = (3*player->mo->momy)/4;
-				//ghost->momz = (3*player->mo->momz)/4;
-				if (leveltime & 1)
-					ghost->renderflags |= RF_DONTDRAW;
-			}
-
 			// Could probably be moved somewhere else.
 			K_HandleFootstepParticles(player->mo);
-
-			if (P_IsObjectOnGround(player->mo))
-			{
-				// Draft dust
-				if (player->draftpower >= FRACUNIT)
-				{
-					K_SpawnDraftDust(player->mo);
-					/*if (leveltime % 23 == 0 || !S_SoundPlaying(player->mo, sfx_s265))
-						S_StartSound(player->mo, sfx_s265);*/
-				}
-			}
 		}
 
 		if (gametype == GT_RACE && player->rings <= 0) // spawn ring debt indicator
@@ -7334,11 +6694,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->sneakertimer)
 	{
 		player->sneakertimer--;
-
-		if (player->sneakertimer <= 0)
-		{
-			player->numsneakers = 0;
-		}
 	}
 
 	if (player->trickboost)
@@ -7355,9 +6710,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (player->driftboost)
 		player->driftboost--;
-
-	if (player->strongdriftboost)
-		player->strongdriftboost--;
 
 	if (player->startboost > 0 && onground == true)
 	{
@@ -8294,168 +7646,71 @@ INT32 K_GetKartDriftSparkValue(player_t *player)
 	return (26*4 + player->kartspeed*2 + (9 - player->kartweight))*8;
 }
 
-INT32 K_GetKartDriftSparkValueForStage(player_t *player, UINT8 stage)
-{
-	fixed_t mul = FRACUNIT;
-
-	// This code is function is pretty much useless now that the timing changes are linear but bleh.
-	switch (stage)
-	{
-		case 2:
-			mul = 2*FRACUNIT; // x2
-			break;
-		case 3:
-			mul = 3*FRACUNIT; // x3
-			break;
-		case 4:
-			mul = 4*FRACUNIT; // x4
-			break;
-	}
-
-	return (FixedMul(K_GetKartDriftSparkValue(player) * FRACUNIT, mul) / FRACUNIT);
-}
-
-/*
-Stage 1: yellow sparks
-Stage 2: red sparks
-Stage 3: blue sparks
-Stage 4: big large rainbow sparks
-Stage 0: air failsafe
-*/
-void K_SpawnDriftBoostExplosion(player_t *player, int stage)
-{
-	mobj_t *overlay = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_DRIFTEXPLODE);
-
-	P_InitAngle(overlay, K_MomentumAngle(player->mo));
-	P_SetTarget(&overlay->target, player->mo);
-	P_SetScale(overlay, (overlay->destscale = player->mo->scale));
-	K_FlipFromObject(overlay, player->mo);
-
-	switch (stage)
-	{
-		case 1:
-			overlay->fuse = 16;
-			break;
-
-		case 2:
-			
-			overlay->fuse = 32;
-			S_StartSound(player->mo, sfx_kc5b);
-			break;
-
-		case 3:
-			overlay->fuse = 48;
-
-			S_StartSound(player->mo, sfx_kc5b);
-			break;
-
-		case 4:
-			overlay->fuse = 120;
-
-			S_StartSound(player->mo, sfx_kc5b);
-			S_StartSound(player->mo, sfx_s3kc4l);
-			break;
-
-		case 0:
-			overlay->fuse = 16;
-			break;
-	}
-
-	overlay->extravalue1 = stage;
-}
-
 static void K_KartDrift(player_t *player, boolean onground)
 {
-	const fixed_t minspeed = (10 * player->mo->scale);
+	fixed_t minspeed = (10 * player->mo->scale);
+	INT32 dsone = K_GetKartDriftSparkValue(player);
+	INT32 dstwo = dsone*2;
+	INT32 dsthree = dstwo*2;
 
-	const INT32 dsone = K_GetKartDriftSparkValueForStage(player, 1);
-	const INT32 dstwo = K_GetKartDriftSparkValueForStage(player, 2);
-	const INT32 dsthree = K_GetKartDriftSparkValueForStage(player, 3);
-	const INT32 dsfour = K_GetKartDriftSparkValueForStage(player, 4);
-
-	const UINT16 buttons = K_GetKartButtons(player);
+	// Grown players taking yellow spring panels will go below minspeed for one tic,
+	// and will then wrongdrift or have their sparks removed because of this.
+	// This fixes this problem.
+	//if (player->pogospring == 2 && player->mo->scale > mapobjectscale)
+		//minspeed = FixedMul(10<<FRACBITS, mapobjectscale);
 
 	// Drifting is actually straffing + automatic turning.
 	// Holding the Jump button will enable drifting.
-	// (This comment is extremely funny)
 
 	// Drift Release (Moved here so you can't "chain" drifts)
-	if (player->drift != -5 && player->drift != 5)
+	if ((player->drift != -5 && player->drift != 5)
+		&& player->driftcharge < dsone
+		&& onground)
 	{
-		if (player->driftcharge < 0 || player->driftcharge >= dsone)
-		{
-			angle_t pushdir = K_MomentumAngle(player->mo);
-
-			S_StartSound(player->mo, sfx_s23c);
-			//K_SpawnDashDustRelease(player);
-
-			if (player->driftcharge < 0)
-			{
-				// Stage 0: Grey sparks
-				if (!onground)
-					P_Thrust(player->mo, pushdir, player->speed / 8);
-
-				if (player->driftboost < 15)
-					player->driftboost = 15;
-			}
-			else if (player->driftcharge >= dsone && player->driftcharge < dstwo)
-			{
-				// Stage 1: Yellow sparks
-				if (!onground)
-					P_Thrust(player->mo, pushdir, player->speed / 4);
-
-				if (player->driftboost < 20)
-					player->driftboost = 20;
-
-				K_SpawnDriftBoostExplosion(player, 1);
-			}
-			else if (player->driftcharge < dsthree)
-			{
-				// Stage 2: Red sparks
-				if (!onground)
-					P_Thrust(player->mo, pushdir, player->speed / 3);
-
-				if (player->driftboost < 50)
-					player->driftboost = 50;
-
-				K_SpawnDriftBoostExplosion(player, 2);
-			}
-			else if (player->driftcharge < dsfour)
-			{
-				// Stage 3: Blue sparks
-				if (!onground)
-					P_Thrust(player->mo, pushdir, ( 5 * player->speed ) / 12);
-
-				if (player->driftboost < 85)
-					player->driftboost = 85;
-				if (player->strongdriftboost < 85)
-					player->strongdriftboost = 85;
-
-				K_SpawnDriftBoostExplosion(player, 3);
-				K_SpawnDriftElectricSparks(player);
-			}
-			else if (player->driftcharge >= dsfour)
-			{
-				// Stage 4: Rainbow sparks
-				if (!onground)
-					P_Thrust(player->mo, pushdir, player->speed / 2);
-
-				if (player->driftboost < 125)
-					player->driftboost = 125;
-				if (player->strongdriftboost < 125)
-					player->strongdriftboost = 125;
-
-				K_SpawnDriftBoostExplosion(player, 4);
-				K_SpawnDriftElectricSparks(player);
-			}
-		}
-
-		// Remove charge
+		player->driftcharge = 0;
+	}
+	else if ((player->drift != -5 && player->drift != 5)
+		&& (player->driftcharge >= dsone && player->driftcharge < dstwo)
+		&& onground)
+	{
+		if (player->driftboost < 20)
+			player->driftboost = 20;
+		S_StartSound(player->mo, sfx_s23c);
+		player->driftcharge = 0;
+	}
+	else if ((player->drift != -5 && player->drift != 5)
+		&& player->driftcharge < dsthree
+		&& onground)
+	{
+		if (player->driftboost < 50)
+			player->driftboost = 50;
+		S_StartSound(player->mo, sfx_s23c);
+		player->driftcharge = 0;
+	}
+	else if ((player->drift != -5 && player->drift != 5)
+		&& player->driftcharge >= dsthree
+		&& onground)
+	{
+		if (player->driftboost < 125)
+			player->driftboost = 125;
+		S_StartSound(player->mo, sfx_s23c);
 		player->driftcharge = 0;
 	}
 
 	// Drifting: left or right?
-	if (!(player->pflags & PF_DRIFTINPUT))
+	if ((player->cmd.turning > 0) && player->speed > minspeed && (player->pflags & PF_DRIFTINPUT) && (player->drift == 0 || (player->pflags & PF_DRIFTEND)))
+	{
+		// Starting left drift
+		player->drift = 1;
+		player->pflags &= ~PF_DRIFTEND;
+	}
+	else if ((player->cmd.turning < 0) && player->speed > minspeed && (player->pflags & PF_DRIFTINPUT) && (player->drift == 0 || (player->pflags & PF_DRIFTEND)))
+	{
+		// Starting right drift
+		player->drift = -1;
+		player->pflags &= ~PF_DRIFTEND;
+	}
+	else if (!(player->pflags & PF_DRIFTINPUT))
 	{
 		// drift is not being performed so if we're just finishing set driftend and decrement counters
 		if (player->drift > 0)
@@ -8471,122 +7726,69 @@ static void K_KartDrift(player_t *player, boolean onground)
 		else
 			player->pflags &= ~PF_DRIFTEND;
 	}
-	else if (player->speed > minspeed
-		&& (player->drift == 0 || (player->pflags & PF_DRIFTEND)))
-	{
-		// Uses turning over steering, since this is very binary.
-		// Using steering would cause a lot more "wrong drifts".
-		if (player->cmd.turning > 0)
-		{
-			// Starting left drift
-			player->drift = 1;
-			player->driftcharge = 0;
-			player->pflags &= ~PF_DRIFTEND;
-		}
-		else if (player->cmd.turning < 0)
-		{
-			// Starting right drift
-			player->drift = -1;
-			player->driftcharge = 0;
-			player->pflags &= ~PF_DRIFTEND;
-		}
-	}
 
-	if (P_PlayerInPain(player) || player->speed <= 0)
+
+	// Incease/decrease the drift value to continue drifting in that direction
+	if (!P_PlayerInPain(player) && (player->pflags & PF_DRIFTINPUT) && onground && player->drift != 0)
 	{
-		// Stop drifting
-		player->drift = player->driftcharge = player->aizdriftstrat = 0;
-		player->pflags &= ~(PF_BRAKEDRIFT|PF_GETSPARKS);
-	}
-	else if ((player->pflags & PF_DRIFTINPUT) && player->drift != 0)
-	{
-		// Incease/decrease the drift value to continue drifting in that direction
 		fixed_t driftadditive = 24;
-		boolean playsound = false;
 
-		if (onground)
+		if (player->drift >= 1) // Drifting to the left
 		{
-			if (player->drift >= 1) // Drifting to the left
-			{
-				player->drift++;
-				if (player->drift > 5)
-					player->drift = 5;
+			player->drift++;
+			if (player->drift > 5)
+				player->drift = 5;
 
-				if (player->steering > 0) // Inward
-					driftadditive += abs(player->steering)/100;
-				if (player->steering < 0) // Outward
-					driftadditive -= abs(player->steering)/75;
-			}
-			else if (player->drift <= -1) // Drifting to the right
-			{
-				player->drift--;
-				if (player->drift < -5)
-					player->drift = -5;
-
-				if (player->steering < 0) // Inward
-					driftadditive += abs(player->steering)/100;
-				if (player->steering > 0) // Outward
-					driftadditive -= abs(player->steering)/75;
-			}
-
-			// Disable drift-sparks until you're going fast enough
-			if (!(player->pflags & PF_GETSPARKS)
-				|| (player->offroad && K_ApplyOffroad(player)))
-				driftadditive = 0;
-
-			// Inbetween minspeed and minspeed*2, it'll keep your previous drift-spark state.
-			if (player->speed > minspeed*2)
-			{
-				player->pflags |= PF_GETSPARKS;
-
-				if (player->driftcharge <= -1)
-				{
-					player->driftcharge = dsone; // Back to red
-					playsound = true;
-				}
-			}
-			else if (player->speed <= minspeed)
-			{
-				player->pflags &= ~PF_GETSPARKS;
-				driftadditive = 0;
-
-				if (player->driftcharge >= dsone)
-				{
-					player->driftcharge = -1; // Set yellow sparks
-					playsound = true;
-				}
-			}
+			if (player->cmd.turning > 0) // Inward
+				driftadditive += abs(player->cmd.turning)/100;
+			if (player->cmd.turning < 0) // Outward
+				driftadditive -= abs(player->cmd.turning)/75;
 		}
-		else
+		else if (player->drift <= -1) // Drifting to the right
 		{
+			player->drift--;
+			if (player->drift < -5)
+				player->drift = -5;
+
+			if (player->cmd.turning < 0) // Inward
+				driftadditive += abs(player->cmd.turning)/100;
+			if (player->cmd.turning > 0) // Outward
+				driftadditive -= abs(player->cmd.turning)/75;
+		}
+
+		// Disable drift-sparks until you're going fast enough
+		if (!(player->pflags & PF_GETSPARKS)
+			|| (player->offroad && K_ApplyOffroad(player)))
 			driftadditive = 0;
-		}
+		
+		if (player->speed > minspeed*2)
+			player->pflags |= PF_GETSPARKS;
 
-		// This spawns the drift sparks
-		if ((player->driftcharge + driftadditive >= dsone)
-			|| (player->driftcharge < 0))
-		{
-			K_SpawnDriftSparks(player);
-		}
-
+		// Sound whenever you get a different tier of sparks
 		if ((player->driftcharge < dsone && player->driftcharge+driftadditive >= dsone)
 			|| (player->driftcharge < dstwo && player->driftcharge+driftadditive >= dstwo)
 			|| (player->driftcharge < dsthree && player->driftcharge+driftadditive >= dsthree))
 		{
-			playsound = true;
+			if (P_IsDisplayPlayer(player)) // UGHGHGH...
+				S_StartSoundAtVolume(player->mo, sfx_s3ka2, 192); // Ugh...
 		}
 
-		// Sound whenever you get a different tier of sparks
-		if (playsound && P_IsDisplayPlayer(player))
-		{
-			if (player->driftcharge == -1)
-				S_StartSoundAtVolume(player->mo, sfx_sploss, 192); // Yellow spark sound
-			else
-				S_StartSoundAtVolume(player->mo, sfx_s3ka2, 192);
-		}
+
+		// moved this below sounds to help with scaling
+		// This spawns the drift sparks
+		if (player->driftcharge + driftadditive >= dsone)
+			K_SpawnDriftSparks(player);
 
 		player->driftcharge += driftadditive;
 		player->pflags &= ~PF_DRIFTEND;
+	}
+
+	// Stop drifting
+	if (P_PlayerInPain(player) || player->speed < minspeed)
+	{
+		// Stop drifting
+		player->drift = player->driftcharge = player->aizdriftstrat = 0;
+		player->pflags &= ~(PF_BRAKEDRIFT|PF_GETSPARKS);
 	}
 
 	if ((player->handleboost == 0)
@@ -8630,8 +7832,8 @@ static void K_KartDrift(player_t *player, boolean onground)
 	}
 
 	if (player->drift
-		&& ((buttons & BT_BRAKE)
-		|| !(buttons & BT_ACCELERATE))
+		&& ((player->cmd.buttons & BT_BRAKE)
+		|| !(player->cmd.buttons & BT_ACCELERATE))
 		&& P_IsObjectOnGround(player->mo))
 	{
 		if (!(player->pflags & PF_BRAKEDRIFT))
@@ -9299,7 +8501,7 @@ static void K_AirFailsafe(player_t *player)
 		P_Thrust(player->mo, K_MomentumAngle(player->mo), thrustSpeed);
 
 		S_StartSound(player->mo, sfx_s23c);
-		K_SpawnDriftBoostExplosion(player, 0);
+		K_SpawnNormalSpeedLines(player);
 
 		player->pflags &= ~PF_AIRFAILSAFE;
 	}

@@ -48,7 +48,6 @@ void K_MatchGenericExtraFlags(mobj_t *mo, mobj_t *master);
 void K_GenericExtraFlagsNoZAdjust(mobj_t *mo, mobj_t *master);
 void K_SpawnDashDustRelease(player_t *player);
 void K_SpawnDriftBoostClip(player_t *player);
-void K_SpawnDriftBoostClipSpark(mobj_t *clip);
 void K_SpawnNormalSpeedLines(player_t *player);
 void K_SpawnInvincibilitySpeedLines(mobj_t *mo);
 void K_SpawnBumpEffect(mobj_t *mo);
@@ -73,8 +72,7 @@ void K_SpawnMineExplosion(mobj_t *source, UINT8 color);
 UINT16 K_DriftSparkColor(player_t *player, INT32 charge);
 void K_SpawnBoostTrail(player_t *player);
 void K_SpawnSparkleTrail(mobj_t *mo);
-void K_SpawnWipeoutTrail(mobj_t *mo);
-void K_SpawnDraftDust(mobj_t *mo);
+void K_SpawnWipeoutTrail(mobj_t *mo, boolean translucent);
 void K_DriftDustHandling(mobj_t *spawner);
 void K_Squish(mobj_t *mo);
 mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, INT32 defaultDir, INT32 altthrow);
@@ -145,7 +143,6 @@ void K_PlayHitEmSound(mobj_t *source, mobj_t *other);
 void K_TryHurtSoundExchange(mobj_t *victim, mobj_t *attacker);
 void K_PlayPowerGloatSound(mobj_t *source);
 
-fixed_t K_ItemScaleForPlayer(player_t *player);
 void K_SetItemOut(player_t *player);
 void K_UnsetItemOut(player_t *player);
 

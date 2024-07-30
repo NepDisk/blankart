@@ -1919,39 +1919,37 @@ static void P_3dMovement(player_t *player)
 	// 2) If "yes" to 1, were we moving over topspeed to begin with?
 	// 3) If "yes" to 2, are we now going faster?
 
+	// Time to ask three questions:
+	// 1) Are we over topspeed?
+	// 2) If "yes" to 1, were we moving over topspeed to begin with?
+	// 3) If "yes" to 2, are we now going faster?
+
 	// If "yes" to 3, normalize to our initial momentum; this will allow thoks to stay as fast as they normally are.
 	// If "no" to 3, ignore it; the player might be going too fast, but they're slowing down, so let them.
 	// If "no" to 2, normalize to topspeed, so we can't suddenly run faster than it of our own accord.
 	// If "no" to 1, we're not reaching any limits yet, so ignore this entirely!
 	// -Shadow Hog
-	// Only do this forced cap of speed when in midair, the kart acceleration code takes into account friction, and
-	// doesn't let you accelerate past top speed, so this is unnecessary on the ground, but in the air is needed to
-	// allow for being able to change direction on spring jumps without being accelerated into the void - Sryder
-	if (!P_IsObjectOnGround(player->mo))
+	newMagnitude = R_PointToDist2(player->mo->momx - player->cmomx, player->mo->momy - player->cmomy, 0, 0);
+	if (newMagnitude > K_GetKartSpeed(player, true, true)) //topspeed)
 	{
-		fixed_t topspeed = K_GetKartSpeed(player, true, true);
-		newMagnitude = R_PointToDist2(player->mo->momx - player->cmomx, player->mo->momy - player->cmomy, 0, 0);
-		if (newMagnitude > topspeed)
+		fixed_t tempmomx, tempmomy;
+		if (oldMagnitude > K_GetKartSpeed(player, true, true) && onground) // SRB2Kart: onground check for air speed cap
 		{
-			fixed_t tempmomx, tempmomy;
-			if (oldMagnitude > topspeed)
+			if (newMagnitude > oldMagnitude)
 			{
-				if (newMagnitude > oldMagnitude)
-				{
-					tempmomx = FixedMul(FixedDiv(player->mo->momx - player->cmomx, newMagnitude), oldMagnitude);
-					tempmomy = FixedMul(FixedDiv(player->mo->momy - player->cmomy, newMagnitude), oldMagnitude);
-					player->mo->momx = tempmomx + player->cmomx;
-					player->mo->momy = tempmomy + player->cmomy;
-				}
-				// else do nothing
-			}
-			else
-			{
-				tempmomx = FixedMul(FixedDiv(player->mo->momx - player->cmomx, newMagnitude), topspeed);
-				tempmomy = FixedMul(FixedDiv(player->mo->momy - player->cmomy, newMagnitude), topspeed);
+				tempmomx = FixedMul(FixedDiv(player->mo->momx - player->cmomx, newMagnitude), oldMagnitude);
+				tempmomy = FixedMul(FixedDiv(player->mo->momy - player->cmomy, newMagnitude), oldMagnitude);
 				player->mo->momx = tempmomx + player->cmomx;
 				player->mo->momy = tempmomy + player->cmomy;
 			}
+			// else do nothing
+		}
+		else
+		{
+			tempmomx = FixedMul(FixedDiv(player->mo->momx - player->cmomx, newMagnitude), K_GetKartSpeed(player, true, true)); //topspeed)
+			tempmomy = FixedMul(FixedDiv(player->mo->momy - player->cmomy, newMagnitude), K_GetKartSpeed(player, true, true)); //topspeed)
+			player->mo->momx = tempmomx + player->cmomx;
+			player->mo->momy = tempmomy + player->cmomy;
 		}
 	}
 }
@@ -2318,7 +2316,7 @@ void P_MovePlayer(player_t *player)
 		K_SpawnSparkleTrail(player->mo);
 
 	if (player->wipeoutslow > 1 && (leveltime & 1))
-		K_SpawnWipeoutTrail(player->mo);
+		K_SpawnWipeoutTrail(player->mo, false);
 
 	K_DriftDustHandling(player->mo);
 
@@ -4297,6 +4295,33 @@ void P_PlayerThink(player_t *player)
 
 	P_DoBubbleBreath(player); // Spawn Sonic's bubbles
 	P_CheckInvincibilityTimer(player); // Spawn Invincibility Sparkles
+	
+	// "Blur" a bit when you have speed shoes and are going fast enough
+	if ((player->driftboost || player->sneakertimer || player->startboost || player->ringboost) && !player->invincibilitytimer // SRB2kart
+		&& (player->speed + abs(player->mo->momz)) > FixedMul(20*FRACUNIT,player->mo->scale))
+	{
+		UINT8 i;
+		mobj_t *gmobj = P_SpawnGhostMobj(player->mo);
+
+		gmobj->fuse = 2;
+		if (leveltime & 1)
+		{
+			gmobj->frame &= ~FF_TRANSMASK;
+			gmobj->frame |= tr_trans70<<FF_TRANSSHIFT;
+		}
+
+		// Hide the mobj from our sights if we're the displayplayer and chasecam is off.
+		// Why not just not spawn the mobj?  Well, I'd rather only flirt with
+		// consistency so much...
+		for (i = 0; i <= splitscreen; i++)
+		{
+			if (player == &players[displayplayers[i]] && !camera[i].chase)
+			{
+				gmobj->renderflags |= RF_DONTDRAW;
+				break;
+			}
+		}
+	}
 
 	// check for buttons
 	if (cmd->buttons & BT_ACCELERATE)
