@@ -170,6 +170,9 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT8(save_p, players[i].laps);
 		WRITEUINT8(save_p, players[i].latestlap);
 		WRITEINT32(save_p, players[i].starpostnum);
+		WRITEUINT32(save_p, players[i].starposttime);
+		WRITEINT32(save_p, players[i].prevcheck);
+		WRITEINT32(save_p, players[i].nextcheck);
 
 		WRITEUINT8(save_p, players[i].ctfteam);
 
@@ -377,7 +380,9 @@ static void P_NetArchivePlayers(void)
 		WRITEFIXED(save_p, players[i].respawn.pointx);
 		WRITEFIXED(save_p, players[i].respawn.pointy);
 		WRITEFIXED(save_p, players[i].respawn.pointz);
+		WRITEANGLE(save_p, players[i].respawn.pointangle);
 		WRITEUINT8(save_p, players[i].respawn.flip);
+		WRITEUINT8(save_p, players[i].respawn.manual);
 		WRITEUINT32(save_p, players[i].respawn.timer);
 		WRITEUINT32(save_p, players[i].respawn.airtimer);
 		WRITEUINT32(save_p, players[i].respawn.distanceleft);
@@ -478,6 +483,9 @@ static void P_NetUnArchivePlayers(void)
 		players[i].laps = READUINT8(save_p); // Number of laps (optional)
 		players[i].latestlap = READUINT8(save_p);
 		players[i].starpostnum = READINT32(save_p);
+		players[i].starposttime = READUINT32(save_p);
+		players[i].prevcheck = READINT32(save_p);
+		players[i].nextcheck = READINT32(save_p);
 
 		players[i].ctfteam = READUINT8(save_p); // 1 == Red, 2 == Blue
 
@@ -668,7 +676,9 @@ static void P_NetUnArchivePlayers(void)
 		players[i].respawn.pointx = READFIXED(save_p);
 		players[i].respawn.pointy = READFIXED(save_p);
 		players[i].respawn.pointz = READFIXED(save_p);
+		players[i].respawn.pointangle = READANGLE(save_p);
 		players[i].respawn.flip = (boolean)READUINT8(save_p);
+		players[i].respawn.manual = READUINT8(save_p);
 		players[i].respawn.timer = READUINT32(save_p);
 		players[i].respawn.airtimer = READUINT32(save_p);
 		players[i].respawn.distanceleft = READUINT32(save_p);

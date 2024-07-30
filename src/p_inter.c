@@ -17,6 +17,7 @@
 #include "g_game.h"
 #include "m_random.h"
 #include "p_local.h"
+#include "p_mobj.h"
 #include "s_sound.h"
 #include "r_main.h"
 #include "st_stuff.h"
@@ -593,10 +594,20 @@ void P_TouchStarPost(mobj_t *post, player_t *player, boolean snaptopost)
 	(void)snaptopost;
 
 	// Player must have touched all previous starposts
-	if (post->health - player->starpostnum > 1)
+	if ((post->health - player->starpostnum > 1) && (numbosswaypoints == 0))
 	{
 		if (!player->checkskip)
 			S_StartSound(toucher, sfx_lose);
+		player->checkskip = 3;
+		return;
+	}
+	
+	// Going backwards triggers sound
+	if ((post->health >= ((numstarposts/2) + player->starpostnum)) && (numbosswaypoints > 0))
+	{
+		if (!player->checkskip)
+			S_StartSound(toucher, sfx_lose);
+
 		player->checkskip = 3;
 		return;
 	}
@@ -610,6 +621,18 @@ void P_TouchStarPost(mobj_t *post, player_t *player, boolean snaptopost)
 
 	if (player->starpostnum >= post->health)
 		return; // Already hit this post
+		
+	if (numbosswaypoints > 0) // Handles Respawning related things on Binary maps using legacy checkpoints
+	{
+		player->starposttime = player->realtime;
+		player->respawn.pointx = toucher->x;
+		player->respawn.pointy = toucher->y;
+		player->respawn.pointz = post->z;
+		player->respawn.pointangle = post->angle;
+		player->respawn.flip = ((post->flags2 & MF2_OBJECTFLIP) || (post->spawnpoint->options & MTF_OBJECTFLIP)) ? true : false;	// store flipping
+		player->respawn.manual = true;
+
+	}
 
 	player->starpostnum = post->health;
 }

@@ -2080,6 +2080,10 @@ static inline void G_PlayerFinishLevel(INT32 player)
 	P_FlashPal(p, 0, 0); // Resets
 
 	p->starpostnum = 0;
+	p->starposttime = 0;
+	p->prevcheck = 0;
+	p->nextcheck = 0;
+	
 	memset(&p->respawn, 0, sizeof (p->respawn));
 
 	// SRB2kart: Increment the "matches played" counter.
@@ -2123,6 +2127,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	UINT8 ctfteam;
 
 	INT32 starpostnum;
+	tic_t starposttime; // The time of the last cheatcheck you hit
+	INT32 prevcheck; // Distance from Previous Legacy Checkpoint
+	INT32 nextcheck; // Distace to Next Legacy Checkpoint
 	INT32 exiting;
 	INT32 khudcardanimation;
 	INT16 totalring;
@@ -2220,6 +2227,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		exiting = 0;
 		khudcardanimation = 0;
 		starpostnum = 0;
+		starposttime = 0;
+		prevcheck = 0;
+		nextcheck = 0;
 		xtralife = 0;
 
 		follower = NULL;
@@ -2263,6 +2273,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		khudcardanimation = (exiting > 0) ? players[player].karthud[khud_cardanimation] : 0;
 
 		starpostnum = players[player].starpostnum;
+		starposttime = players[player].starposttime;
+		prevcheck = players[player].prevcheck;
+		prevcheck = players[player].nextcheck;
 
 		xtralife = players[player].xtralife;
 
@@ -2308,6 +2321,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->followitem = followitem;
 
 	p->starpostnum = starpostnum;
+	p->starposttime = starposttime;
+	p->prevcheck = prevcheck;
+	p->nextcheck = nextcheck;
 	p->exiting = exiting;
 	p->karthud[khud_cardanimation] = khudcardanimation;
 

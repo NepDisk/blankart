@@ -281,6 +281,8 @@ typedef struct respawnvars_s
 	fixed_t pointx; // Respawn position coords to go towards
 	fixed_t pointy;
 	fixed_t pointz;
+	angle_t pointangle; // Only used when wp is NULL
+	boolean manual; // Respawn coords were manually set, please respawn exactly there
 	boolean flip; // Flip upside down or not
 	tic_t timer; // Time left on respawn animation once you're there
 	tic_t airtimer; // Time spent in the air before respawning
@@ -549,6 +551,9 @@ typedef struct player_s
 	UINT8 laps; // Number of laps (optional)
 	UINT8 latestlap;
 	INT32 starpostnum; // The number of the last starpost you hit
+	tic_t starposttime; // NOIRE: The time of the last cheatcheck you hit
+	INT32 prevcheck; // Distance from Previous Legacy Checkpoint
+	INT32 nextcheck; // Distace to Next Legacy Checkpoint
 
 	UINT8 ctfteam; // 0 == Spectator, 1 == Red, 2 == Blue
 

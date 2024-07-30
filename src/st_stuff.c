@@ -782,7 +782,7 @@ void ST_drawTitleCard(void)
 	if (!LUA_HudEnabled(hud_stagetitle))
 		goto luahook;
 
-	if (timeinmap > 113)
+	if (timeinmap > 113 || timeinmap < 6)
 		goto luahook;
 
 	lvlw = V_LevelNameWidth(lvlttl);

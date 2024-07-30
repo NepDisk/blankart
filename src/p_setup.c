@@ -127,6 +127,7 @@ sector_t *spawnsectors;
 line_t *spawnlines;
 side_t *spawnsides;
 INT32 numstarposts;
+INT32 numbosswaypoints;
 UINT16 bossdisabled;
 boolean stoppedclock;
 boolean levelloading;
@@ -3715,6 +3716,7 @@ static void P_InitLevelSettings(boolean reloadinggamestate)
 	circuitmap = false;
 	numstarposts = 0;
 	ssspheres = 0;
+	numbosswaypoints = 0;
 	if (!reloadinggamestate)
 		timeinmap = 0;
 
@@ -4414,9 +4416,13 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	// Load the waypoints please!
 	if (gametyperules & GTR_CIRCUIT)
 	{
-		if (K_SetupWaypointList() == false)
+		if ((K_SetupWaypointList() == false) && (numbosswaypoints == 0))
 		{
-			CONS_Alert(CONS_ERROR, "Waypoints were not able to be setup! Player positions will not work correctly.\n");
+			CONS_Alert(CONS_ERROR, "Waypoints were not able to be setup and legacy checkpoints do not exist! Player positions will not work correctly.\n");
+		}
+		else if ((K_SetupWaypointList() == true) && numbosswaypoints > 0)
+		{
+			numbosswaypoints = 0;
 		}
 	}
 

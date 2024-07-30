@@ -1869,7 +1869,7 @@ static void K_HandleLapIncrement(player_t *player)
 {
 	if (player)
 	{
-		if ((player->starpostnum == numstarposts) || (player->laps == 0))
+		if (((numbosswaypoints > 0) ? (player->starpostnum >= (numstarposts - (numstarposts/2))) : (player->starpostnum == numstarposts)) || (player->laps == 0))
 		{
 			size_t i = 0;
 			UINT8 nump = 0;
@@ -4829,8 +4829,17 @@ DoneSection2:
 				player->speed = speed;
 			}
 			break;
-
-		case 10: // Unused
+		case 10: // Finish Line
+		{
+			if ((gametyperules & GTR_CIRCUIT) && (player->exiting == 0) && !(player->pflags & PF_HITFINISHLINE))
+			{
+					K_HandleLapIncrement(player);
+					//ACS_RunLapScript(mo, line);
+					//K_HandleLapIncrement(player);
+					player->pflags |= PF_HITFINISHLINE;
+			}
+			break;
+		}
 		case 11: // Unused
 		case 12: // Camera noclip
 		case 13: // Unused
@@ -6018,7 +6027,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 		{
 			case 10: // Circuit finish line (Unused)
 				// Remove before release
-				CONS_Alert(CONS_WARNING, "Finish line sector type is deprecated.\n");
+				//CONS_Alert(CONS_WARNING, "Finish line sector type is deprecated.\n");
 				break;
 		}
 	}

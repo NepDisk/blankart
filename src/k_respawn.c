@@ -12,6 +12,7 @@
 #include "k_respawn.h"
 #include "doomdef.h"
 #include "d_player.h"
+#include "doomstat.h"
 #include "k_kart.h"
 #include "k_battle.h"
 #include "g_game.h"
@@ -128,7 +129,14 @@ void K_DoIngameRespawn(player_t *player)
 	P_ResetPlayer(player);
 
 	// Set up respawn position if invalid
-	if (player->respawn.wp != NULL && leveltime >= starttime)
+	if (player->respawn.manual == true)
+	{
+		player->respawn.distanceleft = 0;
+		player->respawn.pointz += K_RespawnOffset(player, player->respawn.flip);
+		if (numbosswaypoints == 0)
+			player->respawn.manual = false; // one respawn only!
+	}
+	else if (player->respawn.wp != NULL && leveltime >= starttime)
 	{
 		const UINT32 dist = RESPAWN_DIST + (player->airtime * 48);
 		player->respawn.distanceleft = (dist * mapobjectscale) / FRACUNIT;
@@ -386,6 +394,11 @@ static void K_MovePlayerToRespawnPoint(player_t *player)
 		else
 		{
 			// We can now drop!
+			if (gametyperules & GTR_CIRCUIT)
+			{
+				// Of course, in gametypes where there's a clear and intended progression, set our direction.
+				P_SetPlayerAngle(player, (player->drawangle = player->respawn.pointangle));
+			}
 			player->respawn.state = RESPAWNST_DROP;
 			return;
 		}

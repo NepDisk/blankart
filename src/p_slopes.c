@@ -909,11 +909,11 @@ boolean P_CanApplySlopePhysics(mobj_t *mo, pslope_t *slope)
 		return false;
 	}
 
-	if (slope->normal.x == 0 && slope->normal.y == 0)
+	/*if (slope->normal.x == 0 && slope->normal.y == 0)
 	{
 		// Flat slope? No such thing, man. No such thing.
 		return false;
-	}
+	}*/
 
 	if (mo->player != NULL)
 	{

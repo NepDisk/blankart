@@ -1573,6 +1573,8 @@ void readlevelheader(MYFILE *f, INT32 num)
 				else
 					deh_warning("Level header %d: invalid unlockable number %d", num, i);
 			}
+			else if (fastcmp(word, "LEVELSELECT"))
+				mapheaderinfo[num-1]->levelselect = (UINT8)i;
 			else if (fastcmp(word, "SKYBOXSCALE"))
 				mapheaderinfo[num-1]->skybox_scalex = mapheaderinfo[num-1]->skybox_scaley = mapheaderinfo[num-1]->skybox_scalez = (INT16)i;
 			else if (fastcmp(word, "SKYBOXSCALEX"))
@@ -1665,6 +1667,13 @@ void readlevelheader(MYFILE *f, INT32 num)
 					mapheaderinfo[num-1]->menuflags |= LF2_VISITNEEDED;
 				else
 					mapheaderinfo[num-1]->menuflags &= ~LF2_VISITNEEDED;
+			}
+			else if (fastcmp(word, "NOVISITNEEDED"))
+			{
+				if (i || word2[0] == 'T' || word2[0] == 'Y')
+					mapheaderinfo[num-1]->menuflags &= ~LF2_VISITNEEDED;
+				else
+					mapheaderinfo[num-1]->menuflags |= LF2_VISITNEEDED;
 			}
 			else if (fastcmp(word, "GRAVITY"))
 				mapheaderinfo[num-1]->gravity = FLOAT_TO_FIXED(atof(word2));
