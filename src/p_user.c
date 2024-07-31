@@ -1877,10 +1877,10 @@ static void P_3dMovement(player_t *player)
 		if (player->mo->movefactor != FRACUNIT) // Friction-scaled acceleration...
 			movepushforward = FixedMul(movepushforward, player->mo->movefactor);
 
-		if (cmd->buttons & BT_BRAKE && !cmd->forwardmove) // SRB2kart - braking isn't instant
+		if (cmd->buttons & BT_BRAKE && (K_GetForwardMove(player) == 0)) // SRB2kart - braking isn't instant
 			movepushforward /= 64;
 
-		if (cmd->forwardmove > 0)
+		if (K_GetForwardMove(player) > 0)
 			player->brakestop = 0;
 		else if (player->brakestop < 6) // Don't start reversing with brakes until you've made a stop first
 		{
