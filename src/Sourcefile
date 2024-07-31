@@ -72,6 +72,7 @@ r_patch.c
 r_patchrotation.c
 r_picformats.c
 r_portal.c
+r_bbox.c
 screen.c
 taglist.c
 v_video.c
