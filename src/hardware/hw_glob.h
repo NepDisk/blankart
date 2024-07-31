@@ -83,7 +83,6 @@ typedef struct gl_vissprite_s
 
 	boolean flip, vflip;
 	boolean precip; // Tails 08-25-2002
-	boolean bbox;
 	boolean rotated;
 	UINT8 translucency;       //alpha level 0-255
 

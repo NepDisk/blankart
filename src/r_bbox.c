@@ -169,11 +169,12 @@ draw_bbox_row
 	}
 }
 
-UINT8 R_GetBoundingBoxColor(mobj_t *thing)
+static UINT8
+get_bbox_color (vissprite_t *vis)
 {
-	UINT32 flags = thing->flags;
+	UINT32 flags = vis->mobjflags;
 
-	if (thing->player)
+	if (vis->mobj->player)
 		return 255; // 0FF
 
 	if (flags & (MF_NOCLIPTHING))
@@ -204,7 +205,7 @@ void R_DrawThingBoundingBox(vissprite_t *vis)
 	struct bbox_config bb = {
 		.height = vis->thingheight,
 		.tz = vis->texturemid,
-		.color = R_GetBoundingBoxColor(vis->mobj),
+		.color = get_bbox_color(vis),
 	};
 
 	// 1--3
