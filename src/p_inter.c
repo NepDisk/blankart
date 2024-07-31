@@ -1558,7 +1558,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 	}
 
 	// Final state setting - do something instead of P_SetMobjState;
-	// Final state setting - do something instead of P_SetMobjState;
 	if (target->type == MT_SPIKE && target->info->deathstate != S_NULL)
 	{
 		const angle_t ang = ((inflictor) ? inflictor->angle : 0) + ANGLE_90;

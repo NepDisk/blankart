@@ -1350,19 +1350,22 @@ boolean P_PlayerHitFloor(player_t *player, boolean fromAir)
 		K_SpawnSplashForMobj(player->mo, abs(player->mo->momz));
 	}
 	
-	// Cut momentum in half when you hit the ground and
-	// aren't pressing any controls.
-	if (!(player->cmd.forwardmove || player->cmd.sidemove) && !player->cmomx && !player->cmomy
-		&& !(player->spinouttimer))
+	if (fromAir == true && clipmomz == true)
 	{
-		player->mo->momx = player->mo->momx/2;
-		player->mo->momy = player->mo->momy/2;
-                        
-		if (player->cmd.buttons & BT_BRAKE && !(player->cmd.forwardmove)) // FURTHER slowdown if you're braking.
+		// Cut momentum in half when you hit the ground and
+		// aren't pressing any controls.
+		if (!(player->cmd.forwardmove || player->cmd.sidemove) && !player->cmomx && !player->cmomy
+			&& !(player->spinouttimer))
 		{
 			player->mo->momx = player->mo->momx/2;
 			player->mo->momy = player->mo->momy/2;
-		}                    
+							
+			if (player->cmd.buttons & BT_BRAKE && !(player->cmd.forwardmove)) // FURTHER slowdown if you're braking.
+			{
+				player->mo->momx = player->mo->momx/2;
+				player->mo->momy = player->mo->momy/2;
+			}                    
+		}
 	}
 
 	return clipmomz;
