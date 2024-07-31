@@ -1127,12 +1127,6 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 		{
 			gravityadd = (5*gravityadd)/2;
 		}
-
-		if (mo->player->fastfall != 0)
-		{
-			// Fast falling
-			gravityadd *= 4;
-		}
 	}
 	else
 	{
@@ -5750,7 +5744,7 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 							P_RandomRange(-spacing, spacing) * FRACUNIT,
 							P_RandomRange(-spacing, spacing) * FRACUNIT,
 							P_RandomRange(-spacing, spacing) * FRACUNIT,
-							MT_SPINDASHDUST
+							MT_DUST
 						);
 
 						P_SetScale(puff, (puff->destscale *= 5));
@@ -6215,7 +6209,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 		if (mobj->tics > 0)
 			mobj->renderflags ^= RF_DONTDRAW;
 		break;
-	case MT_SPINDASHWIND:
 	case MT_VWREF:
 	case MT_VWREB:
 	{
@@ -9493,16 +9486,6 @@ void P_SceneryThinker(mobj_t *mobj)
 	}
 
 	P_CycleMobjState(mobj);
-
-	// Flicker softlanding mobj, this just prevents us from needing like 20 states.
-	if (mobj->type == MT_SOFTLANDING)
-	{
-		mobj->renderflags |= RF_NOSPLATBILLBOARD|RF_OBJECTSLOPESPLAT;
-		if (mobj->tics & 1)
-			mobj->renderflags |= RF_DONTDRAW;
-		else
-			mobj->renderflags &= ~RF_DONTDRAW;
-	}
 
 	if (mobj->type != MT_RANDOMAUDIENCE)
 		return;

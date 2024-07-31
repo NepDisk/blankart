@@ -306,7 +306,6 @@ typedef struct botvars_s
 
 	SINT8 turnconfirm; // Confirm turn direction
 
-	tic_t spindashconfirm; // When high enough, they will try spindashing
 } botvars_t;
 
 // player_t struct for all skybox variables
@@ -436,12 +435,6 @@ typedef struct player_s
 	UINT16 springstars;		// Spawn stars around a player when they hit a spring
 	UINT16 springcolor;		// Color of spring stars
 	UINT8 dashpadcooldown;	// Separate the vanilla SA-style dash pads from using flashing
-
-	UINT16 spindash;		// Spindash charge timer
-	fixed_t spindashspeed;	// Spindash release speed
-	UINT8 spindashboost;	// Spindash release boost timer
-
-	fixed_t fastfall;		// Fast fall momentum
 	
 	fixed_t boostpower;		// Base boost value, for offroad
 	fixed_t speedboost;		// Boost value smoothing for max speed

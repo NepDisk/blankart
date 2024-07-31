@@ -1285,8 +1285,6 @@ typedef enum sprite
 	SPR_OTLS,
 	SPR_OTCP,
 
-	SPR_DBOS, // Drift boost flame
-
 	SPR_WAYP,
 	SPR_EGOO,
 
@@ -1294,16 +1292,6 @@ typedef enum sprite
 
 	SPR_GCHA, // follower: generic chao
 	SPR_CHEZ, // follower: cheese
-
-	SPR_DBCL, // Drift boost clip
-	SPR_DBNC, // Drift boost clip's sparks
-	SPR_DBST, // Drift boost plume
-
-	SPR_SDDS, // Spindash dust
-	SPR_SDWN, // Spindash wind
-	SPR_EBRK, // Soft Landing / Ebrake aura stuff.
-	SPR_HMTR, // downwards line
-	SPR_HBUB, // HOLD! Bubble
 
 	SPR_TRCK,
 
@@ -5392,23 +5380,6 @@ typedef enum state
 	S_WATERTRAILUNDERLAY7,
 	S_WATERTRAILUNDERLAY8,
 
-	S_SPINDASHDUST,
-	S_SPINDASHWIND,
-
-	S_SOFTLANDING1,
-	S_SOFTLANDING2,
-	S_SOFTLANDING3,
-	S_SOFTLANDING4,
-	S_SOFTLANDING5,
-
-	S_DOWNLINE1,
-	S_DOWNLINE2,
-	S_DOWNLINE3,
-	S_DOWNLINE4,
-	S_DOWNLINE5,
-
-	S_HOLDBUBBLE,
-
 	S_DEBTSPIKE1,
 	S_DEBTSPIKE2,
 	S_DEBTSPIKE3,
@@ -6508,12 +6479,6 @@ typedef enum mobj_type
 
 	MT_WATERTRAIL,
 	MT_WATERTRAILUNDERLAY,
-
-	MT_SPINDASHDUST,
-	MT_SPINDASHWIND,
-	MT_SOFTLANDING,
-	MT_DOWNLINE,
-	MT_HOLDBUBBLE,
 
 	MT_PAPERITEMSPOT,
 

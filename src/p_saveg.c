@@ -283,12 +283,6 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT16(save_p, players[i].springcolor);
 		WRITEUINT8(save_p, players[i].dashpadcooldown);
 
-		WRITEUINT16(save_p, players[i].spindash);
-		WRITEFIXED(save_p, players[i].spindashspeed);
-		WRITEUINT8(save_p, players[i].spindashboost);
-
-		WRITEFIXED(save_p, players[i].fastfall);
-
 		WRITEFIXED(save_p, players[i].boostpower);
 		WRITEFIXED(save_p, players[i].speedboost);
 		WRITEFIXED(save_p, players[i].accelboost);
@@ -393,7 +387,6 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT32(save_p, players[i].botvars.itemdelay);
 		WRITEUINT32(save_p, players[i].botvars.itemconfirm);
 		WRITESINT8(save_p, players[i].botvars.turnconfirm);
-		WRITEUINT32(save_p, players[i].botvars.spindashconfirm);
 	}
 }
 
@@ -574,12 +567,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].springcolor = READUINT16(save_p);
 		players[i].dashpadcooldown = READUINT8(save_p);
 
-		players[i].spindash = READUINT16(save_p);
-		players[i].spindashspeed = READFIXED(save_p);
-		players[i].spindashboost = READUINT8(save_p);
-
-		players[i].fastfall = READFIXED(save_p);
-
 		players[i].boostpower = READFIXED(save_p);
 		players[i].speedboost = READFIXED(save_p);
 		players[i].accelboost = READFIXED(save_p);
@@ -684,7 +671,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].botvars.itemdelay = READUINT32(save_p);
 		players[i].botvars.itemconfirm = READUINT32(save_p);
 		players[i].botvars.turnconfirm = READSINT8(save_p);
-		players[i].botvars.spindashconfirm = READUINT32(save_p);
 
 		//players[i].viewheight = P_GetPlayerViewHeight(players[i]); // scale cannot be factored in at this point
 	}

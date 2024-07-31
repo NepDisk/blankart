@@ -1149,7 +1149,6 @@ static menuitem_t OP_AllControlsMenu[] =
 	{IT_CONTROL, NULL, "Turn Right",            {.routine = M_ChangeControl}, gc_turnright  },
 	{IT_CONTROL, NULL, "Drift",                 {.routine = M_ChangeControl}, gc_drift      },
 	{IT_CONTROL, NULL, "Brake",                 {.routine = M_ChangeControl}, gc_brake      },
-	{IT_CONTROL, NULL, "Spindash",              {.routine = M_ChangeControl}, gc_spindash   },
 	{IT_CONTROL, NULL, "Use/Throw Item",        {.routine = M_ChangeControl}, gc_fire       },
 	{IT_CONTROL, NULL, "Aim Forward",           {.routine = M_ChangeControl}, gc_aimforward },
 	{IT_CONTROL, NULL, "Aim Backward",          {.routine = M_ChangeControl}, gc_aimbackward},

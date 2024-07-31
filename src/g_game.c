@@ -1091,12 +1091,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 	if (PlayerInputDown(ssplayer, gc_drift) || (usejoystick && axis > 0))
 		cmd->buttons |= BT_DRIFT;
 
-	// Spindash with any button/key
-	// Simply holds all of the inputs for you.
-	axis = PlayerJoyAxis(ssplayer, AXISSPINDASH);
-	if (PlayerInputDown(ssplayer, gc_spindash) || (usejoystick && axis > 0))
-		cmd->buttons |= (BT_ACCELERATE|BT_BRAKE|BT_DRIFT);
-
 	// rear view with any button/key
 	axis = PlayerJoyAxis(ssplayer, AXISLOOKBACK);
 	if (PlayerInputDown(ssplayer, gc_lookback) || (usejoystick && axis > 0))
@@ -3711,7 +3705,7 @@ static void G_DoCompleted(void)
 					//Make sure the map actually exists before you try to go to it!
 					if ((W_CheckNumForName(G_BuildMapName(cm + 1)) == LUMPERROR))
 					{
-						CONS_Alert(CONS_ERROR, M_GetText("Next map given (MAP %d) doesn't exist! Reverting to MAP01.\n"), cm+1);
+						//CONS_Alert(CONS_ERROR, M_GetText("Next map given (MAP %d) doesn't exist! Reverting to MAP01.\n"), cm+1);
 						cm = 0;
 						break;
 					}

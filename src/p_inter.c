@@ -1362,7 +1362,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 					P_RandomRange(-spacing, spacing) * FRACUNIT,
 					P_RandomRange(-spacing, spacing) * FRACUNIT,
 					P_RandomRange(0, 4*spacing) * FRACUNIT,
-					MT_SPINDASHDUST
+					MT_SPINDUST
 				);
 
 				P_SetScale(puff, (puff->destscale *= 2));

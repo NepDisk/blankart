@@ -1293,7 +1293,6 @@ static void K_PlayerJustBumped(player_t *player)
 	}
 
 	player->justbumped = bumptime;
-	player->spindash = 0;
 
 	if (player->spinouttimer)
 	{
@@ -1763,7 +1762,7 @@ void K_SpawnDashDustRelease(player_t *player)
 	if (!P_IsObjectOnGround(player->mo))
 		return;
 
-	if (!player->speed && !player->startboost && !player->spindash)
+	if (!player->speed && !player->startboost)
 		return;
 
 	travelangle = player->mo->angle;
@@ -2688,24 +2687,6 @@ static fixed_t K_FlameShieldDashVar(INT32 val)
 	return (3*FRACUNIT/4) + (((val * FRACUNIT) / TICRATE) / 2);
 }
 
-INT16 K_GetSpindashChargeTime(player_t *player)
-{
-	// more charge time for higher speed
-	// Tails = 2s, Knuckles = 2.6s, Metal = 3.2s
-	return (player->kartspeed + 8) * (TICRATE/5);
-}
-
-fixed_t K_GetSpindashChargeSpeed(player_t *player)
-{
-	// more speed for higher weight & speed
-	// Tails = +18.75%, Fang = +46.88%, Mighty = +46.88%, Metal = +56.25%
-	// (can be higher than this value when overcharged)
-	const fixed_t val = ((player->kartspeed + player->kartweight) + 2) * (FRACUNIT/32);
-
-	// TODO: gametyperules
-	return (gametype == GT_BATTLE) ? (4 * val) : val;
-}
-
 // sets boostpower, speedboost, accelboost, and handleboost to whatever we need it to be
 static void K_GetKartBoostPower(player_t *player)
 {
@@ -2782,19 +2763,6 @@ static void K_GetKartBoostPower(player_t *player)
 			dash, // + infinite top speed
 			3*FRACUNIT, // + 300% acceleration
 			FixedMul(FixedDiv(dash, FRACUNIT/2), sliptidehandling/2) // + infinite handling
-		);
-	}
-
-	if (player->spindashboost) // Spindash boost
-	{
-		const fixed_t MAXCHARGESPEED = K_GetSpindashChargeSpeed(player);
-		const fixed_t exponent = FixedMul(player->spindashspeed, player->spindashspeed);
-
-		// character & charge dependent
-		ADDBOOST(
-			FixedMul(MAXCHARGESPEED, exponent), // + 0 to K_GetSpindashChargeSpeed()% top speed
-			(40 * exponent), // + 0% to 4000% acceleration
-			0 // + 0% handling
 		);
 	}
 
@@ -3002,12 +2970,12 @@ SINT8 K_GetForwardMove(player_t *player)
 		return 0;
 	}
 
-	if (player->sneakertimer || player->spindashboost)
+	if (player->sneakertimer)
 	{
 		return MAXPLMOVE;
 	}
 
-	if (player->spinouttimer || K_PlayerEBrake(player))
+	if (player->spinouttimer)
 	{
 		return 0;
 	}
@@ -6021,11 +5989,6 @@ static void K_UpdateEngineSounds(player_t *player)
 		// Dropdashing
 		targetsnd = ((buttons & BT_ACCELERATE) ? 12 : 0);
 	}
-	else if (K_PlayerEBrake(player) == true)
-	{
-		// Spindashing
-		targetsnd = ((buttons & BT_DRIFT) ? 12 : 0);
-	}
 	else
 	{
 		// Average out the value of forwardmove and the speed that you're moving at.
@@ -6734,16 +6697,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->startboost--;
 	}
 
-	if (player->spindashboost)
-	{
-		player->spindashboost--;
-
-		if (player->spindashboost <= 0)
-		{
-			player->spindashspeed = player->spindashboost = 0;
-		}
-	}
-
 	if (player->invincibilitytimer)
 		player->invincibilitytimer--;
 
@@ -6890,12 +6843,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (cmd->buttons & BT_DRIFT)
 	{
-		// Only allow drifting while NOT trying to do an spindash input.
-		if ((K_GetKartButtons(player) & BT_EBRAKEMASK) != BT_EBRAKEMASK)
-		{
-			player->pflags |= PF_DRIFTINPUT;
-		}
-		// else, keep the previous value, because it might be brake-drifting.
+		player->pflags |= PF_DRIFTINPUT;
 	}
 	else
 	{
@@ -6917,8 +6865,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 		player->tripwireState = TRIPSTATE_NONE;
 	}
-
-	K_KartEbrakeVisuals(player);
 
 	if (K_GetKartButtons(player) & BT_BRAKE &&
 			P_IsObjectOnGround(player->mo) &&
@@ -8141,362 +8087,10 @@ static INT32 K_FlameShieldMax(player_t *player)
 	return min(16, 1 + (disttofinish / distv));
 }
 
-boolean K_PlayerEBrake(player_t *player)
-{
-	if (player->fastfall != 0)
-	{
-		return true;
-	}
-
-	return (K_GetKartButtons(player) & BT_EBRAKEMASK) == BT_EBRAKEMASK
-		&& player->drift == 0
-		&& P_PlayerInPain(player) == false
-		&& player->justbumped == 0
-		&& player->spindashboost == 0
-		&& player->nocontrol == 0;
-}
-
 SINT8 K_Sliptiding(player_t *player)
 {
 	return player->drift ? 0 : player->aizdriftstrat;
 }
-
-// Ebraking visuals for mo
-// we use mo->hprev for the hold bubble. If another hprev exists for some reason, remove it.
-
-void K_KartEbrakeVisuals(player_t *p)
-{
-	mobj_t *wave;
-	mobj_t *spdl;
-	fixed_t sx, sy;
-
-	if (K_PlayerEBrake(p) == true)
-	{
-		if (p->ebrakefor % 20 == 0)
-		{
-			wave = P_SpawnMobj(p->mo->x, p->mo->y, p->mo->z, MT_SOFTLANDING);
-			P_SetScale(wave, p->mo->scale);
-			wave->momx = p->mo->momx;
-			wave->momy = p->mo->momy;
-			wave->momz = p->mo->momz;
-			wave->standingslope = p->mo->standingslope;
-		}
-
-		// sound
-		if (!S_SoundPlaying(p->mo, sfx_s3kd9s))
-			S_StartSound(p->mo, sfx_s3kd9s);
-
-		// HOLD! bubble.
-		if (!p->ebrakefor)
-		{
-			if (p->mo->hprev && !P_MobjWasRemoved(p->mo->hprev))
-			{
-				// for some reason, there's already an hprev. Remove it.
-				P_RemoveMobj(p->mo->hprev);
-			}
-
-			p->mo->hprev = P_SpawnMobj(p->mo->x, p->mo->y, p->mo->z, MT_HOLDBUBBLE);
-			p->mo->hprev->renderflags |= (RF_DONTDRAW & ~K_GetPlayerDontDrawFlag(p));
-		}
-
-		// Update HOLD bubble.
-		if (p->mo->hprev && !P_MobjWasRemoved(p->mo->hprev))
-		{
-			P_MoveOrigin(p->mo->hprev, p->mo->x, p->mo->y, p->mo->z);
-			p->mo->hprev->angle = p->mo->angle;
-			p->mo->hprev->fuse = TICRATE/2;		// When we leave spindash for any reason, make sure this bubble goes away soon after.
-			K_FlipFromObject(p->mo->hprev, p->mo);
-		}
-
-		if (!p->spindash)
-		{
-			// Spawn downwards fastline
-			sx = p->mo->x + P_RandomRange(-48, 48)*p->mo->scale;
-			sy = p->mo->y + P_RandomRange(-48, 48)*p->mo->scale;
-
-			spdl = P_SpawnMobj(sx, sy, p->mo->z, MT_DOWNLINE);
-			spdl->colorized = true;
-			spdl->color = SKINCOLOR_WHITE;
-			K_MatchGenericExtraFlags(spdl, p->mo);
-			P_SetScale(spdl, p->mo->scale);
-
-			// squish the player a little bit.
-			p->mo->spritexscale = FRACUNIT*115/100;
-			p->mo->spriteyscale = FRACUNIT*85/100;
-		}
-		else
-		{
-			const UINT16 MAXCHARGETIME = K_GetSpindashChargeTime(p);
-			const fixed_t MAXSHAKE = FRACUNIT;
-
-			// update HOLD bubble with numbers based on charge.
-			if (p->mo->hprev && !P_MobjWasRemoved(p->mo->hprev))
-			{
-				UINT8 frame = min(1 + ((p->spindash*3) / MAXCHARGETIME), 4);
-
-				// ?! limit.
-				if (p->spindash >= MAXCHARGETIME +TICRATE)
-					frame = 5;
-
-				p->mo->hprev->frame = frame|FF_FULLBRIGHT;
-			}
-
-			// shake the player as they charge their spindash!
-
-			// "gentle" shaking as we start...
-			if (p->spindash < MAXCHARGETIME)
-			{
-				fixed_t shake = FixedMul(((p->spindash)*FRACUNIT/MAXCHARGETIME), MAXSHAKE);
-				SINT8 mult = leveltime & 1 ? 1 : -1;
-
-				p->mo->spritexoffset = shake*mult;
-			}
-			else	// get VIOLENT on overcharge :)
-			{
-				fixed_t shake = MAXSHAKE + FixedMul(((p->spindash-MAXCHARGETIME)*FRACUNIT/TICRATE), MAXSHAKE)*3;
-				SINT8 mult = leveltime & 1 ? 1 : -1;
-
-				p->mo->spritexoffset = shake*mult;
-			}
-
-			// sqish them a little MORE....
-			p->mo->spritexscale = FRACUNIT*12/10;
-			p->mo->spriteyscale = FRACUNIT*8/10;
-		}
-
-
-		p->ebrakefor++;
-	}
-	else if (p->ebrakefor)	// cancel effects
-	{
-		// reset scale
-		p->mo->spritexscale = FRACUNIT;
-		p->mo->spriteyscale = FRACUNIT;
-
-		// reset shake
-		p->mo->spritexoffset = 0;
-
-		// remove the bubble instantly unless it's in the !? state
-		if (p->mo->hprev && !P_MobjWasRemoved(p->mo->hprev) && (p->mo->hprev->frame & FF_FRAMEMASK) != 5)
-		{
-			P_RemoveMobj(p->mo->hprev);
-			p->mo->hprev = NULL;
-		}
-
-		p->ebrakefor = 0;
-	}
-}
-
-static void K_KartSpindashDust(mobj_t *parent)
-{
-	fixed_t rad = FixedDiv(FixedHypot(parent->radius, parent->radius), parent->scale);
-	INT32 i;
-
-	for (i = 0; i < 2; i++)
-	{
-		fixed_t hmomentum = P_RandomRange(6, 12) * parent->scale;
-		fixed_t vmomentum = P_RandomRange(2, 6) * parent->scale;
-
-		angle_t ang = parent->player->drawangle + ANGLE_180;
-		SINT8 flip = 1;
-
-		mobj_t *dust;
-
-		if (i & 1)
-			ang -= ANGLE_45;
-		else
-			ang += ANGLE_45;
-
-		dust = P_SpawnMobjFromMobj(parent,
-			FixedMul(rad, FINECOSINE(ang >> ANGLETOFINESHIFT)),
-			FixedMul(rad, FINESINE(ang >> ANGLETOFINESHIFT)),
-			0, MT_SPINDASHDUST
-		);
-		flip = P_MobjFlip(dust);
-
-		dust->momx = FixedMul(hmomentum, FINECOSINE(ang >> ANGLETOFINESHIFT));
-		dust->momy = FixedMul(hmomentum, FINESINE(ang >> ANGLETOFINESHIFT));
-		dust->momz = vmomentum * flip;
-	}
-}
-
-static void K_KartSpindashWind(mobj_t *parent)
-{
-	mobj_t *wind = P_SpawnMobjFromMobj(parent,
-		P_RandomRange(-36,36) * FRACUNIT,
-		P_RandomRange(-36,36) * FRACUNIT,
-		FixedDiv(parent->height / 2, parent->scale) + (P_RandomRange(-20,20) * FRACUNIT),
-		MT_SPINDASHWIND
-	);
-
-	P_SetTarget(&wind->target, parent);
-
-	if (parent->momx || parent->momy)
-		P_InitAngle(wind, R_PointToAngle2(0, 0, parent->momx, parent->momy));
-	else
-		P_InitAngle(wind, parent->player->drawangle);
-
-	wind->momx = 3 * parent->momx / 4;
-	wind->momy = 3 * parent->momy / 4;
-	wind->momz = 3 * P_GetMobjZMovement(parent) / 4;
-
-	K_MatchGenericExtraFlags(wind, parent);
-}
-
-// Time after which you get a thrust for releasing spindash
-#define SPINDASHTHRUSTTIME 20
-
-static void K_KartSpindash(player_t *player)
-{
-	const boolean onGround = P_IsObjectOnGround(player->mo);
-	const INT16 MAXCHARGETIME = K_GetSpindashChargeTime(player);
-	UINT16 buttons = K_GetKartButtons(player);
-	boolean spawnWind = (leveltime % 2 == 0);
-
-	if (P_PlayerInPain(player))
-	{
-		player->spindash = 0;
-	}
-
-	if (player->spindash > 0 && (buttons & (BT_DRIFT|BT_BRAKE|BT_ACCELERATE)) != (BT_DRIFT|BT_BRAKE|BT_ACCELERATE))
-	{
-		player->spindashspeed = (player->spindash * FRACUNIT) / MAXCHARGETIME;
-		player->spindashboost = TICRATE;
-
-		// if spindash was charged enough, give a small thrust.
-		if (player->spindash >= SPINDASHTHRUSTTIME)
-		{
-			fixed_t thrust = FixedMul(player->mo->scale, player->spindash*FRACUNIT/5);
-
-			// TODO: gametyperules
-			if (gametype == GT_BATTLE)
-				thrust *= 2;
-
-			// Give a bit of a boost depending on charge.
-			P_InstaThrust(player->mo, player->mo->angle, thrust);
-		}
-
-		player->spindash = 0;
-		S_StartSound(player->mo, sfx_s23c);
-	}
-
-
-	if ((player->spindashboost > 0) && (spawnWind == true))
-	{
-		K_KartSpindashWind(player->mo);
-	}
-
-	if (player->spindashboost > (TICRATE/2))
-	{
-		K_KartSpindashDust(player->mo);
-	}
-
-	if (K_PlayerEBrake(player) == false)
-	{
-		player->spindash = 0;
-		return;
-	}
-
-	// Handle fast falling behaviors first.
-	if (onGround == false)
-	{
-		// Update fastfall.
-		player->fastfall = player->mo->momz;
-		player->spindash = 0;
-		return;
-	}
-	else if (player->fastfall != 0)
-	{
-		// Handle fastfall bounce.
-		const fixed_t maxBounce = player->mo->scale * 10;
-		const fixed_t minBounce = player->mo->scale;
-		fixed_t bounce = 2 * abs(player->fastfall) / 3;
-
-		if (bounce > maxBounce)
-		{
-			bounce = maxBounce;
-		}
-		else
-		{
-			// Lose speed on bad bounce.
-			player->mo->momx /= 2;
-			player->mo->momy /= 2;
-
-			if (bounce < minBounce)
-			{
-				bounce = minBounce;
-			}
-		}
-
-		S_StartSound(player->mo, sfx_ffbonc);
-		player->mo->momz = bounce * P_MobjFlip(player->mo);
-
-		player->fastfall = 0;
-		return;
-	}
-
-	if (player->speed == 0 && player->steering != 0 && leveltime % 8 == 0)
-	{
-		// Rubber burn turn sfx
-		S_StartSound(player->mo, sfx_ruburn);
-	}
-
-	if (player->speed < 6*player->mo->scale)
-	{
-		if ((buttons & (BT_DRIFT|BT_BRAKE)) == (BT_DRIFT|BT_BRAKE))
-		{
-			UINT8 ringdropframes = 2 + (player->kartspeed + player->kartweight);
-			INT16 chargetime = MAXCHARGETIME - ++player->spindash;
-			boolean spawnOldEffect = true;
-
-			if (player->spindash >= SPINDASHTHRUSTTIME)
-			{
-				K_KartSpindashDust(player->mo);
-				spawnOldEffect = false;
-			}
-
-			if (chargetime <= (MAXCHARGETIME / 4) && spawnWind == true)
-			{
-				K_KartSpindashWind(player->mo);
-			}
-
-			if (player->flashing > 0 && (player->spindash % ringdropframes == 0) && player->hyudorotimer == 0)
-			{
-				// Every frame that you're invisible from flashing, spill a ring.
-				// Intentionally a lop-sided trade-off, so the game doesn't become
-				// Funky Kong's Ring Racers.
-
-				P_PlayerRingBurst(player, 1);
-			}
-
-			if (chargetime > 0)
-			{
-				UINT16 soundcharge = 0;
-				UINT8 add = 0;
-
-				while ((soundcharge += ++add) < chargetime);
-
-				if (soundcharge == chargetime)
-				{
-					if (spawnOldEffect == true)
-						K_SpawnDashDustRelease(player);
-					S_StartSound(player->mo, sfx_s3kab);
-				}
-			}
-			else if (chargetime < -TICRATE)
-			{
-				P_DamageMobj(player->mo, NULL, NULL, 1, DMG_NORMAL);
-			}
-		}
-	}
-	else
-	{
-		if (leveltime % 4 == 0)
-			S_StartSound(player->mo, sfx_kc2b);
-	}
-}
-
-#undef SPINDASHTHRUSTTIME
 
 static void K_AirFailsafe(player_t *player)
 {
@@ -9419,7 +9013,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	K_AdjustPlayerFriction(player);
 
 	K_KartDrift(player, onground);
-	K_KartSpindash(player);
 
 	if (onground == false)
 	{
