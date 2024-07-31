@@ -2010,7 +2010,9 @@ static void K_HandleLapIncrement(player_t *player)
 		}
 		else if (player->starpostnum)
 		{
-			S_StartSound(player->mo, sfx_s26d);
+			if (!player->checkskip)
+				S_StartSound(player->mo, sfx_lose);
+			player->checkskip = 3;
 		}
 	}
 }

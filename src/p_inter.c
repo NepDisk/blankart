@@ -1954,6 +1954,23 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				}
 
 				{
+					
+					if (((type == DMG_NORMAL) || (type == DMG_WIPEOUT)) || (type == DMG_STING) || (type == DMG_WOMBO)) // No combos pls thx
+					{
+						if (player->spinouttimer > 0)
+						{
+							K_DoInstashield(player);
+							//CONS_Printf("is this shit even working....\n");
+							return false;
+						}
+					}
+					
+					if (player->squishedtimer > 0)
+					{
+						K_DoInstashield(player);
+						return false;
+					}
+					
 					// Check if we should allow wombo combos (hard hits by default, inverted by the presence of DMG_WOMBO).
 					boolean allowcombo = (hardhit == !(damagetype & DMG_WOMBO));
 
@@ -1991,19 +2008,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 
 				if (source && source != player->mo && source->player)
 				{
-					// Extend the invincibility if the hit was a direct hit.
-					if (inflictor == source && source->player->invincibilitytimer)
-					{
-						tic_t kinvextend;
-
-						if (gametype == GT_BATTLE)
-							kinvextend = 2*TICRATE;
-						else
-							kinvextend = 5*TICRATE;
-
-						source->player->invincibilitytimer += kinvextend;
-					}
-
 					K_TryHurtSoundExchange(target, source);
 
 					K_BattleAwardHit(source->player, player, inflictor, takeBumpers);

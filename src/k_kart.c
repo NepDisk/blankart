@@ -406,22 +406,6 @@ static INT32 K_KartItemOddsBattle[NUMKARTRESULTS][2] =
 #define SPBFORCEDIST (15*DISTVAR) // Distance when SPB is forced onto 2nd place
 #define ENDDIST (12*DISTVAR) // Distance when the game stops giving you bananas
 
-// Array of states to pick the starting point of the animation, based on the actual time left for invincibility.
-static INT32 K_SparkleTrailStartStates[KART_NUMINVSPARKLESANIM][2] = {
-	{S_KARTINVULN12, S_KARTINVULNB12},
-	{S_KARTINVULN11, S_KARTINVULNB11},
-	{S_KARTINVULN10, S_KARTINVULNB10},
-	{S_KARTINVULN9, S_KARTINVULNB9},
-	{S_KARTINVULN8, S_KARTINVULNB8},
-	{S_KARTINVULN7, S_KARTINVULNB7},
-	{S_KARTINVULN6, S_KARTINVULNB6},
-	{S_KARTINVULN5, S_KARTINVULNB5},
-	{S_KARTINVULN4, S_KARTINVULNB4},
-	{S_KARTINVULN3, S_KARTINVULNB3},
-	{S_KARTINVULN2, S_KARTINVULNB2},
-	{S_KARTINVULN1, S_KARTINVULNB1}
-};
-
 INT32 K_GetShieldFromItem(INT32 item)
 {
 	switch (item)
@@ -4025,54 +4009,29 @@ void K_SpawnBoostTrail(player_t *player)
 
 void K_SpawnSparkleTrail(mobj_t *mo)
 {
-	const INT32 rad = (mo->radius*3)/FRACUNIT;
+	const INT32 rad = (mo->radius*2)>>FRACBITS;
 	mobj_t *sparkle;
-	UINT8 invanimnum; // Current sparkle animation number
-	INT32 invtime;// Invincibility time left, in seconds
-	UINT8 index = 0;
-	fixed_t newx, newy, newz;
+	INT32 i;
 
 	I_Assert(mo != NULL);
 	I_Assert(!P_MobjWasRemoved(mo));
 
-	if (leveltime & 2)
-		index = 1;
-
-	invtime = mo->player->invincibilitytimer/TICRATE+1;
-
-	//CONS_Printf("%d\n", index);
-
-	newx = mo->x + (P_RandomRange(-rad, rad)*FRACUNIT);
-	newy = mo->y + (P_RandomRange(-rad, rad)*FRACUNIT);
-	newz = mo->z + (P_RandomRange(0, mo->height>>FRACBITS)*FRACUNIT);
-
-	sparkle = P_SpawnMobj(newx, newy, newz, MT_SPARKLETRAIL);
-
-	P_InitAngle(sparkle, R_PointToAngle2(mo->x, mo->y, sparkle->x, sparkle->y));
-
-	sparkle->movefactor = R_PointToDist2(mo->x, mo->y, sparkle->x, sparkle->y);	// Save the distance we spawned away from the player.
-	//CONS_Printf("movefactor: %d\n", sparkle->movefactor/FRACUNIT);
-
-	sparkle->extravalue1 = (sparkle->z - mo->z);			// Keep track of our Z position relative to the player's, I suppose.
-	sparkle->extravalue2 = P_RandomRange(0, 1) ? 1 : -1;	// Rotation direction?
-	sparkle->cvmem = P_RandomRange(-25, 25)*mo->scale;		// Vertical "angle"
-
-	K_FlipFromObject(sparkle, mo);
-	P_SetTarget(&sparkle->target, mo);
-
-	sparkle->destscale = mo->destscale;
-	P_SetScale(sparkle, mo->scale);
-
-	invanimnum = (invtime >= 11) ? 11 : invtime;
-	//CONS_Printf("%d\n", invanimnum);
-
-	P_SetMobjState(sparkle, K_SparkleTrailStartStates[invanimnum][index]);
-
-	if (mo->player->invincibilitytimer > itemtime+(2*TICRATE))
+	for (i = 0; i < 3; i++)
 	{
+		fixed_t newx = mo->x + mo->momx + (P_RandomRange(-rad, rad)<<FRACBITS);
+		fixed_t newy = mo->y + mo->momy + (P_RandomRange(-rad, rad)<<FRACBITS);
+		fixed_t newz = mo->z + mo->momz + (P_RandomRange(0, mo->height>>FRACBITS)<<FRACBITS);
+
+		sparkle = P_SpawnMobj(newx, newy, newz, MT_SPARKLETRAIL);
+		K_FlipFromObject(sparkle, mo);
+
+		P_SetTarget(&sparkle->target, mo);
+		sparkle->destscale = mo->destscale;
+		P_SetScale(sparkle, mo->scale);
 		sparkle->color = mo->color;
-		sparkle->colorized = true;
 	}
+
+	P_SetMobjState(sparkle, S_KARTINVULN_LARGE1);
 }
 
 void K_SpawnWipeoutTrail(mobj_t *mo, boolean translucent)
@@ -6114,17 +6073,18 @@ static void K_UpdateInvincibilitySounds(player_t *player)
 	{
 		if (cv_kartinvinsfx.value)
 		{
-			if (player->invincibilitytimer > 0) // Prioritize invincibility
-				sfxnum = sfx_alarmi;
-			else if (player->growshrinktimer > 0)
+			if (player->growshrinktimer > 0) // Prioritize Grow
 				sfxnum = sfx_alarmg;
+			else if (player->invincibilitytimer > 0) 
+				sfxnum = sfx_alarmi;
+
 		}
 		else
 		{
-			if (player->invincibilitytimer > 0)
-				sfxnum = sfx_kinvnc;
-			else if (player->growshrinktimer > 0)
+			if (player->growshrinktimer > 0)
 				sfxnum = sfx_kgrow;
+			else if (player->invincibilitytimer > 0)
+				sfxnum = sfx_kinvnc;
 		}
 	}
 
@@ -6730,6 +6690,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (player->invincibilitytimer)
 		player->invincibilitytimer--;
+	
+	if (player->checkskip)
+		player->checkskip--;
 
 	if ((player->respawn.state == RESPAWNST_NONE) && player->growshrinktimer != 0)
 	{
@@ -6974,23 +6937,9 @@ void K_KartResetPlayerColor(player_t *player)
 
 		fullbright = true;
 
-		if (player->invincibilitytimer > defaultTime)
-		{
-			player->mo->color = K_RainbowColor(leveltime / 2);
-			player->mo->colorized = true;
-			skip = true;
-		}
-		else
-		{
-			flicker += (defaultTime - player->invincibilitytimer) / TICRATE / 2;
-		}
-
-		if (leveltime % flicker == 0)
-		{
-			player->mo->color = SKINCOLOR_INVINCFLASH;
-			player->mo->colorized = true;
-			skip = true;
-		}
+		player->mo->color = K_RainbowColor(leveltime / 2);
+		player->mo->colorized = true;
+		skip = true;
 
 		if (skip)
 		{
