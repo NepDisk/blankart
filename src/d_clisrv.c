@@ -115,7 +115,7 @@ UINT32 playerpingtable[MAXPLAYERS]; //table of player latency values.
 static tic_t lowest_lag;
 boolean server_lagless;
 static CV_PossibleValue_t mindelay_cons_t[] = {{0, "MIN"}, {30, "MAX"}, {0, NULL}};
-consvar_t cv_mindelay = CVAR_INIT ("mindelay", "2", CV_SAVE, mindelay_cons_t, NULL);
+consvar_t cv_mindelay = CVAR_INIT ("mindelay", "0", CV_SAVE, mindelay_cons_t, NULL);
 
 SINT8 nodetoplayer[MAXNETNODES];
 SINT8 nodetoplayer2[MAXNETNODES]; // say the numplayer for this node if any (splitscreen)
@@ -3371,7 +3371,6 @@ void SV_ResetServer(void)
 	pingmeasurecount = 1;
 	memset(realpingtable, 0, sizeof realpingtable);
 	memset(playerpingtable, 0, sizeof playerpingtable);
-	memset(playerpacketlosstable, 0, sizeof playerpacketlosstable);
 
 	ClearAdminPlayers();
 	Schedule_Clear();
@@ -5683,8 +5682,12 @@ static void UpdatePingTable(void)
 	}
 	else // We're a client, handle mindelay on the way out.
 	{
-		if ((neededtic - gametic) < (tic_t)cv_mindelay.value)
-			lowest_lag = cv_mindelay.value - (neededtic - gametic);
+		tic_t mydelay = playerpingtable[consoleplayer];
+
+		if (mydelay < (tic_t)cv_mindelay.value)
+			lowest_lag = cv_mindelay.value - mydelay;
+		else
+			lowest_lag = 0;
 	}
 }
 
