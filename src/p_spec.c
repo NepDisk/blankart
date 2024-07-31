@@ -4743,7 +4743,12 @@ DoneSection2:
 			}
 			break;
 
-		case 7: // SRB2Kart: Destroy items
+		case 7: // SRB2kart 190117 - Oil Slick (deprecated)
+			if (roversector || isTouching)
+			{
+				if (player)
+					P_DamageMobj(player->mo, NULL, NULL, 1, DMG_NORMAL);
+			}
 			break;
 
 		case 8: // Zoom Tube Start
@@ -4864,7 +4869,7 @@ DoneSection2:
 		}
 		case 11: // Unused
 		case 12: // Camera noclip
-		case 13: // Unused
+		case 13: // SRB2Kart: Destroy items
 		case 14: // Unused
 		case 15: // Unused
 			break;
@@ -5098,7 +5103,7 @@ static void P_RunSpecialSectorCheck(player_t *player, sector_t *sector)
 		case 6: // Super Sonic Transform
 		case 8: // Zoom Tube Start
 		case 9: // Zoom Tube End
-		case 10: // Finish line (Unused)
+		case 10: // Finish line
 			nofloorneeded = true;
 			break;
 	}

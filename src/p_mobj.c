@@ -9169,7 +9169,7 @@ void P_MobjThinker(mobj_t *mobj)
 	// Destroy items sector special
 	if (P_CanDeleteKartItem(mobj->type))
 	{
-		if (mobj->health > 0 && P_MobjTouchingSectorSpecial(mobj, 4, 7, true))
+		if (mobj->health > 0 && P_MobjTouchingSectorSpecial(mobj, 4, 13, true))
 		{
 			if (mobj->type == MT_SSMINE
 			|| mobj->type == MT_BUBBLESHIELDTRAP
