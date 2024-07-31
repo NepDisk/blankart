@@ -4563,89 +4563,119 @@ DoneSection2:
 	switch (special)
 	{
 		case 1: // SRB2kart: Spring Panel
-		case 3:
 			if (roversector || P_MobjReadyToTrigger(player->mo, sector))
 			{
 				const fixed_t hscale = mapobjectscale + (mapobjectscale - player->mo->scale);
 				const fixed_t minspeed = 24*hscale;
-				fixed_t speed = FixedHypot(player->mo->momx, player->mo->momy);
-				fixed_t upwards = 32*FRACUNIT;
+				angle_t pushangle = FixedHypot(player->mo->momx, player->mo->momy) ? R_PointToAngle2(0, 0, player->mo->momx, player->mo->momy) : player->mo->angle;
+				// if we have no speed for SOME REASON, use the player's angle, otherwise we'd be forcefully thrusted to what I can only assume is angle 0
 
 				if (player->mo->eflags & MFE_SPRUNG)
-				{
 					break;
-				}
 
-				if (special == 3)
-				{
-					upwards /= 2;
-				}
+				if (player->speed < minspeed) // Push forward to prevent getting stuck
+					P_InstaThrust(player->mo, pushangle, minspeed);
 
-				player->trickpanel = 1;
-				player->pflags |= PF_TRICKDELAY;
-				K_DoPogoSpring(player->mo, upwards, 1);
-
-				// Reduce speed
-				speed /= 2;
-
-				if (speed < minspeed)
-				{
-					speed = minspeed;
-				}
-
-				P_InstaThrust(player->mo, player->mo->angle, speed);
+				player->pogospring = 1;
+				K_DoPogoSpring(player->mo, 0, 1);
 			}
 			break;
 
 		case 2: // Wind/Current
 			break;
 
+		case 3: // SRB2kart: Spring Panel (capped speed)
+			if (roversector || P_MobjReadyToTrigger(player->mo, sector))
+			{
+				const fixed_t hscale = mapobjectscale + (mapobjectscale - player->mo->scale);
+				const fixed_t minspeed = 24*hscale;
+				const fixed_t maxspeed = 28*hscale;
+				angle_t pushangle = FixedHypot(player->mo->momx, player->mo->momy) ? R_PointToAngle2(0, 0, player->mo->momx, player->mo->momy) : player->mo->angle;
+				// if we have no speed for SOME REASON, use the player's angle, otherwise we'd be forcefully thrusted to what I can only assume is angle 0
+
+				if (player->mo->eflags & MFE_SPRUNG)
+					break;
+
+				if (player->speed > maxspeed) // Prevent overshooting jumps
+					P_InstaThrust(player->mo, pushangle, maxspeed);
+				else if (player->speed < minspeed) // Push forward to prevent getting stuck
+					P_InstaThrust(player->mo, pushangle, minspeed);
+
+				player->pogospring = 2;
+				K_DoPogoSpring(player->mo, 0, 1);
+			}
+			break;
+
 		case 4: // Conveyor Belt
 			break;
 
 		case 5: // Speed pad
-			if (player->floorboost != 0)
-			{
-				player->floorboost = 2;
+		case 6: // Speed pad w/ spin
+			if (player->dashpadcooldown != 0)
 				break;
-			}
 
-			i = Tag_FindLineSpecial(4, sectag);
+			i = P_FindSpecialLineFromTag(4, Tag_FGet(&sector->tags), -1);
 
 			if (i != -1)
 			{
-				angle_t lineangle = R_PointToAngle2(lines[i].v1->x, lines[i].v1->y, lines[i].v2->x, lines[i].v2->y);
-				fixed_t linespeed = P_AproxDistance(lines[i].v2->x-lines[i].v1->x, lines[i].v2->y-lines[i].v1->y);
-				fixed_t playerspeed = P_AproxDistance(player->mo->momx, player->mo->momy);
+				angle_t lineangle;
+				fixed_t linespeed;
 
-				if (linespeed == 0)
-				{
-					CONS_Debug(DBG_GAMELOGIC, "ERROR: Speed pad (tag %d) at zero speed.\n", sectag);
-					break;
-				}
+				lineangle = R_PointToAngle2(lines[i].v1->x, lines[i].v1->y, lines[i].v2->x, lines[i].v2->y);
+				linespeed = P_AproxDistance(lines[i].v2->x-lines[i].v1->x, lines[i].v2->y-lines[i].v1->y);
+
+				player->mo->angle = lineangle;
 
 				// SRB2Kart: Scale the speed you get from them!
 				// This is scaled differently from other horizontal speed boosts from stuff like springs, because of how this is used for some ramp jumps.
 				if (player->mo->scale > mapobjectscale)
-				{
 					linespeed = FixedMul(linespeed, mapobjectscale + (player->mo->scale - mapobjectscale));
+
+				if (!demo.playback)
+				{
+					if (player == &players[consoleplayer])
+						localangle[0] = player->mo->angle;
+					else if (player == &players[displayplayers[1]])
+						localangle[1] = player->mo->angle;
+					else if (player == &players[displayplayers[2]])
+						localangle[2] = player->mo->angle;
+					else if (player == &players[displayplayers[3]])
+						localangle[3] = player->mo->angle;
 				}
 
-				lineangle = K_ReflectAngle(
-					K_MomentumAngle(player->mo), lineangle,
-					playerspeed, linespeed
-				);
+				if (!(lines[i].flags & ML_EFFECT4))
+				{
+					P_UnsetThingPosition(player->mo);
+					if (roversector) // make FOF speed pads work
+					{
+						player->mo->x = roversector->soundorg.x;
+						player->mo->y = roversector->soundorg.y;
+					}
+					else
+					{
+						player->mo->x = sector->soundorg.x;
+						player->mo->y = sector->soundorg.y;
+					}
+					P_SetThingPosition(player->mo);
+				}
 
-				P_InstaThrust(player->mo, lineangle, max(linespeed, 2*playerspeed));
+				P_InstaThrust(player->mo, player->mo->angle, linespeed);
 
 				player->dashpadcooldown = TICRATE/3;
-				player->trickpanel = 0;
-				player->floorboost = 2;
-				S_StartSound(player->mo, sfx_cdfm62);
+				player->drift = 0;
+				player->driftcharge = 0;
+				player->pogospring = 0;
+				S_StartSound(player->mo, sfx_spdpad);
+
+				{
+					sfxenum_t pick = P_RandomKey(2); // Gotta roll the RNG every time this is called for sync reasons
+					if (cv_kartvoices.value)
+						S_StartSound(player->mo, sfx_kbost1+pick);
+					//K_TauntVoiceTimers(player);
+				}
 			}
 			break;
 
-		case 6: // Unused
 		case 7: // Unused
 		case 8: // Unused
 		case 9: // Unused

@@ -471,10 +471,11 @@ void P_ResetPlayer(player_t *player)
 	player->carry = CR_NONE;
 	player->onconveyor = 0;
 
-	//player->drift = player->driftcharge = 0;
+	player->drift = player->driftcharge = 0;
 	player->trickpanel = 0;
 	player->glanceDir = 0;
 	player->fastfall = 0;
+	player->pogospring = 0;
 }
 
 //
@@ -1348,6 +1349,21 @@ boolean P_PlayerHitFloor(player_t *player, boolean fromAir)
 	{
 		K_SpawnSplashForMobj(player->mo, abs(player->mo->momz));
 	}
+	
+	// Cut momentum in half when you hit the ground and
+	// aren't pressing any controls.
+	if (!(player->cmd.forwardmove || player->cmd.sidemove) && !player->cmomx && !player->cmomy
+		&& !(player->spinouttimer))
+	{
+		player->mo->momx = player->mo->momx/2;
+		player->mo->momy = player->mo->momy/2;
+                        
+		if (player->cmd.buttons & BT_BRAKE && !(player->cmd.forwardmove)) // FURTHER slowdown if you're braking.
+		{
+			player->mo->momx = player->mo->momx/2;
+			player->mo->momy = player->mo->momy/2;
+		}                    
+	}
 
 	return clipmomz;
 }
@@ -1754,19 +1770,20 @@ static void P_DoBubbleBreath(player_t *player)
 //#define OLD_MOVEMENT_CODE 1
 static void P_3dMovement(player_t *player)
 {
-	angle_t movepushangle; // Analog
-	fixed_t movepushforward = 0;
+	ticcmd_t *cmd;
+	angle_t movepushangle, movepushsideangle; // Analog
+	fixed_t movepushforward = 0, movepushside = 0;
 	angle_t dangle; // replaces old quadrants bits
 	fixed_t oldMagnitude, newMagnitude;
 	vector3_t totalthrust;
 
 	totalthrust.x = totalthrust.y = 0; // I forget if this is needed
 	totalthrust.z = FRACUNIT*P_MobjFlip(player->mo)/3; // A bit of extra push-back on slopes
-
-	if (K_SlopeResistance(player) == true)
-	{
-		totalthrust.z = -(totalthrust.z);
-	}
+	
+	cmd = &player->cmd;
+	
+	if (!player->pogospring)
+		cmd->sidemove = 0;
 
 	// Get the old momentum; this will be needed at the end of the function! -SH
 	oldMagnitude = R_PointToDist2(player->mo->momx - player->cmomx, player->mo->momy - player->cmomy, 0, 0);
@@ -1783,6 +1800,7 @@ static void P_3dMovement(player_t *player)
 	{
 		movepushangle = player->mo->angle;
 	}
+	movepushsideangle = movepushangle-ANGLE_90;
 
 	// cmomx/cmomy stands for the conveyor belt speed.
 	if (player->onconveyor == 2) // Wind/Current
@@ -1836,22 +1854,51 @@ static void P_3dMovement(player_t *player)
 	//}
 
 	// Do not let the player control movement if not onground.
-	onground = P_IsObjectOnGround(player->mo);
-
-	K_AdjustPlayerFriction(player);
+	// SRB2Kart: pogo spring and speed bumps are supposed to control like you're on the ground
+	onground = (P_IsObjectOnGround(player->mo) || (player->pogospring));
 
 	// Forward movement
-	// If the player isn't on the ground, there is no change in speed
-	// Smiley Face
-	if (onground)
+	if (!((player->exiting || mapreset) || (P_PlayerInPain(player) && !onground)))
 	{
 		movepushforward = K_3dKartMovement(player);
+
+		// allow very small movement while in air for gameplay
+		if (!onground)
+			movepushforward >>= 2; // proper air movement
 
 		if (player->mo->movefactor != FRACUNIT) // Friction-scaled acceleration...
 			movepushforward = FixedMul(movepushforward, player->mo->movefactor);
 
+		if (cmd->buttons & BT_BRAKE && !cmd->forwardmove) // SRB2kart - braking isn't instant
+			movepushforward /= 64;
+
+		if (cmd->forwardmove > 0)
+			player->brakestop = 0;
+		else if (player->brakestop < 6) // Don't start reversing with brakes until you've made a stop first
+		{
+			if (player->speed < 8*FRACUNIT)
+				player->brakestop++;
+			movepushforward = 0;
+		}
+
 		totalthrust.x += P_ReturnThrustX(player->mo, movepushangle, movepushforward);
 		totalthrust.y += P_ReturnThrustY(player->mo, movepushangle, movepushforward);
+	}
+	else if (!(player->spinouttimer))
+	{
+		K_MomentumToFacing(player);
+	}
+	
+	// Sideways movement
+	if (cmd->sidemove != 0 && !((player->exiting || mapreset) || player->spinouttimer))
+	{
+		if (cmd->sidemove > 0)
+			movepushside = (cmd->sidemove * FRACUNIT/128) + FixedDiv(player->speed, K_GetKartSpeed(player, true, true));
+		else
+			movepushside = (cmd->sidemove * FRACUNIT/128) - FixedDiv(player->speed, K_GetKartSpeed(player, true, true));
+
+		totalthrust.x += P_ReturnThrustX(player->mo, movepushsideangle, movepushside);
+		totalthrust.y += P_ReturnThrustY(player->mo, movepushsideangle, movepushside);
 	}
 
 	if ((totalthrust.x || totalthrust.y)
@@ -1883,36 +1930,6 @@ static void P_3dMovement(player_t *player)
 
 	player->mo->momx += totalthrust.x;
 	player->mo->momy += totalthrust.y;
-
-	if (!onground)
-	{
-		const fixed_t airspeedcap = (50*mapobjectscale);
-		const fixed_t speed = R_PointToDist2(0, 0, player->mo->momx, player->mo->momy);
-
-		// If you're going too fast in the air, ease back down to a certain speed.
-		// Helps lots of jumps from breaking when using speed items, since you can't move in the air.
-		if (speed > airspeedcap)
-		{
-			fixed_t div = 32*FRACUNIT;
-			fixed_t newspeed;
-
-			// Make rubberbanding bots slow down faster
-			if (K_PlayerUsesBotMovement(player))
-			{
-				fixed_t rubberband = player->botvars.rubberband - FRACUNIT;
-
-				if (rubberband > 0)
-				{
-					div = FixedDiv(div, FRACUNIT + (rubberband * 2));
-				}
-			}
-
-			newspeed = speed - FixedDiv((speed - airspeedcap), div);
-
-			player->mo->momx = FixedMul(FixedDiv(player->mo->momx, speed), newspeed);
-			player->mo->momy = FixedMul(FixedDiv(player->mo->momy, speed), newspeed);
-		}
-	}
 
 	// Time to ask three questions:
 	// 1) Are we over topspeed?
@@ -2159,14 +2176,8 @@ void P_MovePlayer(player_t *player)
 	{
 		K_KartMoveAnimation(player);
 
-		if (player->trickpanel == 2)
-		{
+		if (player->pogospring)
 			player->drawangle += ANGLE_22h;
-		}
-		else if (player->trickpanel >= 3)
-		{
-			player->drawangle -= ANGLE_22h;
-		}
 		else
 		{
 			player->drawangle = player->mo->angle;
@@ -2188,6 +2199,7 @@ void P_MovePlayer(player_t *player)
 
 		player->mo->rollangle = 0;
 	}
+	player->mo->movefactor = FRACUNIT; // We're not going to do any more with this, so let's change it back for the next frame.
 
 	//{ SRB2kart
 
@@ -2743,7 +2755,7 @@ void P_InitCameraCmd(void)
 
 static ticcmd_t *P_CameraCmd(camera_t *cam)
 {
-	INT32 forward, axis; //i
+	INT32 forward, side, axis; //i
 	// these ones used for multiple conditions
 	boolean turnleft, turnright, mouseaiming;
 	boolean invertmouse, lookaxis, usejoystick, kbl;
@@ -2791,10 +2803,12 @@ static ticcmd_t *P_CameraCmd(camera_t *cam)
 	if (turnright && !(turnleft))
 	{
 		cmd->turning -= KART_FULLTURN;
+		side += 4;
 	}
 	else if (turnleft && !(turnright))
 	{
 		cmd->turning += KART_FULLTURN;
+		side -= 4;
 	}
 
 	cmd->turning -= (mousex * 8) * (encoremode ? -1 : 1);
@@ -2849,11 +2863,17 @@ static ticcmd_t *P_CameraCmd(camera_t *cam)
 	mousex = mousey = mlooky = 0;
 
 	cmd->forwardmove += (SINT8)forward;
+	cmd->sidemove += (SINT8)side;
 
 	if (cmd->forwardmove > MAXPLMOVE)
 		cmd->forwardmove = MAXPLMOVE;
 	else if (cmd->forwardmove < -MAXPLMOVE)
 		cmd->forwardmove = -MAXPLMOVE;
+	
+	if (cmd->sidemove > MAXPLMOVE)
+		cmd->sidemove = MAXPLMOVE;
+	else if (cmd->sidemove < -MAXPLMOVE)
+		cmd->sidemove = -MAXPLMOVE;
 
 	if (cmd->turning > KART_FULLTURN)
 		cmd->turning = KART_FULLTURN;

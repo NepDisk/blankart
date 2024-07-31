@@ -428,6 +428,8 @@ typedef struct player_s
 	INT32 underwatertilt;
 
 	fixed_t offroad;		// In Super Mario Kart, going offroad has lee-way of about 1 second before you start losing speed
+	UINT8 pogospring;		// Pogo spring bounce effect
+	UINT8 brakestop;		// Wait until you've made a complete stop for a few tics before letting brake go in reverse.
 	UINT8 waterskip;		// Water skipping counter
 
 	UINT16 springstars;		// Spawn stars around a player when they hit a spring

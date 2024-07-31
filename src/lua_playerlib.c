@@ -887,6 +887,8 @@ static int ticcmd_get(lua_State *L)
 
 	if (fastcmp(field,"forwardmove"))
 		lua_pushinteger(L, cmd->forwardmove);
+	else if (fastcmp(field,"sidemove"))
+		lua_pushinteger(L, cmd->sidemove);
 	else if (fastcmp(field,"turning"))
 		lua_pushinteger(L, cmd->turning);
 	else if (fastcmp(field,"throwdir"))

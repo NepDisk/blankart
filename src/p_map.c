@@ -426,12 +426,9 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 		{
 			if (spring->reactiontime == 0)
 			{
-				object->player->tricktime = 0;
-				// Setup the boost for potential upwards trick, at worse, make it your regular max speed. (boost = curr speed*1.25)
-				object->player->trickboostpower = max(FixedDiv(object->player->speed, K_GetKartSpeed(object->player, false, false)) - FRACUNIT, 0)*125/100;
-				//CONS_Printf("Got boost: %d%\n", mo->player->trickboostpower*100 / FRACUNIT);
-				object->player->trickpanel = 1;
-				object->player->pflags |= PF_TRICKDELAY;
+				object->eflags &= ~MFE_SPRUNG;
+				object->player->pogospring = 1;
+				K_DoPogoSpring(object, 0, 0);
 			}
 
 			spring->reactiontime++;
@@ -489,23 +486,18 @@ static void P_DoFanAndGasJet(mobj_t *spring, mobj_t *object)
 				break;
 			if (spring->state != &states[S_STEAM1]) // Only when it bursts
 				break;
-			if (object->eflags & MFE_SPRUNG)
-				break;
 
 			if (spring->spawnpoint && spring->spawnpoint->options & MTF_OBJECTSPECIAL)
 			{
+				if (object->eflags & MFE_SPRUNG)
+					break;
 				if (object->player)
-				{
-					object->player->trickpanel = 1;
-					object->player->pflags |= PF_TRICKDELAY;
-				}
-
-				K_DoPogoSpring(object, 32<<FRACBITS, 0);
+					object->player->pogospring = 1;
+				K_DoPogoSpring(object, 0, 0);
+				return;
 			}
 			else
-			{
 				object->momz = flipval*FixedMul(speed, FixedSqrt(FixedMul(spring->scale, object->scale))); // scale the speed with both objects' scales, just like with springs!
-			}
 
 			object->eflags |= MFE_SPRUNG;
 			break;
@@ -1228,11 +1220,11 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			}
 
 			// The bump has to happen last
-			if (P_IsObjectOnGround(thing) && tmthing->momz < 0 && tmthing->player->trickpanel)
+			if (P_IsObjectOnGround(thing) && tmthing->momz < 0 && tmthing->player->pogospring)
 			{
 				P_DamageMobj(thing, tmthing, tmthing, 1, DMG_WIPEOUT|DMG_STEAL);
 			}
-			else if (P_IsObjectOnGround(tmthing) && thing->momz < 0 && thing->player->trickpanel)
+			else if (P_IsObjectOnGround(tmthing) && thing->momz < 0 && thing->player->pogospring)
 			{
 				P_DamageMobj(tmthing, thing, thing, 1, DMG_WIPEOUT|DMG_STEAL);
 			}
@@ -3666,6 +3658,10 @@ void P_BouncePlayerMove(mobj_t *mo)
 
 	mmomx = mo->player->rmomx;
 	mmomy = mo->player->rmomy;
+	
+	mo->player->drift = 0;
+	mo->player->driftcharge = 0;
+	mo->player->pogospring = 0;
 
 	// trace along the three leading corners
 	if (mo->momx > 0)

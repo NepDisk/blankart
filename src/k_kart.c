@@ -2493,7 +2493,7 @@ void K_PlayOvertakeSound(mobj_t *source)
 {
 	boolean tasteful = (!source->player || !source->player->karthud[khud_voices]);
 
-	if (!gametype == GT_RACE) // Only in race
+	if (!(gametype == GT_RACE)) // Only in race
 		return;
 
 	// 4 seconds from before race begins, 10 seconds afterwards
@@ -2875,7 +2875,7 @@ fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberb
 	fixed_t finalspeed = 0;
 	const boolean mobjValid = (player->mo != NULL && P_MobjWasRemoved(player->mo) == false);
 
-	if (doboostpower && /*!player->pogospring &&*/ !P_IsObjectOnGround(player->mo))
+	if (doboostpower && !player->pogospring && !P_IsObjectOnGround(player->mo))
 		return (75*mapobjectscale); // air speed cap
 		
 	if ((gametyperules & GTR_KARMA) && (player->bumpers <= 0))
@@ -3032,6 +3032,8 @@ fixed_t K_GetNewSpeed(player_t *player)
 	fixed_t p_accel = K_GetKartAccel(player);
 
 	fixed_t newspeed, oldspeed, finalspeed;
+	
+	if (!P_IsObjectOnGround(player->mo)) return 0; // If the player isn't on the ground, there is no change in speed
 
 	if (K_PlayerUsesBotMovement(player) == true && player->botvars.rubberband > 0)
 	{
@@ -3045,6 +3047,18 @@ fixed_t K_GetNewSpeed(player_t *player)
 	if (oldspeed > p_speed)
 		oldspeed = p_speed;
 	newspeed = FixedDiv(FixedDiv(FixedMul(oldspeed, accelmax - p_accel) + FixedMul(p_speed, p_accel), accelmax), ORIG_FRICTION);
+	
+	if (player->pogospring) // Pogo Spring minimum/maximum thrust
+	{
+		const fixed_t hscale = mapobjectscale;
+		const fixed_t minspeed = 24*hscale;
+		const fixed_t maxspeed = 28*hscale;
+
+		if (newspeed > maxspeed && player->pogospring == 2)
+			newspeed = maxspeed;
+		if (newspeed < minspeed)
+			newspeed = minspeed;
+	}
 
 	finalspeed = newspeed - oldspeed;
 
@@ -3055,23 +3069,24 @@ fixed_t K_3dKartMovement(player_t *player)
 {
 	fixed_t finalspeed = K_GetNewSpeed(player);
 
-	fixed_t movemul = FRACUNIT;
 	SINT8 forwardmove = K_GetForwardMove(player);
-
-	movemul = abs(forwardmove * FRACUNIT) / 50;
 
 	// forwardmove is:
 	//  50 while accelerating,
+	//  25 while clutching,
 	//   0 with no gas, and
 	// -25 when only braking.
-	if (forwardmove >= 0)
-	{
-		finalspeed = FixedMul(finalspeed, movemul);
-	}
-	else
-	{
-		finalspeed = FixedMul(-mapobjectscale/2, movemul);
-	}
+
+	finalspeed *= forwardmove/25;
+	finalspeed /= 2;
+
+	if (forwardmove < 0 && finalspeed > mapobjectscale*2)
+		return finalspeed/2;
+	else if (forwardmove < 0)
+		return -mapobjectscale/2;
+
+	if (finalspeed < 0)
+		finalspeed = 0;
 
 	return finalspeed;
 }
@@ -4812,7 +4827,7 @@ static void K_DoShrink(player_t *user)
 
 void K_DoPogoSpring(mobj_t *mo, fixed_t vertispeed, UINT8 sound)
 {
-	fixed_t thrust = 0;
+	const fixed_t vscale = mapobjectscale + (mo->scale - mapobjectscale);
 
 	if (mo->player && mo->player->spectator)
 		return;
@@ -4821,48 +4836,50 @@ void K_DoPogoSpring(mobj_t *mo, fixed_t vertispeed, UINT8 sound)
 		return;
 
 	mo->standingslope = NULL;
-	mo->terrain = NULL;
 
 	mo->eflags |= MFE_SPRUNG;
 
+	if (mo->eflags & MFE_VERTICALFLIP)
+		vertispeed *= -1;
+
 	if (vertispeed == 0)
 	{
-		thrust = P_AproxDistance(mo->momx, mo->momy) * P_MobjFlip(mo);
-		thrust = FixedMul(thrust, FINESINE(ANGLE_22h >> ANGLETOFINESHIFT));
+		fixed_t thrust;
+
+		if (mo->player)
+		{
+			thrust = 3*mo->player->speed/2;
+			if (thrust < 48<<FRACBITS)
+				thrust = 48<<FRACBITS;
+			if (thrust > 72<<FRACBITS)
+				thrust = 72<<FRACBITS;
+			if (mo->player->pogospring != 2)
+			{
+				if (mo->player->sneakertimer)
+					thrust = FixedMul(thrust, 5*FRACUNIT/4);
+				else if (mo->player->invincibilitytimer)
+					thrust = FixedMul(thrust, 9*FRACUNIT/8);
+			}
+		}
+		else
+		{
+			thrust = FixedDiv(3*P_AproxDistance(mo->momx, mo->momy)/2, 5*FRACUNIT/2);
+			if (thrust < 16<<FRACBITS)
+				thrust = 16<<FRACBITS;
+			if (thrust > 32<<FRACBITS)
+				thrust = 32<<FRACBITS;
+		}
+
+		mo->momz = P_MobjFlip(mo)*FixedMul(FINESINE(ANGLE_22h>>ANGLETOFINESHIFT), FixedMul(thrust, vscale));
 	}
 	else
-	{
-		thrust = vertispeed * P_MobjFlip(mo);
-	}
-
-	if (mo->player)
-	{
-		if (mo->player->sneakertimer)
-		{
-			thrust = FixedMul(thrust, 5*FRACUNIT/4);
-		}
-		else if (mo->player->invincibilitytimer)
-		{
-			thrust = FixedMul(thrust, 9*FRACUNIT/8);
-		}
-
-		mo->player->tricktime = 0;
-		// Setup the boost for potential upwards trick, at worse, make it your regular max speed. (boost = curr speed*1.25)
-		mo->player->trickboostpower = max(FixedDiv(mo->player->speed, K_GetKartSpeed(mo->player, false, false)) - FRACUNIT, 0)*125/100;
-		//CONS_Printf("Got boost: %d%\n", mo->player->trickboostpower*100 / FRACUNIT);
-	}
-
-	mo->momz = FixedMul(thrust, mapobjectscale);
+		mo->momz = FixedMul(vertispeed, vscale);
 
 	if (mo->eflags & MFE_UNDERWATER)
-	{
-		mo->momz = FixedDiv(mo->momz, FixedSqrt(3*FRACUNIT));
-	}
+		mo->momz = (117 * mo->momz) / 200;
 
 	if (sound)
-	{
 		S_StartSound(mo, (sound == 1 ? sfx_kc2f : sfx_kpogos));
-	}
 }
 
 static void K_ThrowLandMine(player_t *player)
@@ -6682,6 +6699,12 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		if (P_IsDisplayPlayer(player) && player->bumpers <= 0 && player->karmadelay <= 0)
 			comebackshowninfo = true; // client has already seen the message
 	}
+	
+	if (P_IsObjectOnGround(player->mo) && player->pogospring)
+	{
+		if (P_MobjFlip(player->mo)*player->mo->momz <= 0)
+			player->pogospring = 0;
+	}
 
 	if (player->ringdelay)
 		player->ringdelay--;
@@ -7656,8 +7679,8 @@ static void K_KartDrift(player_t *player, boolean onground)
 	// Grown players taking yellow spring panels will go below minspeed for one tic,
 	// and will then wrongdrift or have their sparks removed because of this.
 	// This fixes this problem.
-	//if (player->pogospring == 2 && player->mo->scale > mapobjectscale)
-		//minspeed = FixedMul(10<<FRACBITS, mapobjectscale);
+	if (player->pogospring == 2 && player->mo->scale > mapobjectscale)
+		minspeed = FixedMul(10<<FRACBITS, mapobjectscale);
 
 	// Drifting is actually straffing + automatic turning.
 	// Holding the Jump button will enable drifting.
@@ -8510,50 +8533,52 @@ static void K_AirFailsafe(player_t *player)
 //
 // K_AdjustPlayerFriction
 //
-void K_AdjustPlayerFriction(player_t *player)
+static void K_AdjustPlayerFriction(player_t *player)
 {
-	fixed_t prevfriction = player->mo->friction;
-
-	if (P_IsObjectOnGround(player->mo) == false)
+	boolean onground = P_IsObjectOnGround(player->mo);
+	// JugadorXEI: Do *not* calculate friction when a player is pogo'd
+	// because they'll be in the air and friction will not reset!
+	if (onground && !player->pogospring)
 	{
-		return;
-	}
+		// Friction
+		if (!player->offroad)
+		{
+			if (player->speed > 0 && player->cmd.forwardmove == 0 && player->mo->friction == 59392)
+				player->mo->friction += 4608;
+		}
 
-	/*
-	if (K_PlayerEBrake(player) == true)
-	{
-		player->mo->friction -= 1024;
-	}
-	else if (player->speed > 0 && K_GetForwardMove(player) < 0)
-	{
-		player->mo->friction -= 512;
-	}
-	*/
+		if (player->speed > 0 && player->cmd.forwardmove < 0)	// change friction while braking no matter what, otherwise it's not any more effective than just letting go off accel
+			player->mo->friction -= 2048;
 
-	// Wipeout slowdown
-	if (player->speed > 0 && player->spinouttimer && player->wipeoutslow)
-	{
-		if (player->offroad)
-			player->mo->friction -= 4912;
-		if (player->wipeoutslow == 1)
-			player->mo->friction -= 9824;
-	}
+		// Karma ice physics
+		if ((gametyperules & GTR_KARMA) && player->bumpers <= 0)
+		{
+			player->mo->friction += 1228;
 
-	// Cap between intended values
-	if (player->mo->friction > FRACUNIT)
-		player->mo->friction = FRACUNIT;
-	if (player->mo->friction < 0)
-		player->mo->friction = 0;
+			if (player->mo->friction > FRACUNIT)
+				player->mo->friction = FRACUNIT;
+			if (player->mo->friction < 0)
+				player->mo->friction = 0;
 
-	// Friction was changed, so we must recalculate movefactor
-	if (player->mo->friction != prevfriction)
-	{
-		player->mo->movefactor = FixedDiv(ORIG_FRICTION, player->mo->friction);
+			player->mo->movefactor = FixedDiv(ORIG_FRICTION, player->mo->friction);
 
-		if (player->mo->movefactor < FRACUNIT)
-			player->mo->movefactor = 19*player->mo->movefactor - 18*FRACUNIT;
-		else
-			player->mo->movefactor = FRACUNIT;
+			if (player->mo->movefactor < FRACUNIT)
+				player->mo->movefactor = 19*player->mo->movefactor - 18*FRACUNIT;
+			else
+				player->mo->movefactor = FRACUNIT; //player->mo->movefactor = ((player->mo->friction - 0xDB34)*(0xA))/0x80;
+
+			if (player->mo->movefactor < 32)
+				player->mo->movefactor = 32;
+		}
+
+		// Wipeout slowdown
+		if (player->speed > 0 && player->spinouttimer && player->wipeoutslow)
+		{
+			if (player->offroad)
+				player->mo->friction -= 4912;
+			if (player->wipeoutslow == 1)
+				player->mo->friction -= 9824;
+		}
 	}
 }
 
@@ -9277,6 +9302,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 								K_PlayBoostTaunt(player->mo);
 								//K_DoPogoSpring(player->mo, 32<<FRACBITS, 2);
 								P_SpawnMobjFromMobj(player->mo, 0, 0, 0, MT_POGOSPRING);
+								player->pogospring = 1;
 								player->itemamount--;
 							}
 							break;
@@ -9328,6 +9354,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				}
 			}
 		}
+	}
 
 		// No more!
 		if (!player->itemamount)
@@ -9393,139 +9420,8 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 		{
 			player->mo->renderflags &= ~(RF_TRANSMASK|RF_BRIGHTMASK);
 		}
-
-		if (player->trickpanel == 1)
-		{
-			const angle_t lr = ANGLE_45;
-			fixed_t momz = FixedDiv(player->mo->momz, mapobjectscale);	// bring momz back to scale...
-			fixed_t speedmult = max(0, FRACUNIT - abs(momz)/TRICKMOMZRAMP);				// TRICKMOMZRAMP momz is minimum speed (Should be 20)
-			fixed_t basespeed = K_GetKartSpeed(player, false, false);	// at WORSE, keep your normal speed when tricking.
-			fixed_t speed = FixedMul(speedmult, P_AproxDistance(player->mo->momx, player->mo->momy));
-
-			K_trickPanelTimingVisual(player, momz);
-
-			// streaks:
-			if (momz*P_MobjFlip(player->mo) > 0)	// only spawn those while you're going upwards relative to your current gravity
-			{
-				// these are all admittedly arbitrary numbers...
-				INT32 n;
-				INT32 maxlines = max(1, (momz/FRACUNIT)/16);
-				INT32 frequency = max(1, 5-(momz/FRACUNIT)/4);
-				fixed_t sx, sy, sz;
-				mobj_t *spdl;
-
-				if (!(leveltime % frequency))
-				{
-					for (n=0; n < maxlines; n++)
-					{
-						sx = player->mo->x + P_RandomRange(-24, 24)*player->mo->scale;
-						sy = player->mo->y + P_RandomRange(-24, 24)*player->mo->scale;
-						sz = player->mo->z + P_RandomRange(0, 48)*player->mo->scale;
-
-						spdl = P_SpawnMobj(sx, sy, sz, MT_FASTLINE);
-						P_SetTarget(&spdl->target, player->mo);
-						P_InitAngle(spdl, R_PointToAngle2(spdl->x, spdl->y, player->mo->x, player->mo->y));
-						spdl->rollangle = -ANG1*90*P_MobjFlip(player->mo);		// angle them downwards relative to the player's gravity...
-						spdl->spriteyscale = player->trickboostpower+FRACUNIT;
-						spdl->momx = player->mo->momx;
-						spdl->momy = player->mo->momy;
-					}
-
-				}
-
-			}
-
-			// We'll never need to go above that.
-			if (player->tricktime <= TRICKDELAY)
-				player->tricktime++;
-
-			// debug shit
-			//CONS_Printf("%d\n", player->mo->momz / mapobjectscale);
-
-			else if (!(player->pflags & PF_TRICKDELAY))	// don't allow tricking
-			{
-				INT16 aimingcompare = abs(cmd->throwdir) - abs(cmd->turning);
-
-				// Uses cmd->turning over steering intentionally.
-#define TRICKTHRESHOLD (KART_FULLTURN/4)
-				if (aimingcompare < -TRICKTHRESHOLD) // side trick
-				{
-					if (cmd->turning > 0)
-					{
-						P_InstaThrust(player->mo, player->mo->angle + lr, max(basespeed, speed*5/2));
-						player->trickpanel = 2;
-					}
-					else
-					{
-						P_InstaThrust(player->mo, player->mo->angle - lr, max(basespeed, speed*5/2));
-						player->trickpanel = 3;
-					}
-				}
-				else if (aimingcompare > TRICKTHRESHOLD) // forward/back trick
-				{
-					if (cmd->throwdir > 0) // back trick
-					{
-						if (player->mo->momz * P_MobjFlip(player->mo) > 0)
-						{
-							player->mo->momz = 0;
-						}
-
-						P_InstaThrust(player->mo, player->mo->angle, max(basespeed, speed*3));
-						player->trickpanel = 2;
-					}
-					else if (cmd->throwdir < 0)
-					{
-						boolean relative = true;
-
-						player->mo->momx /= 3;
-						player->mo->momy /= 3;
-
-						if (player->mo->momz * P_MobjFlip(player->mo) <= 0)
-						{
-							relative = false;
-						}
-
-						// Calculate speed boost decay:
-						// Base speed boost duration is 35 tics.
-						// At most, lose 3/4th of your boost.
-						player->trickboostdecay = min(TICRATE*3/4, abs(momz/FRACUNIT));
-						//CONS_Printf("decay: %d\n", player->trickboostdecay);
-
-						P_SetObjectMomZ(player->mo, 48*FRACUNIT, relative);
-						player->trickpanel = 4;
-					}
-				}
-#undef TRICKTHRESHOLD
-
-				// Finalise everything.
-				if (player->trickpanel != 1) // just changed from 1?
-				{
-					K_trickPanelTimingVisual(player, momz);
-
-					if (abs(momz) < FRACUNIT*99)	// Let's use that as baseline for PERFECT trick.
-					{
-						player->karthud[khud_trickcool] = TICRATE;
-					}
-				}
-			}
-		}
-		else if (player->trickpanel == 4 && P_IsObjectOnGround(player->mo))	// Upwards trick landed!
-		{
-			//CONS_Printf("apply boost\n");
-			S_StartSound(player->mo, sfx_s23c);
-			K_SpawnDashDustRelease(player);
-			player->trickboost = TICRATE - player->trickboostdecay;
-
-			player->trickpanel = player->trickboostdecay = 0;
-		}
-
-		// Wait until we let go off the control stick to remove the delay
-		// buttons must be neutral after the initial trick delay. This prevents weirdness where slight nudges after blast off would send you flying.
-		if ((player->pflags & PF_TRICKDELAY) && !player->throwdir && !cmd->turning && (player->tricktime >= TRICKDELAY))
-		{
-			player->pflags &= ~PF_TRICKDELAY;
-		}
-	}
+		
+	K_AdjustPlayerFriction(player);
 
 	K_KartDrift(player, onground);
 	K_KartSpindash(player);

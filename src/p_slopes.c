@@ -986,44 +986,6 @@ void P_SlopeLaunch(mobj_t *mo)
 	mo->terrain = NULL;
 }
 
-//
-// P_GetWallTransferMomZ
-//
-// It would be nice to have a single function that does everything necessary for slope-to-wall transfer.
-// However, it needs to be seperated out in P_XYMovement to take into account momentum before and after hitting the wall.
-// This just performs the necessary calculations for getting the base vertical momentum; the horizontal is already reasonably calculated by P_SlideMove.
-fixed_t P_GetWallTransferMomZ(mobj_t *mo, pslope_t *slope)
-{
-	vector3_t slopemom, axis;
-	angle_t ang;
-
-	if (P_CanApplySlopePhysics(mo, mo->standingslope) == false)
-	{
-		return false;
-	}
-
-	// If there's physics, time for launching.
-	// Doesn't kill the vertical momentum as much as P_SlopeLaunch does.
-	ang = slope->zangle + ANG15*((slope->zangle > 0) ? 1 : -1);
-	if (ang > ANGLE_90 && ang < ANGLE_180)
-	{
-		// hard cap of directly upwards
-		ang = ((slope->zangle > 0) ? ANGLE_90 : InvAngle(ANGLE_90));
-	}
-
-	slopemom.x = mo->momx;
-	slopemom.y = mo->momy;
-	slopemom.z = mo->momz;
-
-	axis.x = -slope->d.y;
-	axis.y = slope->d.x;
-	axis.z = 0;
-
-	FV3_Rotate(&slopemom, &axis, ang >> ANGLETOFINESHIFT);
-
-	return slopemom.z;
-}
-
 // Function to help handle landing on slopes
 void P_HandleSlopeLanding(mobj_t *thing, pslope_t *slope)
 {

@@ -65,6 +65,7 @@ typedef enum
 typedef struct
 {
 	SINT8 forwardmove; // -MAXPLMOVE to MAXPLMOVE (50)
+	SINT8 sidemove; // -MAXPLMOVE to MAXPLMOVE (50)
 	INT16 turning; // Turn speed
 	INT16 angle; // Predicted angle, use me if you can!
 	INT16 throwdir; // Aiming direction

@@ -1123,7 +1123,7 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 			gravityadd = (4*gravityadd)/3;
 		}
 
-		if (mo->player->trickpanel >= 2)
+		if (mo->player->pogospring)
 		{
 			gravityadd = (5*gravityadd)/2;
 		}
@@ -1652,53 +1652,7 @@ void P_XYMovement(mobj_t *mo)
 		}
 		else
 		{
-			boolean walltransferred = false;
-
-			if (player || mo->flags & MF_SLIDEME)
-			{ // try to slide along it
-				// Wall transfer part 1.
-				pslope_t *transferslope = NULL;
-				fixed_t transfermomz = 0;
-				if (oldslope && (P_MobjFlip(mo)*(predictedz - mo->z) > 0)) // Only for moving up (relative to gravity), otherwise there's a failed launch when going down slopes and hitting walls
-				{
-					transferslope = ((mo->standingslope) ? mo->standingslope : oldslope);
-					if (((transferslope->zangle < ANGLE_180) ? transferslope->zangle : InvAngle(transferslope->zangle)) >= ANGLE_45) // Prevent some weird stuff going on on shallow slopes.
-						transfermomz = P_GetWallTransferMomZ(mo, transferslope);
-				}
-
-				// Wall transfer part 2.
-				if (transfermomz && transferslope) // Are we "transferring onto the wall" (really just a disguised vertical launch)?
-				{
-					angle_t relation; // Scale transfer momentum based on how head-on it is to the slope.
-
-					walltransferred = true;
-
-					P_SlideMove(mo);
-
-					xmove = ymove = 0;
-
-					if (mo->momx || mo->momy) // "Guess" the angle of the wall you hit using new momentum
-						relation = transferslope->xydirection - R_PointToAngle2(0, 0, mo->momx, mo->momy);
-					else // Give it for free, I guess.
-						relation = ANGLE_90;
-
-					transfermomz = FixedMul(transfermomz,
-						abs(FINESINE((relation >> ANGLETOFINESHIFT) & FINEMASK)));
-
-					if (P_MobjFlip(mo)*(transfermomz - mo->momz) > 2*FRACUNIT) // Do the actual launch!
-					{
-						mo->momz = transfermomz;
-						mo->standingslope = NULL;
-						mo->terrain = NULL;
-						P_SetPitchRoll(mo, ANGLE_90,
-								transferslope->xydirection
-								+ (transferslope->zangle
-									& ANGLE_180));
-					}
-				}
-			}
-
-			if (walltransferred == false)
+			
 			{
 				if (mo->flags & MF_SLIDEME)
 				{
@@ -1716,7 +1670,7 @@ void P_XYMovement(mobj_t *mo)
 					S_StartSound(mo, mo->info->activesound);
 
 					//{ SRB2kart - Orbinaut, Ballhog
-					// Bump sparks
+					// Ballhog dies on contact with walls
 					if (mo->type == MT_ORBINAUT || mo->type == MT_BALLHOG)
 					{
 						mobj_t *fx;
@@ -1728,28 +1682,44 @@ void P_XYMovement(mobj_t *mo)
 						fx->scale = mo->scale;
 					}
 
-					if (mo->type == MT_ORBINAUT) // Orbinaut speed decreasing
+					switch (mo->type)
 					{
-						if (mo->health > 1)
-						{
-							S_StartSound(mo, mo->info->attacksound);
-							mo->health--;
+						case MT_ORBINAUT: // Orbinaut speed decreasing
+							if (mo->health > 1)
+							{
+								S_StartSound(mo, mo->info->attacksound);
+								mo->health--;
+								// This prevents an item thrown at a wall from
+								// phasing through you on its return.
+								mo->threshold = 0;
+							}
+							/*FALLTHRU*/
+
+						case MT_JAWZ:
+							if (mo->health == 1)
+							{
+								// This Item Damage
+								S_StartSound(mo, mo->info->deathsound);
+								P_KillMobj(mo, NULL, NULL, DMG_NORMAL);
+
+								P_SetObjectMomZ(mo, 8*FRACUNIT, false);
+								P_InstaThrust(mo, R_PointToAngle2(mo->x, mo->y, mo->x + xmove, mo->y + ymove)+ANGLE_90, 16*FRACUNIT);
+							}
+							break;
+
+						case MT_BUBBLESHIELDTRAP:
+							S_StartSound(mo, sfx_s3k44); // Bubble bounce
+							break;
+
+						case MT_DROPTARGET:
+							// This prevents an item thrown at a wall from
+							// phasing through you on its return.
 							mo->threshold = 0;
-						}
-						else if (mo->health == 1)
-						{
-							// This Item Damage
-							S_StartSound(mo, mo->info->deathsound);
-							P_KillMobj(mo, NULL, NULL, DMG_NORMAL);
+							break;
 
-							P_SetObjectMomZ(mo, 8*FRACUNIT, false);
-							P_InstaThrust(mo, R_PointToAngle2(mo->x, mo->y, mo->x + xmove, mo->y + ymove)+ANGLE_90, 16*FRACUNIT);
-						}
+						default:
+							break;
 					}
-
-					// Bubble bounce
-					if (mo->type == MT_BUBBLESHIELDTRAP)
-						S_StartSound(mo, sfx_s3k44);
 				}
 			}
 		}

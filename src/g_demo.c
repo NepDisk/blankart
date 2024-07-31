@@ -533,6 +533,8 @@ void G_ReadDemoTiccmd(ticcmd_t *cmd, INT32 playernum)
 
 	if (ziptic & ZT_FWD)
 		oldcmd[playernum].forwardmove = READSINT8(demo_p);
+	if (ziptic & ZT_SIDE)
+		oldcmd[playernum].sidemove = READSINT8(demo_p);
 	if (ziptic & ZT_TURNING)
 		oldcmd[playernum].turning = READINT16(demo_p);
 	if (ziptic & ZT_ANGLE)
@@ -574,6 +576,13 @@ void G_WriteDemoTiccmd(ticcmd_t *cmd, INT32 playernum)
 		WRITESINT8(demo_p,cmd->forwardmove);
 		oldcmd[playernum].forwardmove = cmd->forwardmove;
 		ziptic |= ZT_FWD;
+	}
+	
+	if (cmd->sidemove != oldcmd[playernum].sidemove)
+	{
+		WRITESINT8(demo_p,cmd->sidemove);
+		oldcmd[playernum].sidemove = cmd->sidemove;
+		ziptic |= ZT_SIDE;
 	}
 
 	if (cmd->turning != oldcmd[playernum].turning)

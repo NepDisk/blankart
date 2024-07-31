@@ -897,7 +897,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 	static boolean keyboard_look[MAXSPLITSCREENPLAYERS]; // true if lookup/down using keyboard
 	static boolean resetdown[MAXSPLITSCREENPLAYERS]; // don't cam reset every frame
 
-	INT32 forward, axis;
+	INT32 forward, axis, side;
 
 	joystickvector2_t joystickvector;
 
@@ -968,7 +968,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 		turnright = turnright || (joystickvector.xaxis > 0);
 		turnleft = turnleft || (joystickvector.xaxis < 0);
 	}
-	forward = 0;
+	forward = side = 0;
 
 	cmd->turning = 0;
 
@@ -976,15 +976,18 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 	if (turnright && !(turnleft))
 	{
 		cmd->turning -= KART_FULLTURN;
+		side += 4;
 	}
 	else if (turnleft && !(turnright))
 	{
 		cmd->turning += KART_FULLTURN;
+		side -= 4;
 	}
 
 	if (analogjoystickmove && joystickvector.xaxis != 0)
 	{
 		cmd->turning -= (joystickvector.xaxis * KART_FULLTURN) >> 10;
+		side += ((axis * 2) >> 10);
 	}
 
 	// Specator mouse turning
@@ -1020,22 +1023,20 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 		{
 			cmd->buttons |= BT_ACCELERATE;
 			// JOYAXISRANGE is supposed to be 1023 (divide by 1024)
-			forward += ((axis * MAXPLMOVE) >> 10);
+			forward += ((axis * MAXPLMOVE) / (JOYAXISRANGE-1));
 		}
 
 		axis = PlayerJoyAxis(ssplayer, AXISBRAKE);
 		if (PlayerInputDown(ssplayer, gc_brake) || (gamepadjoystickmove && axis > 0))
 		{
 			cmd->buttons |= BT_BRAKE;
-			if (cmd->buttons & BT_ACCELERATE || cmd->forwardmove <= 0)
-				forward -= MAXPLMOVE;
+			forward -= 25;	// 25 - Halved value so clutching is possible
 		}
 		else if (analogjoystickmove && axis > 0)
 		{
 			cmd->buttons |= BT_BRAKE;
 			// JOYAXISRANGE is supposed to be 1023 (divide by 1024)
-			if (cmd->buttons & BT_ACCELERATE || cmd->forwardmove <= 0)
-				forward -= ((axis * MAXPLMOVE) >> 10);
+			forward -= ((axis * 25) / (JOYAXISRANGE-1));
 		}
 
 		// But forward/backward IS used for aiming.
@@ -1135,6 +1136,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 	mousex = mousey = mlooky = 0;
 
 	cmd->forwardmove += (SINT8)forward;
+	cmd->sidemove	 += (SINT8)side;
 
 	cmd->flags = 0;
 
@@ -1172,6 +1174,11 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 	else if (cmd->forwardmove < -MAXPLMOVE)
 		cmd->forwardmove = -MAXPLMOVE;
 
+	if (cmd->sidemove > MAXPLMOVE)
+		cmd->sidemove = MAXPLMOVE;
+	else if (cmd->sidemove < -MAXPLMOVE)
+		cmd->sidemove = -MAXPLMOVE;
+	
 	if (cmd->turning > KART_FULLTURN)
 		cmd->turning = KART_FULLTURN;
 	else if (cmd->turning < -KART_FULLTURN)
@@ -1185,7 +1192,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 	G_DoAnglePrediction(cmd, realtics, ssplayer, player);
 
 	// Reset away view if a command is given.
-	if ((cmd->forwardmove || cmd->buttons)
+	if ((cmd->forwardmove ||  cmd->sidemove || cmd->buttons)
 		&& !r_splitscreen && displayplayers[0] != consoleplayer && ssplayer == 1)
 	{
 		// Call ViewpointSwitch hooks here.
@@ -1206,6 +1213,7 @@ ticcmd_t *G_MoveTiccmd(ticcmd_t* dest, const ticcmd_t* src, const size_t n)
 	for (i = 0; i < n; i++)
 	{
 		dest[i].forwardmove = src[i].forwardmove;
+		dest[i].sidemove = src[i].sidemove;
 		dest[i].turning = (INT16)SHORT(src[i].turning);
 		dest[i].angle = (INT16)SHORT(src[i].angle);
 		dest[i].throwdir = (INT16)SHORT(src[i].throwdir);
