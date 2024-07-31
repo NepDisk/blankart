@@ -257,6 +257,7 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT16(save_p, players[i].flashing);
 		WRITEUINT16(save_p, players[i].spinouttimer);
 		WRITEUINT8(save_p, players[i].spinouttype);
+		WRITEINT16(save_p, players[i].squishedtimer);
 		WRITEUINT8(save_p, players[i].instashield);
 		WRITEUINT8(save_p, players[i].wipeoutslow);
 		WRITEUINT8(save_p, players[i].justbumped);
@@ -541,6 +542,7 @@ static void P_NetUnArchivePlayers(void)
 		players[i].flashing = READUINT16(save_p);
 		players[i].spinouttimer = READUINT16(save_p);
 		players[i].spinouttype = READUINT8(save_p);
+		players[i].squishedtimer = READINT16(save_p);
 		players[i].instashield = READUINT8(save_p);
 		players[i].wipeoutslow = READUINT8(save_p);
 		players[i].justbumped = READUINT8(save_p);

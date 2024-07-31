@@ -7,6 +7,7 @@
 #include "k_kart.h"
 #include "d_player.h"
 #include "doomstat.h"
+#include "info.h"
 #include "k_battle.h"
 #include "k_boss.h"
 #include "k_pwrlv.h"
@@ -1396,6 +1397,11 @@ boolean K_KartBouncing(mobj_t *mobj1, mobj_t *mobj2)
 			return false;
 		}
 	}
+	
+	if ((mobj1->player && mobj1->player->squishedtimer > 0)
+		|| (mobj2->player && mobj2->player->squishedtimer > 0))
+		return false;
+	
 
 	// Don't bump if you've recently bumped
 	if (mobj1->player && mobj1->player->justbumped)
@@ -3230,6 +3236,76 @@ static void K_RemoveGrowShrink(player_t *player)
 	P_RestoreMusic(player);
 }
 
+
+INT32 K_SquishPlayer(player_t *player, mobj_t *inflictor, mobj_t *source, boolean crush)
+{
+	if (crush)
+	{
+		if ((player->invincibilitytimer > 0) || (player->growshrinktimer > 0) 
+		|| (player->hyudorotimer > 0) || (player->flashing > 0) || (player->squishedtimer > 0))
+		{
+			K_DoInstashield(player);
+			return 0;
+		}
+		player->instashield = 15;
+		player->squishedtimer = TICRATE;
+
+		// Reduce Shrink timer
+		if (player->growshrinktimer < 0)
+		{
+			player->growshrinktimer += TICRATE;
+			if (player->growshrinktimer >= 0)
+				K_RemoveGrowShrink(player);
+		}
+		
+		player->mo->flags |= MF_NOCLIP;
+
+		player->instashield = 15;
+		
+		player->sneakertimer = 0;
+		player->driftboost = 0;
+		player->ringboost = 0;
+		player->glanceDir = 0;
+		player->pflags &= ~PF_GAINAX;
+
+		K_PlayPainSound(player->mo, NULL);
+		P_PlayRinglossSound(player->mo);
+		P_PlayerRingBurst(player, 5);
+		
+		if (gametyperules & GTR_BUMPERS)
+		{
+			if (player->bumpers > 0)
+				player->bumpers--;
+		}
+		
+		return 0;
+	}
+	else
+	{
+		player->squishedtimer = TICRATE;
+
+		// Reduce Shrink timer
+		if (player->growshrinktimer < 0)
+		{
+			player->growshrinktimer += TICRATE;
+			if (player->growshrinktimer >= 0)
+				K_RemoveGrowShrink(player);
+		}
+
+		player->mo->flags |= MF_NOCLIP;
+
+		player->instashield = 15;
+		if (cv_kartdebughuddrop.value && !modeattacking)
+			K_DropItems(player);
+		else
+		{
+			K_DropHnextList(player, false);
+		}
+		
+		return 5;
+	}
+}
+
 void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 {
 	if (state == TRIPSTATE_PASSED)
@@ -3249,6 +3325,8 @@ INT32 K_ExplodePlayer(player_t *player, mobj_t *inflictor, mobj_t *source) // A 
 	K_DirectorFollowAttack(player, inflictor, source);
 
 	player->mo->momz = 18*mapobjectscale*P_MobjFlip(player->mo); // please stop forgetting mobjflip checks!!!!
+	if (player->mo->eflags & MFE_UNDERWATER)
+		player->mo->momz = (117 * player->mo->momz) / 200;
 	player->mo->momx = player->mo->momy = 0;
 
 	player->spinouttype = KSPIN_EXPLOSION;
@@ -3263,9 +3341,6 @@ INT32 K_ExplodePlayer(player_t *player, mobj_t *inflictor, mobj_t *source) // A 
 			ringburst = 20;
 		}
 	}
-
-	if (player->mo->eflags & MFE_UNDERWATER)
-		player->mo->momz = (117 * player->mo->momz) / 200;
 
 	P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
 
@@ -4105,50 +4180,6 @@ void K_DriftDustHandling(mobj_t *spawner)
 
 		K_MatchGenericExtraFlags(dust, spawner);
 	}
-}
-
-void K_Squish(mobj_t *mo)
-{
-	const fixed_t maxstretch = 4*FRACUNIT;
-	const fixed_t factor = 5 * mo->height / 4;
-	const fixed_t threshold = factor / 6;
-
-	fixed_t old3dspeed = abs(mo->lastmomz);
-	fixed_t new3dspeed = abs(mo->momz);
-
-	fixed_t delta = abs(old3dspeed - new3dspeed);
-	fixed_t grav = mo->height/3;
-	fixed_t add = abs(grav - new3dspeed);
-
-	if (R_ThingIsFloorSprite(mo))
-		return;
-
-	if (delta < 2 * add && new3dspeed > grav)
-		delta += add;
-
-	if (delta > threshold)
-	{
-		mo->spritexscale =
-			FRACUNIT + FixedDiv(delta, factor);
-
-		if (mo->spritexscale > maxstretch)
-			mo->spritexscale = maxstretch;
-
-		if (new3dspeed > old3dspeed || new3dspeed > grav)
-		{
-			mo->spritexscale =
-				FixedDiv(FRACUNIT, mo->spritexscale);
-		}
-	}
-	else
-	{
-		mo->spritexscale -=
-			(mo->spritexscale - FRACUNIT)
-			/ (mo->spritexscale < FRACUNIT ? 8 : 3);
-	}
-
-	mo->spriteyscale =
-		FixedDiv(FRACUNIT, mo->spritexscale);
 }
 
 static mobj_t *K_FindLastTrailMobj(player_t *player)
@@ -6563,7 +6594,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	player->karthud[khud_timeovercam] = 0;
 
 	// Make ABSOLUTELY SURE that your flashing tics don't get set WHILE you're still in hit animations.
-	if (player->spinouttimer != 0 || player->wipeoutslow != 0)
+	if (player->spinouttimer != 0 || player->wipeoutslow != 0 || player->squishedtimer != 0)
 	{
 		if (( player->spinouttype & KSPIN_IFRAMES ) == 0)
 			player->flashing = 0;
@@ -6745,6 +6776,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->stealingtimer--;
 	else if (player->stealingtimer < 0)
 		player->stealingtimer++;
+	
+	if (player->squishedtimer > 0)
+		player->squishedtimer--;
 
 	if (player->justbumped > 0)
 		player->justbumped--;
@@ -6880,6 +6914,19 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	K_HandleDelayedHitByEm(player);
 	
 	K_RaceStart(player);
+	
+	// Squishing
+	// If a Grow player or a sector crushes you, get flattened instead of being killed.
+	if (player->squishedtimer <= 0)
+	{
+		player->mo->flags &= ~MF_NOCLIP;
+	}
+	else
+	{
+		player->mo->flags |= MF_NOCLIP;
+		player->mo->momx = 0;
+		player->mo->momy = 0;
+	}
 }
 
 void K_KartResetPlayerColor(player_t *player)
@@ -9013,6 +9060,15 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	K_AdjustPlayerFriction(player);
 
 	K_KartDrift(player, onground);
+	
+	// Quick Turning
+	// You can't turn your kart when you're not moving.
+	// So now it's time to burn some rubber!
+	if (player->speed < 2 && leveltime > starttime && player->cmd.buttons & BT_ACCELERATE && player->cmd.buttons & BT_BRAKE && player->cmd.turning != 0)
+	{
+		if (leveltime % 8 == 0)
+			S_StartSound(player->mo, sfx_s224);
+	}
 
 	if (onground == false)
 	{

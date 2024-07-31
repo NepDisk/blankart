@@ -1229,11 +1229,11 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 				P_DamageMobj(tmthing, thing, thing, 1, DMG_WIPEOUT|DMG_STEAL);
 			}
 
-			if (K_KartBouncing(tmthing, thing) == true)
-			{
-				K_PvPTouchDamage(tmthing, thing);
-			}
-
+			if (K_PvPTouchDamage(tmthing, thing) == true)
+				K_KartBouncing(tmthing, thing);
+			else
+				K_KartBouncing(tmthing, thing);
+			
 			return BMIT_CONTINUE;
 		}
 		else if (thing->type == MT_BLUEROBRA_HEAD || thing->type == MT_BLUEROBRA_JOINT)
@@ -1317,7 +1317,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 
 			// collide
 			if (tmthing->z < thing->z && thing->momz < 0)
-				;//P_DamageMobj(tmthing, thing, thing, 1, DMG_SQUISH);
+				P_DamageMobj(tmthing, thing, thing, 1, DMG_SQUISH);
 			else
 			{
 				if ((K_KartSolidBounce(tmthing, thing) == true) && (thing->flags2 & MF2_AMBUSH))
@@ -4117,8 +4117,10 @@ static boolean PIT_ChangeSector(mobj_t *thing, boolean realcrush)
 			// Crush the object
 			if (netgame && thing->player && thing->player->spectator)
 				P_DamageMobj(thing, NULL, NULL, 1, DMG_SPECTATOR); // Respawn crushed spectators
-			else
+			else if (!thing->player)
 				P_DamageMobj(thing, killer, killer, 1, DMG_CRUSHED);
+			else
+				P_DamageMobj(thing, NULL, NULL, 1, DMG_SQUISH);
 			return true;
 		}
 	}

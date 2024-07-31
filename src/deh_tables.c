@@ -5506,7 +5506,6 @@ const char *const MOBJFLAG_LIST[] = {
 	"RUNSPAWNFUNC",
 	"DONTENCOREMAP",
 	"PICKUPFROMBELOW",
-	"NOSQUISH",
 	NULL
 };
 
@@ -6247,6 +6246,7 @@ struct int_const_s const INT_CONST[] = {
 	// for P_DamageMobj
 	//// Damage types
 	{"DMG_NORMAL",DMG_NORMAL},
+	{"DMG_SQUISH",DMG_SQUISH},
 	{"DMG_WIPEOUT",DMG_WIPEOUT},
 	{"DMG_EXPLODE",DMG_EXPLODE},
 	{"DMG_STING",DMG_STING},

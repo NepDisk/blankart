@@ -159,10 +159,8 @@ typedef enum
 	MF_DONTENCOREMAP    = 1<<28,
 	// Hitbox extends just as far below as above.
 	MF_PICKUPFROMBELOW  = 1<<29,
-	// Disable momentum-based squash and stretch.
-	MF_NOSQUISH         = 1<<30,
-	// Free
-	//   = (INT32)(1U<<31),
+	//free   = 1<<30,
+	//free	 = (INT32)(1U<<31),
 	// no more free slots, next up I suppose we can get rid of shit like MF_BOXICON?
 } mobjflag_t;
 

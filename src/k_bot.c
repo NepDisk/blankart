@@ -262,7 +262,7 @@ void K_UpdateMatchRaceBots(void)
 boolean K_PlayerUsesBotMovement(player_t *player)
 {
 	if (player->exiting)
-		return true;
+		return false;
 
 	if (player->bot)
 		return true;
@@ -278,11 +278,7 @@ boolean K_PlayerUsesBotMovement(player_t *player)
 boolean K_BotCanTakeCut(player_t *player)
 {
 	if (
-#if 1
-		K_TripwirePassConditions(player) != TRIPWIRE_NONE
-#else
-		K_ApplyOffroad(player) == false
-#endif
+		(K_TripwirePassConditions(player) != TRIPWIRE_NONE || K_ApplyOffroad(player) == false)
 		|| player->itemtype == KITEM_SNEAKER
 		|| player->itemtype == KITEM_ROCKETSNEAKER
 		|| player->itemtype == KITEM_INVINCIBILITY

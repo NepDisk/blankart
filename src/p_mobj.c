@@ -2733,7 +2733,7 @@ void P_PlayerZMovement(mobj_t *mo)
 		K_UpdateMobjTerrain(mo, (mo->eflags & MFE_VERTICALFLIP ? tmceilingpic : tmfloorpic));
 
 		// Get up if you fell.
-		if (mo->player->panim == PA_HURT && mo->player->spinouttimer == 0)
+		if (mo->player->panim == PA_HURT && mo->player->spinouttimer == 0 && mo->player->squishedtimer == 0)
 		{
 			P_SetPlayerMobjState(mo, S_KART_STILL);
 		}
@@ -3663,17 +3663,6 @@ static void P_CheckFloatbobPlatforms(mobj_t *mobj)
 	}
 }
 
-static void P_SquishThink(mobj_t *mobj)
-{
-	if (!(mobj->flags & MF_NOSQUISH) &&
-			!(mobj->eflags & MFE_SLOPELAUNCHED))
-	{
-		K_Squish(mobj);
-	}
-
-	mobj->lastmomz = mobj->momz;
-}
-
 static void P_PlayerMobjThinker(mobj_t *mobj)
 {
 	I_Assert(mobj != NULL);
@@ -3739,7 +3728,6 @@ static void P_PlayerMobjThinker(mobj_t *mobj)
 		mobj->eflags &= ~MFE_JUSTHITFLOOR;
 	}
 
-	P_SquishThink(mobj);
 	K_UpdateTerrainOverlay(mobj);
 
 animonly:
@@ -9269,7 +9257,6 @@ void P_MobjThinker(mobj_t *mobj)
 		P_ButteredSlope(mobj);
 	}
 
-	P_SquishThink(mobj);
 	K_UpdateTerrainOverlay(mobj);
 
 	if (mobj->flags & (MF_ENEMY|MF_BOSS) && mobj->health

@@ -127,7 +127,12 @@ boolean P_CanPickupItem(player_t *player, UINT8 weapon)
 		if (weapon == 2)
 		{
 			// Invulnerable
-			if (player->flashing > 0)
+			if (player->flashing > 0
+				|| player->spinouttimer > 0
+				|| player->squishedtimer > 0
+				|| player->invincibilitytimer > 0
+				|| player->growshrinktimer > 0
+				|| player->hyudorotimer > 0)
 				return false;
 
 			// Already have fake
@@ -2050,6 +2055,9 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				case DMG_EXPLODE:
 				case DMG_KARMA:
 					ringburst = K_ExplodePlayer(player, inflictor, source);
+					break;
+				case DMG_SQUISH:
+					ringburst = K_SquishPlayer(player, inflictor, source, false);
 					break;
 				case DMG_WIPEOUT:
 					if (P_IsDisplayPlayer(player))

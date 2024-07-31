@@ -20,6 +20,7 @@
 #include "d_event.h"
 #include "d_net.h"
 #include "g_game.h"
+#include "info.h"
 #include "p_local.h"
 #include "r_fps.h"
 #include "r_main.h"
@@ -454,7 +455,7 @@ UINT8 P_FindHighestLap(void)
 //
 boolean P_PlayerInPain(player_t *player)
 {
-	if (player->spinouttimer)
+	if (player->spinouttimer || player->squishedtimer)
 		return true;
 
 	return false;
@@ -2144,7 +2145,14 @@ void P_MovePlayer(player_t *player)
 		player->justDI = 0;
 	}
 
-	if (player->carry == CR_SLIDING)
+	if (player->squishedtimer > 0)
+	{
+		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
+		player->mo->spriteyscale = (FRACUNIT / 4);
+		if (player->squishedtimer == 1)
+			player->mo->spriteyscale = FRACUNIT;
+	}
+	else if (player->carry == CR_SLIDING)
 	{
 		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
 		player->drawangle -= ANGLE_22h;
@@ -2171,8 +2179,7 @@ void P_MovePlayer(player_t *player)
 	}
 	else if (player->nocontrol && player->pflags & PF_SKIDDOWN)
 	{
-		if (player->mo->state != &states[S_KART_SPINOUT])
-			P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
+		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
 
 		if (((player->nocontrol + 5) % 20) < 10)
 			player->drawangle += ANGLE_11hh;
@@ -2345,7 +2352,7 @@ void P_MovePlayer(player_t *player)
 		if (player->spectator)
 			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_SPECTATOR); // Respawn crushed spectators
 		else
-			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_CRUSHED);
+			K_SquishPlayer(player, NULL, NULL, true); // SRB2kart - we don't kill when squished, we squish when squished.
 
 		if (player->playerstate == PST_DEAD)
 			return;

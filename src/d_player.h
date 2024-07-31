@@ -482,7 +482,8 @@ typedef struct player_s
 	UINT8 boostcharge; 		// Charge during race start
 	
 	INT16 growshrinktimer;		// > 0 = Big, < 0 = small
-	INT16 growcancel;			// Duration of grow canceling 
+	INT16 growcancel;			// Duration of grow canceling
+	INT16 squishedtimer;		// Duration of being squished
 	UINT16 rocketsneakertimer;	// Rocket Sneaker duration timer
 	UINT16 invincibilitytimer;	// Invincibility timer
 
