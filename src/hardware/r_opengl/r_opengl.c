@@ -3035,6 +3035,8 @@ EXPORT void HWRAPI(SetTransform) (FTransform *stransform)
 		used_fov = stransform->fovxangle;
 		if (stransform->mirror)
 			pglScalef(-stransform->scalex, stransform->scaley, -stransform->scalez);
+		else if (stransform->mirrorflip)
+			pglScalef(-stransform->scalex, -stransform->scaley, -stransform->scalez);
 		else if (stransform->flip)
 			pglScalef(stransform->scalex, -stransform->scaley, -stransform->scalez);
 		else

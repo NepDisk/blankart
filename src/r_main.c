@@ -147,6 +147,10 @@ static void ChaseCam_OnChange(void);
 static void ChaseCam2_OnChange(void);
 static void ChaseCam3_OnChange(void);
 static void ChaseCam4_OnChange(void);
+static void FlipCam_OnChange(void);
+static void FlipCam2_OnChange(void);
+static void FlipCam3_OnChange(void);
+static void FlipCam4_OnChange(void);
 
 consvar_t cv_tailspickup = CVAR_INIT ("tailspickup", "On", CV_NETVAR|CV_NOSHOWHELP, CV_OnOff, NULL);
 consvar_t cv_chasecam[MAXSPLITSCREENPLAYERS] = {
@@ -154,6 +158,13 @@ consvar_t cv_chasecam[MAXSPLITSCREENPLAYERS] = {
 	CVAR_INIT ("chasecam2", "On", CV_CALL, CV_OnOff, ChaseCam2_OnChange),
 	CVAR_INIT ("chasecam3", "On", CV_CALL, CV_OnOff, ChaseCam3_OnChange),
 	CVAR_INIT ("chasecam4", "On", CV_CALL, CV_OnOff, ChaseCam4_OnChange)
+};
+
+consvar_t cv_flipcam[MAXSPLITSCREENPLAYERS] = {
+	CVAR_INIT ("flipcam", "Off", CV_CALL|CV_SAVE, CV_OnOff, weaponPrefChange),
+	CVAR_INIT ("flipcam2", "Off", CV_CALL|CV_SAVE, CV_OnOff, weaponPrefChange2),
+	CVAR_INIT ("flipcam3", "Off", CV_CALL|CV_SAVE, CV_OnOff, weaponPrefChange3),
+	CVAR_INIT ("flipcam4", "Off", CV_CALL|CV_SAVE, CV_OnOff, weaponPrefChange4)
 };
 
 consvar_t cv_shadow = CVAR_INIT ("shadow", "On", CV_SAVE, CV_OnOff, NULL);
@@ -1656,6 +1667,7 @@ void R_RegisterEngineStuff(void)
 	{
 		CV_RegisterVar(&cv_fov[i]);
 		CV_RegisterVar(&cv_chasecam[i]);
+		CV_RegisterVar(&cv_flipcam[i]);
 		CV_RegisterVar(&cv_cam_dist[i]);
 		CV_RegisterVar(&cv_cam_still[i]);
 		CV_RegisterVar(&cv_cam_height[i]);

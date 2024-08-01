@@ -12,6 +12,7 @@
 ///        commands are executed through the command buffer
 ///	       like console commands, other miscellaneous commands (at the end)
 
+#include "d_player.h"
 #include "doomdef.h"
 
 #include "console.h"
@@ -1730,6 +1731,7 @@ static void Got_NameAndColor(UINT8 **cp, INT32 playernum)
 enum {
 	WP_KICKSTARTACCEL = 1<<0,
 	WP_SHRINKME = 1<<1,
+	WP_FLIPCAM = 1<<2,
 };
 
 void WeaponPref_Send(UINT8 ssplayer)
@@ -1741,6 +1743,9 @@ void WeaponPref_Send(UINT8 ssplayer)
 
 	if (cv_shrinkme[ssplayer].value)
 		prefs |= WP_SHRINKME;
+	
+	if (cv_flipcam[ssplayer].value)
+		prefs |= WP_FLIPCAM;
 
 	SendNetXCmdForPlayer(ssplayer, XD_WEAPONPREF, &prefs, 1);
 }
@@ -1756,6 +1761,9 @@ void WeaponPref_Save(UINT8 **cp, INT32 playernum)
 
 	if (player->pflags & PF_SHRINKME)
 		prefs |= WP_SHRINKME;
+	
+	if (player->pflags & PF_FLIPCAM)
+		prefs |= WP_FLIPCAM;
 
 	WRITEUINT8(*cp, prefs);
 }
@@ -1773,6 +1781,9 @@ void WeaponPref_Parse(UINT8 **cp, INT32 playernum)
 
 	if (prefs & WP_SHRINKME)
 		player->pflags |= PF_SHRINKME;
+	
+	if (prefs & WP_FLIPCAM)
+		player->pflags |= PF_FLIPCAM;
 
 	if (leveltime < 2)
 	{

@@ -344,11 +344,6 @@ INT16 prevmap, nextmap;
 
 static UINT8 *savebuffer;
 
-static void weaponPrefChange(void);
-static void weaponPrefChange2(void);
-static void weaponPrefChange3(void);
-static void weaponPrefChange4(void);
-
 static CV_PossibleValue_t joyaxis_cons_t[] = {{0, "None"},
 {1, "X-Axis"}, {2, "Y-Axis"}, {-1, "X-Axis-"}, {-2, "Y-Axis-"},
 #if JOYAXISSET > 1
@@ -1249,22 +1244,22 @@ ticcmd_t *G_MoveTiccmd(ticcmd_t* dest, const ticcmd_t* src, const size_t n)
 	return dest;
 }
 
-static void weaponPrefChange(void)
+void weaponPrefChange(void)
 {
 	WeaponPref_Send(0);
 }
 
-static void weaponPrefChange2(void)
+void weaponPrefChange2(void)
 {
 	WeaponPref_Send(1);
 }
 
-static void weaponPrefChange3(void)
+void weaponPrefChange3(void)
 {
 	WeaponPref_Send(2);
 }
 
-static void weaponPrefChange4(void)
+void weaponPrefChange4(void)
 {
 	WeaponPref_Send(3);
 }

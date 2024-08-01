@@ -12,6 +12,7 @@
 /// \brief Moving object handling. Spawn functions
 
 #include "doomdef.h"
+#include "doomtype.h"
 #include "g_game.h"
 #include "g_input.h"
 #include "st_stuff.h"
@@ -1028,6 +1029,27 @@ static void P_PlayerFlip(mobj_t *mo)
 {
 	if (!mo->player)
 		return;
+	
+	if (mo->player->pflags & PF_FLIPCAM)
+	{
+		UINT8 i;
+
+		mo->player->aiming = InvAngle(mo->player->aiming);
+
+		for (i = 0; i <= r_splitscreen; i++)
+		{
+			if (mo->player-players == displayplayers[i])
+			{
+				localaiming[i] = mo->player->aiming;
+				if (camera[i].chase) {
+					camera[i].aiming = InvAngle(camera[i].aiming);
+					camera[i].z = mo->z - camera[i].z + mo->z;
+					if (mo->eflags & MFE_VERTICALFLIP)
+						camera[i].z += FixedMul(20*FRACUNIT, mo->scale);
+				}
+			}
+		}
+	}
 
 	G_GhostAddFlip((INT32) (mo->player - players));
 	// Flip aiming to match!
@@ -3447,6 +3469,7 @@ void P_DestroyRobots(void)
 // the below is chasecam only, if you're curious. check out P_CalcPostImg in p_user.c for first person
 void P_CalcChasePostImg(player_t *player, camera_t *thiscam)
 {
+	boolean flipcam = (player->pflags & PF_FLIPCAM && player->mo->eflags & MFE_VERTICALFLIP);
 	postimg_t postimg = postimg_none;
 	UINT8 i;
 
@@ -3454,10 +3477,12 @@ void P_CalcChasePostImg(player_t *player, camera_t *thiscam)
 	if (thiscam->subsector == NULL || thiscam->subsector->sector == NULL)
 		return;
 
-	if (encoremode)
-	{
+	if (encoremode && !flipcam)
 		postimg = postimg_mirror;
-	}
+	else if (!encoremode && flipcam)
+		postimg = postimg_flip;
+	else if (encoremode && flipcam)
+		postimg = postimg_mirrorflip;
 	else if (player->awayviewtics && player->awayviewmobj && !P_MobjWasRemoved(player->awayviewmobj)) // Camera must obviously exist
 	{
 		camera_t dummycam;

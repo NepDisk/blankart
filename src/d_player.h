@@ -93,7 +93,7 @@ typedef enum
 	PF_AIRFAILSAFE		= 1<<22, // Whenever or not try the air boost
 	PF_TRICKDELAY		= 1<<23, // Prevent tricks until control stick is neutral
 
-	//free	= 1<<24,
+	PF_FLIPCAM	= 1<<24,
 	//free		= 1<<25,
 
 	PF_HITFINISHLINE	= 1<<26, // Already hit the finish line this tic
