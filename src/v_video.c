@@ -14,6 +14,7 @@
 ///        Functions to blit a block to the screen.
 
 #include "doomdef.h"
+#include "doomtype.h"
 #include "r_local.h"
 #include "p_local.h" // stplyr
 #include "g_game.h" // players
@@ -331,6 +332,7 @@ static void LoadPalette(const char *lumpname)
 	pal = W_CacheLumpNum(lumpnum, PU_CACHE);
 	for (i = 0; i < palsize; i++)
 	{
+		RGBA_t pGCP;
 		pMasterPalette[i].s.red = *pal++;
 		pMasterPalette[i].s.green = *pal++;
 		pMasterPalette[i].s.blue = *pal++;
@@ -340,13 +342,16 @@ static void LoadPalette(const char *lumpname)
 
 		if (!Cubeapply)
 			continue;
+		
+		// Short hand this so its easier to type
+		pGCP = pGammaCorrectedPalette[i];
 
-		V_CubeApply(&pGammaCorrectedPalette[i]);
+		V_CubeApply(&pGCP.s.red,&pGCP.s.green,&pGCP.s.blue);
 		pLocalPalette[i].rgba = V_GammaEncode(pGammaCorrectedPalette[i].rgba);
 	}
 }
 
-void V_CubeApply(RGBA_t *input)
+void V_CubeApply(UINT8 *red, UINT8 *green, UINT8 *blue)
 {
 	float working[4][3];
 	float linear;
@@ -355,7 +360,7 @@ void V_CubeApply(RGBA_t *input)
 	if (!Cubeapply)
 		return;
 
-	linear = ((*input).s.red/255.0);
+	linear = (*red/255.0);
 #define dolerp(e1, e2) ((1 - linear)*e1 + linear*e2)
 	for (q = 0; q < 3; q++)
 	{
@@ -364,13 +369,13 @@ void V_CubeApply(RGBA_t *input)
 		working[2][q] = dolerp(Cubepal[0][0][1][q], Cubepal[1][0][1][q]);
 		working[3][q] = dolerp(Cubepal[0][1][1][q], Cubepal[1][1][1][q]);
 	}
-	linear = ((*input).s.green/255.0);
+	linear = (*green/255.0);
 	for (q = 0; q < 3; q++)
 	{
 		working[0][q] = dolerp(working[0][q], working[1][q]);
 		working[1][q] = dolerp(working[2][q], working[3][q]);
 	}
-	linear = ((*input).s.blue/255.0);
+	linear = (*blue/255.0);
 	for (q = 0; q < 3; q++)
 	{
 		working[0][q] = 255*dolerp(working[0][q], working[1][q]);
@@ -381,9 +386,9 @@ void V_CubeApply(RGBA_t *input)
 	}
 #undef dolerp
 
-	(*input).s.red = (UINT8)(working[0][0]);
-	(*input).s.green = (UINT8)(working[0][1]);
-	(*input).s.blue = (UINT8)(working[0][2]);
+	*red = (UINT8)(working[0][0]);
+	*green = (UINT8)(working[0][1]);
+	*blue = (UINT8)(working[0][2]);
 }
 
 const char *R_GetPalname(UINT16 num)
@@ -984,6 +989,7 @@ static UINT32 V_GetHWConsBackColor(void)
 		// Default green
 		default:	r = 0x00; g = 0x80; b = 0x00;	break;
 	}
+	
 	V_CubeApply(&r, &g, &b);
 	return (r << 24) | (g << 16) | (b << 8);
 }
