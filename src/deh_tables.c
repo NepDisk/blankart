@@ -6637,6 +6637,10 @@ struct int_const_s const INT_CONST[] = {
 	// followermode_t
 	{"FOLLOWERMODE_FLOAT",FOLLOWERMODE_FLOAT},
 	{"FOLLOWERMODE_GROUND",FOLLOWERMODE_GROUND},
+	
+	// screen.h constants
+	{"BASEVIDWIDTH", BASEVIDWIDTH},
+	{"BASEVIDHEIGHT", BASEVIDHEIGHT},
 
 	{NULL,0}
 };
