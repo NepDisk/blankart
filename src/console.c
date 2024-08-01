@@ -146,12 +146,12 @@ static CV_PossibleValue_t backpic_cons_t[] = {{0, "translucent"}, {1, "picture"}
 static consvar_t cons_backpic = CVAR_INIT ("con_backpic", "translucent", CV_SAVE, backpic_cons_t, NULL);
 
 static CV_PossibleValue_t backcolor_cons_t[] = {{0, "White"}, 		{1, "Black"},		{2, "Sepia"},
-												{3, "Brown"},		{4, "Pink"},		{5, "Red"},
-												{6, "Orange"},		{7, "Gold"},		{8, "Yellow"},
-												{9, "Peridot"},		{10,"Green"},		{11,"Aquamarine"},
-												{12,"Cyan"},		{13,"Steel"},		{14,"Blue"},
-												{15,"Purple"},		{16,"Magenta"},		{17,"Lavender"},
-												{18,"Rose"},
+												{3, "Brown"},		{4, "Pink"},		{5, "Raspberry"},
+												{6, "Red"},			{7, "Creamsicle"},	{8, "Orange"},
+												{9, "Gold"},		{10,"Yellow"},		{11,"Emerald"},
+												{12,"Green"},		{13,"Cyan"},		{14,"Steel"},
+												{15,"Periwinkle"},	{16,"Blue"},		{17,"Purple"},
+												{18,"Lavender"},
 												{0, NULL}};
 consvar_t cons_backcolor = CVAR_INIT ("con_backcolor", "Black", CV_CALL|CV_SAVE, backcolor_cons_t, CONS_backcolor_Change);
 
@@ -372,27 +372,27 @@ void CON_SetupBackColormapEx(INT32 color, boolean prompt)
 
 	switch (color)
 	{
-		case  0:	palindex =  15;				break; // White
-		case  1:	palindex =  31;				break; // Black
-		case  2:	palindex = 251;				break; // Sepia
-		case  3:	palindex = 239;				break; // Brown
-		case  4:	palindex = 214; shift = 7;	break; // Pink
-		case  5:	palindex =  47;				break; // Red
-		case  6:	palindex =  63;				break; // Orange
-		case  7:	palindex =  71; shift = 7;	break; // Gold
-		case  8:	palindex =  79; shift = 7;	break; // Yellow
-		case  9:	palindex = 191; shift = 8;	break; // Peridot
-		case 10:	palindex = 111;				break; // Green
-		case 11:	palindex = 127;	shift = 7;	break; // Aquamarine
-		case 12:	palindex = 139;				break; // Cyan
-		case 13:	palindex = 175; shift = 7;	break; // Steel
-		case 14:	palindex = 159;				break; // Blue
-		case 15:	palindex = 168;	shift = 7;	break; // Purple
-		case 16:	palindex = 187;				break; // Magenta
-		case 17:	palindex = 199; shift = 7;	break; // Lavender
-		case 18:	palindex = 207; shift = 7;	break; // Rose
-		// Default black
-		default: palindex = 31; break;
+		case 0:		palindex = 15; 	break; 	// White
+		case 1:		palindex = 31;	break; 	// Black
+		case 2:		palindex = 251;	break;	// Sepia
+		case 3:		palindex = 239;	break; 	// Brown
+		case 4:		palindex = 215; shift = 7; 	break; 	// Pink
+		case 5:		palindex = 37; shift = 7;	break; 	// Raspberry
+		case 6:		palindex = 47; shift = 7;	break; 	// Red
+		case 7:		palindex = 53;	shift = 7;	break;	// Creamsicle
+		case 8:		palindex = 63;	break; 	// Orange
+		case 9:		palindex = 56; shift = 7;	break; 	// Gold
+		case 10:	palindex = 79; shift = 7;	break; 	// Yellow
+		case 11:	palindex = 119; shift = 7; 	break; 	// Emerald
+		case 12:	palindex = 111;	break; 	// Green
+		case 13:	palindex = 136;	shift = 7; break; 	// Cyan
+		case 14:	palindex = 175; shift = 7;	break; 	// Steel
+		case 15:	palindex = 166;	shift = 7; 	break; 	// Periwinkle
+		case 16:	palindex = 159;	break; 	// Blue
+		case 17:	palindex = 187; shift = 7; 	break; 	// Purple
+		case 18:	palindex = 199; shift = 7; 	break; 	// Lavender
+		// Default green
+		default:	palindex = 111; break;
 	}
 
 	if (prompt)
