@@ -6075,31 +6075,34 @@ void K_KartPlayerHUDUpdate(player_t *player)
 				player->karthud[khud_ringtics] = min(RINGANIM_DELAYMAX, player->karthud[khud_ringdelay])-1;
 			}
 		}
-
-		if (player->pflags & PF_RINGLOCK)
+		
+		if (!ringsdisabled)
 		{
-			UINT8 normalanim = (leveltime % 14);
-			UINT8 debtanim = 14 + (leveltime % 2);
+			if (player->pflags & PF_RINGLOCK)
+			{
+				UINT8 normalanim = (leveltime % 14);
+				UINT8 debtanim = 14 + (leveltime % 2);
 
-			if (player->karthud[khud_ringspblock] >= 14) // debt animation
-			{
-				if ((player->rings > 0) // Get out of 0 ring animation
-					&& (normalanim == 3 || normalanim == 10)) // on these transition frames.
-					player->karthud[khud_ringspblock] = normalanim;
-				else
-					player->karthud[khud_ringspblock] = debtanim;
+				if (player->karthud[khud_ringspblock] >= 14) // debt animation
+				{
+					if ((player->rings > 0) // Get out of 0 ring animation
+						&& (normalanim == 3 || normalanim == 10)) // on these transition frames.
+						player->karthud[khud_ringspblock] = normalanim;
+					else
+						player->karthud[khud_ringspblock] = debtanim;
+				}
+				else // normal animation
+				{
+					if ((player->rings <= 0) // Go into 0 ring animation
+						&& (player->karthud[khud_ringspblock] == 1 || player->karthud[khud_ringspblock] == 8)) // on these transition frames.
+						player->karthud[khud_ringspblock] = debtanim;
+					else
+						player->karthud[khud_ringspblock] = normalanim;
+				}
 			}
-			else // normal animation
-			{
-				if ((player->rings <= 0) // Go into 0 ring animation
-					&& (player->karthud[khud_ringspblock] == 1 || player->karthud[khud_ringspblock] == 8)) // on these transition frames.
-					player->karthud[khud_ringspblock] = debtanim;
-				else
-					player->karthud[khud_ringspblock] = normalanim;
-			}
+			else
+				player->karthud[khud_ringspblock] = (leveltime % 14); // reset to normal anim next time
 		}
-		else
-			player->karthud[khud_ringspblock] = (leveltime % 14); // reset to normal anim next time
 	}
 
 	if ((gametyperules & GTR_BUMPERS) && (player->exiting || player->karmadelay))
@@ -6410,7 +6413,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 			K_HandleFootstepParticles(player->mo);
 		}
 
-		if (gametype == GT_RACE && player->rings <= 0) // spawn ring debt indicator
+		if (gametype == GT_RACE && player->rings <= 0 && !ringsdisabled) // spawn ring debt indicator
 		{
 			mobj_t *debtflag = P_SpawnMobj(player->mo->x + player->mo->momx, player->mo->y + player->mo->momy,
 				player->mo->z + P_GetMobjZMovement(player->mo) + player->mo->height + (24*player->mo->scale), MT_THOK);

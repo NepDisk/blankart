@@ -918,31 +918,35 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		}
 	}
 
-	// Ring sting, this is a bit more unique
-	t1Condition = (K_GetShieldFromItem(t2->player->itemtype) == KSHIELD_NONE);
-	t2Condition = (K_GetShieldFromItem(t1->player->itemtype) == KSHIELD_NONE);
-
-	if (t1Condition == true)
+	if (!ringsdisabled) // Ring sting, this is a bit more unique
 	{
-		if (t2->player->rings <= 0)
+		t1Condition = (K_GetShieldFromItem(t2->player->itemtype) == KSHIELD_NONE);
+		t2Condition = (K_GetShieldFromItem(t1->player->itemtype) == KSHIELD_NONE);
+
+		if (t1Condition == true)
 		{
-			P_DamageMobj(t2, t1, t1, 1, DMG_STING|DMG_WOMBO);
-			stungT2 = true;
+			if (t2->player->rings <= 0)
+			{
+				P_DamageMobj(t2, t1, t1, 1, DMG_STING|DMG_WOMBO);
+				stungT2 = true;
+			}
+
+			P_PlayerRingBurst(t2->player, 1);
 		}
 
-		P_PlayerRingBurst(t2->player, 1);
-	}
-
-	if (t2Condition == true)
-	{
-		if (t1->player->rings <= 0)
+		if (t2Condition == true)
 		{
-			P_DamageMobj(t1, t2, t2, 1, DMG_STING|DMG_WOMBO);
-			stungT1 = true;
+			if (t1->player->rings <= 0)
+			{
+				P_DamageMobj(t1, t2, t2, 1, DMG_STING|DMG_WOMBO);
+				stungT1 = true;
+			}
+
+			P_PlayerRingBurst(t1->player, 1);
 		}
 
-		P_PlayerRingBurst(t1->player, 1);
+		return (stungT1 || stungT2);
 	}
-
-	return (stungT1 || stungT2);
+	
+	return false;
 }
