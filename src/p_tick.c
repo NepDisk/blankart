@@ -237,41 +237,46 @@ static thinker_t *currentthinker;
 //
 void P_RemoveThinkerDelayed(thinker_t *thinker)
 {
-	thinker_t *next;
-#ifdef PARANOIA
-#define BEENAROUNDBIT (0x40000000) // has to be sufficiently high that it's unlikely to happen in regular gameplay. If you change this, pay attention to the bit pattern of INT32_MIN.
-	if (thinker->references & ~BEENAROUNDBIT)
+	if (thinker->references != 0)
 	{
-		if (thinker->references & BEENAROUNDBIT) // Usually gets cleared up in one frame; what's going on here, then?
-			CONS_Printf("Number of potentially faulty references: %d\n", (thinker->references & ~BEENAROUNDBIT));
-		thinker->references |= BEENAROUNDBIT;
+#ifdef PARANOIA
+		// Removed mobjs can be the target of another mobj. In
+		// that case, the other mobj will manage its reference
+		// to the removed mobj in P_MobjThinker. However, if
+		// the removed mobj is removed after the other object
+		// thinks, the reference management is delayed by one
+		// tic (or two?)
+		const UINT8 delay = 2;
+
+		if (thinker->debug_time > leveltime)
+		{
+			thinker->debug_time = leveltime + delay + 1; // do not print errors again
+		}
+		else if ((thinker->debug_time + delay) <= leveltime)
+		{
+			CONS_Printf(
+					"PARANOIA/P_RemoveThinkerDelayed: %p %s references=%d\n",
+					(void*)thinker,
+					MobjTypeName((mobj_t*)thinker),
+					thinker->references
+			);
+
+			thinker->debug_time = leveltime + delay + 1; // do not print this error again
+		}
+#endif
 		return;
 	}
-#undef BEENAROUNDBIT
-#else
-	if (thinker->references)
-		return;
-#endif
 
-	/* Remove from main thinker list */
-	next = thinker->next;
+	R_DestroyLevelInterpolators(thinker);
+
 	/* Note that currentthinker is guaranteed to point to us,
 	* and since we're freeing our memory, we had better change that. So
 	* point it to thinker->prev, so the iterator will correctly move on to
 	* thinker->prev->next = thinker->next */
-	(next->prev = currentthinker = thinker->prev)->next = next;
+	currentthinker = thinker->prev;
 
-	if (thinker->cachable)
-	{
-		// put cachable thinkers in the mobj cache, so we can avoid allocations
-		((mobj_t *)thinker)->hnext = mobjcache;
-		mobjcache = (mobj_t *)thinker;
-	}
-	else
-	{
-		R_DestroyLevelInterpolators(thinker);
-		Z_Free(thinker);
-	}
+	/* Remove from main thinker list */
+	P_UnlinkThinker(thinker);
 }
 
 //
@@ -363,7 +368,7 @@ static inline void P_RunThinkers(void)
 {
 	size_t i;
 
-	for (i = 0; i < NUM_THINKERLISTS; i++)
+	for (i = 0; i < NUM_ACTIVETHINKERLISTS; i++)
 	{
 		ps_thlist_times[i] = I_GetPreciseTime();
 		for (currentthinker = thlist[i].next; currentthinker != &thlist[i]; currentthinker = currentthinker->next)

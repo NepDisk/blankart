@@ -68,7 +68,13 @@ typedef enum
 	THINK_MAIN,
 	THINK_MOBJ,
 	THINK_DYNSLOPE,
-	THINK_PRECIP,
+	
+	// Lists after this may exist but they do not call an
+	// action in P_RunThinkers
+	NUM_ACTIVETHINKERLISTS,
+
+	THINK_PRECIP = NUM_ACTIVETHINKERLISTS,
+
 	NUM_THINKERLISTS
 } thinklistnum_t; /**< Thinker lists. */
 extern thinker_t thlist[];
@@ -77,6 +83,7 @@ extern mobj_t *mobjcache;
 void P_InitThinkers(void);
 void P_AddThinker(const thinklistnum_t n, thinker_t *thinker);
 void P_RemoveThinker(thinker_t *thinker);
+void P_UnlinkThinker(thinker_t *thinker);
 
 //
 // P_USER
