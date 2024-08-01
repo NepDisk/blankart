@@ -3220,74 +3220,24 @@ static void K_RemoveGrowShrink(player_t *player)
 	P_RestoreMusic(player);
 }
 
-
-INT32 K_SquishPlayer(player_t *player, mobj_t *inflictor, mobj_t *source, boolean crush)
+void K_SquishPlayer(player_t *player, mobj_t *inflictor, mobj_t *source)
 {
-	if (crush)
+	(void)inflictor;
+	(void)source;
+	
+	player->squishedtimer = TICRATE;
+
+	// Reduce Shrink timer
+	if (player->growshrinktimer < 0)
 	{
-		if ((player->invincibilitytimer > 0) || (player->growshrinktimer > 0) 
-		|| (player->hyudorotimer > 0) || (player->flashing > 0) || (player->squishedtimer > 0))
-		{
-			K_DoInstashield(player);
-			return 0;
-		}
-		player->instashield = 15;
-		player->squishedtimer = TICRATE;
-
-		// Reduce Shrink timer
-		if (player->growshrinktimer < 0)
-		{
-			player->growshrinktimer += TICRATE;
-			if (player->growshrinktimer >= 0)
-				K_RemoveGrowShrink(player);
-		}
-		
-		player->mo->flags |= MF_NOCLIP;
-
-		player->instashield = 15;
-		
-		player->sneakertimer = 0;
-		player->driftboost = 0;
-		player->ringboost = 0;
-		player->glanceDir = 0;
-		player->pflags &= ~PF_GAINAX;
-
-		K_PlayPainSound(player->mo, NULL);
-		P_PlayRinglossSound(player->mo);
-		P_PlayerRingBurst(player, 5);
-		
-		if (gametyperules & GTR_BUMPERS)
-		{
-			if (player->bumpers > 0)
-				player->bumpers--;
-		}
-		
-		return 0;
+		player->growshrinktimer += TICRATE;
+		if (player->growshrinktimer >= 0)
+			K_RemoveGrowShrink(player);
 	}
-	else
-	{
-		player->squishedtimer = TICRATE;
 
-		// Reduce Shrink timer
-		if (player->growshrinktimer < 0)
-		{
-			player->growshrinktimer += TICRATE;
-			if (player->growshrinktimer >= 0)
-				K_RemoveGrowShrink(player);
-		}
+	player->mo->flags |= MF_NOCLIP;
 
-		player->mo->flags |= MF_NOCLIP;
-
-		player->instashield = 15;
-		if (cv_kartdebughuddrop.value && !modeattacking)
-			K_DropItems(player);
-		else
-		{
-			K_DropHnextList(player, false);
-		}
-		
-		return 5;
-	}
+	player->instashield = 15;
 }
 
 void K_ApplyTripWire(player_t *player, tripwirestate_t state)
@@ -6554,12 +6504,15 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	player->karthud[khud_timeovercam] = 0;
 
 	// Make ABSOLUTELY SURE that your flashing tics don't get set WHILE you're still in hit animations.
-	if (player->spinouttimer != 0 || player->wipeoutslow != 0 || player->squishedtimer != 0)
+	if (player->spinouttimer != 0
+		|| player->wipeoutslow != 0
+		|| player->squishedtimer != 0)
 	{
-		if (( player->spinouttype & KSPIN_IFRAMES ) == 0)
-			player->flashing = 0;
-		else
-			player->flashing = K_GetKartFlashing(player);
+		player->flashing = K_GetKartFlashing(player);
+	}
+	else if (player->flashing >= K_GetKartFlashing(player))
+	{
+		player->flashing--;
 	}
 
 	if (player->spinouttimer)

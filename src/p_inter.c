@@ -1829,8 +1829,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 	player_t *player;
 	boolean force = false;
 
-	INT32 laglength = 6;
-
 	if (objectplacing)
 		return false;
 
@@ -1843,16 +1841,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 
 	if (source && source->player && source->player->spectator)
 		return false;
-
-	if (((damagetype & DMG_TYPEMASK) == DMG_STING)
-	|| ((inflictor && !P_MobjWasRemoved(inflictor)) && inflictor->type == MT_BANANA && inflictor->health <= 1))
-	{
-		laglength = 2;
-	}
-	else if (target->type == MT_DROPTARGET || target->type == MT_DROPTARGET_SHIELD)
-	{
-		laglength = 0; // handled elsewhere
-	}
 
 	// Everything above here can't be forced.
 	if (!metalrecording)
@@ -1870,9 +1858,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 	{
 		if (!(target->flags & MF_SHOOTABLE))
 			return false; // shouldn't happen...
-
-		if (!(damagetype & DMG_DEATHMASK) && inflictor == NULL)
-			return false;
 	}
 
 	if (target->flags2 & MF2_SKULLFLY)
@@ -2061,7 +2046,8 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 					ringburst = K_ExplodePlayer(player, inflictor, source);
 					break;
 				case DMG_SQUISH:
-					ringburst = K_SquishPlayer(player, inflictor, source, false);
+					K_SquishPlayer(player, inflictor, source);
+					ringburst = 5;
 					break;
 				case DMG_WIPEOUT:
 					if (P_IsDisplayPlayer(player))

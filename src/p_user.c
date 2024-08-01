@@ -2352,7 +2352,7 @@ void P_MovePlayer(player_t *player)
 		if (player->spectator)
 			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_SPECTATOR); // Respawn crushed spectators
 		else
-			K_SquishPlayer(player, NULL, NULL, true); // SRB2kart - we don't kill when squished, we squish when squished.
+			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_SQUISH); // SRB2kart - we don't kill when squished, we squish when squished.
 
 		if (player->playerstate == PST_DEAD)
 			return;
@@ -4362,10 +4362,8 @@ void P_PlayerThink(player_t *player)
 
 	// Strength counts up to diminish fade.
 	if (player->flashing && player->flashing < UINT16_MAX &&
-		(player->spectator || !P_PlayerInPain(player)))
-	{
+		(player->spectator || player->flashing < K_GetKartFlashing(player)))
 		player->flashing--;
-	}
 
 	if (player->nocontrol && player->nocontrol < UINT16_MAX)
 	{

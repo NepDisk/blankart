@@ -108,7 +108,7 @@ boolean K_SlopeResistance(player_t *player);
 tripwirepass_t K_TripwirePassConditions(player_t *player);
 boolean K_TripwirePass(player_t *player);
 boolean K_WaterRun(player_t *player);
-INT32 K_SquishPlayer(player_t *player, mobj_t *inflictor, mobj_t *source, boolean crush);
+void K_SquishPlayer(player_t *player, mobj_t *inflictor, mobj_t *source);
 void K_ApplyTripWire(player_t *player, tripwirestate_t state);
 fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed);
 fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberbanding);
