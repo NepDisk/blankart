@@ -28,7 +28,6 @@
 #else
 #include "../config.h.in"
 #endif
-#include <thread>
 #include <signal.h>
 
 #ifdef _WIN32
@@ -348,7 +347,7 @@ static void I_ReportSignal(int num, int coredumped)
 			"Process killed by signal",
 			sigmsg, NULL);
 		
-	I_ShowErrorMessageBox(sigmsg,
+	I_Error(sigmsg,
 #if defined (UNIXBACKTRACE)
 		true
 #elif defined (_WIN32)
