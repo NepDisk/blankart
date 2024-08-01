@@ -11008,9 +11008,6 @@ void A_Boss5Jump(mobj_t *actor)
 	if (!actor->tracer)
 		return; // Don't even bother if we've got nothing to aim at.
 
-	// Look up actor's current gravity situation
-	g = FixedMul(gravity, P_GetSectorGravityFactor(actor->subsector->sector));
-
 	// Scale with map
 	g = FixedMul(g, mapobjectscale);
 
