@@ -24,6 +24,7 @@
 #include "p_local.h"
 #include "p_mobj.h"
 #include "r_textures.h"
+#include "r_main.h"
 #include "w_wad.h"
 #include "z_zone.h"
 
@@ -472,28 +473,38 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 
 		K_DoSneaker(player, 0);
 	}
+	
+	// WaterRun Panel
+	if (terrain->flags & TRF_WATERRUNPANEL)
+	{
+		if (player->floorboost == 0)
+			player->floorboost = 3;
+		else
+			player->floorboost = 2;
+
+		K_DoSneaker(player, 0);
+	}
 
 	// Trick panel
-	if (terrain->trickPanel > 0 && !(mo->eflags & MFE_SPRUNG))
+	if (terrain->pogoSpring > 0 && !(mo->eflags & MFE_SPRUNG))
 	{
-		const fixed_t hscale = mapobjectscale + (mapobjectscale - mo->scale);
+		const fixed_t hscale = mapobjectscale + (mapobjectscale - player->mo->scale);
 		const fixed_t minspeed = 24*hscale;
-		fixed_t speed = FixedHypot(mo->momx, mo->momy);
-		fixed_t upwards = 16 * terrain->trickPanel;
+		const fixed_t maxspeed = 28*hscale;
+		angle_t pushangle = FixedHypot(player->mo->momx, player->mo->momy) ? R_PointToAngle2(0, 0, player->mo->momx, player->mo->momy) : player->mo->angle;
+		// if we have no speed for SOME REASON, use the player's angle, otherwise we'd be forcefully thrusted to what I can only assume is angle 0
 
-		player->trickpanel = 1;
-		player->pflags |= PF_TRICKDELAY;
-		K_DoPogoSpring(mo, upwards, 1);
+		if ((player->speed > maxspeed) && terrain->pogoSpring == 2) // Prevent overshooting jumps
+			P_InstaThrust(player->mo, pushangle, maxspeed);
+		else if (player->speed < minspeed) // Push forward to prevent getting stuck
+			P_InstaThrust(player->mo, pushangle, minspeed);
 
-		// Reduce speed
-		speed /= 2;
-
-		if (speed < minspeed)
-		{
-			speed = minspeed;
-		}
-
-		P_InstaThrust(mo, mo->angle, speed);
+		if (terrain->pogoSpring == 2)
+			player->pogospring = 2;
+		else
+			player->pogospring = 1;
+		
+		K_DoPogoSpring(player->mo, 0, 1);
 	}
 
 	// (Offroad is handled elsewhere!)
@@ -1405,7 +1416,7 @@ static void K_TerrainDefaults(terrain_t *terrain)
 	terrain->friction = 0;
 	terrain->offroad = 0;
 	terrain->damageType = -1;
-	terrain->trickPanel = 0;
+	terrain->pogoSpring = 0;
 	terrain->flags = 0;
 }
 
@@ -1472,9 +1483,9 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	{
 		terrain->damageType = (INT16)get_number(val);
 	}
-	else if (stricmp(param, "trickPanel") == 0)
+	else if (stricmp(param, "pogoSpring") == 0)
 	{
-		terrain->trickPanel = FLOAT_TO_FIXED(atof(val));
+		terrain->pogoSpring = FLOAT_TO_FIXED(atof(val));
 	}
 	else if (stricmp(param, "floorClip") == 0)
 	{
@@ -1487,6 +1498,10 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	else if (stricmp(param, "sneakerPanel") == 0)
 	{
 		K_FlagBoolean(&terrain->flags, TRF_SNEAKERPANEL, val);
+	}
+	else if (stricmp(param, "waterRunPanel") == 0)
+	{
+		K_FlagBoolean(&terrain->flags, TRF_WATERRUNPANEL, val);
 	}
 	else if (stricmp(param, "tripwire") == 0)
 	{

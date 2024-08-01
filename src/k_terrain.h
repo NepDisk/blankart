@@ -94,7 +94,7 @@ typedef enum
 	// Terrain flag values.
 	TRF_LIQUID = 1, // Texture has water properties (wavy, slippery, etc)
 	TRF_SNEAKERPANEL = 1<<1, // Texture is a booster
-	// = 1<<2, // Was bumpy road.
+	TRF_WATERRUNPANEL = 1<<2, // Texture is a waterrun panel
 	TRF_TRIPWIRE = 1<<3 // Texture is a tripwire when used as a midtexture
 } terrain_flags_t;
 
@@ -113,7 +113,7 @@ typedef struct terrain_s
 	fixed_t friction;		// The default friction of this texture.
 	UINT8 offroad;			// The default offroad level of this texture.
 	INT16 damageType;		// The default damage type of this texture. (Negative means no damage).
-	UINT8 trickPanel;		// Trick panel strength
+	UINT8 pogoSpring;		// Is this panel a pogo spring?
 	fixed_t floorClip;		// Offset for sprites on this ground
 	UINT32 flags;			// Flag values (see: terrain_flags_t)
 } terrain_t;

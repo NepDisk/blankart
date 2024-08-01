@@ -2665,12 +2665,7 @@ boolean K_TripwirePass(player_t *player)
 
 boolean K_WaterRun(player_t *player)
 {
-	if (
-			player->invincibilitytimer ||
-			player->sneakertimer ||
-			player->flamedash ||
-			player->speed > 2 * K_GetKartSpeed(player, false, true)
-	)
+	if (player->waterrun)
 		return true;
 	return false;
 }
@@ -4600,7 +4595,6 @@ void K_DoSneaker(player_t *player, INT32 type)
 		case 3:
 			intendedboost = 14706;
 			break;
-			
 		default:
 			intendedboost = 32768;
 			break;
@@ -4653,6 +4647,54 @@ void K_DoSneaker(player_t *player, INT32 type)
 	}
 
 	player->sneakertimer = sneakertime;
+
+	// set angle for spun out players:
+	player->boostangle = player->mo->angle;
+}
+
+void K_DoWaterRunPanel(player_t *player)
+{
+	fixed_t intendedboost;
+
+	switch (gamespeed)
+	{
+		case 0:
+			intendedboost = 53740+768;
+			break;
+		case 2:
+			intendedboost = 17294+768;
+			break;
+		//expert
+		case 3:
+			intendedboost = 14706;
+			break;
+		default:
+			intendedboost = 32768;
+			break;
+	}
+
+	if (player->floorboost == 0 || player->floorboost == 3)
+	{
+		S_StopSoundByID(player->mo, sfx_cdfm01);
+		S_StopSoundByID(player->mo, sfx_wdjump);
+		S_StartSound(player->mo, sfx_cdfm01);
+		S_StartSound(player->mo, sfx_wdjump);
+
+		K_SpawnDashDustRelease(player);
+		if (intendedboost > player->speedboost)
+			player->karthud[khud_destboostcam] = FixedMul(FRACUNIT, FixedDiv((intendedboost - player->speedboost), intendedboost));
+	}
+
+	if (player->sneakertimer == 0)
+	{
+		mobj_t *overlay = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_BOOSTFLAME);
+		P_SetTarget(&overlay->target, player->mo);
+		P_SetScale(overlay, (overlay->destscale = player->mo->scale));
+		K_FlipFromObject(overlay, player->mo);
+	}
+	
+	player->sneakertimer = sneakertime;
+	player->waterrun = true;
 
 	// set angle for spun out players:
 	player->boostangle = player->mo->angle;
@@ -6641,6 +6683,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (player->floorboost > 0)
 		player->floorboost--;
+	
+	if (player->sneakertimer == 0)
+		player->waterrun = 0;
 
 	if (player->driftboost)
 		player->driftboost--;

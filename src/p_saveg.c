@@ -323,6 +323,7 @@ static void P_NetArchivePlayers(void)
 
 		WRITEUINT16(save_p, players[i].sneakertimer);
 		WRITEUINT8(save_p, players[i].floorboost);
+		WRITEUINT8(save_p, players[i].waterrun);
 		
 		WRITEUINT8(save_p, players[i].boostcharge);
 
@@ -608,6 +609,7 @@ static void P_NetUnArchivePlayers(void)
 
 		players[i].sneakertimer = READUINT16(save_p);
 		players[i].floorboost = READUINT8(save_p);
+		players[i].waterrun = READUINT8(save_p);
 		
 		players[i].boostcharge = READUINT8(save_p);
 

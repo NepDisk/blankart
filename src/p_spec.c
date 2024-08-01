@@ -4872,7 +4872,16 @@ DoneSection2:
 		case 11: // Unused
 		case 12: // Camera noclip
 		case 13: // SRB2Kart: Destroy items
-		case 14: // Unused
+		case 14: // Nep additions: Water Run panel
+			if (roversector || P_MobjReadyToTrigger(player->mo, sector))
+			{
+				if (player->floorboost == 0)
+					player->floorboost = 3;
+				else
+					player->floorboost = 2;
+				K_DoWaterRunPanel(player);
+			}
+			break;
 		case 15: // Unused
 			break;
 	}

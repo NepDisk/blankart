@@ -2525,16 +2525,16 @@ static void K_drawKartSpeedometer(void)
 	{
 		switch (cv_kartspeedometer.value) {
 			case 1:
-				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|splitflags, va("%4d P", convSpeed));
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, va("%4d P", convSpeed));
 				break;
 			case 2:
-				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|splitflags, va("%3d km/h", convSpeed));
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, va("%3d km/h", convSpeed));
 				break;
 			case 3:
-				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|splitflags, va("%3d mph", convSpeed));
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, va("%3d mph", convSpeed));
 				break;
 			case 4:
-				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|splitflags, va("%3d fu/t", convSpeed));
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, va("%3d fu/t", convSpeed));
 				break;
 			default:
 				break;
