@@ -1309,14 +1309,16 @@ static menuitem_t OP_VideoModeMenu[] =
 static menuitem_t OP_OpenGLOptionsMenu[] =
 {
 	{IT_STRING | IT_CVAR,	NULL, "3D Models",					{.cvar = &cv_glmodels},					 10},
-	{IT_STRING|IT_CVAR,		NULL, "Shaders",					{.cvar = &cv_glshaders},				 20},
+	{IT_STRING | IT_CVAR,	NULL, "Model Interpolation",		{.cvar = &cv_glmodelinterpolation},		 20},
+	{IT_STRING | IT_CVAR,	NULL, "Model Lighting",				{.cvar = &cv_glmodellighting},			 30},
+	{IT_STRING|IT_CVAR,		NULL, "Shaders",					{.cvar = &cv_glshaders},				 40},
 
-	{IT_STRING|IT_CVAR,		NULL, "Texture Quality",			{.cvar = &cv_scr_depth},				 40},
-	{IT_STRING|IT_CVAR,		NULL, "Texture Filter",				{.cvar = &cv_glfiltermode},				 50},
-	{IT_STRING|IT_CVAR,		NULL, "Anisotropic",				{.cvar = &cv_glanisotropicmode},		 60},
+	{IT_STRING|IT_CVAR,		NULL, "Texture Quality",			{.cvar = &cv_scr_depth},				 60},
+	{IT_STRING|IT_CVAR,		NULL, "Texture Filter",				{.cvar = &cv_glfiltermode},				 70},
+	{IT_STRING|IT_CVAR,		NULL, "Anisotropic",				{.cvar = &cv_glanisotropicmode},		 80},
 
-	{IT_STRING|IT_CVAR,		NULL, "Sprite Billboarding",		{.cvar = &cv_glspritebillboarding},		 80},
-	{IT_STRING|IT_CVAR,		NULL, "Software Perspective",		{.cvar = &cv_glshearing},				 90},
+	{IT_STRING|IT_CVAR,		NULL, "Sprite Billboarding",		{.cvar = &cv_glspritebillboarding},		 100},
+	{IT_STRING|IT_CVAR,		NULL, "Software Perspective",		{.cvar = &cv_glshearing},				 110},
 };
 #endif
 

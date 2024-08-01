@@ -99,7 +99,9 @@ extern consvar_t cv_glmodels;
 // SRB2Kart: We don't like these options.
 // Interpolation should be up to who animated the model.
 // Lighting makes the modeler's intended texturing look funky.
-//#define BAD_MODEL_OPTIONS
+// ^ Ignoring this shit lmao.
+// This should be the players choice to decide. Why must you always disregard the player's choice? - Nep
+#define BAD_MODEL_OPTIONS
 
 #ifdef BAD_MODEL_OPTIONS
 extern consvar_t cv_glmodelinterpolation;
