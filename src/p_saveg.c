@@ -19,6 +19,7 @@
 #include "m_random.h"
 #include "m_misc.h"
 #include "p_local.h"
+#include "p_mobj.h"
 #include "p_setup.h"
 #include "p_saveg.h"
 #include "r_data.h"
@@ -4448,6 +4449,7 @@ static void P_NetArchiveMisc(boolean resending)
 	WRITEUINT32(save_p, ssspheres);
 	WRITEINT16(save_p, lastmap);
 	WRITEUINT16(save_p, bossdisabled);
+	WRITEUINT8(save_p, ringsdisabled);
 
 	for (i = 0; i < 4; i++)
 	{
@@ -4609,7 +4611,8 @@ static inline boolean P_NetUnArchiveMisc(boolean reloading)
 	leveltime = READUINT32(save_p);
 	ssspheres = READUINT32(save_p);
 	lastmap = READINT16(save_p);
-	bossdisabled = READUINT16(save_p);
+	bossdisabled = READUINT16(save_p);\
+	ringsdisabled = READUINT16(save_p);
 
 	for (i = 0; i < 4; i++)
 	{

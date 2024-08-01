@@ -1879,6 +1879,18 @@ static int lib_pFindHighestCeilingSurrounding(lua_State *L)
 	return 1;
 }
 
+static int lib_pPlayerTouchingSectorSpecial(lua_State *L)
+{
+	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
+	INT32 section = (INT32)luaL_checkinteger(L, 2);
+	INT32 number = (INT32)luaL_checkinteger(L, 3);
+	//HUDSAFE
+	if (!player)
+		return LUA_ErrInvalid(L, "player_t");
+	LUA_PushUserdata(L, P_MobjTouchingSectorSpecial(player->mo, section, number, true), META_SECTOR);
+	return 1;
+}
+
 static int lib_pFindSpecialLineFromTag(lua_State *L)
 {
 	INT16 special = (INT16)luaL_checkinteger(L, 1);
@@ -3938,6 +3950,7 @@ static luaL_Reg lib[] = {
 	{"P_FindNextLowestFloor",lib_pFindNextLowestFloor},
 	{"P_FindLowestCeilingSurrounding",lib_pFindLowestCeilingSurrounding},
 	{"P_FindHighestCeilingSurrounding",lib_pFindHighestCeilingSurrounding},
+	{"P_PlayerTouchingSectorSpecial",lib_pPlayerTouchingSectorSpecial},
 	{"P_FindSpecialLineFromTag",lib_pFindSpecialLineFromTag},
 	{"P_SwitchWeather",lib_pSwitchWeather},
 	{"P_LinedefExecute",lib_pLinedefExecute},

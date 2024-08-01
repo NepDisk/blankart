@@ -23,6 +23,7 @@
 #include "hu_stuff.h"
 #include "g_input.h"
 #include "m_menu.h"
+#include "p_mobj.h"
 #include "r_local.h"
 #include "r_skins.h"
 #include "p_local.h"
@@ -150,6 +151,7 @@ static void KartSpeed_OnChange(void);
 static void KartEncore_OnChange(void);
 static void KartComeback_OnChange(void);
 static void KartEliminateLast_OnChange(void);
+static void KartRings_OnChange(void);
 
 static void Schedule_OnChange(void);
 
@@ -423,6 +425,9 @@ static CV_PossibleValue_t kartbot_cons_t[] = {
 consvar_t cv_kartbot = CVAR_INIT ("kartbot", "0", CV_NETVAR, kartbot_cons_t, NULL);
 
 consvar_t cv_karteliminatelast = CVAR_INIT ("karteliminatelast", "Yes", CV_NETVAR|CV_CHEAT|CV_CALL, CV_YesNo, KartEliminateLast_OnChange);
+
+// Toggles for new features
+consvar_t cv_kartrings = CVAR_INIT ("kartrings", "Off", CV_NETVAR|CV_CHEAT|CV_CALL|CV_NOINIT, CV_OnOff, KartRings_OnChange);
 
 consvar_t cv_kartusepwrlv = CVAR_INIT ("kartusepwrlv", "Yes", CV_NETVAR|CV_CHEAT, CV_YesNo, NULL);
 
@@ -6434,6 +6439,23 @@ static void KartEliminateLast_OnChange(void)
 	}
 
 	P_CheckRacers();
+}
+
+static void KartRings_OnChange(void)
+{
+	if (K_CanChangeRules() == false)
+	{
+		return;
+	}
+
+	if (ringsdisabled)
+	{
+		CONS_Printf(M_GetText("Rings will be turned %s Next Round .\n"), cv_kartrings.string);
+	}
+	else
+	{
+		CONS_Printf(M_GetText("Rings will be turned %s Next Round .\n"), cv_kartrings.string);
+	}
 }
 
 static void Schedule_OnChange(void)

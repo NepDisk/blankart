@@ -211,7 +211,7 @@ extern char logfilename[1024];
 
 #define COLORRAMPSIZE 16
 #define MAXCOLORNAME 32
-#define NUMCOLORFREESLOTS 1024
+#define NUMCOLORFREESLOTS UINT16_MAX
 
 // Master Server compatibility ONLY
 #define MSCOMPAT_MAXPLAYERS (32)

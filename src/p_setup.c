@@ -128,6 +128,7 @@ line_t *spawnlines;
 side_t *spawnsides;
 INT32 numstarposts;
 INT32 numbosswaypoints;
+boolean ringsdisabled;
 UINT16 bossdisabled;
 boolean stoppedclock;
 boolean levelloading;
@@ -3695,6 +3696,11 @@ static void P_InitLevelSettings(boolean reloadinggamestate)
 	nummapboxes = numgotboxes = 0;
 	maptargets = numtargets = 0;
 	battlecapsules = false;
+	
+	if (cv_kartrings.value)
+		ringsdisabled = false;
+	else
+		ringsdisabled = true;
 
 	// emerald hunt
 	hunt1 = hunt2 = hunt3 = NULL;

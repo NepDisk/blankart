@@ -22,6 +22,7 @@
 #include "g_game.h"
 #include "info.h"
 #include "p_local.h"
+#include "p_mobj.h"
 #include "r_fps.h"
 #include "r_main.h"
 #include "s_sound.h"
@@ -495,6 +496,9 @@ INT32 P_GivePlayerRings(player_t *player, INT32 num_rings)
 
 	if ((gametyperules & GTR_BUMPERS)) // No rings in Battle Mode
 		return 0;
+	
+	if (ringsdisabled) // No rings in when turned off
+		return 0;
 
 	test = player->rings + num_rings;
 	if (test > 20) // Caps at 20 rings, sorry!
@@ -685,6 +689,9 @@ boolean P_EvaluateMusicStatus(UINT16 status, const char *musname)
 
 void P_PlayRinglossSound(mobj_t *source)
 {
+	if (ringsdisabled)
+		return;
+	
 	if (source->player && K_GetShieldFromItem(source->player->itemtype) != KSHIELD_NONE)
 		S_StartSound(source, sfx_s1a3); // Shield hit (no ring loss)
 	else if (source->player && source->player->rings <= 0)
@@ -1792,6 +1799,11 @@ static void P_3dMovement(player_t *player)
 	
 	if (!player->pogospring)
 		cmd->sidemove = 0;
+	
+	if ((player->exiting || mapreset) || player->pflags & PF_STASIS || player->spinouttimer) // pw_introcam?
+	{
+		cmd->forwardmove = cmd->sidemove = 0;
+	}
 
 	// Get the old momentum; this will be needed at the end of the function! -SH
 	oldMagnitude = R_PointToDist2(player->mo->momx - player->cmomx, player->mo->momy - player->cmomy, 0, 0);
@@ -1864,6 +1876,8 @@ static void P_3dMovement(player_t *player)
 	// Do not let the player control movement if not onground.
 	// SRB2Kart: pogo spring and speed bumps are supposed to control like you're on the ground
 	onground = (P_IsObjectOnGround(player->mo) || (player->pogospring));
+	
+	player->aiming = cmd->aiming<<FRACBITS;
 
 	// Forward movement
 	if (!((player->exiting || mapreset) || (P_PlayerInPain(player) && !onground)))
@@ -2040,16 +2054,6 @@ static void P_UpdatePlayerAngle(player_t *player)
 	player->angleturn = anglechange;
 	player->mo->angle = player->angleturn;
 
-	if (!cv_allowmlook.value || player->spectator == false)
-	{
-		player->aiming = 0;
-	}
-	else
-	{
-		player->aiming += (player->cmd.aiming << TICCMD_REDUCE);
-		player->aiming = G_ClipAimingPitch((INT32*) &player->aiming);
-	}
-
 	for (i = 0; i <= r_splitscreen; i++)
 	{
 		if (player == &players[displayplayers[i]])
@@ -2203,9 +2207,6 @@ void P_MovePlayer(player_t *player)
 			else if (player->drift != 0)
 			{
 				INT32 a = (ANGLE_45 / 5) * player->drift;
-
-				if (player->mo->eflags & MFE_UNDERWATER)
-					a /= 2;
 
 				player->drawangle += a;
 			}

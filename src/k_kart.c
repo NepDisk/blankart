@@ -253,6 +253,8 @@ void K_RegisterKartStuff(void)
 	CV_RegisterVar(&cv_stagetitle);	
 	
 	CV_RegisterVar(&cv_lessflicker);
+	
+	CV_RegisterVar(&cv_kartrings);
 }
 
 //}
@@ -2773,12 +2775,9 @@ static void K_GetKartBoostPower(player_t *player)
 
 	if (player->ringboost) // Ring Boost
 	{
-		ADDBOOST(FRACUNIT/5, 4*FRACUNIT, 0); // + 20% top speed, + 400% acceleration, +0% handling
-	}
-
-	if (player->eggmanexplode) // Ready-to-explode
-	{
-		ADDBOOST(3*FRACUNIT/20, FRACUNIT, 0); // + 15% top speed, + 100% acceleration, +0% handling
+		// Make rings additive so they aren't useless with other boosts
+		speedboost += FRACUNIT/6; // 15%
+		accelboost = max(4*FRACUNIT, accelboost); // 400%
 	}
 
 	player->boostpower = boostpower;
@@ -6533,10 +6532,18 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->wipeoutslow = 0;
 	}
 
-	if (player->rings > 20)
-		player->rings = 20;
-	else if (player->rings < -20)
-		player->rings = -20;
+	
+	if (ringsdisabled)
+	{
+		player->rings = 0;
+	}
+	else
+	{
+		if (player->rings > 20)
+			player->rings = 20;
+		else if (player->rings < -20)
+			player->rings = -20;
+	}
 
 	if (player->spheres > 40)
 		player->spheres = 40;
@@ -8847,7 +8854,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 						case KITEM_SUPERRING:
 							if (ATTACK_IS_DOWN && !HOLDING_ITEM && NO_HYUDORO)
 							{
-								K_AwardPlayerRings(player, 10, true);
+								K_AwardPlayerRings(player, 15, true);
 								player->itemamount--;
 							}
 							break;

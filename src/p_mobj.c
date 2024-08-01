@@ -11,6 +11,7 @@
 /// \file  p_mobj.c
 /// \brief Moving object handling. Spawn functions
 
+#include "d_netcmd.h"
 #include "doomdef.h"
 #include "doomtype.h"
 #include "g_game.h"
@@ -11423,6 +11424,9 @@ static boolean P_AllowMobjSpawn(mapthing_t* mthing, mobjtype_t i)
 			return false; // No cheating!!
 
 		break;
+	case MT_RING:
+		if (ringsdisabled)
+			return false;
 	case MT_ITEMCAPSULE:
 		{
 			boolean isRingCapsule = (mthing->angle < 1 || mthing->angle == KITEM_SUPERRING || mthing->angle >= NUMKARTITEMS);
