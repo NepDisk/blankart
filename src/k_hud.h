@@ -19,6 +19,8 @@
 #define RINGANIM_NUMFRAMES 10
 #define RINGANIM_DELAYMAX 5
 
+extern consvar_t cv_newspeedometer;
+
 void K_AdjustXYWithSnap(INT32 *x, INT32 *y, UINT32 options, INT32 dupx, INT32 dupy);
 
 typedef struct trackingResult_s

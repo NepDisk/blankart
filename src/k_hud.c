@@ -41,6 +41,13 @@
 #define NUMPOSFRAMES 7 // White, three blues, three reds
 #define NUMWINFRAMES 6 // Red, yellow, green, cyan, blue, purple
 
+
+static CV_PossibleValue_t speedo_cons_t[]= {
+	{0, "Default"},
+	{1, "Small"},
+	{0, NULL}};
+consvar_t cv_newspeedometer = CVAR_INIT ("newspeedometer", "Default", CV_SAVE, speedo_cons_t, NULL);
+
 //{ 	Patch Definitions
 static patch_t *kp_nodraw;
 
@@ -2480,48 +2487,71 @@ static void K_drawKartSpeedometer(void)
 	UINT8 numbers[3];
 	INT32 splitflags = V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_SPLITSCREEN;
 	INT32 battleoffset = 0;
+	INT32 ringoffset = 0;
 
-	if (!stplyr->exiting) // Keep the same speed value as when you crossed the finish line!
+	switch (cv_kartspeedometer.value)
 	{
-		switch (cv_kartspeedometer.value)
-		{
-			case 1: // Sonic Drift 2 style percentage
-			default:
-				convSpeed = (stplyr->speed * 100) / K_GetKartSpeed(stplyr, false, true); // Based on top speed!
-				labeln = 0;
-				break;
-			case 2: // Kilometers
-				convSpeed = FixedDiv(FixedMul(stplyr->speed, 142371), mapobjectscale) / FRACUNIT; // 2.172409058
-				labeln = 1;
-				break;
-			case 3: // Miles
-				convSpeed = FixedDiv(FixedMul(stplyr->speed, 88465), mapobjectscale) / FRACUNIT; // 1.349868774
-				labeln = 2;
-				break;
-			case 4: // Fracunits
-				convSpeed = FixedDiv(stplyr->speed, mapobjectscale) / FRACUNIT; // 1.0. duh.
-				labeln = 3;
-				break;
-		}
+		case 1: // Sonic Drift 2 style percentage
+		default:
+			convSpeed = (stplyr->speed * 100) / K_GetKartSpeed(stplyr, false, true); // Based on top speed!
+			labeln = 0;
+			break;
+		case 2: // Kilometers
+			convSpeed = FixedDiv(FixedMul(stplyr->speed, 142371), mapobjectscale) / FRACUNIT; // 2.172409058
+			labeln = 1;
+			break;
+		case 3: // Miles
+			convSpeed = FixedDiv(FixedMul(stplyr->speed, 88465), mapobjectscale) / FRACUNIT; // 1.349868774
+			labeln = 2;
+			break;
+		case 4: // Fracunits
+			convSpeed = FixedDiv(stplyr->speed, mapobjectscale) / FRACUNIT; // 1.0. duh.
+			labeln = 3;
+			break;
 	}
 
 	// Don't overflow
 	// (negative speed IS really high speed :V)
 	if (convSpeed > 999 || convSpeed < 0)
 		convSpeed = 999;
-
-	numbers[0] = ((convSpeed / 100) % 10);
-	numbers[1] = ((convSpeed / 10) % 10);
-	numbers[2] = (convSpeed % 10);
-
+	
 	if (gametype == GT_BATTLE)
 		battleoffset = -4;
+	
+	if (!ringsdisabled && !(gametype == GT_BATTLE))
+		ringoffset = -16;
+	
+	if (cv_newspeedometer.value == 0) 
+	{
+		switch (cv_kartspeedometer.value) {
+			case 1:
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|splitflags, va("%4d P", convSpeed));
+				break;
+			case 2:
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|splitflags, va("%3d km/h", convSpeed));
+				break;
+			case 3:
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|splitflags, va("%3d mph", convSpeed));
+				break;
+			case 4:
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|splitflags, va("%3d fu/t", convSpeed));
+				break;
+			default:
+				break;
+		}
+	}
+	else
+	{
+		numbers[0] = ((convSpeed / 100) % 10);
+		numbers[1] = ((convSpeed / 10) % 10);
+		numbers[2] = (convSpeed % 10);
 
-	V_DrawScaledPatch(LAPS_X, LAPS_Y-25 + battleoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_speedometersticker);
-	V_DrawScaledPatch(LAPS_X+7, LAPS_Y-25 + battleoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[0]]);
-	V_DrawScaledPatch(LAPS_X+13, LAPS_Y-25 + battleoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[1]]);
-	V_DrawScaledPatch(LAPS_X+19, LAPS_Y-25 + battleoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[2]]);
-	V_DrawScaledPatch(LAPS_X+29, LAPS_Y-25 + battleoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_speedometerlabel[labeln]);
+		V_DrawScaledPatch(LAPS_X, LAPS_Y-9 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_speedometersticker);
+		V_DrawScaledPatch(LAPS_X+7, LAPS_Y-9 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[0]]);
+		V_DrawScaledPatch(LAPS_X+13, LAPS_Y-9 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[1]]);
+		V_DrawScaledPatch(LAPS_X+19, LAPS_Y-9 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[2]]);
+		V_DrawScaledPatch(LAPS_X+29, LAPS_Y-9 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_speedometerlabel[labeln]);
+	}
 
 	K_drawKartAccessibilityIcons(56);
 }

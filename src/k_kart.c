@@ -255,6 +255,8 @@ void K_RegisterKartStuff(void)
 	CV_RegisterVar(&cv_lessflicker);
 	
 	CV_RegisterVar(&cv_kartrings);
+	
+	CV_RegisterVar(&cv_newspeedometer);
 }
 
 //}
