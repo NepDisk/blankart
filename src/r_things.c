@@ -1963,7 +1963,7 @@ static void R_ProjectSprite(mobj_t *thing)
 		tr_x = (interp.x + sort_x) - viewx;
 		tr_y = (interp.y + sort_y) - viewy;
 		sort_z = FixedMul(tr_x, viewcos) + FixedMul(tr_y, viewsin);
-		sortscale = FixedDiv((intptr_t)projectiony, sort_z);
+		sortscale = FixedDiv((size_t)projectiony, sort_z);
 	}
 
 	if ((thing->flags2 & MF2_LINKDRAW) && thing->tracer) // toast 16/09/16 (SYMMETRY)
