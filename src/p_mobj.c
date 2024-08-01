@@ -7213,9 +7213,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 				mobj->renderflags |= RF_DONTDRAW;
 		}
 		break;
-	case MT_BRAKEDUST:
-		//mobj->renderflags ^= RF_DONTDRAW;
-		break;
 	case MT_PLAYERRETICULE:
 		if (!mobj->target || !mobj->target->health)
 		{

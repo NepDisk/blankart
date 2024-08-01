@@ -3315,10 +3315,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	// Brake drift sparks
 	"S_BRAKEDRIFT",
 
-	// Brake dust
-	"S_BRAKEDUST1",
-	"S_BRAKEDUST2",
-
 	// Drift Smoke
 	"S_DRIFTDUST1",
 	"S_DRIFTDUST2",
@@ -5175,7 +5171,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_WIPEOUTTRAIL",
 	"MT_DRIFTSPARK",
 	"MT_BRAKEDRIFT",
-	"MT_BRAKEDUST",
 	"MT_DRIFTDUST",
 
 	"MT_ROCKETSNEAKER", // Rocket sneakers
