@@ -7578,11 +7578,11 @@ static void M_DrawStatsMaps(int location)
 		M_DrawMapEmblems(mnum+1, 295, y);
 
 		if (mapheaderinfo[mnum]->levelflags & LF_NOZONE)
-			V_DrawString(20, y, 0, va("%s %d",
+			V_DrawString(20, y, 0, va("%s %s",
 				mapheaderinfo[mnum]->lvlttl,
 				mapheaderinfo[mnum]->actnum));
 		else
-			V_DrawString(20, y, 0, va("%s %s %d",
+			V_DrawString(20, y, 0, va("%s %s %s",
 				mapheaderinfo[mnum]->lvlttl,
 				(mapheaderinfo[mnum]->zonttl[0] ? mapheaderinfo[mnum]->zonttl : "Zone"),
 				mapheaderinfo[mnum]->actnum));
