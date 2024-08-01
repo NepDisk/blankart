@@ -3195,19 +3195,6 @@ static thinker_t* LoadMobjThinker(actionf_p1 thinker)
 			mobj->player->viewz = mobj->player->mo->z + mobj->player->viewheight;
 	}
 
-	if (mobj->type == MT_SKYBOX)
-	{
-		mtag_t = mobj->movedir;
-		if (tag < 0 || tag > 15)
-		{
-			CONS_Debug(DBG_GAMELOGIC, "LoadMobjThinker: Skybox ID %d of netloaded object is not between 0 and 15!\n", tag);
-		}
-		else if (mobj->flags2 & MF2_AMBUSH)
-			skyboxcenterpnts[tag] = mobj;
-		else
-			skyboxviewpnts[tag] = mobj;
-	}
-
 	if (diff2 & MD2_WAYPOINTCAP)
 		P_SetTarget(&waypointcap, mobj);
 
@@ -3827,7 +3814,7 @@ static void P_NetUnArchiveThinkers(void)
 		{
 			next = currentthinker->next;
 
-			if (currentthinker->function.acp1 == (actionf_p1)P_MobjThinker || currentthinker->function.acp1 == (actionf_p1)P_NullPrecipThinker)
+			if (currentthinker->function.acp1 == (actionf_p1)P_MobjThinker)
 				P_RemoveSavegameMobj((mobj_t *)currentthinker); // item isn't saved, don't remove it
 			else
 				Z_Free(currentthinker);
