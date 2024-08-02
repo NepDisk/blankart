@@ -207,10 +207,11 @@ extern char logfilename[1024];
 #define MAXSPLITSCREENPLAYERS 4 // Max number of players on a single computer
 
 #define MAXSKINS UINT8_MAX
+#define MAXFOLLOWERS UINT16_MAX
 
 #define COLORRAMPSIZE 16
 #define MAXCOLORNAME 32
-#define NUMCOLORFREESLOTS 1024
+#define NUMCOLORFREESLOTS UINT16_MAX
 
 // Master Server compatibility ONLY
 #define MSCOMPAT_MAXPLAYERS (32)

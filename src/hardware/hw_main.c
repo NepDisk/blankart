@@ -69,6 +69,7 @@ struct hwdriver_s hwdriver;
 static void HWR_AddSprites(sector_t *sec);
 static void HWR_ProjectSprite(mobj_t *thing);
 #ifdef HWPRECIP
+static void HWR_AddPrecipitationSprites(void);
 static void HWR_ProjectPrecipitationSprite(precipmobj_t *thing);
 #endif
 static void HWR_ProjectBoundingBox(mobj_t *thing);
@@ -249,6 +250,8 @@ void HWR_Lighting(FSurfaceInfo *Surface, INT32 light_level, extracolormap_t *col
 	// Clamp the light level, since it can sometimes go out of the 0-255 range from animations
 	light_level = min(max(light_level, 0), 255);
 
+	V_CubeApply(&tint_color.s.red, &tint_color.s.green, &tint_color.s.blue);
+	V_CubeApply(&fade_color.s.red, &fade_color.s.green, &fade_color.s.blue);
 	Surface->PolyColor.rgba = poly_color.rgba;
 	Surface->TintColor.rgba = tint_color.rgba;
 	Surface->FadeColor.rgba = fade_color.rgba;
@@ -546,10 +549,26 @@ static void HWR_RenderPlane(subsector_t *subsector, extrasubsector_t *xsub, bool
 				P_ClosestPointOnLine(viewx, viewy, line->linedef, &v);
 				dist = FIXED_TO_FLOAT(R_PointToDist(v.x, v.y));
 
-				x1 = ((polyvertex_t *)line->pv1)->x;
-				y1 = ((polyvertex_t *)line->pv1)->y;
-				xd = ((polyvertex_t *)line->pv2)->x - x1;
-				yd = ((polyvertex_t *)line->pv2)->y - y1;
+				if (line->pv1)
+				{
+					x1 = ((polyvertex_t *)line->pv1)->x;
+					y1 = ((polyvertex_t *)line->pv1)->y;
+				}
+				else
+				{
+					x1 = FIXED_TO_FLOAT(line->v1->x);
+					y1 = FIXED_TO_FLOAT(line->v1->x);
+				}
+				if (line->pv2)
+				{
+					xd = ((polyvertex_t *)line->pv2)->x - x1;
+					yd = ((polyvertex_t *)line->pv2)->y - y1;
+				}
+				else
+				{
+					xd = FIXED_TO_FLOAT(line->v2->x) - x1;
+					yd = FIXED_TO_FLOAT(line->v2->y) - y1;
+				}
 
 				// Based on the seg length and the distance from the line, split horizon into multiple poly sets to reduce distortion
 				dist = sqrtf((xd*xd) + (yd*yd)) / dist / 16.0f;
@@ -1015,10 +1034,26 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 	gl_sidedef = gl_curline->sidedef;
 	gl_linedef = gl_curline->linedef;
 
-	vs.x = ((polyvertex_t *)gl_curline->pv1)->x;
-	vs.y = ((polyvertex_t *)gl_curline->pv1)->y;
-	ve.x = ((polyvertex_t *)gl_curline->pv2)->x;
-	ve.y = ((polyvertex_t *)gl_curline->pv2)->y;
+	if (gl_curline->pv1)
+	{
+		vs.x = ((polyvertex_t *)gl_curline->pv1)->x;
+		vs.y = ((polyvertex_t *)gl_curline->pv1)->y;
+	}
+	else
+	{
+		vs.x = FIXED_TO_FLOAT(gl_curline->v1->x);
+		vs.y = FIXED_TO_FLOAT(gl_curline->v1->y);
+	}
+	if (gl_curline->pv2)
+	{
+		ve.x = ((polyvertex_t *)gl_curline->pv2)->x;
+		ve.y = ((polyvertex_t *)gl_curline->pv2)->y;
+	}
+	else
+	{
+		ve.x = FIXED_TO_FLOAT(gl_curline->v2->x);
+		ve.y = FIXED_TO_FLOAT(gl_curline->v2->y);
+	}
 
 	v1x = FLOAT_TO_FIXED(vs.x);
 	v1y = FLOAT_TO_FIXED(vs.y);
@@ -1633,7 +1668,7 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 
 				if (rover->master->flags & ML_TFERLINE)
 				{
-					size_t linenum = gl_curline->linedef-gl_backsector->lines[0];
+					size_t linenum = min(gl_curline->linedef-gl_backsector->lines[0], rover->master->frontsector->linecount);
 					newline = rover->master->frontsector->lines[0] + linenum;
 					texnum = R_GetTextureNum(sides[newline->sidenum[0]].midtexture);
 				}
@@ -1793,7 +1828,7 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 
 				if (rover->master->flags & ML_TFERLINE)
 				{
-					size_t linenum = gl_curline->linedef-gl_backsector->lines[0];
+					size_t linenum = min(gl_curline->linedef-gl_backsector->lines[0], rover->master->frontsector->linecount);
 					newline = rover->master->frontsector->lines[0] + linenum;
 					texnum = R_GetTextureNum(sides[newline->sidenum[0]].midtexture);
 				}
@@ -1916,10 +1951,26 @@ static boolean CheckClip(seg_t * seg, sector_t * afrontsector, sector_t * abacks
 	if (afrontsector->f_slope || afrontsector->c_slope || abacksector->f_slope || abacksector->c_slope)
 	{
 		fixed_t v1x, v1y, v2x, v2y; // the seg's vertexes as fixed_t
-		v1x = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv1)->x);
-		v1y = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv1)->y);
-		v2x = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv2)->x);
-		v2y = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv2)->y);
+		if (gl_curline->pv1)
+		{
+			v1x = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv1)->x);
+			v1y = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv1)->y);
+		}
+		else
+		{
+			v1x = gl_curline->v1->x;
+			v1y = gl_curline->v1->y;
+		}
+		if (gl_curline->pv2)
+		{
+			v2x = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv2)->x);
+			v2y = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv2)->y);
+		}
+		else
+		{
+			v2x = gl_curline->v2->x;
+			v2y = gl_curline->v2->y;
+		}
 #define SLOPEPARAMS(slope, end1, end2, normalheight) \
 		end1 = P_GetZAt(slope, v1x, v1y, normalheight); \
 		end2 = P_GetZAt(slope, v2x, v2y, normalheight);
@@ -2292,10 +2343,26 @@ static void HWR_AddLine(seg_t * line)
 
 	gl_curline = line;
 
-	v1x = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv1)->x);
-	v1y = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv1)->y);
-	v2x = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv2)->x);
-	v2y = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv2)->y);
+	if (gl_curline->pv1)
+	{
+		v1x = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv1)->x);
+		v1y = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv1)->y);
+	}
+	else
+	{
+		v1x = gl_curline->v1->x;
+		v1y = gl_curline->v1->y;
+	}
+	if (gl_curline->pv2)
+	{
+		v2x = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv2)->x);
+		v2y = FLOAT_TO_FIXED(((polyvertex_t *)gl_curline->pv2)->y);
+	}
+	else
+	{
+		v2x = gl_curline->v2->x;
+		v2y = gl_curline->v2->y;
+	}
 
 	// OPTIMIZE: quickly reject orthogonal back sides.
 	angle1 = R_PointToAngle64(v1x, v1y);
@@ -3738,7 +3805,34 @@ static void HWR_RotateSpritePolyToAim(gl_vissprite_t *spr, FOutVector *wallVerts
 		&& spr && spr->mobj && !R_ThingIsPaperSprite(spr->mobj)
 		&& wallVerts)
 	{
-		float basey = FIXED_TO_FLOAT(spr->mobj->z);
+		// uncapped/interpolation
+		interpmobjstate_t interp = {0};
+
+		// do interpolation
+		if (R_UsingFrameInterpolation() && !paused)
+		{
+			if (spr->precip)
+			{
+				R_InterpolatePrecipMobjState((precipmobj_t *)spr->mobj, rendertimefrac, &interp);
+			}
+			else
+			{
+				R_InterpolateMobjState(spr->mobj, rendertimefrac, &interp);
+			}
+		}
+		else
+		{
+			if (spr->precip)
+			{
+				R_InterpolatePrecipMobjState((precipmobj_t *)spr->mobj, FRACUNIT, &interp);
+			}
+			else
+			{
+				R_InterpolateMobjState(spr->mobj, FRACUNIT, &interp);
+			}
+		}
+
+		float basey = FIXED_TO_FLOAT(interp.z);
 		float lowy = wallVerts[0].y;
 		if (!precip && P_MobjFlip(spr->mobj) == -1) // precip doesn't have eflags so they can't flip
 		{
@@ -5035,9 +5129,6 @@ static UINT8 sectorlight;
 static void HWR_AddSprites(sector_t *sec)
 {
 	mobj_t *thing;
-#ifdef HWPRECIP
-	precipmobj_t *precipthing;
-#endif
 	fixed_t limit_dist;
 
 	// BSP is traversed by subsector.
@@ -5068,19 +5159,45 @@ static void HWR_AddSprites(sector_t *sec)
 			HWR_ProjectBoundingBox(thing);
 		}
 	}
+}
 
 #ifdef HWPRECIP
+// --------------------------------------------------------------------------
+// HWR_AddPrecipitationSprites
+// This renders through the blockmap instead of BSP to avoid
+// iterating a huge amount of precipitation sprites in sectors
+// that are beyond drawdist.
+// --------------------------------------------------------------------------
+static void HWR_AddPrecipitationSprites(void)
+{
+	const fixed_t drawdist = cv_drawdist_precip.value * mapobjectscale;
+
+	INT32 xl, xh, yl, yh, bx, by;
+	precipmobj_t *th;
+
 	// no, no infinite draw distance for precipitation. this option at zero is supposed to turn it off
-	if ((limit_dist = (fixed_t)cv_drawdist_precip.value * mapobjectscale))
+	if (drawdist == 0)
 	{
-		for (precipthing = sec->preciplist; precipthing; precipthing = precipthing->snext)
+		return;
+	}
+
+	R_GetRenderBlockMapDimensions(drawdist, &xl, &xh, &yl, &yh);
+
+	for (bx = xl; bx <= xh; bx++)
+	{
+		for (by = yl; by <= yh; by++)
 		{
-			if (R_PrecipThingVisible(precipthing, limit_dist))
-				HWR_ProjectPrecipitationSprite(precipthing);
+			for (th = precipblocklinks[(by * bmapwidth) + bx]; th; th = th->bnext)
+			{
+				if (R_PrecipThingVisible(th))
+				{
+					HWR_ProjectPrecipitationSprite(th);
+				}
+			}
 		}
 	}
-#endif
 }
+#endif
 
 // --------------------------------------------------------------------------
 // HWR_ProjectSprite
@@ -5281,8 +5398,15 @@ static void HWR_ProjectSprite(mobj_t *thing)
 	if (spriterotangle != 0
 	&& !(splat && !(thing->renderflags & RF_NOSPLATROLLANGLE)))
 	{
-		rollangle = R_GetRollAngle(vflip
-				? InvAngle(spriterotangle) : spriterotangle);
+		if (papersprite)
+		{
+			// a positive rollangle should should pitch papersprites upwards relative to their facing angle
+			rollangle = R_GetRollAngle(InvAngle(thing->rollangle));
+		}
+		else
+		{
+			rollangle = R_GetRollAngle(thing->rollangle);
+		}
 		rotsprite = Patch_GetRotatedSprite(sprframe, (thing->frame & FF_FRAMEMASK), rot, flip, false, sprinfo, rollangle);
 
 		if (rotsprite != NULL)
@@ -5344,8 +5468,21 @@ static void HWR_ProjectSprite(mobj_t *thing)
 
 		if (caster && !P_MobjWasRemoved(caster))
 		{
-			fixed_t groundz = R_GetShadowZ(thing, NULL);
-			fixed_t floordiff = abs(((thing->eflags & MFE_VERTICALFLIP) ? caster->height : 0) + casterinterp.z - groundz);
+			interpmobjstate_t casterinterp = { 0 };
+			fixed_t groundz;
+			fixed_t floordiff;
+
+			if (R_UsingFrameInterpolation() && !paused)
+			{
+				R_InterpolateMobjState(caster, rendertimefrac, &casterinterp);
+			}
+			else
+			{
+				R_InterpolateMobjState(caster, FRACUNIT, &casterinterp);
+			}
+
+			groundz = R_GetShadowZ(thing, NULL);
+			floordiff = abs(((thing->eflags & MFE_VERTICALFLIP) ? caster->height : 0) + casterinterp.z - groundz);
 
 			shadowheight = FIXED_TO_FLOAT(floordiff);
 			shadowscale = FIXED_TO_FLOAT(FixedMul(FRACUNIT - floordiff/640, casterinterp.scale));
@@ -5530,10 +5667,8 @@ static void HWR_ProjectSprite(mobj_t *thing)
 	{
 		vis->colormap = colormaps;
 
-#ifdef GLENCORE
 		if (encoremap && (thing->flags & (MF_SCENERY|MF_NOTHINK)) && !(thing->flags & MF_DONTENCOREMAP))
 			vis->colormap += COLORMAP_REMAPOFFSET;
-#endif
 	}
 
 	// set top/bottom coords
@@ -5571,6 +5706,12 @@ static void HWR_ProjectPrecipitationSprite(precipmobj_t *thing)
 
 	// uncapped/interpolation
 	interpmobjstate_t interp = {0};
+	
+	// okay... this is a hack, but weather isn't networked, so it should be ok
+	if (!P_PrecipThinker(thing))
+	{
+		return;
+	}
 
 	// do interpolation
 	if (R_UsingFrameInterpolation() && !paused)
@@ -5660,10 +5801,8 @@ static void HWR_ProjectPrecipitationSprite(precipmobj_t *thing)
 
 	vis->colormap = NULL;
 
-#ifdef GLENCORE
 	if (encoremap && !(thing->flags & MF_DONTENCOREMAP))
 		vis->colormap += COLORMAP_REMAPOFFSET;
-#endif
 
 	// set top/bottom coords
 	vis->gzt = FIXED_TO_FLOAT(interp.z) + (FIXED_TO_FLOAT(spritecachedinfo[lumpoff].topoffset) * this_scale);
@@ -5671,13 +5810,6 @@ static void HWR_ProjectPrecipitationSprite(precipmobj_t *thing)
 
 	vis->precip = true;
 	vis->bbox = false;
-
-	// okay... this is a hack, but weather isn't networked, so it should be ok
-	if (!(thing->precipflags & PCF_THUNK))
-	{
-		P_PrecipThinker(thing);
-		thing->precipflags |= PCF_THUNK;
-	}
 }
 #endif
 
@@ -5917,6 +6049,11 @@ static void HWR_DrawSkyBackground(player_t *player)
 			dometransform.mirror = true;
 		else
 			dometransform.mirror = false;
+		
+		if (*type == postimg_mirrorflip)
+			dometransform.mirrorflip = true;
+		else
+			dometransform.mirrorflip = false;
 
 		dometransform.scalex = 1;
 		dometransform.scaley = (float)vid.width/vid.height;
@@ -6257,6 +6394,10 @@ void HWR_RenderSkyboxView(player_t *player)
 
 	if (cv_glbatching.value)
 		HWR_StartBatching();
+	
+#ifdef HWPRECIP
+	HWR_AddPrecipitationSprites();
+#endif
 
 	HWR_RenderBSPNode((INT32)numnodes-1);
 
@@ -6417,6 +6558,11 @@ void HWR_RenderPlayerView(void)
 		atransform.mirror = true;
 	else
 		atransform.mirror = false;
+	
+	if (*type == postimg_mirrorflip)
+		atransform.mirrorflip = true;
+	else
+		atransform.mirrorflip = false;
 
 	atransform.x      = gl_viewx;  // FIXED_TO_FLOAT(viewx)
 	atransform.y      = gl_viewy;  // FIXED_TO_FLOAT(viewy)
@@ -6473,6 +6619,10 @@ void HWR_RenderPlayerView(void)
 
 	if (cv_glbatching.value)
 		HWR_StartBatching();
+	
+#ifdef HWPRECIP
+	HWR_AddPrecipitationSprites();
+#endif
 
 	HWR_RenderBSPNode((INT32)numnodes-1);
 
@@ -6875,7 +7025,7 @@ void HWR_DoPostProcessor(player_t *player)
 	{
 		// 10 by 10 grid. 2 coordinates (xy)
 		float v[SCREENVERTS][SCREENVERTS][2];
-		static double disStart = 0;
+		float disStart = (leveltime-1) + FIXED_TO_FLOAT(rendertimefrac);
 
 		UINT8 x, y;
 		INT32 WAVELENGTH;
@@ -6886,7 +7036,7 @@ void HWR_DoPostProcessor(player_t *player)
 		if (*type == postimg_water)
 		{
 			WAVELENGTH = 5;
-			AMPLITUDE = 20;
+			AMPLITUDE = 40;
 			FREQUENCY = 8;
 		}
 		else
@@ -6906,8 +7056,6 @@ void HWR_DoPostProcessor(player_t *player)
 			}
 		}
 		HWD.pfnPostImgRedraw(v);
-		if (!(paused || P_AutoPause()))
-			disStart += FIXED_TO_FLOAT(renderdeltatics);
 
 		// Capture the screen again for screen waving on the intermission
 		if(gamestate != GS_INTERMISSION)

@@ -19,6 +19,7 @@
 #include "m_random.h"
 #include "m_misc.h"
 #include "p_local.h"
+#include "p_mobj.h"
 #include "p_setup.h"
 #include "p_saveg.h"
 #include "r_data.h"
@@ -257,6 +258,7 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT16(save_p, players[i].flashing);
 		WRITEUINT16(save_p, players[i].spinouttimer);
 		WRITEUINT8(save_p, players[i].spinouttype);
+		WRITEINT16(save_p, players[i].squishedtimer);
 		WRITEUINT8(save_p, players[i].instashield);
 		WRITEUINT8(save_p, players[i].wipeoutslow);
 		WRITEUINT8(save_p, players[i].justbumped);
@@ -282,12 +284,6 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT16(save_p, players[i].springstars);
 		WRITEUINT16(save_p, players[i].springcolor);
 		WRITEUINT8(save_p, players[i].dashpadcooldown);
-
-		WRITEUINT16(save_p, players[i].spindash);
-		WRITEFIXED(save_p, players[i].spindashspeed);
-		WRITEUINT8(save_p, players[i].spindashboost);
-
-		WRITEFIXED(save_p, players[i].fastfall);
 
 		WRITEFIXED(save_p, players[i].boostpower);
 		WRITEFIXED(save_p, players[i].speedboost);
@@ -327,6 +323,7 @@ static void P_NetArchivePlayers(void)
 
 		WRITEUINT16(save_p, players[i].sneakertimer);
 		WRITEUINT8(save_p, players[i].floorboost);
+		WRITEUINT8(save_p, players[i].waterrun);
 		
 		WRITEUINT8(save_p, players[i].boostcharge);
 
@@ -393,7 +390,6 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT32(save_p, players[i].botvars.itemdelay);
 		WRITEUINT32(save_p, players[i].botvars.itemconfirm);
 		WRITESINT8(save_p, players[i].botvars.turnconfirm);
-		WRITEUINT32(save_p, players[i].botvars.spindashconfirm);
 	}
 }
 
@@ -548,6 +544,7 @@ static void P_NetUnArchivePlayers(void)
 		players[i].flashing = READUINT16(save_p);
 		players[i].spinouttimer = READUINT16(save_p);
 		players[i].spinouttype = READUINT8(save_p);
+		players[i].squishedtimer = READINT16(save_p);
 		players[i].instashield = READUINT8(save_p);
 		players[i].wipeoutslow = READUINT8(save_p);
 		players[i].justbumped = READUINT8(save_p);
@@ -573,12 +570,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].springstars = READUINT16(save_p);
 		players[i].springcolor = READUINT16(save_p);
 		players[i].dashpadcooldown = READUINT8(save_p);
-
-		players[i].spindash = READUINT16(save_p);
-		players[i].spindashspeed = READFIXED(save_p);
-		players[i].spindashboost = READUINT8(save_p);
-
-		players[i].fastfall = READFIXED(save_p);
 
 		players[i].boostpower = READFIXED(save_p);
 		players[i].speedboost = READFIXED(save_p);
@@ -618,6 +609,7 @@ static void P_NetUnArchivePlayers(void)
 
 		players[i].sneakertimer = READUINT16(save_p);
 		players[i].floorboost = READUINT8(save_p);
+		players[i].waterrun = READUINT8(save_p);
 		
 		players[i].boostcharge = READUINT8(save_p);
 
@@ -684,7 +676,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].botvars.itemdelay = READUINT32(save_p);
 		players[i].botvars.itemconfirm = READUINT32(save_p);
 		players[i].botvars.turnconfirm = READSINT8(save_p);
-		players[i].botvars.spindashconfirm = READUINT32(save_p);
 
 		//players[i].viewheight = P_GetPlayerViewHeight(players[i]); // scale cannot be factored in at this point
 	}
@@ -3206,6 +3197,19 @@ static thinker_t* LoadMobjThinker(actionf_p1 thinker)
 			mobj->player->viewz = mobj->player->mo->z + mobj->player->viewheight;
 	}
 
+	if (mobj->type == MT_SKYBOX)
+	{
+		mtag_t tag = mobj->movedir;
+		if (tag < 0 || tag > 15)
+		{
+			CONS_Debug(DBG_GAMELOGIC, "LoadMobjThinker: Skybox ID %d of netloaded object is not between 0 and 15!\n", tag);
+		}
+		else if (mobj->flags2 & MF2_AMBUSH)
+			skyboxcenterpnts[tag] = mobj;
+		else
+			skyboxviewpnts[tag] = mobj;
+	}
+
 	if (diff2 & MD2_WAYPOINTCAP)
 		P_SetTarget(&waypointcap, mobj);
 
@@ -3825,10 +3829,14 @@ static void P_NetUnArchiveThinkers(void)
 		{
 			next = currentthinker->next;
 
-			if (currentthinker->function.acp1 == (actionf_p1)P_MobjThinker)
+			if (currentthinker->function.acp1 == (actionf_p1)P_MobjThinker || currentthinker->function.acp1 == (actionf_p1)P_NullPrecipThinker)
 				P_RemoveSavegameMobj((mobj_t *)currentthinker); // item isn't saved, don't remove it
 			else
+			{
+				(next->prev = currentthinker->prev)->next = next;
+				R_DestroyLevelInterpolators(currentthinker);
 				Z_Free(currentthinker);
+			}
 		}
 	}
 
@@ -4460,6 +4468,7 @@ static void P_NetArchiveMisc(boolean resending)
 	WRITEUINT32(save_p, ssspheres);
 	WRITEINT16(save_p, lastmap);
 	WRITEUINT16(save_p, bossdisabled);
+	WRITEUINT8(save_p, ringsdisabled);
 
 	for (i = 0; i < 4; i++)
 	{
@@ -4622,6 +4631,7 @@ static inline boolean P_NetUnArchiveMisc(boolean reloading)
 	ssspheres = READUINT32(save_p);
 	lastmap = READINT16(save_p);
 	bossdisabled = READUINT16(save_p);
+	ringsdisabled = READUINT8(save_p);
 
 	for (i = 0; i < 4; i++)
 	{

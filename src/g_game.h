@@ -77,6 +77,12 @@ extern consvar_t cv_resetspecialmusic;
 
 extern consvar_t cv_resume;
 
+
+void weaponPrefChange(void);
+void weaponPrefChange2(void);
+void weaponPrefChange3(void);
+void weaponPrefChange4(void);
+
 // mouseaiming (looking up/down with the mouse or keyboard)
 #define KB_LOOKSPEED (1<<25)
 #define MAXPLMOVE (50)
@@ -110,7 +116,6 @@ typedef enum
 
 	AXISFIRE = AXISDIGITAL,
 	AXISDRIFT,
-	AXISSPINDASH,
 	AXISLOOKBACK,
 	AXISAIM,
 } axis_input_e;

@@ -24,6 +24,7 @@
 #include "g_state.h" // gamestate_t (for lua)
 #include "r_data.h" // patchalphastyle_t
 #include "k_boss.h" // spottype_t (for lua)
+#include "k_follower.h" // followermode_t (for lua)
 
 #include "deh_tables.h"
 
@@ -3314,10 +3315,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	// Brake drift sparks
 	"S_BRAKEDRIFT",
 
-	// Brake dust
-	"S_BRAKEDUST1",
-	"S_BRAKEDUST2",
-
 	// Drift Smoke
 	"S_DRIFTDUST1",
 	"S_DRIFTDUST2",
@@ -3364,31 +3361,17 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_KARTAIZDRIFTSTRAT",
 
 	// Invincibility Sparks
-	"S_KARTINVULN1",
-	"S_KARTINVULN2",
-	"S_KARTINVULN3",
-	"S_KARTINVULN4",
-	"S_KARTINVULN5",
-	"S_KARTINVULN6",
-	"S_KARTINVULN7",
-	"S_KARTINVULN8",
-	"S_KARTINVULN9",
-	"S_KARTINVULN10",
-	"S_KARTINVULN11",
-	"S_KARTINVULN12",
+	"S_KARTINVULN_SMALL1",
+	"S_KARTINVULN_SMALL2",
+	"S_KARTINVULN_SMALL3",
+	"S_KARTINVULN_SMALL4",
+	"S_KARTINVULN_SMALL5",
 
-	"S_KARTINVULNB1",
-	"S_KARTINVULNB2",
-	"S_KARTINVULNB3",
-	"S_KARTINVULNB4",
-	"S_KARTINVULNB5",
-	"S_KARTINVULNB6",
-	"S_KARTINVULNB7",
-	"S_KARTINVULNB8",
-	"S_KARTINVULNB9",
-	"S_KARTINVULNB10",
-	"S_KARTINVULNB11",
-	"S_KARTINVULNB12",
+	"S_KARTINVULN_LARGE1",
+	"S_KARTINVULN_LARGE2",
+	"S_KARTINVULN_LARGE3",
+	"S_KARTINVULN_LARGE4",
+	"S_KARTINVULN_LARGE5",
 
 	// Invincibility flash overlay
 	"S_INVULNFLASH1",
@@ -4388,23 +4371,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_WATERTRAILUNDERLAY6",
 	"S_WATERTRAILUNDERLAY7",
 	"S_WATERTRAILUNDERLAY8",
-
-	"S_SPINDASHDUST",
-	"S_SPINDASHWIND",
-
-	"S_SOFTLANDING1",
-	"S_SOFTLANDING2",
-	"S_SOFTLANDING3",
-	"S_SOFTLANDING4",
-	"S_SOFTLANDING5",
-
-	"S_DOWNLINE1",
-	"S_DOWNLINE2",
-	"S_DOWNLINE3",
-	"S_DOWNLINE4",
-	"S_DOWNLINE5",
-
-	"S_HOLDBUBBLE",
 	
 	// Funny Spike
 	"S_DEBTSPIKE1",
@@ -5205,7 +5171,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_WIPEOUTTRAIL",
 	"MT_DRIFTSPARK",
 	"MT_BRAKEDRIFT",
-	"MT_BRAKEDUST",
 	"MT_DRIFTDUST",
 
 	"MT_ROCKETSNEAKER", // Rocket sneakers
@@ -5487,12 +5452,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_WATERTRAIL",
 	"MT_WATERTRAILUNDERLAY",
 
-	"MT_SPINDASHDUST",
-	"MT_SPINDASHWIND",
-	"MT_SOFTLANDING",
-	"MT_DOWNLINE",
-	"MT_HOLDBUBBLE",
-
 	"MT_PAPERITEMSPOT",
 
 	"MT_BEAMPOINT",
@@ -5529,7 +5488,6 @@ const char *const MOBJFLAG_LIST[] = {
 	"RUNSPAWNFUNC",
 	"DONTENCOREMAP",
 	"PICKUPFROMBELOW",
-	"NOSQUISH",
 	NULL
 };
 
@@ -6270,6 +6228,7 @@ struct int_const_s const INT_CONST[] = {
 	// for P_DamageMobj
 	//// Damage types
 	{"DMG_NORMAL",DMG_NORMAL},
+	{"DMG_SQUISH",DMG_SQUISH},
 	{"DMG_WIPEOUT",DMG_WIPEOUT},
 	{"DMG_EXPLODE",DMG_EXPLODE},
 	{"DMG_STING",DMG_STING},
@@ -6669,6 +6628,14 @@ struct int_const_s const INT_CONST[] = {
 	{"PRECIPFX_THUNDER",PRECIPFX_THUNDER},
 	{"PRECIPFX_LIGHTNING",PRECIPFX_LIGHTNING},
 	{"PRECIPFX_WATERPARTICLES",PRECIPFX_WATERPARTICLES},
+	
+	// followermode_t
+	{"FOLLOWERMODE_FLOAT",FOLLOWERMODE_FLOAT},
+	{"FOLLOWERMODE_GROUND",FOLLOWERMODE_GROUND},
+	
+	// screen.h constants
+	{"BASEVIDWIDTH", BASEVIDWIDTH},
+	{"BASEVIDHEIGHT", BASEVIDHEIGHT},
 
 	{NULL,0}
 };

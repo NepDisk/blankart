@@ -19,6 +19,7 @@ const char *complast = SRB2_COMP_LASTCOMMIT;
 #else
 const char *compbranch = "Unknown";
 const char *comprevision = "illegal";
+const char *complast = "";
 
 #endif
 

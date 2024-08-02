@@ -166,7 +166,7 @@ void P_ParseAnimationDefintion(SINT8 istexture);
   * \author Steven McGranahan (original), Shadow Hog (had to rewrite it to handle multiple WADs), JTE (had to rewrite it to handle multiple WADs _correctly_)
   */
 
-static boolean animdeftempflats = false; // only until ANIMDEFS flats are removed
+static boolean animdeftempflats = false;
 
 void P_InitPicAnims(void)
 {
@@ -187,7 +187,7 @@ void P_InitPicAnims(void)
 
 		while (animdefsLumpNum != INT16_MAX)
 		{
-			animdeftempflats = ((p_adding_file == INT16_MAX) || p_adding_file == w);
+			animdeftempflats = ((partadd_earliestfile == UINT16_MAX) || partadd_earliestfile == w);
 			P_ParseANIMDEFSLump(w, animdefsLumpNum);
 			animdefsLumpNum = W_CheckNumForNamePwad("ANIMDEFS", (UINT16)w, animdefsLumpNum + 1);
 		}
@@ -1794,16 +1794,18 @@ void P_SwitchWeather(preciptype_t newWeather)
 	if (purge == true)
 	{
 		thinker_t *think;
+		thinker_t *next;
 		precipmobj_t *precipmobj;
 
-		for (think = thlist[THINK_PRECIP].next; think != &thlist[THINK_PRECIP]; think = think->next)
+		for (think = thlist[THINK_PRECIP].next; think != &thlist[THINK_PRECIP]; think = next)
 		{
+			next = think->next;
+
 			if (think->function.acp1 != (actionf_p1)P_NullPrecipThinker)
 				continue; // not a precipmobj thinker
 
 			precipmobj = (precipmobj_t *)think;
-
-			P_RemovePrecipMobj(precipmobj);
+			P_FreePrecipMobj(precipmobj);
 		}
 	}
 	else if (swap != MT_NULL) // Rather than respawn all that crap, reuse it!
@@ -2010,7 +2012,9 @@ static void K_HandleLapIncrement(player_t *player)
 		}
 		else if (player->starpostnum)
 		{
-			S_StartSound(player->mo, sfx_s26d);
+			if (!player->checkskip)
+				S_StartSound(player->mo, sfx_lose);
+			player->checkskip = 3;
 		}
 	}
 }
@@ -4741,7 +4745,12 @@ DoneSection2:
 			}
 			break;
 
-		case 7: // SRB2Kart: Destroy items
+		case 7: // SRB2kart 190117 - Oil Slick (deprecated)
+			if (roversector || P_MobjReadyToTrigger(player->mo, sector))
+			{
+				if (player)
+					P_DamageMobj(player->mo, NULL, NULL, 1, DMG_NORMAL);
+			}
 			break;
 
 		case 8: // Zoom Tube Start
@@ -4862,8 +4871,17 @@ DoneSection2:
 		}
 		case 11: // Unused
 		case 12: // Camera noclip
-		case 13: // Unused
-		case 14: // Unused
+		case 13: // SRB2Kart: Destroy items
+		case 14: // Nep additions: Water Run panel
+			if (roversector || P_MobjReadyToTrigger(player->mo, sector))
+			{
+				if (player->floorboost == 0)
+					player->floorboost = 3;
+				else
+					player->floorboost = 2;
+				K_DoWaterRunPanel(player);
+			}
+			break;
 		case 15: // Unused
 			break;
 	}
@@ -5096,7 +5114,7 @@ static void P_RunSpecialSectorCheck(player_t *player, sector_t *sector)
 		case 6: // Super Sonic Transform
 		case 8: // Zoom Tube Start
 		case 9: // Zoom Tube End
-		case 10: // Finish line (Unused)
+		case 10: // Finish line
 			nofloorneeded = true;
 			break;
 	}
@@ -5645,7 +5663,7 @@ static void P_AddBlockThinker(sector_t *sec, line_t *sourceline)
   * \sa P_SpawnSpecials, T_RaiseSector
   * \author SSNTails <http://www.ssntails.org>
   */
-static void P_AddRaiseThinker(sector_t *sec, INT16 tag, fixed_t speed, fixed_t ceilingtop, fixed_t ceilingbottom, boolean lower, boolean spindash)
+static void P_AddRaiseThinker(sector_t *sec, INT16 tag, fixed_t speed, fixed_t ceilingtop, fixed_t ceilingbottom, boolean lower)
 {
 	raise_t *raise;
 
@@ -5664,8 +5682,6 @@ static void P_AddRaiseThinker(sector_t *sec, INT16 tag, fixed_t speed, fixed_t c
 
 	if (lower)
 		raise->flags |= RF_REVERSE;
-	if (spindash)
-		raise->flags |= RF_SPINDASH;
 
 	// interpolation
 	R_CreateInterpolator_SectorPlane(&raise->thinker, sec, false);
@@ -5691,8 +5707,6 @@ static void P_AddAirbob(sector_t *sec, INT16 tag, fixed_t dist, boolean raise, b
 
 	if (!raise)
 		airbob->flags |= RF_REVERSE;
-	if (spindash)
-		airbob->flags |= RF_SPINDASH;
 	if (dynamic)
 		airbob->flags |= RF_DYNAMIC;
 
@@ -6599,7 +6613,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 					ffloorflags |= FF_NOSHADE;
 				P_AddFakeFloorsByLine(i, ffloorflags, secthinkers);
 
-				P_AddRaiseThinker(lines[i].frontsector, tag, speed, ceilingtop, ceilingbottom, !!(lines[i].flags & ML_BLOCKPLAYERS), !!(lines[i].flags & ML_NOCLIMB));
+				P_AddRaiseThinker(lines[i].frontsector, tag, speed, ceilingtop, ceilingbottom, !!(lines[i].flags & ML_BLOCKPLAYERS));
 				break;
 			}
 

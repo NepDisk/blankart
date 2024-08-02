@@ -10,20 +10,7 @@
 /// \file  deh_lua.c
 /// \brief Lua SOC library
 
-#include "g_game.h"
-#include "s_sound.h"
-#include "z_zone.h"
-#include "m_menu.h"
-#include "m_misc.h"
-#include "p_local.h"
-#include "st_stuff.h"
-#include "fastcmp.h"
-#include "lua_script.h"
-#include "lua_libs.h"
-
-#include "dehacked.h"
 #include "deh_lua.h"
-#include "deh_tables.h"
 
 // freeslot takes a name (string only!)
 // and allocates it to the appropriate free slot.
@@ -89,6 +76,8 @@ static inline int lib_freeslot(lua_State *L)
 				strncpy(sprnames[j],word,4);
 				//sprnames[j][4] = 0;
 				used_spr[(j-SPR_FIRSTFREESLOT)/8] |= 1<<(j%8); // Okay, this sprite slot has been named now.
+				// Lua needs to update the value in _G if it exists
+				LUA_UpdateSprName(word, j);
 				lua_pushinteger(L, j);
 				r++;
 				break;
@@ -239,18 +228,27 @@ static int lib_dummysuper(lua_State *L)
 	return luaL_error(L, "Can't call super() outside of hardcode-replacing A_Action functions being called by state changes!"); // convoluted, I know. @_@;;
 }
 
-static inline int lib_getenum(lua_State *L)
+static void CacheAndPushConstant(lua_State *L, const char *name, lua_Integer value)
 {
-	const char *word, *p;
+	// "cache" into _G
+	lua_pushstring(L, name);
+	lua_pushinteger(L, value);
+	lua_rawset(L, LUA_GLOBALSINDEX);
+	// push
+	lua_pushinteger(L, value);
+}
+
+// Search for a matching constant variable.
+// Result is stored into _G for faster subsequent use. (Except for SPR_ in the SOC parser)
+static int ScanConstants(lua_State *L, boolean mathlib, const char *word)
+{
+	const char *p;
 	fixed_t i;
-	boolean mathlib = lua_toboolean(L, lua_upvalueindex(1));
-	if (lua_type(L,2) != LUA_TSTRING)
-		return 0;
-	word = lua_tostring(L,2);
+
 	if (strlen(word) == 1) { // Assume sprite frame if length 1.
 		if (*word >= 'A' && *word <= '~')
 		{
-			lua_pushinteger(L, *word-'A');
+			CacheAndPushConstant(L, word, *word-'A');
 			return 1;
 		}
 		if (mathlib) return luaL_error(L, "constant '%s' could not be parsed.\n", word);
@@ -260,7 +258,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+3;
 		for (i = 0; MOBJFLAG_LIST[i]; i++)
 			if (fastcmp(p, MOBJFLAG_LIST[i])) {
-				lua_pushinteger(L, ((lua_Integer)1<<i));
+				CacheAndPushConstant(L, word, ((lua_Integer)1<<i));
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "mobjflag '%s' could not be found.\n", word);
@@ -270,7 +268,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+4;
 		for (i = 0; MOBJFLAG2_LIST[i]; i++)
 			if (fastcmp(p, MOBJFLAG2_LIST[i])) {
-				lua_pushinteger(L, ((lua_Integer)1<<i));
+				CacheAndPushConstant(L, word, ((lua_Integer)1<<i));
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "mobjflag2 '%s' could not be found.\n", word);
@@ -280,7 +278,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+4;
 		for (i = 0; MOBJEFLAG_LIST[i]; i++)
 			if (fastcmp(p, MOBJEFLAG_LIST[i])) {
-				lua_pushinteger(L, ((lua_Integer)1<<i));
+				CacheAndPushConstant(L, word, ((lua_Integer)1<<i));
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "mobjeflag '%s' could not be found.\n", word);
@@ -290,7 +288,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+4;
 		for (i = 0; i < 4; i++)
 			if (MAPTHINGFLAG_LIST[i] && fastcmp(p, MAPTHINGFLAG_LIST[i])) {
-				lua_pushinteger(L, ((lua_Integer)1<<i));
+				CacheAndPushConstant(L, word, ((lua_Integer)1<<i));
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "mapthingflag '%s' could not be found.\n", word);
@@ -300,7 +298,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+3;
 		for (i = 0; PLAYERFLAG_LIST[i]; i++)
 			if (fastcmp(p, PLAYERFLAG_LIST[i])) {
-				lua_pushinteger(L, ((lua_Integer)1<<i));
+				CacheAndPushConstant(L, word, ((lua_Integer)1<<i));
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "playerflag '%s' could not be found.\n", word);
@@ -310,7 +308,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word;
 		for (i = 0; Gametype_ConstantNames[i]; i++)
 			if (fastcmp(p, Gametype_ConstantNames[i])) {
-				lua_pushinteger(L, i);
+				CacheAndPushConstant(L, word, i);
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "gametype '%s' could not be found.\n", word);
@@ -320,7 +318,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+4;
 		for (i = 0; GAMETYPERULE_LIST[i]; i++)
 			if (fastcmp(p, GAMETYPERULE_LIST[i])) {
-				lua_pushinteger(L, ((lua_Integer)1<<i));
+				CacheAndPushConstant(L, word, ((lua_Integer)1<<i));
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "game type rule '%s' could not be found.\n", word);
@@ -330,7 +328,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+4;
 		for (i = 0; TYPEOFLEVEL[i].name; i++)
 			if (fastcmp(p, TYPEOFLEVEL[i].name)) {
-				lua_pushinteger(L, TYPEOFLEVEL[i].flag);
+				CacheAndPushConstant(L, word, TYPEOFLEVEL[i].flag);
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "typeoflevel '%s' could not be found.\n", word);
@@ -340,7 +338,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+3;
 		for (i = 0; i < 16; i++)
 			if (ML_LIST[i] && fastcmp(p, ML_LIST[i])) {
-				lua_pushinteger(L, ((lua_Integer)1<<i));
+				CacheAndPushConstant(L, word, ((lua_Integer)1<<i));
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "linedef flag '%s' could not be found.\n", word);
@@ -352,13 +350,13 @@ static inline int lib_getenum(lua_State *L)
 			if (!FREE_STATES[i])
 				break;
 			if (fastcmp(p, FREE_STATES[i])) {
-				lua_pushinteger(L, S_FIRSTFREESLOT+i);
+				CacheAndPushConstant(L, word, S_FIRSTFREESLOT+i);
 				return 1;
 			}
 		}
 		for (i = 0; i < S_FIRSTFREESLOT; i++)
 			if (fastcmp(p, STATE_LIST[i]+2)) {
-				lua_pushinteger(L, i);
+				CacheAndPushConstant(L, word, i);
 				return 1;
 			}
 		return luaL_error(L, "state '%s' does not exist.\n", word);
@@ -369,13 +367,13 @@ static inline int lib_getenum(lua_State *L)
 			if (!FREE_MOBJS[i])
 				break;
 			if (fastcmp(p, FREE_MOBJS[i])) {
-				lua_pushinteger(L, MT_FIRSTFREESLOT+i);
+				CacheAndPushConstant(L, word, MT_FIRSTFREESLOT+i);
 				return 1;
 			}
 		}
 		for (i = 0; i < MT_FIRSTFREESLOT; i++)
 			if (fastcmp(p, MOBJTYPE_LIST[i]+3)) {
-				lua_pushinteger(L, i);
+				CacheAndPushConstant(L, word, i);
 				return 1;
 			}
 		return luaL_error(L, "mobjtype '%s' does not exist.\n", word);
@@ -384,7 +382,12 @@ static inline int lib_getenum(lua_State *L)
 		p = word+4;
 		for (i = 0; i < NUMSPRITES; i++)
 			if (!sprnames[i][4] && fastncmp(p,sprnames[i],4)) {
-				lua_pushinteger(L, i);
+				// updating overridden sprnames is not implemented for soc parser,
+				// so don't use cache
+				if (mathlib)
+					lua_pushinteger(L, i);
+				else
+					CacheAndPushConstant(L, word, i);
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "sprite '%s' could not be found.\n", word);
@@ -399,12 +402,12 @@ static inline int lib_getenum(lua_State *L)
 				// the spr2names entry will have "_" on the end, as in "RUN_"
 				if (spr2names[i][3] == '_' && !p[3]) {
 					if (fastncmp(p,spr2names[i],3)) {
-						lua_pushinteger(L, i);
+						CacheAndPushConstant(L, word, i);
 						return 1;
 					}
 				}
 				else if (fastncmp(p,spr2names[i],4)) {
-					lua_pushinteger(L, i);
+					CacheAndPushConstant(L, word, i);
 					return 1;
 				}
 			}
@@ -415,7 +418,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+4;
 		for (i = 0; i < NUMSFX; i++)
 			if (S_sfx[i].name && fastcmp(p, S_sfx[i].name)) {
-				lua_pushinteger(L, i);
+				CacheAndPushConstant(L, word, i);
 				return 1;
 			}
 		return 0;
@@ -424,7 +427,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+4;
 		for (i = 0; i < NUMSFX; i++)
 			if (S_sfx[i].name && fasticmp(p, S_sfx[i].name)) {
-				lua_pushinteger(L, i);
+				CacheAndPushConstant(L, word, i);
 				return 1;
 			}
 		return luaL_error(L, "sfx '%s' could not be found.\n", word);
@@ -433,7 +436,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+2;
 		for (i = 0; i < NUMSFX; i++)
 			if (S_sfx[i].name && fasticmp(p, S_sfx[i].name)) {
-				lua_pushinteger(L, i);
+				CacheAndPushConstant(L, word, i);
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "sfx '%s' could not be found.\n", word);
@@ -463,13 +466,13 @@ static inline int lib_getenum(lua_State *L)
 			if (!FREE_SKINCOLORS[i])
 				break;
 			if (fastcmp(p, FREE_SKINCOLORS[i])) {
-				lua_pushinteger(L, SKINCOLOR_FIRSTFREESLOT+i);
+				CacheAndPushConstant(L, word, SKINCOLOR_FIRSTFREESLOT+i);
 				return 1;
 			}
 		}
 		for (i = 0; i < SKINCOLOR_FIRSTFREESLOT; i++)
 			if (fastcmp(p, COLOR_ENUMS[i])) {
-				lua_pushinteger(L, i);
+				CacheAndPushConstant(L, word, i);
 				return 1;
 			}
 		return luaL_error(L, "skincolor '%s' could not be found.\n", word);
@@ -480,7 +483,7 @@ static inline int lib_getenum(lua_State *L)
 		for (i = 0; NIGHTSGRADE_LIST[i]; i++)
 			if (*p == NIGHTSGRADE_LIST[i])
 			{
-				lua_pushinteger(L, i);
+				CacheAndPushConstant(L, word, i);
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "NiGHTS grade '%s' could not be found.\n", word);
@@ -490,7 +493,7 @@ static inline int lib_getenum(lua_State *L)
 		p = word+3;
 		for (i = 0; i < NUMMENUTYPES; i++)
 			if (fastcmp(p, MENUTYPES_LIST[i])) {
-				lua_pushinteger(L, i);
+				CacheAndPushConstant(L, word, i);
 				return 1;
 			}
 		if (mathlib) return luaL_error(L, "menutype '%s' could not be found.\n", word);
@@ -511,7 +514,29 @@ static inline int lib_getenum(lua_State *L)
 		}
 		return luaL_error(L, "weather type '%s' does not exist.\n", word);
 	}
-	else if (!mathlib && fastncmp("A_",word,2)) {
+
+	for (i = 0; INT_CONST[i].n; i++)
+		if (fastcmp(word,INT_CONST[i].n)) {
+			CacheAndPushConstant(L, word, INT_CONST[i].v);
+			return 1;
+		}
+
+	return 0;
+}
+
+static inline int lib_getenum(lua_State *L)
+{
+	const char *word;
+	fixed_t i;
+	boolean mathlib = lua_toboolean(L, lua_upvalueindex(1));
+	if (lua_type(L,2) != LUA_TSTRING)
+		return 0;
+	word = lua_tostring(L,2);
+
+	// check actions, super and globals first, as they don't have _G caching implemented
+	// so they benefit from being checked first
+
+	if (!mathlib && fastncmp("A_",word,2)) {
 		char *caps;
 		// Try to get a Lua action first.
 		/// \todo Push a closure that sets superactions[] and superstack.
@@ -550,19 +575,34 @@ static inline int lib_getenum(lua_State *L)
 			}
 		return 0;
 	}
-
-	for (i = 0; INT_CONST[i].n; i++)
-		if (fastcmp(word,INT_CONST[i].n)) {
-			lua_pushinteger(L, INT_CONST[i].v);
-			return 1;
-		}
+	else if ((!mathlib && LUA_PushGlobals(L, word)) || ScanConstants(L, mathlib, word))
+		return 1;
 
 	if (mathlib) return luaL_error(L, "constant '%s' could not be parsed.\n", word);
 
-	// DYNAMIC variables too!!
-	// Try not to add anything that would break netgames or timeattack replays here.
-	// You know, like consoleplayer, displayplayer, secondarydisplayplayer, or gametime.
-	return LUA_PushGlobals(L, word);
+	return 0;
+}
+
+// If a sprname has been "cached" to _G, update it to a new value.
+void LUA_UpdateSprName(const char *name, lua_Integer value)
+{
+	char fullname[9] = "SPR_XXXX";
+
+	if (!gL)
+		return;
+
+	strncpy(&fullname[4], name, 4);
+	lua_pushstring(gL, fullname);
+	lua_rawget(gL, LUA_GLOBALSINDEX);
+
+	if (!lua_isnil(gL, -1))
+	{
+		lua_pushstring(gL, name);
+		lua_pushinteger(gL, value);
+		lua_rawset(gL, LUA_GLOBALSINDEX);
+	}
+
+	lua_pop(gL, 1); // pop the rawget result
 }
 
 int LUA_EnumLib(lua_State *L)

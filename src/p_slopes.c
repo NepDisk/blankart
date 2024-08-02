@@ -23,7 +23,6 @@
 #include "p_maputl.h"
 #include "w_wad.h"
 #include "r_fps.h"
-#include "k_kart.h" // K_PlayerEBrake
 
 pslope_t *slopelist = NULL;
 UINT16 slopecount = 0;
@@ -914,15 +913,6 @@ boolean P_CanApplySlopePhysics(mobj_t *mo, pslope_t *slope)
 		// Flat slope? No such thing, man. No such thing.
 		return false;
 	}*/
-
-	if (mo->player != NULL)
-	{
-		if (K_PlayerEBrake(mo->player) == true)
-		{
-			// Spindash negates slopes.
-			return false;
-		}
-	}
 
 	// We can do slope physics.
 	return true;

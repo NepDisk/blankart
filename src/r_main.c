@@ -147,6 +147,10 @@ static void ChaseCam_OnChange(void);
 static void ChaseCam2_OnChange(void);
 static void ChaseCam3_OnChange(void);
 static void ChaseCam4_OnChange(void);
+static void FlipCam_OnChange(void);
+static void FlipCam2_OnChange(void);
+static void FlipCam3_OnChange(void);
+static void FlipCam4_OnChange(void);
 
 consvar_t cv_tailspickup = CVAR_INIT ("tailspickup", "On", CV_NETVAR|CV_NOSHOWHELP, CV_OnOff, NULL);
 consvar_t cv_chasecam[MAXSPLITSCREENPLAYERS] = {
@@ -154,6 +158,13 @@ consvar_t cv_chasecam[MAXSPLITSCREENPLAYERS] = {
 	CVAR_INIT ("chasecam2", "On", CV_CALL, CV_OnOff, ChaseCam2_OnChange),
 	CVAR_INIT ("chasecam3", "On", CV_CALL, CV_OnOff, ChaseCam3_OnChange),
 	CVAR_INIT ("chasecam4", "On", CV_CALL, CV_OnOff, ChaseCam4_OnChange)
+};
+
+consvar_t cv_flipcam[MAXSPLITSCREENPLAYERS] = {
+	CVAR_INIT ("flipcam", "Off", CV_CALL|CV_SAVE, CV_OnOff, weaponPrefChange),
+	CVAR_INIT ("flipcam2", "Off", CV_CALL|CV_SAVE, CV_OnOff, weaponPrefChange2),
+	CVAR_INIT ("flipcam3", "Off", CV_CALL|CV_SAVE, CV_OnOff, weaponPrefChange3),
+	CVAR_INIT ("flipcam4", "Off", CV_CALL|CV_SAVE, CV_OnOff, weaponPrefChange4)
 };
 
 consvar_t cv_shadow = CVAR_INIT ("shadow", "On", CV_SAVE, CV_OnOff, NULL);
@@ -167,10 +178,10 @@ consvar_t cv_drawdist = CVAR_INIT ("drawdist", "8192", CV_SAVE, drawdist_cons_t,
 consvar_t cv_drawdist_precip = CVAR_INIT ("drawdist_precip", "1024", CV_SAVE, drawdist_precip_cons_t, NULL);
 
 consvar_t cv_fov[MAXSPLITSCREENPLAYERS] = {
-	CVAR_INIT ("fov", "90", CV_FLOAT|CV_CALL, fov_cons_t, Fov_OnChange),
-	CVAR_INIT ("fov2", "90", CV_FLOAT|CV_CALL, fov_cons_t, Fov_OnChange),
-	CVAR_INIT ("fov3", "90", CV_FLOAT|CV_CALL, fov_cons_t, Fov_OnChange),
-	CVAR_INIT ("fov4", "90", CV_FLOAT|CV_CALL, fov_cons_t, Fov_OnChange)
+	CVAR_INIT ("fov", "90", CV_FLOAT|CV_CALL|CV_SAVE, fov_cons_t, Fov_OnChange),
+	CVAR_INIT ("fov2", "90", CV_FLOAT|CV_CALL|CV_SAVE, fov_cons_t, Fov_OnChange),
+	CVAR_INIT ("fov3", "90", CV_FLOAT|CV_CALL|CV_SAVE, fov_cons_t, Fov_OnChange),
+	CVAR_INIT ("fov4", "90", CV_FLOAT|CV_CALL|CV_SAVE, fov_cons_t, Fov_OnChange)
 };
 
 // Okay, whoever said homremoval causes a performance hit should be shot.
@@ -272,13 +283,13 @@ INT32 R_PointOnSide(fixed_t x, fixed_t y, node_t *node)
 	if (!node->dy)
 		return y <= node->y ? node->dx < 0 : node->dx > 0;
 
-	x -= node->x;
-	y -= node->y;
+	fixed_t dx = (x >> 1) - (node->x >> 1);
+	fixed_t dy = (y >> 1) - (node->y >> 1);
 
 	// Try to quickly decide by looking at sign bits.
-	if ((node->dy ^ node->dx ^ x ^ y) < 0)
-		return (node->dy ^ x) < 0;  // (left is negative)
-	return FixedMul(y, node->dx>>FRACBITS) >= FixedMul(node->dy>>FRACBITS, x);
+	if ((node->dy ^ node->dx ^ dx ^ dy) < 0)
+		return (node->dy ^ dx) < 0;  // (left is negative)
+	return FixedMul(dy, node->dx>>FRACBITS) >= FixedMul(node->dy>>FRACBITS, dx);
 }
 
 // killough 5/2/98: reformatted
@@ -295,13 +306,13 @@ INT32 R_PointOnSegSide(fixed_t x, fixed_t y, seg_t *line)
 	if (!ldy)
 		return y <= ly ? ldx < 0 : ldx > 0;
 
-	x -= lx;
-	y -= ly;
+	fixed_t dx = (x >> 1) - (lx >> 1);
+	fixed_t dy = (y >> 1) - (ly >> 1);
 
 	// Try to quickly decide by looking at sign bits.
-	if ((ldy ^ ldx ^ x ^ y) < 0)
-		return (ldy ^ x) < 0;          // (left is negative)
-	return FixedMul(y, ldx>>FRACBITS) >= FixedMul(ldy>>FRACBITS, x);
+	if ((ldy ^ ldx ^ dx ^ dy) < 0)
+		return (ldy ^ dx) < 0;          // (left is negative)
+	return FixedMul(dy, ldx>>FRACBITS) >= FixedMul(ldy>>FRACBITS, dx);
 }
 
 //
@@ -487,6 +498,33 @@ boolean R_DoCulling(line_t *cullheight, line_t *viewcullheight, fixed_t vz, fixe
 	}
 
 	return false;
+}
+
+// Returns search dimensions within a blockmap, in the direction of viewangle and out to a certain distance.
+void R_GetRenderBlockMapDimensions(fixed_t drawdist, INT32 *xl, INT32 *xh, INT32 *yl, INT32 *yh)
+{
+	const angle_t left = viewangle - clipangle[viewssnum];
+	const angle_t right = viewangle + clipangle[viewssnum];
+
+	const fixed_t vxleft = viewx + FixedMul(drawdist, FCOS(left));
+	const fixed_t vyleft = viewy + FixedMul(drawdist, FSIN(left));
+
+	const fixed_t vxright = viewx + FixedMul(drawdist, FCOS(right));
+	const fixed_t vyright = viewy + FixedMul(drawdist, FSIN(right));
+
+	// Try to narrow the search to within only the field of view
+	*xl = (unsigned)(min(viewx, min(vxleft, vxright)) - bmaporgx)>>MAPBLOCKSHIFT;
+	*xh = (unsigned)(max(viewx, max(vxleft, vxright)) - bmaporgx)>>MAPBLOCKSHIFT;
+	*yl = (unsigned)(min(viewy, min(vyleft, vyright)) - bmaporgy)>>MAPBLOCKSHIFT;
+	*yh = (unsigned)(max(viewy, max(vyleft, vyright)) - bmaporgy)>>MAPBLOCKSHIFT;
+
+	if (*xh >= bmapwidth)
+		*xh = bmapwidth - 1;
+
+	if (*yh >= bmapheight)
+		*yh = bmapheight - 1;
+
+	BMBOUNDFIX(*xl, *xh, *yl, *yh);
 }
 
 //
@@ -1553,8 +1591,8 @@ void R_RenderPlayerView(void)
 	ps_numbspcalls = ps_numpolyobjects = ps_numdrawnodes = 0;
 	ps_bsptime = I_GetPreciseTime();
 	R_RenderBSPNode((INT32)numnodes - 1);
+	R_AddPrecipitationSprites();
 	ps_bsptime = I_GetPreciseTime() - ps_bsptime;
-	ps_numsprites = visspritecount;
 #ifdef TIMING
 	RDMSR(0x10, &mycount);
 	mytotal += mycount; // 64bit add
@@ -1656,6 +1694,7 @@ void R_RegisterEngineStuff(void)
 	{
 		CV_RegisterVar(&cv_fov[i]);
 		CV_RegisterVar(&cv_chasecam[i]);
+		CV_RegisterVar(&cv_flipcam[i]);
 		CV_RegisterVar(&cv_cam_dist[i]);
 		CV_RegisterVar(&cv_cam_still[i]);
 		CV_RegisterVar(&cv_cam_height[i]);

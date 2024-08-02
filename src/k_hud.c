@@ -15,6 +15,7 @@
 #include "k_boss.h"
 #include "k_color.h"
 #include "k_director.h"
+#include "p_mobj.h"
 #include "screen.h"
 #include "doomtype.h"
 #include "doomdef.h"
@@ -39,6 +40,13 @@
 #define NUMPOSNUMS 10
 #define NUMPOSFRAMES 7 // White, three blues, three reds
 #define NUMWINFRAMES 6 // Red, yellow, green, cyan, blue, purple
+
+
+static CV_PossibleValue_t speedo_cons_t[]= {
+	{0, "Default"},
+	{1, "Small"},
+	{0, NULL}};
+consvar_t cv_newspeedometer = CVAR_INIT ("newspeedometer", "Default", CV_SAVE, speedo_cons_t, NULL);
 
 //{ 	Patch Definitions
 static patch_t *kp_nodraw;
@@ -2255,19 +2263,23 @@ static void K_drawKartLapsAndRings(void)
 	rn[0] = ((abs(stplyr->rings) / 10) % 10);
 	rn[1] = (abs(stplyr->rings) % 10);
 
-	if (stplyr->rings <= 0 && (leveltime/5 & 1)) // In debt
+	if (!ringsdisabled)
 	{
-		ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_CRIMSON, GTC_CACHE);
-		colorring = true;
-	}
-	else if (stplyr->rings >= 20) // Maxed out
-		ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_YELLOW, GTC_CACHE);
+	
+		if (stplyr->rings <= 0 && (leveltime/5 & 1)) // In debt
+		{
+			ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_CRIMSON, GTC_CACHE);
+			colorring = true;
+		}
+		else if (stplyr->rings >= 20) // Maxed out
+			ringmap = R_GetTranslationColormap(TC_RAINBOW, SKINCOLOR_YELLOW, GTC_CACHE);
 
-	if (stplyr->karthud[khud_ringframe] > RINGANIM_FLIPFRAME)
-	{
-		ringflip = V_FLIP;
-		ringanim_realframe = RINGANIM_NUMFRAMES-stplyr->karthud[khud_ringframe];
-		ringx += SHORT((r_splitscreen > 1) ? kp_smallring[ringanim_realframe]->width : kp_ring[ringanim_realframe]->width);
+		if (stplyr->karthud[khud_ringframe] > RINGANIM_FLIPFRAME)
+		{
+			ringflip = V_FLIP;
+			ringanim_realframe = RINGANIM_NUMFRAMES-stplyr->karthud[khud_ringframe];
+			ringx += SHORT((r_splitscreen > 1) ? kp_smallring[ringanim_realframe]->width : kp_ring[ringanim_realframe]->width);
+		}
 	}
 
 	if (r_splitscreen > 1)
@@ -2301,7 +2313,8 @@ static void K_drawKartLapsAndRings(void)
 		fr = fx;
 
 		// Laps
-		V_DrawScaledPatch(fx-2 + (flipflag ? (SHORT(kp_ringstickersplit[1]->width) - 3) : 0), fy, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[0]);
+		if (!ringsdisabled)
+			V_DrawScaledPatch(fx-2 + (flipflag ? (SHORT(kp_ringstickersplit[1]->width) - 3) : 0), fy, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[0]);
 
 		V_DrawScaledPatch(fx, fy, V_HUDTRANS|V_SLIDEIN|splitflags, kp_splitlapflag);
 		V_DrawScaledPatch(fx+22, fy, V_HUDTRANS|V_SLIDEIN|splitflags, frameslash);
@@ -2327,27 +2340,31 @@ static void K_drawKartLapsAndRings(void)
 			V_DrawScaledPatch(fx+27, fy, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[(numlaps) % 10]);
 		}
 
-		// Rings
-		if (!uselives)
+		if (!ringsdisabled)
 		{
-			V_DrawScaledPatch(fx-2 + (flipflag ? (SHORT(kp_ringstickersplit[1]->width) - 3) : 0), fy-10, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[1]);
-			if (flipflag)
-				fr += 15;
+			// Rings
+			if (!uselives)
+			{
+				V_DrawScaledPatch(fx-2 + (flipflag ? (SHORT(kp_ringstickersplit[1]->width) - 3) : 0), fy-10, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[1]);
+				if (flipflag)
+					fr += 15;
+			}
+			else
+				V_DrawScaledPatch(fx-2 + (flipflag ? (SHORT(kp_ringstickersplit[0]->width) - 3) : 0), fy-10, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[0]);
+
+
+			V_DrawMappedPatch(fr+ringx, fy-13, V_HUDTRANS|V_SLIDEIN|splitflags|ringflip, kp_smallring[ringanim_realframe], (colorring ? ringmap : NULL));
+
+			if (stplyr->rings < 0) // Draw the minus for ring debt
+				V_DrawMappedPatch(fr+7, fy-10, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringdebtminussmall, ringmap);
+
+			V_DrawMappedPatch(fr+11, fy-10, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[0]], ringmap);
+			V_DrawMappedPatch(fr+15, fy-10, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[1]], ringmap);
+
+			// SPB ring lock
+			if (stplyr->pflags & PF_RINGLOCK)
+				V_DrawScaledPatch(fr-12, fy-23, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringspblocksmall[stplyr->karthud[khud_ringspblock]]);
 		}
-		else
-			V_DrawScaledPatch(fx-2 + (flipflag ? (SHORT(kp_ringstickersplit[0]->width) - 3) : 0), fy-10, V_HUDTRANS|V_SLIDEIN|splitflags|flipflag, kp_ringstickersplit[0]);
-
-		V_DrawMappedPatch(fr+ringx, fy-13, V_HUDTRANS|V_SLIDEIN|splitflags|ringflip, kp_smallring[ringanim_realframe], (colorring ? ringmap : NULL));
-
-		if (stplyr->rings < 0) // Draw the minus for ring debt
-			V_DrawMappedPatch(fr+7, fy-10, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringdebtminussmall, ringmap);
-
-		V_DrawMappedPatch(fr+11, fy-10, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[0]], ringmap);
-		V_DrawMappedPatch(fr+15, fy-10, V_HUDTRANS|V_SLIDEIN|splitflags, fontv[PINGNUM_FONT].font[rn[1]], ringmap);
-
-		// SPB ring lock
-		if (stplyr->pflags & PF_RINGLOCK)
-			V_DrawScaledPatch(fr-12, fy-23, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringspblocksmall[stplyr->karthud[khud_ringspblock]]);
 
 		// Lives
 		if (uselives)
@@ -2364,29 +2381,32 @@ static void K_drawKartLapsAndRings(void)
 		V_DrawScaledPatch(LAPS_X, LAPS_Y, V_HUDTRANS|V_SLIDEIN|splitflags, kp_lapsticker);
 		V_DrawKartString(LAPS_X+33, LAPS_Y+3, V_HUDTRANS|V_SLIDEIN|splitflags, va("%d/%d", min(stplyr->laps, numlaps), numlaps));
 
-		// Rings
-		if (!uselives)
-			V_DrawScaledPatch(LAPS_X, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringsticker[1]);
-		else
-			V_DrawScaledPatch(LAPS_X, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringsticker[0]);
-
-		V_DrawMappedPatch(LAPS_X+ringx+7, LAPS_Y-16, V_HUDTRANS|V_SLIDEIN|splitflags|ringflip, kp_ring[ringanim_realframe], (colorring ? ringmap : NULL));
-
-		if (stplyr->rings < 0) // Draw the minus for ring debt
+		if (!ringsdisabled)
 		{
-			V_DrawMappedPatch(LAPS_X+23, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringdebtminus, ringmap);
-			V_DrawMappedPatch(LAPS_X+29, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[rn[0]], ringmap);
-			V_DrawMappedPatch(LAPS_X+35, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[rn[1]], ringmap);
-		}
-		else
-		{
-			V_DrawMappedPatch(LAPS_X+23, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[rn[0]], ringmap);
-			V_DrawMappedPatch(LAPS_X+29, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[rn[1]], ringmap);
-		}
+			// Rings
+			if (!uselives)
+				V_DrawScaledPatch(LAPS_X, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringsticker[1]);
+			else
+				V_DrawScaledPatch(LAPS_X, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringsticker[0]);
 
-		// SPB ring lock
-		if (stplyr->pflags & PF_RINGLOCK)
-			V_DrawScaledPatch(LAPS_X-5, LAPS_Y-28, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringspblock[stplyr->karthud[khud_ringspblock]]);
+			V_DrawMappedPatch(LAPS_X+ringx+7, LAPS_Y-16, V_HUDTRANS|V_SLIDEIN|splitflags|ringflip, kp_ring[ringanim_realframe], (colorring ? ringmap : NULL));
+
+			if (stplyr->rings < 0) // Draw the minus for ring debt
+			{
+				V_DrawMappedPatch(LAPS_X+23, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringdebtminus, ringmap);
+				V_DrawMappedPatch(LAPS_X+29, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[rn[0]], ringmap);
+				V_DrawMappedPatch(LAPS_X+35, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[rn[1]], ringmap);
+			}
+			else
+			{
+				V_DrawMappedPatch(LAPS_X+23, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[rn[0]], ringmap);
+				V_DrawMappedPatch(LAPS_X+29, LAPS_Y-11, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[rn[1]], ringmap);
+			}
+
+			// SPB ring lock
+			if (stplyr->pflags & PF_RINGLOCK)
+				V_DrawScaledPatch(LAPS_X-5, LAPS_Y-28, V_HUDTRANS|V_SLIDEIN|splitflags, kp_ringspblock[stplyr->karthud[khud_ringspblock]]);
+		}
 
 		// Lives
 		if (uselives)
@@ -2467,48 +2487,71 @@ static void K_drawKartSpeedometer(void)
 	UINT8 numbers[3];
 	INT32 splitflags = V_SNAPTOBOTTOM|V_SNAPTOLEFT|V_SPLITSCREEN;
 	INT32 battleoffset = 0;
+	INT32 ringoffset = 0;
 
-	if (!stplyr->exiting) // Keep the same speed value as when you crossed the finish line!
+	switch (cv_kartspeedometer.value)
 	{
-		switch (cv_kartspeedometer.value)
-		{
-			case 1: // Sonic Drift 2 style percentage
-			default:
-				convSpeed = (stplyr->speed * 100) / K_GetKartSpeed(stplyr, false, true); // Based on top speed!
-				labeln = 0;
-				break;
-			case 2: // Kilometers
-				convSpeed = FixedDiv(FixedMul(stplyr->speed, 142371), mapobjectscale) / FRACUNIT; // 2.172409058
-				labeln = 1;
-				break;
-			case 3: // Miles
-				convSpeed = FixedDiv(FixedMul(stplyr->speed, 88465), mapobjectscale) / FRACUNIT; // 1.349868774
-				labeln = 2;
-				break;
-			case 4: // Fracunits
-				convSpeed = FixedDiv(stplyr->speed, mapobjectscale) / FRACUNIT; // 1.0. duh.
-				labeln = 3;
-				break;
-		}
+		case 1: // Sonic Drift 2 style percentage
+		default:
+			convSpeed = (stplyr->speed * 100) / K_GetKartSpeed(stplyr, false, true); // Based on top speed!
+			labeln = 0;
+			break;
+		case 2: // Kilometers
+			convSpeed = FixedDiv(FixedMul(stplyr->speed, 142371), mapobjectscale) / FRACUNIT; // 2.172409058
+			labeln = 1;
+			break;
+		case 3: // Miles
+			convSpeed = FixedDiv(FixedMul(stplyr->speed, 88465), mapobjectscale) / FRACUNIT; // 1.349868774
+			labeln = 2;
+			break;
+		case 4: // Fracunits
+			convSpeed = FixedDiv(stplyr->speed, mapobjectscale) / FRACUNIT; // 1.0. duh.
+			labeln = 3;
+			break;
 	}
 
 	// Don't overflow
 	// (negative speed IS really high speed :V)
 	if (convSpeed > 999 || convSpeed < 0)
 		convSpeed = 999;
-
-	numbers[0] = ((convSpeed / 100) % 10);
-	numbers[1] = ((convSpeed / 10) % 10);
-	numbers[2] = (convSpeed % 10);
-
+	
 	if (gametype == GT_BATTLE)
 		battleoffset = -4;
+	
+	if (!ringsdisabled && !(gametype == GT_BATTLE))
+		ringoffset = -16;
+	
+	if (cv_newspeedometer.value == 0) 
+	{
+		switch (cv_kartspeedometer.value) {
+			case 1:
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, va("%4d P", convSpeed));
+				break;
+			case 2:
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, va("%3d km/h", convSpeed));
+				break;
+			case 3:
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, va("%3d mph", convSpeed));
+				break;
+			case 4:
+				V_DrawKartString(LAPS_X, LAPS_Y-18 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, va("%3d fu/t", convSpeed));
+				break;
+			default:
+				break;
+		}
+	}
+	else
+	{
+		numbers[0] = ((convSpeed / 100) % 10);
+		numbers[1] = ((convSpeed / 10) % 10);
+		numbers[2] = (convSpeed % 10);
 
-	V_DrawScaledPatch(LAPS_X, LAPS_Y-25 + battleoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_speedometersticker);
-	V_DrawScaledPatch(LAPS_X+7, LAPS_Y-25 + battleoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[0]]);
-	V_DrawScaledPatch(LAPS_X+13, LAPS_Y-25 + battleoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[1]]);
-	V_DrawScaledPatch(LAPS_X+19, LAPS_Y-25 + battleoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[2]]);
-	V_DrawScaledPatch(LAPS_X+29, LAPS_Y-25 + battleoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_speedometerlabel[labeln]);
+		V_DrawScaledPatch(LAPS_X, LAPS_Y-9 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_speedometersticker);
+		V_DrawScaledPatch(LAPS_X+7, LAPS_Y-9 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[0]]);
+		V_DrawScaledPatch(LAPS_X+13, LAPS_Y-9 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[1]]);
+		V_DrawScaledPatch(LAPS_X+19, LAPS_Y-9 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_facenum[numbers[2]]);
+		V_DrawScaledPatch(LAPS_X+29, LAPS_Y-9 + battleoffset + ringoffset, V_HUDTRANS|V_SLIDEIN|splitflags, kp_speedometerlabel[labeln]);
+	}
 
 	K_drawKartAccessibilityIcons(56);
 }

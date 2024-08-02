@@ -127,7 +127,12 @@ boolean P_CanPickupItem(player_t *player, UINT8 weapon)
 		if (weapon == 2)
 		{
 			// Invulnerable
-			if (player->flashing > 0)
+			if (player->flashing > 0
+				|| player->spinouttimer > 0
+				|| player->squishedtimer > 0
+				|| player->invincibilitytimer > 0
+				|| player->growshrinktimer > 0
+				|| player->hyudorotimer > 0)
 				return false;
 
 			// Already have fake
@@ -1362,7 +1367,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 					P_RandomRange(-spacing, spacing) * FRACUNIT,
 					P_RandomRange(-spacing, spacing) * FRACUNIT,
 					P_RandomRange(0, 4*spacing) * FRACUNIT,
-					MT_SPINDASHDUST
+					MT_SPINDUST
 				);
 
 				P_SetScale(puff, (puff->destscale *= 2));
@@ -1824,8 +1829,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 	player_t *player;
 	boolean force = false;
 
-	INT32 laglength = 6;
-
 	if (objectplacing)
 		return false;
 
@@ -1838,16 +1841,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 
 	if (source && source->player && source->player->spectator)
 		return false;
-
-	if (((damagetype & DMG_TYPEMASK) == DMG_STING)
-	|| ((inflictor && !P_MobjWasRemoved(inflictor)) && inflictor->type == MT_BANANA && inflictor->health <= 1))
-	{
-		laglength = 2;
-	}
-	else if (target->type == MT_DROPTARGET || target->type == MT_DROPTARGET_SHIELD)
-	{
-		laglength = 0; // handled elsewhere
-	}
 
 	// Everything above here can't be forced.
 	if (!metalrecording)
@@ -1865,9 +1858,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 	{
 		if (!(target->flags & MF_SHOOTABLE))
 			return false; // shouldn't happen...
-
-		if (!(damagetype & DMG_DEATHMASK) && inflictor == NULL)
-			return false;
 	}
 
 	if (target->flags2 & MF2_SKULLFLY)
@@ -1949,6 +1939,23 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				}
 
 				{
+					
+					if (((type == DMG_NORMAL) || (type == DMG_WIPEOUT)) || (type == DMG_STING) || (type == DMG_WOMBO)) // No combos pls thx
+					{
+						if (player->spinouttimer > 0)
+						{
+							K_DoInstashield(player);
+							//CONS_Printf("is this shit even working....\n");
+							return false;
+						}
+					}
+					
+					if (player->squishedtimer > 0)
+					{
+						K_DoInstashield(player);
+						return false;
+					}
+					
 					// Check if we should allow wombo combos (hard hits by default, inverted by the presence of DMG_WOMBO).
 					boolean allowcombo = (hardhit == !(damagetype & DMG_WOMBO));
 
@@ -1986,19 +1993,6 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 
 				if (source && source != player->mo && source->player)
 				{
-					// Extend the invincibility if the hit was a direct hit.
-					if (inflictor == source && source->player->invincibilitytimer)
-					{
-						tic_t kinvextend;
-
-						if (gametype == GT_BATTLE)
-							kinvextend = 2*TICRATE;
-						else
-							kinvextend = 5*TICRATE;
-
-						source->player->invincibilitytimer += kinvextend;
-					}
-
 					K_TryHurtSoundExchange(target, source);
 
 					K_BattleAwardHit(source->player, player, inflictor, takeBumpers);
@@ -2050,6 +2044,10 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 				case DMG_EXPLODE:
 				case DMG_KARMA:
 					ringburst = K_ExplodePlayer(player, inflictor, source);
+					break;
+				case DMG_SQUISH:
+					K_SquishPlayer(player, inflictor, source);
+					ringburst = 5;
 					break;
 				case DMG_WIPEOUT:
 					if (P_IsDisplayPlayer(player))

@@ -28,7 +28,6 @@
 #else
 #include "../config.h.in"
 #endif
-
 #include <signal.h>
 
 #ifdef _WIN32
@@ -228,6 +227,7 @@ SDL_bool consolevent = SDL_FALSE;
 SDL_bool framebuffer = SDL_FALSE;
 
 UINT8 keyboard_started = false;
+boolean g_in_exiting_signal_handler = false;
 
 #ifdef UNIXBACKTRACE
 #define STDERR_WRITE(string) if (fd != -1) I_OutputMsg("%s", string)
@@ -334,9 +334,8 @@ static void I_ReportSignal(int num, int coredumped)
 	if (coredumped)
 	{
 		if (sigmsg)
-			sprintf(msg, "%s (core dumped)", sigmsg);
-		else
-			strcat(msg, " (core dumped)");
+			strcpy(msg, sigmsg);
+		strcat(msg, " (core dumped)");
 
 		sigmsg = msg;
 	}
@@ -347,21 +346,30 @@ static void I_ReportSignal(int num, int coredumped)
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
 			"Process killed by signal",
 			sigmsg, NULL);
+		
+	I_Error(sigmsg,
+#if defined (UNIXBACKTRACE)
+		true
+#elif defined (_WIN32)
+		!M_CheckParm("-noexchndl")
+#else
+		false
+#endif
+	);
 }
 
 #ifndef NEWSIGNALHANDLER
 FUNCNORETURN static ATTRNORETURN void signal_handler(INT32 num)
 {
+	g_in_exiting_signal_handler = true;
 	D_QuitNetGame(); // Fix server freezes
 	CL_AbortDownloadResume();
 #ifdef UNIXBACKTRACE
 	write_backtrace(num);
 #endif
 	I_ReportSignal(num, 0);
-	I_ShutdownSystem();
 	signal(num, SIG_DFL);               //default signal action
 	raise(num);
-	I_Quit();
 }
 #endif
 
@@ -1809,7 +1817,10 @@ INT32 I_StartupSystem(void)
 #endif
 	I_StartupConsole();
 #ifdef NEWSIGNALHANDLER
-	I_Fork();
+	// This is useful when debugging. It lets GDB attach to
+	// the correct process easily.
+	if (!M_CheckParm("-nofork"))
+		I_Fork();
 #endif
 	I_RegisterSignals();
 	I_OutputMsg("Compiled for SDL version: %d.%d.%d\n",
@@ -2105,9 +2116,10 @@ void I_ShutdownSystem(void)
 {
 	INT32 c;
 
-#ifndef NEWSIGNALHANDLER
-	I_ShutdownConsole();
+#ifdef NEWSIGNALHANDLER
+	if (M_CheckParm("-nofork"))
 #endif
+		I_ShutdownConsole();
 
 	for (c = MAX_QUIT_FUNCS-1; c >= 0; c--)
 		if (quit_funcs[c])

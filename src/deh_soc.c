@@ -45,6 +45,7 @@
 #include "dehacked.h"
 #include "deh_soc.h"
 #include "deh_lua.h" // included due to some LUA_SetLuaAction hack smh
+// also used for LUA_UpdateSprName
 #include "deh_tables.h"
 
 // SRB2Kart
@@ -411,6 +412,8 @@ void readfreeslots(MYFILE *f)
 					strncpy(sprnames[i],word,4);
 					//sprnames[i][4] = 0;
 					used_spr[(i-SPR_FIRSTFREESLOT)/8] |= 1<<(i%8); // Okay, this sprite slot has been named now.
+					// Lua needs to update the value in _G if it exists
+					LUA_UpdateSprName(word, i);
 					break;
 				}
 			}
@@ -3620,7 +3623,7 @@ void readfollower(MYFILE *f)
 	INT32 res;
 	INT32 i;
 
-	if (numfollowers > MAXSKINS)
+	if (numfollowers > MAXFOLLOWERS)
 	{
 		deh_warning("Error: Too many followers, cannot add anymore.\n");
 		return;

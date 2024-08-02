@@ -842,8 +842,8 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 	boolean stungT1 = false;
 	boolean stungT2 = false;
 
-	t1Condition = (t1->scale > t2->scale + (mapobjectscale/8)) || (t1->player->invincibilitytimer > 0);
-	t2Condition = (t2->scale > t1->scale + (mapobjectscale/8)) || (t2->player->invincibilitytimer > 0);
+	t1Condition = (t1->player->invincibilitytimer > 0);
+	t2Condition = (t2->player->invincibilitytimer > 0);
 
 	if ((t1Condition == true || flameT1 == true) && (t2Condition == true || flameT2 == true))
 	{
@@ -858,6 +858,25 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 	else if (t1Condition == false && t2Condition == true)
 	{
 		P_DamageMobj(t1, t2, t2, 1, DMG_WIPEOUT);
+		return true;
+	}
+	
+	t1Condition = (t1->scale > t2->scale + (mapobjectscale/8));
+	t2Condition = (t2->scale > t1->scale + (mapobjectscale/8));
+	
+	if ((t1Condition == true || flameT1 == true) && (t2Condition == true || flameT2 == true))
+	{
+		K_DoPowerClash(t1->player, t2->player);
+		return false;
+	}
+	else if (t1Condition == true && t2Condition == false)
+	{
+		P_DamageMobj(t2, t1, t1, 1, DMG_SQUISH);
+		return true;
+	}
+	else if (t1Condition == false && t2Condition == true)
+	{
+		P_DamageMobj(t1, t2, t2, 1, DMG_SQUISH);
 		return true;
 	}
 
@@ -899,31 +918,35 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		}
 	}
 
-	// Ring sting, this is a bit more unique
-	t1Condition = (K_GetShieldFromItem(t2->player->itemtype) == KSHIELD_NONE);
-	t2Condition = (K_GetShieldFromItem(t1->player->itemtype) == KSHIELD_NONE);
-
-	if (t1Condition == true)
+	if (!ringsdisabled) // Ring sting, this is a bit more unique
 	{
-		if (t2->player->rings <= 0)
+		t1Condition = (K_GetShieldFromItem(t2->player->itemtype) == KSHIELD_NONE);
+		t2Condition = (K_GetShieldFromItem(t1->player->itemtype) == KSHIELD_NONE);
+
+		if (t1Condition == true)
 		{
-			P_DamageMobj(t2, t1, t1, 1, DMG_STING|DMG_WOMBO);
-			stungT2 = true;
+			if (t2->player->rings <= 0)
+			{
+				P_DamageMobj(t2, t1, t1, 1, DMG_STING|DMG_WOMBO);
+				stungT2 = true;
+			}
+
+			P_PlayerRingBurst(t2->player, 1);
 		}
 
-		P_PlayerRingBurst(t2->player, 1);
-	}
-
-	if (t2Condition == true)
-	{
-		if (t1->player->rings <= 0)
+		if (t2Condition == true)
 		{
-			P_DamageMobj(t1, t2, t2, 1, DMG_STING|DMG_WOMBO);
-			stungT1 = true;
+			if (t1->player->rings <= 0)
+			{
+				P_DamageMobj(t1, t2, t2, 1, DMG_STING|DMG_WOMBO);
+				stungT1 = true;
+			}
+
+			P_PlayerRingBurst(t1->player, 1);
 		}
 
-		P_PlayerRingBurst(t1->player, 1);
+		return (stungT1 || stungT2);
 	}
-
-	return (stungT1 || stungT2);
+	
+	return false;
 }

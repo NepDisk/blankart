@@ -94,7 +94,7 @@ typedef enum
 	// Terrain flag values.
 	TRF_LIQUID = 1, // Texture has water properties (wavy, slippery, etc)
 	TRF_SNEAKERPANEL = 1<<1, // Texture is a booster
-	// = 1<<2, // Was bumpy road.
+	TRF_WATERRUNPANEL = 1<<2, // Texture is a waterrun panel
 	TRF_TRIPWIRE = 1<<3 // Texture is a tripwire when used as a midtexture
 } terrain_flags_t;
 
@@ -113,7 +113,7 @@ typedef struct terrain_s
 	fixed_t friction;		// The default friction of this texture.
 	UINT8 offroad;			// The default offroad level of this texture.
 	INT16 damageType;		// The default damage type of this texture. (Negative means no damage).
-	UINT8 trickPanel;		// Trick panel strength
+	UINT8 pogoSpring;		// Is this panel a pogo spring?
 	fixed_t floorClip;		// Offset for sprites on this ground
 	UINT32 flags;			// Flag values (see: terrain_flags_t)
 } terrain_t;
@@ -388,6 +388,19 @@ terrain_t *K_GetTerrainByName(const char *checkName);
 
 terrain_t *K_GetDefaultTerrain(void);
 
+/*--------------------------------------------------
+	size_t K_GetDefaultTerrainID(void)
+
+		Returns the default terrain definition's ID, used
+		in cases where terrain is not set for a texture.
+
+	Input Arguments:-
+		None
+
+	Return:-
+		The default terrain definition's ID, NULL if it didn't exist.
+--------------------------------------------------*/
+size_t K_GetDefaultTerrainID(void);
 
 /*--------------------------------------------------
 	terrain_t *K_GetTerrainForTextureName(const char *checkName);
@@ -406,6 +419,22 @@ terrain_t *K_GetDefaultTerrain(void);
 
 terrain_t *K_GetTerrainForTextureName(const char *checkName);
 
+
+/*--------------------------------------------------
+	size_t K_GetTerrainIDForTextureName(const char *checkName)
+
+		Returns the ID of the terrain definition applied
+		to the texture name inputted.
+		
+	Input Arguments:-
+		checkName - The texture's name.
+
+	Return:-
+		The texture's terrain definition's ID if it exists,
+		otherwise the default terrain's ID if it exists,
+		otherwise NULL.
+--------------------------------------------------*/
+size_t K_GetTerrainIDForTextureName(const char *checkName);
 
 /*--------------------------------------------------
 	terrain_t *K_GetTerrainForTextureNum(INT32 textureNum);

@@ -421,7 +421,7 @@ static void md2_loadTexture(md2_t *model)
 		size = w*h;
 		while (size--)
 		{
-			V_CubeApply(image);
+			V_CubeApply(&image->s.red, &image->s.green, &image->s.blue);
 			image++;
 		}
 	}
@@ -1267,6 +1267,9 @@ static void adjustTextureCoords(model_t *model, patch_t *patch)
 {
 	int i;
 	GLPatch_t *gpatch = ((GLPatch_t *)patch->hardware);
+
+	if (!gpatch)
+		return;
 
 	for (i = 0; i < model->numMeshes; i++)
 	{

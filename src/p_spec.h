@@ -416,7 +416,7 @@ typedef struct
 typedef enum
 {
 	RF_REVERSE  = 1,    //Lower when stood on
-	RF_SPINDASH = 1<<1, //Require spindash to move
+	//free = 1<<1,
 	RF_DYNAMIC  = 1<<2, //Dynamically sinking platform
 } raiseflag_t;
 

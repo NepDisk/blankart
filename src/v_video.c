@@ -14,6 +14,7 @@
 ///        Functions to blit a block to the screen.
 
 #include "doomdef.h"
+#include "doomtype.h"
 #include "r_local.h"
 #include "p_local.h" // stplyr
 #include "g_game.h" // players
@@ -331,6 +332,7 @@ static void LoadPalette(const char *lumpname)
 	pal = W_CacheLumpNum(lumpnum, PU_CACHE);
 	for (i = 0; i < palsize; i++)
 	{
+		RGBA_t pGCP;
 		pMasterPalette[i].s.red = *pal++;
 		pMasterPalette[i].s.green = *pal++;
 		pMasterPalette[i].s.blue = *pal++;
@@ -340,13 +342,16 @@ static void LoadPalette(const char *lumpname)
 
 		if (!Cubeapply)
 			continue;
+		
+		// Short hand this so its easier to type
+		pGCP = pGammaCorrectedPalette[i];
 
-		V_CubeApply(&pGammaCorrectedPalette[i]);
+		V_CubeApply(&pGCP.s.red,&pGCP.s.green,&pGCP.s.blue);
 		pLocalPalette[i].rgba = V_GammaEncode(pGammaCorrectedPalette[i].rgba);
 	}
 }
 
-void V_CubeApply(RGBA_t *input)
+void V_CubeApply(UINT8 *red, UINT8 *green, UINT8 *blue)
 {
 	float working[4][3];
 	float linear;
@@ -355,7 +360,7 @@ void V_CubeApply(RGBA_t *input)
 	if (!Cubeapply)
 		return;
 
-	linear = ((*input).s.red/255.0);
+	linear = (*red/255.0);
 #define dolerp(e1, e2) ((1 - linear)*e1 + linear*e2)
 	for (q = 0; q < 3; q++)
 	{
@@ -364,13 +369,13 @@ void V_CubeApply(RGBA_t *input)
 		working[2][q] = dolerp(Cubepal[0][0][1][q], Cubepal[1][0][1][q]);
 		working[3][q] = dolerp(Cubepal[0][1][1][q], Cubepal[1][1][1][q]);
 	}
-	linear = ((*input).s.green/255.0);
+	linear = (*green/255.0);
 	for (q = 0; q < 3; q++)
 	{
 		working[0][q] = dolerp(working[0][q], working[1][q]);
 		working[1][q] = dolerp(working[2][q], working[3][q]);
 	}
-	linear = ((*input).s.blue/255.0);
+	linear = (*blue/255.0);
 	for (q = 0; q < 3; q++)
 	{
 		working[0][q] = 255*dolerp(working[0][q], working[1][q]);
@@ -381,9 +386,9 @@ void V_CubeApply(RGBA_t *input)
 	}
 #undef dolerp
 
-	(*input).s.red = (UINT8)(working[0][0]);
-	(*input).s.green = (UINT8)(working[0][1]);
-	(*input).s.blue = (UINT8)(working[0][2]);
+	*red = (UINT8)(working[0][0]);
+	*green = (UINT8)(working[0][1]);
+	*blue = (UINT8)(working[0][2]);
 }
 
 const char *R_GetPalname(UINT16 num)
@@ -859,9 +864,30 @@ void V_DrawFill(INT32 x, INT32 y, INT32 w, INT32 h, INT32 c)
 {
 	UINT8 *dest;
 	const UINT8 *deststop;
+	UINT32 alphalevel = ((c & V_ALPHAMASK) >> V_ALPHASHIFT);
+	UINT32 blendmode = ((c & V_BLENDMASK) >> V_BLENDSHIFT);
+	INT32 u;
 
 	if (rendermode == render_none)
 		return;
+
+	v_translevel = NULL;
+	if (alphalevel || blendmode)
+	{
+		if (alphalevel == 10) // V_HUDTRANSHALF
+			alphalevel = hudminusalpha[st_translucency];
+		else if (alphalevel == 11) // V_HUDTRANS
+			alphalevel = 10 - st_translucency;
+		else if (alphalevel == 12) // V_HUDTRANSDOUBLE
+			alphalevel = hudplusalpha[st_translucency];
+
+		if (alphalevel >= 10)
+			return; // invis
+
+		if (alphalevel || blendmode)
+			v_translevel = R_GetBlendTable(blendmode+1, alphalevel);
+	}
+
 
 #ifdef HWRENDER
 	//if (rendermode != render_soft && !con_startup)		// Not this again
@@ -917,40 +943,55 @@ void V_DrawFill(INT32 x, INT32 y, INT32 w, INT32 h, INT32 c)
 
 	c &= 255;
 
-	for (;(--h >= 0) && dest < deststop; dest += vid.width)
-		memset(dest, c, w * vid.bpp);
+	// borrowing this from jimitia's new hud drawing functions rq
+	if (alphalevel)
+	{
+		v_translevel += c<<8;
+		for (;(--h >= 0) && dest < deststop; dest += vid.width)
+		{
+			for (x = 0; x < w; x++)
+				dest[x] = v_translevel[dest[x]];
+		}
+	}
+	else
+	{
+		for (;(--h >= 0) && dest < deststop; dest += vid.width)
+			memset(dest, c, w * vid.bpp);
+	}
 }
 
 #ifdef HWRENDER
 // This is now a function since it's otherwise repeated 2 times and honestly looks retarded:
 static UINT32 V_GetHWConsBackColor(void)
 {
-	UINT32 hwcolor;
+	UINT8 r, g, b;
 	switch (cons_backcolor.value)
 	{
-		case 0:		hwcolor = 0xffffff00;	break; 	// White
-		case 1:		hwcolor = 0x80808000;	break; 	// Black
-		case 2:		hwcolor = 0xdeb88700;	break;	// Sepia
-		case 3:		hwcolor = 0x40201000;	break; 	// Brown
-		case 4:		hwcolor = 0xfa807200;	break; 	// Pink
-		case 5:		hwcolor = 0xff69b400;	break; 	// Raspberry
-		case 6:		hwcolor = 0xff000000;	break; 	// Red
-		case 7:		hwcolor = 0xffd68300;	break;	// Creamsicle
-		case 8:		hwcolor = 0xff800000;	break; 	// Orange
-		case 9:		hwcolor = 0xdaa52000;	break; 	// Gold
-		case 10:	hwcolor = 0x80800000;	break; 	// Yellow
-		case 11:	hwcolor = 0x00ff0000;	break; 	// Emerald
-		case 12:	hwcolor = 0x00800000;	break; 	// Green
-		case 13:	hwcolor = 0x4080ff00;	break; 	// Cyan
-		case 14:	hwcolor = 0x4682b400;	break; 	// Steel
-		case 15:	hwcolor = 0x1e90ff00;	break;	// Periwinkle
-		case 16:	hwcolor = 0x0000ff00;	break; 	// Blue
-		case 17:	hwcolor = 0xff00ff00;	break; 	// Purple
-		case 18:	hwcolor = 0xee82ee00;	break; 	// Lavender
+		case 0:		r = 0xff; g = 0xff; b = 0xff;	break; 	// White
+		case 1:		r = 0x80; g = 0x80; b = 0x80;	break; 	// Black
+		case 2:		r = 0xde; g = 0xb8; b = 0x87;	break;	// Sepia
+		case 3:		r = 0x40; g = 0x20; b = 0x10;	break; 	// Brown
+		case 4:		r = 0xfa; g = 0x80; b = 0x72;	break; 	// Pink
+		case 5:		r = 0xff; g = 0x69; b = 0xb4;	break; 	// Raspberry
+		case 6:		r = 0xff; g = 0x00; b = 0x00;	break; 	// Red
+		case 7:		r = 0xff; g = 0xd6; b = 0x83;	break;	// Creamsicle
+		case 8:		r = 0xff; g = 0x80; b = 0x00;	break; 	// Orange
+		case 9:		r = 0xda; g = 0xa5; b = 0x20;	break; 	// Gold
+		case 10:	r = 0x80; g = 0x80; b = 0x00;	break; 	// Yellow
+		case 11:	r = 0x00; g = 0xff; b = 0x00;	break; 	// Emerald
+		case 12:	r = 0x00; g = 0x80; b = 0x00;	break; 	// Green
+		case 13:	r = 0x40; g = 0x80; b = 0xff;	break; 	// Cyan
+		case 14:	r = 0x46; g = 0x82; b = 0xb4;	break; 	// Steel
+		case 15:	r = 0x1e; g = 0x90; b = 0xff;	break;	// Periwinkle
+		case 16:	r = 0x00; g = 0x00; b = 0xff;	break; 	// Blue
+		case 17:	r = 0xff; g = 0x00; b = 0xff;	break; 	// Purple
+		case 18:	r = 0xee; g = 0x82; b = 0xee;	break; 	// Lavender
 		// Default green
-		default:	hwcolor = 0x00800000;	break;
+		default:	r = 0x00; g = 0x80; b = 0x00;	break;
 	}
-	return hwcolor;
+	
+	V_CubeApply(&r, &g, &b);
+	return (r << 24) | (g << 16) | (b << 8);
 }
 #endif
 
@@ -2605,7 +2646,8 @@ void V_DoPostProcessor(INT32 view, postimg_t type, INT32 param)
 		UINT8 *tmpscr = screens[4];
 		UINT8 *srcscr = screens[0];
 		INT32 y;
-		angle_t disStart = (leveltime * 128) & FINEMASK; // in 0 to FINEANGLE
+		// Set disStart to a range from 0 to FINEANGLE, incrementing by 128 per tic
+		angle_t disStart = (((leveltime-1)*128) + (rendertimefrac / (FRACUNIT/128))) & FINEMASK;
 		INT32 newpix;
 		INT32 sine;
 		//UINT8 *transme = R_GetTranslucencyTable(tr_trans50);
@@ -2728,8 +2770,11 @@ Unoptimized version
 			heatindex[view] %= viewheight;
 		}
 
-		heatindex[view]++;
-		heatindex[view] %= vid.height;
+		if (renderisnewtic) // This isn't interpolated... but how do you interpolate a one-pixel shift?
+		{
+			heatindex[view]++;
+			heatindex[view] %= vid.height;
+		}
 
 		VID_BlitLinearScreen(tmpscr+vid.width*vid.bpp*yoffset+xoffset, screens[0]+vid.width*vid.bpp*yoffset+xoffset,
 				viewwidth*vid.bpp, viewheight, vid.width*vid.bpp, vid.width);
@@ -2745,6 +2790,19 @@ Unoptimized version
 			for (x = xoffset, x2 = xoffset+((viewwidth*vid.bpp)-1); x < xoffset+(viewwidth*vid.bpp); x++, x2--)
 				tmpscr[y*vid.width + x2] = srcscr[y*vid.width + x];
 		}
+	
+		VID_BlitLinearScreen(tmpscr+vid.width*vid.bpp*yoffset+xoffset, screens[0]+vid.width*vid.bpp*yoffset+xoffset,
+				viewwidth*vid.bpp, viewheight, vid.width*vid.bpp, vid.width);
+	}
+	else if (type == postimg_mirrorflip) // Flip the screen upside-down and on the x axis
+	{
+		UINT8 *tmpscr = screens[4];
+		UINT8 *srcscr = screens[0];
+		INT32 y, x;
+
+		for (y = yoffset; y < yoffset + viewheight; y++)
+			for (x = xoffset; x < xoffset + viewwidth; x++)
+				tmpscr[((yoffset + viewheight - 1 - y) * vid.width) + xoffset + viewwidth - (x - xoffset) - 1] = srcscr[(y * vid.width) + x];
 
 		VID_BlitLinearScreen(tmpscr+vid.width*vid.bpp*yoffset+xoffset, screens[0]+vid.width*vid.bpp*yoffset+xoffset,
 				viewwidth*vid.bpp, viewheight, vid.width*vid.bpp, vid.width);

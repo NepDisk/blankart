@@ -344,11 +344,6 @@ INT16 prevmap, nextmap;
 
 static UINT8 *savebuffer;
 
-static void weaponPrefChange(void);
-static void weaponPrefChange2(void);
-static void weaponPrefChange3(void);
-static void weaponPrefChange4(void);
-
 static CV_PossibleValue_t joyaxis_cons_t[] = {{0, "None"},
 {1, "X-Axis"}, {2, "Y-Axis"}, {-1, "X-Axis-"}, {-2, "Y-Axis-"},
 #if JOYAXISSET > 1
@@ -1091,12 +1086,6 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 	if (PlayerInputDown(ssplayer, gc_drift) || (usejoystick && axis > 0))
 		cmd->buttons |= BT_DRIFT;
 
-	// Spindash with any button/key
-	// Simply holds all of the inputs for you.
-	axis = PlayerJoyAxis(ssplayer, AXISSPINDASH);
-	if (PlayerInputDown(ssplayer, gc_spindash) || (usejoystick && axis > 0))
-		cmd->buttons |= (BT_ACCELERATE|BT_BRAKE|BT_DRIFT);
-
 	// rear view with any button/key
 	axis = PlayerJoyAxis(ssplayer, AXISLOOKBACK);
 	if (PlayerInputDown(ssplayer, gc_lookback) || (usejoystick && axis > 0))
@@ -1255,22 +1244,22 @@ ticcmd_t *G_MoveTiccmd(ticcmd_t* dest, const ticcmd_t* src, const size_t n)
 	return dest;
 }
 
-static void weaponPrefChange(void)
+void weaponPrefChange(void)
 {
 	WeaponPref_Send(0);
 }
 
-static void weaponPrefChange2(void)
+void weaponPrefChange2(void)
 {
 	WeaponPref_Send(1);
 }
 
-static void weaponPrefChange3(void)
+void weaponPrefChange3(void)
 {
 	WeaponPref_Send(2);
 }
 
-static void weaponPrefChange4(void)
+void weaponPrefChange4(void)
 {
 	WeaponPref_Send(3);
 }
@@ -3711,7 +3700,7 @@ static void G_DoCompleted(void)
 					//Make sure the map actually exists before you try to go to it!
 					if ((W_CheckNumForName(G_BuildMapName(cm + 1)) == LUMPERROR))
 					{
-						CONS_Alert(CONS_ERROR, M_GetText("Next map given (MAP %d) doesn't exist! Reverting to MAP01.\n"), cm+1);
+						//CONS_Alert(CONS_ERROR, M_GetText("Next map given (MAP %d) doesn't exist! Reverting to MAP01.\n"), cm+1);
 						cm = 0;
 						break;
 					}

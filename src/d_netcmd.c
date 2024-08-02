@@ -12,6 +12,7 @@
 ///        commands are executed through the command buffer
 ///	       like console commands, other miscellaneous commands (at the end)
 
+#include "d_player.h"
 #include "doomdef.h"
 
 #include "console.h"
@@ -22,6 +23,7 @@
 #include "hu_stuff.h"
 #include "g_input.h"
 #include "m_menu.h"
+#include "p_mobj.h"
 #include "r_local.h"
 #include "r_skins.h"
 #include "p_local.h"
@@ -149,6 +151,7 @@ static void KartSpeed_OnChange(void);
 static void KartEncore_OnChange(void);
 static void KartComeback_OnChange(void);
 static void KartEliminateLast_OnChange(void);
+static void KartRings_OnChange(void);
 
 static void Schedule_OnChange(void);
 
@@ -422,6 +425,9 @@ static CV_PossibleValue_t kartbot_cons_t[] = {
 consvar_t cv_kartbot = CVAR_INIT ("kartbot", "0", CV_NETVAR, kartbot_cons_t, NULL);
 
 consvar_t cv_karteliminatelast = CVAR_INIT ("karteliminatelast", "Yes", CV_NETVAR|CV_CHEAT|CV_CALL, CV_YesNo, KartEliminateLast_OnChange);
+
+// Toggles for new features
+consvar_t cv_kartrings = CVAR_INIT ("kartrings", "Off", CV_NETVAR|CV_CHEAT|CV_CALL|CV_NOINIT, CV_OnOff, KartRings_OnChange);
 
 consvar_t cv_kartusepwrlv = CVAR_INIT ("kartusepwrlv", "Yes", CV_NETVAR|CV_CHEAT, CV_YesNo, NULL);
 
@@ -1346,6 +1352,14 @@ static void SetPlayerName(INT32 playernum, char *newname)
 	{
 		if (strcasecmp(newname, player_names[playernum]) != 0)
 		{
+			if (!LUA_HookNameChange(&players[playernum], newname))
+			{
+				// Name change rejected by Lua
+				if (playernum == consoleplayer)
+					CV_StealthSet(cv_playername, player_names[consoleplayer]);
+				return;
+			}
+
 			if (netgame)
 				HU_AddChatText(va("\x82*%s renamed to %s", player_names[playernum], newname), false);
 
@@ -1722,6 +1736,7 @@ static void Got_NameAndColor(UINT8 **cp, INT32 playernum)
 enum {
 	WP_KICKSTARTACCEL = 1<<0,
 	WP_SHRINKME = 1<<1,
+	WP_FLIPCAM = 1<<2,
 };
 
 void WeaponPref_Send(UINT8 ssplayer)
@@ -1733,6 +1748,9 @@ void WeaponPref_Send(UINT8 ssplayer)
 
 	if (cv_shrinkme[ssplayer].value)
 		prefs |= WP_SHRINKME;
+	
+	if (cv_flipcam[ssplayer].value)
+		prefs |= WP_FLIPCAM;
 
 	SendNetXCmdForPlayer(ssplayer, XD_WEAPONPREF, &prefs, 1);
 }
@@ -1748,6 +1766,9 @@ void WeaponPref_Save(UINT8 **cp, INT32 playernum)
 
 	if (player->pflags & PF_SHRINKME)
 		prefs |= WP_SHRINKME;
+	
+	if (player->pflags & PF_FLIPCAM)
+		prefs |= WP_FLIPCAM;
 
 	WRITEUINT8(*cp, prefs);
 }
@@ -1765,6 +1786,9 @@ void WeaponPref_Parse(UINT8 **cp, INT32 playernum)
 
 	if (prefs & WP_SHRINKME)
 		player->pflags |= PF_SHRINKME;
+	
+	if (prefs & WP_FLIPCAM)
+		player->pflags |= PF_FLIPCAM;
 
 	if (leveltime < 2)
 	{
@@ -6415,6 +6439,23 @@ static void KartEliminateLast_OnChange(void)
 	}
 
 	P_CheckRacers();
+}
+
+static void KartRings_OnChange(void)
+{
+	if (K_CanChangeRules() == false)
+	{
+		return;
+	}
+
+	if (ringsdisabled)
+	{
+		CONS_Printf(M_GetText("Rings will be turned %s Next Round .\n"), cv_kartrings.string);
+	}
+	else
+	{
+		CONS_Printf(M_GetText("Rings will be turned %s Next Round .\n"), cv_kartrings.string);
+	}
 }
 
 static void Schedule_OnChange(void)

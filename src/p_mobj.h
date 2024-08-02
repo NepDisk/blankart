@@ -159,10 +159,8 @@ typedef enum
 	MF_DONTENCOREMAP    = 1<<28,
 	// Hitbox extends just as far below as above.
 	MF_PICKUPFROMBELOW  = 1<<29,
-	// Disable momentum-based squash and stretch.
-	MF_NOSQUISH         = 1<<30,
-	// Free
-	//   = (INT32)(1U<<31),
+	//free   = 1<<30,
+	//free	 = (INT32)(1U<<31),
 	// no more free slots, next up I suppose we can get rid of shit like MF_BOXICON?
 } mobjflag_t;
 
@@ -283,9 +281,10 @@ typedef struct mobj_s
 	fixed_t old_x, old_y, old_z; // position interpolation
 	fixed_t old_x2, old_y2, old_z2;
 
-	// More list: links in sector (if needed)
-	struct mobj_s *snext;
-	struct mobj_s **sprev; // killough 8/11/98: change to ptr-to-ptr
+	// Interaction info, by BLOCKMAP.
+	// Links in blocks (if needed).
+	struct mobj_s *bnext;
+	struct mobj_s **bprev; // killough 8/11/98: change to ptr-to-ptr
 
 	// More drawing info: to determine current sprite.
 	angle_t angle, pitch, roll; // orientation
@@ -335,10 +334,9 @@ typedef struct mobj_s
 	//  using an internal color lookup table for re-indexing.
 	UINT16 color; // This replaces MF_TRANSLATION. Use 0 for default (no translation).
 
-	// Interaction info, by BLOCKMAP.
-	// Links in blocks (if needed).
-	struct mobj_s *bnext;
-	struct mobj_s **bprev; // killough 8/11/98: change to ptr-to-ptr
+	// More list: links in sector (if needed)
+	struct mobj_s *snext;
+	struct mobj_s **sprev; // killough 8/11/98: change to ptr-to-ptr
 
 	// Additional pointers for NiGHTS hoops
 	struct mobj_s *hnext;
@@ -433,9 +431,10 @@ typedef struct precipmobj_s
 	fixed_t old_x, old_y, old_z; // position interpolation
 	fixed_t old_x2, old_y2, old_z2;
 
-	// More list: links in sector (if needed)
-	struct precipmobj_s *snext;
-	struct precipmobj_s **sprev; // killough 8/11/98: change to ptr-to-ptr
+	// Links in blocks (if needed).
+	// The blockmap is only used by precip to render.
+	struct precipmobj_s *bnext;
+	struct precipmobj_s **bprev; // killough 8/11/98: change to ptr-to-ptr
 
 	// More drawing info: to determine current sprite.
 	angle_t angle, pitch, roll; // orientation
@@ -477,6 +476,8 @@ typedef struct precipmobj_s
 	INT32 tics; // state tic counter
 	state_t *state;
 	UINT32 flags; // flags from mobjinfo tables
+	
+	tic_t lastThink;
 } precipmobj_t;
 
 typedef struct actioncache_s
@@ -526,9 +527,9 @@ void P_RemoveFloorSpriteSlope(mobj_t *mobj);
 boolean P_BossTargetPlayer(mobj_t *actor, boolean closest);
 boolean P_SupermanLook4Players(mobj_t *actor);
 void P_DestroyRobots(void);
-void P_PrecipThinker(precipmobj_t *mobj);
+boolean P_PrecipThinker(precipmobj_t *mobj);
 void P_NullPrecipThinker(precipmobj_t *mobj);
-void P_RemovePrecipMobj(precipmobj_t *mobj);
+void P_FreePrecipMobj(precipmobj_t *mobj);
 void P_SetScale(mobj_t *mobj, fixed_t newscale);
 void P_XYMovement(mobj_t *mo);
 void P_RingXYMovement(mobj_t *mo);
@@ -547,6 +548,7 @@ extern boolean runemeraldmanager;
 extern UINT16 emeraldspawndelay;
 extern INT32 numstarposts;
 extern INT32 numbosswaypoints;
+extern boolean ringsdisabled;
 extern UINT16 bossdisabled;
 extern boolean stoppedclock;
 #endif

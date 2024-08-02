@@ -63,6 +63,7 @@ automatically.
 	X (ShieldSpecial),/* shield abilities */\
 	X (PlayerCanDamage),/* P_PlayerCanDamage */\
 	X (PlayerQuit),\
+	X (NameChange),\
 	X (IntermissionThinker),/* Y_Ticker */\
 	X (TeamSwitch),/* team switching in... uh... *what* speak, spit it the fuck out */\
 	X (ViewpointSwitch),/* spy mode (no trickstabs) */\
@@ -72,6 +73,7 @@ automatically.
 	X (PlayerCmd),/* building the player's ticcmd struct */\
 	X (MusicChange),\
 	X (VoteThinker),/* Y_VoteTicker */\
+	X (AddonLoaded),\
 
 #define STRING_HOOK_LIST(X) \
 	X (LinedefExecute),\
@@ -138,6 +140,7 @@ int  LUA_HookMapThingSpawn(mobj_t *, mapthing_t *);
 int  LUA_HookFollowMobj(player_t *, mobj_t *);
 int  LUA_HookPlayerCanDamage(player_t *, mobj_t *);
 void LUA_HookPlayerQuit(player_t *, kickreason_t);
+int  LUA_HookNameChange(player_t *plr, const char *name);
 int  LUA_HookTeamSwitch(player_t *, int newteam, boolean fromspectators, boolean tryingautobalance, boolean tryingscramble);
 int  LUA_HookViewpointSwitch(player_t *player, player_t *newdisplayplayer, boolean forced);
 int  LUA_HookSeenPlayer(player_t *player, player_t *seenfriend);

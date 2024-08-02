@@ -1149,7 +1149,6 @@ static menuitem_t OP_AllControlsMenu[] =
 	{IT_CONTROL, NULL, "Turn Right",            {.routine = M_ChangeControl}, gc_turnright  },
 	{IT_CONTROL, NULL, "Drift",                 {.routine = M_ChangeControl}, gc_drift      },
 	{IT_CONTROL, NULL, "Brake",                 {.routine = M_ChangeControl}, gc_brake      },
-	{IT_CONTROL, NULL, "Spindash",              {.routine = M_ChangeControl}, gc_spindash   },
 	{IT_CONTROL, NULL, "Use/Throw Item",        {.routine = M_ChangeControl}, gc_fire       },
 	{IT_CONTROL, NULL, "Aim Forward",           {.routine = M_ChangeControl}, gc_aimforward },
 	{IT_CONTROL, NULL, "Aim Backward",          {.routine = M_ChangeControl}, gc_aimbackward},
@@ -1310,14 +1309,16 @@ static menuitem_t OP_VideoModeMenu[] =
 static menuitem_t OP_OpenGLOptionsMenu[] =
 {
 	{IT_STRING | IT_CVAR,	NULL, "3D Models",					{.cvar = &cv_glmodels},					 10},
-	{IT_STRING|IT_CVAR,		NULL, "Shaders",					{.cvar = &cv_glshaders},				 20},
+	{IT_STRING | IT_CVAR,	NULL, "Model Interpolation",		{.cvar = &cv_glmodelinterpolation},		 20},
+	{IT_STRING | IT_CVAR,	NULL, "Model Lighting",				{.cvar = &cv_glmodellighting},			 30},
+	{IT_STRING|IT_CVAR,		NULL, "Shaders",					{.cvar = &cv_glshaders},				 40},
 
-	{IT_STRING|IT_CVAR,		NULL, "Texture Quality",			{.cvar = &cv_scr_depth},				 40},
-	{IT_STRING|IT_CVAR,		NULL, "Texture Filter",				{.cvar = &cv_glfiltermode},				 50},
-	{IT_STRING|IT_CVAR,		NULL, "Anisotropic",				{.cvar = &cv_glanisotropicmode},		 60},
+	{IT_STRING|IT_CVAR,		NULL, "Texture Quality",			{.cvar = &cv_scr_depth},				 60},
+	{IT_STRING|IT_CVAR,		NULL, "Texture Filter",				{.cvar = &cv_glfiltermode},				 70},
+	{IT_STRING|IT_CVAR,		NULL, "Anisotropic",				{.cvar = &cv_glanisotropicmode},		 80},
 
-	{IT_STRING|IT_CVAR,		NULL, "Sprite Billboarding",		{.cvar = &cv_glspritebillboarding},		 80},
-	{IT_STRING|IT_CVAR,		NULL, "Software Perspective",		{.cvar = &cv_glshearing},				 90},
+	{IT_STRING|IT_CVAR,		NULL, "Sprite Billboarding",		{.cvar = &cv_glspritebillboarding},		 100},
+	{IT_STRING|IT_CVAR,		NULL, "Software Perspective",		{.cvar = &cv_glshearing},				 110},
 };
 #endif
 
@@ -7577,11 +7578,11 @@ static void M_DrawStatsMaps(int location)
 		M_DrawMapEmblems(mnum+1, 295, y);
 
 		if (mapheaderinfo[mnum]->levelflags & LF_NOZONE)
-			V_DrawString(20, y, 0, va("%s %d",
+			V_DrawString(20, y, 0, va("%s %s",
 				mapheaderinfo[mnum]->lvlttl,
 				mapheaderinfo[mnum]->actnum));
 		else
-			V_DrawString(20, y, 0, va("%s %s %d",
+			V_DrawString(20, y, 0, va("%s %s %s",
 				mapheaderinfo[mnum]->lvlttl,
 				(mapheaderinfo[mnum]->zonttl[0] ? mapheaderinfo[mnum]->zonttl : "Zone"),
 				mapheaderinfo[mnum]->actnum));

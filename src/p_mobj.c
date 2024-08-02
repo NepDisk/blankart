@@ -11,7 +11,9 @@
 /// \file  p_mobj.c
 /// \brief Moving object handling. Spawn functions
 
+#include "d_netcmd.h"
 #include "doomdef.h"
+#include "doomtype.h"
 #include "g_game.h"
 #include "g_input.h"
 #include "st_stuff.h"
@@ -54,6 +56,8 @@ actioncache_t actioncachehead;
 static mobj_t *overlaycap = NULL;
 mobj_t *kitemcap = NULL;	// Used for Kart offensive items (the ones that can get removed by sizedown)
 mobj_t *waypointcap = NULL;
+
+mobj_t *mobjcache = NULL;
 
 void P_InitCachedActions(void)
 {
@@ -538,7 +542,7 @@ static boolean P_SetPrecipMobjState(precipmobj_t *mobj, statenum_t state)
 
 	if (state == S_NULL)
 	{ // Remove mobj
-		P_RemovePrecipMobj(mobj);
+		P_FreePrecipMobj(mobj);
 		return false;
 	}
 	st = &states[state];
@@ -1028,6 +1032,27 @@ static void P_PlayerFlip(mobj_t *mo)
 {
 	if (!mo->player)
 		return;
+	
+	if (mo->player->pflags & PF_FLIPCAM)
+	{
+		UINT8 i;
+
+		mo->player->aiming = InvAngle(mo->player->aiming);
+
+		for (i = 0; i <= r_splitscreen; i++)
+		{
+			if (mo->player-players == displayplayers[i])
+			{
+				localaiming[i] = mo->player->aiming;
+				if (camera[i].chase) {
+					camera[i].aiming = InvAngle(camera[i].aiming);
+					camera[i].z = mo->z - camera[i].z + mo->z;
+					if (mo->eflags & MFE_VERTICALFLIP)
+						camera[i].z += FixedMul(20*FRACUNIT, mo->scale);
+				}
+			}
+		}
+	}
 
 	G_GhostAddFlip((INT32) (mo->player - players));
 	// Flip aiming to match!
@@ -1126,12 +1151,6 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 		if (mo->player->pogospring)
 		{
 			gravityadd = (5*gravityadd)/2;
-		}
-
-		if (mo->player->fastfall != 0)
-		{
-			// Fast falling
-			gravityadd *= 4;
 		}
 	}
 	else
@@ -2739,7 +2758,7 @@ void P_PlayerZMovement(mobj_t *mo)
 		K_UpdateMobjTerrain(mo, (mo->eflags & MFE_VERTICALFLIP ? tmceilingpic : tmfloorpic));
 
 		// Get up if you fell.
-		if (mo->player->panim == PA_HURT && mo->player->spinouttimer == 0)
+		if (mo->player->panim == PA_HURT && mo->player->spinouttimer == 0 && mo->player->squishedtimer == 0)
 		{
 			P_SetPlayerMobjState(mo, S_KART_STILL);
 		}
@@ -3453,6 +3472,7 @@ void P_DestroyRobots(void)
 // the below is chasecam only, if you're curious. check out P_CalcPostImg in p_user.c for first person
 void P_CalcChasePostImg(player_t *player, camera_t *thiscam)
 {
+	boolean flipcam = (player->pflags & PF_FLIPCAM && player->mo->eflags & MFE_VERTICALFLIP);
 	postimg_t postimg = postimg_none;
 	UINT8 i;
 
@@ -3460,10 +3480,12 @@ void P_CalcChasePostImg(player_t *player, camera_t *thiscam)
 	if (thiscam->subsector == NULL || thiscam->subsector->sector == NULL)
 		return;
 
-	if (encoremode)
-	{
+	if (encoremode && !flipcam)
 		postimg = postimg_mirror;
-	}
+	else if (!encoremode && flipcam)
+		postimg = postimg_flip;
+	else if (encoremode && flipcam)
+		postimg = postimg_mirrorflip;
 	else if (player->awayviewtics && player->awayviewmobj && !P_MobjWasRemoved(player->awayviewmobj)) // Camera must obviously exist
 	{
 		camera_t dummycam;
@@ -3669,17 +3691,6 @@ static void P_CheckFloatbobPlatforms(mobj_t *mobj)
 	}
 }
 
-static void P_SquishThink(mobj_t *mobj)
-{
-	if (!(mobj->flags & MF_NOSQUISH) &&
-			!(mobj->eflags & MFE_SLOPELAUNCHED))
-	{
-		K_Squish(mobj);
-	}
-
-	mobj->lastmomz = mobj->momz;
-}
-
 static void P_PlayerMobjThinker(mobj_t *mobj)
 {
 	I_Assert(mobj != NULL);
@@ -3745,7 +3756,6 @@ static void P_PlayerMobjThinker(mobj_t *mobj)
 		mobj->eflags &= ~MFE_JUSTHITFLOOR;
 	}
 
-	P_SquishThink(mobj);
 	K_UpdateTerrainOverlay(mobj);
 
 animonly:
@@ -3834,25 +3844,34 @@ void P_RecalcPrecipInSector(sector_t *sector)
 //
 // P_NullPrecipThinker
 //
-// For "Blank" precipitation
-//
+// Just the identification of a precip thinker. The thinker
+// should never actually be called!
+
 void P_NullPrecipThinker(precipmobj_t *mobj)
 {
-	//(void)mobj;
-	mobj->precipflags &= ~PCF_THUNK;
-	R_ResetPrecipitationMobjInterpolationState(mobj);
+	(void)mobj;
+	I_Assert("P_NullPrecipThinker should not be called" == 0);
+
 }
 
-void P_PrecipThinker(precipmobj_t *mobj)
+boolean P_PrecipThinker(precipmobj_t *mobj)
 {
 	boolean flip = (mobj->precipflags & PCF_FLIP);
+	
+	if (mobj->lastThink == leveltime)
+		return true; // already thinked this tick
+
+	mobj->lastThink = leveltime;
+
+	R_ResetPrecipitationMobjInterpolationState(mobj);
 
 	P_CycleStateAnimation((mobj_t *)mobj);
 
 	if (mobj->state == &states[S_RAINRETURN])
 	{
 		// Reset to ceiling!
-		P_SetPrecipMobjState(mobj, mobj->info->spawnstate);
+		if (!P_SetPrecipMobjState(mobj, mobj->info->spawnstate))
+			return false;
 		mobj->z = (flip) ? (mobj->floorz) : (mobj->ceilingz);
 		mobj->momz = FixedMul(-mobj->info->speed, mapobjectscale);
 		mobj->precipflags &= ~PCF_SPLASH;
@@ -3873,20 +3892,21 @@ void P_PrecipThinker(precipmobj_t *mobj)
 				// HACK: sprite changes are 1 tic late, so you would see splashes on the ceiling if not for this state.
 				// We need to use the settings from the previous state, since some of those are NOT 1 tic late.
 				INT32 frame = (mobj->frame & ~FF_FRAMEMASK);
-				P_SetPrecipMobjState(mobj, S_RAINRETURN);
+				if (!P_SetPrecipMobjState(mobj, S_RAINRETURN))
+					return false;
 				mobj->frame = frame;
-				return;
+				return true;
 			}
 			else
 			{
 				if (!P_SetPrecipMobjState(mobj, mobj->state->nextstate))
-					return;
+					return true;
 			}
 		}
 	}
 
 	if (mobj->precipflags & PCF_SPLASH)
-		return;
+		return true;
 
 	mobj->z += mobj->momz;
 
@@ -3900,12 +3920,15 @@ void P_PrecipThinker(precipmobj_t *mobj)
 		}
 		else
 		{
-			P_SetPrecipMobjState(mobj, mobj->info->deathstate);
+			if (!P_SetPrecipMobjState(mobj, mobj->info->deathstate))
+				return false;
 			mobj->z = (flip) ? (mobj->ceilingz) : (mobj->floorz);
 			mobj->precipflags |= PCF_SPLASH;
 			R_ResetPrecipitationMobjInterpolationState(mobj);
 		}
 	}
+	
+	return true;
 }
 
 static void P_RingThinker(mobj_t *mobj)
@@ -5750,7 +5773,7 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 							P_RandomRange(-spacing, spacing) * FRACUNIT,
 							P_RandomRange(-spacing, spacing) * FRACUNIT,
 							P_RandomRange(-spacing, spacing) * FRACUNIT,
-							MT_SPINDASHDUST
+							MT_DUST
 						);
 
 						P_SetScale(puff, (puff->destscale *= 5));
@@ -6215,7 +6238,6 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 		if (mobj->tics > 0)
 			mobj->renderflags ^= RF_DONTDRAW;
 		break;
-	case MT_SPINDASHWIND:
 	case MT_VWREF:
 	case MT_VWREB:
 	{
@@ -7137,6 +7159,15 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			P_Thrust(smoke, mobj->angle+FixedAngle(P_RandomRange(135, 225)<<FRACBITS), P_RandomRange(0, 8) * mobj->target->scale);
 		}
 		break;
+	case MT_SPARKLETRAIL:
+		if (!mobj->target)
+		{
+			P_RemoveMobj(mobj);
+			return false;
+		}
+		mobj->color = mobj->target->color;
+		mobj->colorized = mobj->target->colorized;
+		break;
 	case MT_INVULNFLASH:
 		if (!mobj->target || !mobj->target->health || (mobj->target->player && !mobj->target->player->invincibilitytimer))
 		{
@@ -7181,9 +7212,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			if (leveltime & 1)
 				mobj->renderflags |= RF_DONTDRAW;
 		}
-		break;
-	case MT_BRAKEDUST:
-		//mobj->renderflags ^= RF_DONTDRAW;
 		break;
 	case MT_PLAYERRETICULE:
 		if (!mobj->target || !mobj->target->health)
@@ -9179,7 +9207,7 @@ void P_MobjThinker(mobj_t *mobj)
 	// Destroy items sector special
 	if (P_CanDeleteKartItem(mobj->type))
 	{
-		if (mobj->health > 0 && P_MobjTouchingSectorSpecial(mobj, 4, 7, true))
+		if (mobj->health > 0 && P_MobjTouchingSectorSpecial(mobj, 4, 13, true))
 		{
 			if (mobj->type == MT_SSMINE
 			|| mobj->type == MT_BUBBLESHIELDTRAP
@@ -9276,7 +9304,6 @@ void P_MobjThinker(mobj_t *mobj)
 		P_ButteredSlope(mobj);
 	}
 
-	P_SquishThink(mobj);
 	K_UpdateTerrainOverlay(mobj);
 
 	if (mobj->flags & (MF_ENEMY|MF_BOSS) && mobj->health
@@ -9494,16 +9521,6 @@ void P_SceneryThinker(mobj_t *mobj)
 
 	P_CycleMobjState(mobj);
 
-	// Flicker softlanding mobj, this just prevents us from needing like 20 states.
-	if (mobj->type == MT_SOFTLANDING)
-	{
-		mobj->renderflags |= RF_NOSPLATBILLBOARD|RF_OBJECTSLOPESPLAT;
-		if (mobj->tics & 1)
-			mobj->renderflags |= RF_DONTDRAW;
-		else
-			mobj->renderflags &= ~RF_DONTDRAW;
-	}
-
 	if (mobj->type != MT_RANDOMAUDIENCE)
 		return;
 
@@ -9648,7 +9665,16 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 		type = MT_RAY;
 	}
 
-	mobj = Z_Calloc(sizeof (*mobj), PU_LEVEL, NULL);
+	if (mobjcache != NULL)
+	{
+		mobj = mobjcache;
+		mobjcache = mobjcache->hnext;
+		memset(mobj, 0, sizeof(*mobj));
+	}
+	else
+	{
+		mobj = Z_Calloc(sizeof (*mobj), PU_LEVEL, NULL);
+	}
 
 	// this is officially a mobj, declared as soon as possible.
 	mobj->thinker.function.acp1 = (actionf_p1)P_MobjThinker;
@@ -10449,7 +10475,9 @@ void P_RemoveMobj(mobj_t *mobj)
 		INT32 prevreferences;
 		if (!mobj->thinker.references)
 		{
-			Z_Free(mobj); // No refrrences? Can be removed immediately! :D
+			// no references, dump it directly in the mobj cache
+			mobj->hnext = mobjcache;
+			mobjcache = mobj;
 			return;
 		}
 
@@ -10470,7 +10498,7 @@ boolean P_MobjWasRemoved(mobj_t *mobj)
 	return true;
 }
 
-void P_RemovePrecipMobj(precipmobj_t *mobj)
+void P_FreePrecipMobj(precipmobj_t *mobj)
 {
 	// unlink from sector and block lists
 	P_UnsetPrecipThingPosition(mobj);
@@ -10482,28 +10510,44 @@ void P_RemovePrecipMobj(precipmobj_t *mobj)
 	}
 
 	// free block
-	P_RemoveThinker((thinker_t *)mobj);
+	// Precipmobjs don't actually think using their thinker,
+	// so the free cannot be delayed.
+	P_UnlinkThinker((thinker_t*)mobj);
+
 }
 
 // Clearing out stuff for savegames
 void P_RemoveSavegameMobj(mobj_t *mobj)
 {
 	// unlink from sector and block lists
-	P_UnsetThingPosition(mobj);
-
-	// Remove touching_sectorlist from mobj.
-	if (sector_list)
+	if (((thinker_t *)mobj)->function.acp1 == (actionf_p1)P_NullPrecipThinker)
 	{
-		P_DelSeclist(sector_list);
-		sector_list = NULL;
+		P_UnsetPrecipThingPosition((precipmobj_t *)mobj);
+
+		if (precipsector_list)
+		{
+			P_DelPrecipSeclist(precipsector_list);
+			precipsector_list = NULL;
+		}
+	}
+	else
+	{
+		// unlink from sector and block lists
+		P_UnsetThingPosition(mobj);
+
+		// Remove touching_sectorlist from mobj.
+		if (sector_list)
+		{
+			P_DelSeclist(sector_list);
+			sector_list = NULL;
+		}
 	}
 
 	// stop any playing sound
 	S_StopSound(mobj);
 
 	// free block
-	P_RemoveThinker((thinker_t *)mobj);
-	R_RemoveMobjInterpolator(mobj);
+	P_UnlinkThinker((thinker_t*)mobj);
 }
 
 static CV_PossibleValue_t respawnitemtime_cons_t[] = {{1, "MIN"}, {300, "MAX"}, {0, NULL}};
@@ -10592,6 +10636,9 @@ static void P_SpawnPrecipitationAt(fixed_t basex, fixed_t basey)
 
 		for (j = 0; j < numparticles; j++)
 		{
+			INT32 floorz;
+			INT32 ceilingz;
+
 			rainmo = P_SpawnPrecipMobj(x, y, z, type);
 
 			if (randomstates > 0)
@@ -10610,8 +10657,19 @@ static void P_SpawnPrecipitationAt(fixed_t basex, fixed_t basey)
 				}
 			}
 
-			// Randomly assign a height, now that floorz is set.
-			rainmo->z = M_RandomRange(rainmo->floorz >> FRACBITS, rainmo->ceilingz >> FRACBITS) << FRACBITS;
+			floorz = rainmo->floorz >> FRACBITS;
+			ceilingz = rainmo->ceilingz >> FRACBITS;
+
+			if (floorz < ceilingz)
+			{
+				// Randomly assign a height, now that floorz is set.
+				rainmo->z = M_RandomRange(floorz, ceilingz) << FRACBITS;
+			}
+			else
+			{
+				// ...except if the floor is above the ceiling.
+				rainmo->z = ceilingz << FRACBITS;
+			}
 		}
 	}
 }
@@ -11419,6 +11477,9 @@ static boolean P_AllowMobjSpawn(mapthing_t* mthing, mobjtype_t i)
 			return false; // No cheating!!
 
 		break;
+	case MT_RING:
+		if (ringsdisabled)
+			return false;
 	case MT_ITEMCAPSULE:
 		{
 			boolean isRingCapsule = (mthing->angle < 1 || mthing->angle == KITEM_SUPERRING || mthing->angle >= NUMKARTITEMS);

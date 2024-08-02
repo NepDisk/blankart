@@ -20,7 +20,9 @@
 #include "d_event.h"
 #include "d_net.h"
 #include "g_game.h"
+#include "info.h"
 #include "p_local.h"
+#include "p_mobj.h"
 #include "r_fps.h"
 #include "r_main.h"
 #include "s_sound.h"
@@ -454,7 +456,7 @@ UINT8 P_FindHighestLap(void)
 //
 boolean P_PlayerInPain(player_t *player)
 {
-	if (player->spinouttimer)
+	if (player->spinouttimer || player->squishedtimer)
 		return true;
 
 	return false;
@@ -474,7 +476,6 @@ void P_ResetPlayer(player_t *player)
 	player->drift = player->driftcharge = 0;
 	player->trickpanel = 0;
 	player->glanceDir = 0;
-	player->fastfall = 0;
 	player->pogospring = 0;
 }
 
@@ -494,6 +495,9 @@ INT32 P_GivePlayerRings(player_t *player, INT32 num_rings)
 		return 0;
 
 	if ((gametyperules & GTR_BUMPERS)) // No rings in Battle Mode
+		return 0;
+	
+	if (ringsdisabled) // No rings in when turned off
 		return 0;
 
 	test = player->rings + num_rings;
@@ -685,6 +689,9 @@ boolean P_EvaluateMusicStatus(UINT16 status, const char *musname)
 
 void P_PlayRinglossSound(mobj_t *source)
 {
+	if (ringsdisabled)
+		return;
+	
 	if (source->player && K_GetShieldFromItem(source->player->itemtype) != KSHIELD_NONE)
 		S_StartSound(source, sfx_s1a3); // Shield hit (no ring loss)
 	else if (source->player && source->player->rings <= 0)
@@ -1792,6 +1799,11 @@ static void P_3dMovement(player_t *player)
 	
 	if (!player->pogospring)
 		cmd->sidemove = 0;
+	
+	if ((player->exiting || mapreset) || player->pflags & PF_STASIS || player->spinouttimer) // pw_introcam?
+	{
+		cmd->forwardmove = cmd->sidemove = 0;
+	}
 
 	// Get the old momentum; this will be needed at the end of the function! -SH
 	oldMagnitude = R_PointToDist2(player->mo->momx - player->cmomx, player->mo->momy - player->cmomy, 0, 0);
@@ -1864,6 +1876,8 @@ static void P_3dMovement(player_t *player)
 	// Do not let the player control movement if not onground.
 	// SRB2Kart: pogo spring and speed bumps are supposed to control like you're on the ground
 	onground = (P_IsObjectOnGround(player->mo) || (player->pogospring));
+	
+	player->aiming = cmd->aiming<<FRACBITS;
 
 	// Forward movement
 	if (!((player->exiting || mapreset) || (P_PlayerInPain(player) && !onground)))
@@ -1877,10 +1891,10 @@ static void P_3dMovement(player_t *player)
 		if (player->mo->movefactor != FRACUNIT) // Friction-scaled acceleration...
 			movepushforward = FixedMul(movepushforward, player->mo->movefactor);
 
-		if (cmd->buttons & BT_BRAKE && !cmd->forwardmove) // SRB2kart - braking isn't instant
+		if (cmd->buttons & BT_BRAKE && (K_GetForwardMove(player) == 0)) // SRB2kart - braking isn't instant
 			movepushforward /= 64;
 
-		if (cmd->forwardmove > 0)
+		if (K_GetForwardMove(player) > 0)
 			player->brakestop = 0;
 		else if (player->brakestop < 6) // Don't start reversing with brakes until you've made a stop first
 		{
@@ -2040,16 +2054,6 @@ static void P_UpdatePlayerAngle(player_t *player)
 	player->angleturn = anglechange;
 	player->mo->angle = player->angleturn;
 
-	if (!cv_allowmlook.value || player->spectator == false)
-	{
-		player->aiming = 0;
-	}
-	else
-	{
-		player->aiming += (player->cmd.aiming << TICCMD_REDUCE);
-		player->aiming = G_ClipAimingPitch((INT32*) &player->aiming);
-	}
-
 	for (i = 0; i <= r_splitscreen; i++)
 	{
 		if (player == &players[displayplayers[i]])
@@ -2145,7 +2149,14 @@ void P_MovePlayer(player_t *player)
 		player->justDI = 0;
 	}
 
-	if (player->carry == CR_SLIDING)
+	if (player->squishedtimer > 0)
+	{
+		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
+		player->mo->spriteyscale = (FRACUNIT / 4);
+		if (player->squishedtimer == 1)
+			player->mo->spriteyscale = FRACUNIT;
+	}
+	else if (player->carry == CR_SLIDING)
 	{
 		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
 		player->drawangle -= ANGLE_22h;
@@ -2172,8 +2183,7 @@ void P_MovePlayer(player_t *player)
 	}
 	else if (player->nocontrol && player->pflags & PF_SKIDDOWN)
 	{
-		if (player->mo->state != &states[S_KART_SPINOUT])
-			P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
+		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
 
 		if (((player->nocontrol + 5) % 20) < 10)
 			player->drawangle += ANGLE_11hh;
@@ -2197,9 +2207,6 @@ void P_MovePlayer(player_t *player)
 			else if (player->drift != 0)
 			{
 				INT32 a = (ANGLE_45 / 5) * player->drift;
-
-				if (player->mo->eflags & MFE_UNDERWATER)
-					a /= 2;
 
 				player->drawangle += a;
 			}
@@ -2346,7 +2353,7 @@ void P_MovePlayer(player_t *player)
 		if (player->spectator)
 			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_SPECTATOR); // Respawn crushed spectators
 		else
-			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_CRUSHED);
+			P_DamageMobj(player->mo, NULL, NULL, 1, DMG_SQUISH); // SRB2kart - we don't kill when squished, we squish when squished.
 
 		if (player->playerstate == PST_DEAD)
 			return;
@@ -3794,8 +3801,18 @@ static void P_CalcPostImg(player_t *player)
 		}
 	}
 
-	if (player->mo->eflags & MFE_VERTICALFLIP)
-		*type = postimg_flip;
+	if (!encoremode) // srb2kart
+	{
+		if (player->mo->eflags & MFE_VERTICALFLIP)
+			*type = postimg_flip;
+	}
+	else
+	{
+		if (player->mo->eflags & MFE_VERTICALFLIP)
+			*type = postimg_mirrorflip;
+		else
+			*type = postimg_mirror;
+	}
 
 #if 1
 	(void)param;
@@ -3810,9 +3827,6 @@ static void P_CalcPostImg(player_t *player)
 			*param = 5;
 	}
 #endif
-
-	if (encoremode) // srb2kart
-		*type = postimg_mirror;
 }
 
 void P_DoTimeOver(player_t *player)
@@ -4356,10 +4370,8 @@ void P_PlayerThink(player_t *player)
 
 	// Strength counts up to diminish fade.
 	if (player->flashing && player->flashing < UINT16_MAX &&
-		(player->spectator || !P_PlayerInPain(player)))
-	{
+		(player->spectator || player->flashing < K_GetKartFlashing(player)))
 		player->flashing--;
-	}
 
 	if (player->nocontrol && player->nocontrol < UINT16_MAX)
 	{

@@ -93,7 +93,7 @@ typedef enum
 	PF_AIRFAILSAFE		= 1<<22, // Whenever or not try the air boost
 	PF_TRICKDELAY		= 1<<23, // Prevent tricks until control stick is neutral
 
-	//free	= 1<<24,
+	PF_FLIPCAM	= 1<<24,
 	//free		= 1<<25,
 
 	PF_HITFINISHLINE	= 1<<26, // Already hit the finish line this tic
@@ -306,7 +306,6 @@ typedef struct botvars_s
 
 	SINT8 turnconfirm; // Confirm turn direction
 
-	tic_t spindashconfirm; // When high enough, they will try spindashing
 } botvars_t;
 
 // player_t struct for all skybox variables
@@ -436,12 +435,6 @@ typedef struct player_s
 	UINT16 springstars;		// Spawn stars around a player when they hit a spring
 	UINT16 springcolor;		// Color of spring stars
 	UINT8 dashpadcooldown;	// Separate the vanilla SA-style dash pads from using flashing
-
-	UINT16 spindash;		// Spindash charge timer
-	fixed_t spindashspeed;	// Spindash release speed
-	UINT8 spindashboost;	// Spindash release boost timer
-
-	fixed_t fastfall;		// Fast fall momentum
 	
 	fixed_t boostpower;		// Base boost value, for offroad
 	fixed_t speedboost;		// Boost value smoothing for max speed
@@ -485,11 +478,13 @@ typedef struct player_s
 
 	UINT16 sneakertimer;	// Duration of a Sneaker Boost (from Sneakers or level boosters)
 	UINT8 floorboost;		// (0 to 3) - Prevents Sneaker sounds for a brief duration when triggered by a floor panel
+	boolean waterrun; 		// Tracks condition of water run
 
 	UINT8 boostcharge; 		// Charge during race start
 	
 	INT16 growshrinktimer;		// > 0 = Big, < 0 = small
-	INT16 growcancel;			// Duration of grow canceling 
+	INT16 growcancel;			// Duration of grow canceling
+	INT16 squishedtimer;		// Duration of being squished
 	UINT16 rocketsneakertimer;	// Rocket Sneaker duration timer
 	UINT16 invincibilitytimer;	// Invincibility timer
 

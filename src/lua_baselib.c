@@ -222,6 +222,11 @@ static const struct {
 	{META_ACTION,       "action"},
 
 	{META_LUABANKS,     "luabanks[]"},
+
+	{META_ACTIVATOR,    "activator_t"},
+	
+	{META_FOLLOWER,    "follower_t"},
+	
 	{NULL,              NULL}
 };
 
@@ -327,6 +332,18 @@ static int lib_reserveLuabanks(lua_State *L)
 		return luaL_error(L, "luabanks[] has already been reserved! Only one savedata-enabled mod at a time may use this feature.");
 	reserved = true;
 	LUA_PushUserdata(L, &luabanks, META_LUABANKS);
+	return 1;
+}
+
+static int lib_tofixed(lua_State *L)
+{
+	const char *arg = luaL_checkstring(L, 1);
+	char *end;
+	float f = strtof(arg, &end);
+	if (*end != '\0')
+		lua_pushnil(L);
+	else
+		lua_pushnumber(L, FLOAT_TO_FIXED(f));
 	return 1;
 }
 
@@ -1859,6 +1876,18 @@ static int lib_pFindHighestCeilingSurrounding(lua_State *L)
 	if (!sector)
 		return LUA_ErrInvalid(L, "sector_t");
 	lua_pushfixed(L, P_FindHighestCeilingSurrounding(sector));
+	return 1;
+}
+
+static int lib_pPlayerTouchingSectorSpecial(lua_State *L)
+{
+	player_t *player = *((player_t **)luaL_checkudata(L, 1, META_PLAYER));
+	INT32 section = (INT32)luaL_checkinteger(L, 2);
+	INT32 number = (INT32)luaL_checkinteger(L, 3);
+	//HUDSAFE
+	if (!player)
+		return LUA_ErrInvalid(L, "player_t");
+	LUA_PushUserdata(L, P_MobjTouchingSectorSpecial(player->mo, section, number, true), META_SECTOR);
 	return 1;
 }
 
@@ -3791,6 +3820,7 @@ static luaL_Reg lib[] = {
 	{"userdataMetatable", lib_userdataMetatable},
 	{"IsPlayerAdmin", lib_isPlayerAdmin},
 	{"reserveLuabanks", lib_reserveLuabanks},
+	{"tofixed", lib_tofixed},
 
 	// m_menu
 	{"M_MoveColorAfter",lib_pMoveColorAfter},
@@ -3920,6 +3950,7 @@ static luaL_Reg lib[] = {
 	{"P_FindNextLowestFloor",lib_pFindNextLowestFloor},
 	{"P_FindLowestCeilingSurrounding",lib_pFindLowestCeilingSurrounding},
 	{"P_FindHighestCeilingSurrounding",lib_pFindHighestCeilingSurrounding},
+	{"P_PlayerTouchingSectorSpecial",lib_pPlayerTouchingSectorSpecial},
 	{"P_FindSpecialLineFromTag",lib_pFindSpecialLineFromTag},
 	{"P_SwitchWeather",lib_pSwitchWeather},
 	{"P_LinedefExecute",lib_pLinedefExecute},

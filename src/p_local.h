@@ -68,14 +68,22 @@ typedef enum
 	THINK_MAIN,
 	THINK_MOBJ,
 	THINK_DYNSLOPE,
-	THINK_PRECIP,
+	
+	// Lists after this may exist but they do not call an
+	// action in P_RunThinkers
+	NUM_ACTIVETHINKERLISTS,
+
+	THINK_PRECIP = NUM_ACTIVETHINKERLISTS,
+
 	NUM_THINKERLISTS
 } thinklistnum_t; /**< Thinker lists. */
 extern thinker_t thlist[];
+extern mobj_t *mobjcache;
 
 void P_InitThinkers(void);
 void P_AddThinker(const thinklistnum_t n, thinker_t *thinker);
 void P_RemoveThinker(thinker_t *thinker);
+void P_UnlinkThinker(thinker_t *thinker);
 
 //
 // P_USER
@@ -461,6 +469,7 @@ extern INT32 bmapheight; // in mapblocks
 extern fixed_t bmaporgx;
 extern fixed_t bmaporgy; // origin of block map
 extern mobj_t **blocklinks; // for thing chains
+extern precipmobj_t **precipblocklinks; // special blockmap for precip rendering
 
 //
 // P_INTER
@@ -482,7 +491,7 @@ typedef struct BasicFF_s
 #define DMG_NORMAL  0x00
 #define DMG_WIPEOUT 0x01 // Normal, but with extra flashy effects
 #define DMG_EXPLODE 0x02
-//#define DMG_SQUISH  0x03
+#define DMG_SQUISH  0x03
 #define DMG_STING   0x04
 #define DMG_KARMA   0x05 // Karma Bomb explosion -- works like DMG_EXPLODE, but steals half of their bumpers & deletes the rest
 //// Death types - cannot be combined with damage types

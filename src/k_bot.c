@@ -262,7 +262,7 @@ void K_UpdateMatchRaceBots(void)
 boolean K_PlayerUsesBotMovement(player_t *player)
 {
 	if (player->exiting)
-		return true;
+		return false;
 
 	if (player->bot)
 		return true;
@@ -278,11 +278,7 @@ boolean K_PlayerUsesBotMovement(player_t *player)
 boolean K_BotCanTakeCut(player_t *player)
 {
 	if (
-#if 1
-		K_TripwirePassConditions(player) != TRIPWIRE_NONE
-#else
-		K_ApplyOffroad(player) == false
-#endif
+		(K_TripwirePassConditions(player) != TRIPWIRE_NONE || K_ApplyOffroad(player) == false)
 		|| player->itemtype == KITEM_SNEAKER
 		|| player->itemtype == KITEM_ROCKETSNEAKER
 		|| player->itemtype == KITEM_INVINCIBILITY
@@ -776,101 +772,6 @@ static botprediction_t *K_CreateBotPrediction(player_t *player)
 }
 
 /*--------------------------------------------------
-	static UINT8 K_TrySpindash(player_t *player)
-
-		Determines conditions where the bot should attempt to spindash.
-
-	Input Arguments:-
-		player - Bot player to check.
-
-	Return:-
-		0 to make the bot drive normally, 1 to e-brake, 2 to e-brake & charge spindash.
-		(TODO: make this an enum)
---------------------------------------------------*/
-static UINT8 K_TrySpindash(player_t *player)
-{
-	const tic_t difficultyModifier = (TICRATE/6);
-
-	const fixed_t oldSpeed = R_PointToDist2(0, 0, player->rmomx, player->rmomy);
-	const fixed_t baseAccel = K_GetNewSpeed(player) - oldSpeed;
-	const fixed_t speedDiff = player->speed - player->lastspeed;
-
-	const INT32 angleDiff = AngleDelta(player->mo->angle, K_MomentumAngle(player->mo));
-
-	if (player->spindashboost // You just released a spindash, you don't need to try again yet, jeez.
-		|| P_PlayerInPain(player) || !P_IsObjectOnGround(player->mo)) // Not in a state where we want 'em to spindash.
-	{
-		player->botvars.spindashconfirm = 0;
-		return 0;
-	}
-
-	// Try "start boosts" first
-	if (leveltime == starttime)
-	{
-		// Forces them to release, even if they haven't fully charged.
-		// Don't want them to keep charging if they didn't have time to.
-		return 0;
-	}
-
-	if (leveltime < starttime)
-	{
-		INT32 boosthold = starttime - K_GetSpindashChargeTime(player);
-
-		boosthold -= (DIFFICULTBOT - min(DIFFICULTBOT, player->botvars.difficulty)) * difficultyModifier;
-
-		if (leveltime >= (unsigned)boosthold)
-		{
-			// Start charging...
-			return 2;
-		}
-		else
-		{
-			// Just hold your ground and e-brake.
-			return 1;
-		}
-	}
-
-	if (player->botvars.spindashconfirm >= BOTSPINDASHCONFIRM)
-	{
-		INT32 chargingPoint = (K_GetSpindashChargeTime(player) + difficultyModifier);
-
-		// Release quicker the higher the difficulty is.
-		// Sounds counter-productive, but that's actually the best strategy after the race has started.
-		chargingPoint -= min(DIFFICULTBOT, player->botvars.difficulty) * difficultyModifier;
-
-		if (player->spindash > chargingPoint)
-		{
-			// Time to release.
-			return 0;
-		}
-
-		return 2;
-	}
-	else
-	{
-		// Logic for normal racing.
-		if (speedDiff < (baseAccel / 8) // Moving too slowly
-			|| angleDiff > ANG60) // Being pushed backwards
-		{
-			if (player->botvars.spindashconfirm < BOTSPINDASHCONFIRM)
-			{
-				player->botvars.spindashconfirm++;
-			}
-		}
-		else if (player->botvars.spindashconfirm >= BOTSPINDASHCONFIRM)
-		{
-			if (player->botvars.spindashconfirm > 0)
-			{
-				player->botvars.spindashconfirm--;
-			}
-		}
-	}
-
-	// We're doing just fine, we don't need to spindash, thanks.
-	return 0;
-}
-
-/*--------------------------------------------------
 	static void K_DrawPredictionDebug(botprediction_t *predict, player_t *player)
 
 		Draws objects to show where the viewpoint bot is trying to go.
@@ -1228,9 +1129,7 @@ void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
 {
 	precise_t t = 0;
 	botprediction_t *predict = NULL;
-	boolean trySpindash = true;
 	angle_t destangle = 0;
-	UINT8 spindash = 0;
 	INT32 turnamt = 0;
 	line_t *botController = NULL;
 
@@ -1315,7 +1214,6 @@ void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
 	}
 	if (leveltime <= starttime)
 	{
-		trySpindash = false;
 
 		if (leveltime >= starttime-TICRATE-TICRATE/7)
 		{
@@ -1342,27 +1240,7 @@ void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
 		turnamt = K_HandleBotTrack(player, cmd, predict, destangle);
 	}
 
-	if (trySpindash == true)
 	{
-		// Spindashing
-		spindash = K_TrySpindash(player);
-
-		if (spindash > 0)
-		{
-			cmd->buttons |= BT_EBRAKEMASK;
-			cmd->forwardmove = 0;
-
-			if (spindash == 2 && player->speed < 6*mapobjectscale)
-			{
-				cmd->buttons |= BT_DRIFT;
-			}
-		}
-	}
-
-	if (spindash == 0)
-	{
-		// Don't pointlessly try to use rings/sneakers while charging a spindash.
-		// TODO: Allowing projectile items like orbinaut while e-braking would be nice, maybe just pass in the spindash variable?
 		t = I_GetPreciseTime();
 		K_BotItemUsage(player, cmd, turnamt);
 		ps_bots[player - players].item = I_GetPreciseTime() - t;

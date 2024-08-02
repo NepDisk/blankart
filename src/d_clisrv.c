@@ -535,6 +535,7 @@ typedef enum
 	CL_DOWNLOADFILES,
 	CL_ASKJOIN,
 	CL_LOADFILES,
+	CL_SETUPFILES,
 	CL_WAITJOINRESPONSE,
 	CL_DOWNLOADSAVEGAME,
 	CL_CONNECTED,
@@ -620,6 +621,9 @@ static inline void CL_DrawConnectionStatus(void)
 			case CL_ASKFULLFILELIST:
 			case CL_CONFIRMCONNECT:
 				cltext = "";
+				break;
+			case CL_SETUPFILES:
+				cltext = M_GetText("Configuring addons...");
 				break;
 			case CL_ASKJOIN:
 			case CL_WAITJOINRESPONSE:
@@ -1860,7 +1864,12 @@ static boolean CL_ServerConnectionTicker(const char *tmpsave, tic_t *oldtic, tic
 			cl_mode = CL_LOADFILES;
 			break;
 		case CL_LOADFILES:
-			if (CL_LoadServerFiles())
+			if (CL_LoadServerFiles()) 
+				cl_mode = CL_SETUPFILES;
+
+			break;
+		case CL_SETUPFILES:
+			if (P_PartialAddGetStage() < 0 || P_MultiSetupWadFiles(false))
 			{
 				*asksent = 0; //This ensure the first join ask is right away
 				firstconnectattempttime = I_GetTime();
@@ -2073,7 +2082,13 @@ static void CL_ConnectToServer(void)
 #else
 		if (!CL_ServerConnectionTicker((char*)NULL, &oldtic, (tic_t *)NULL))
 #endif
+
+		{
+			if (P_PartialAddGetStage() >= 0)
+				P_MultiSetupWadFiles(true); // in case any partial adds were done
+
 			return;
+		}
 
 		if (server)
 		{
@@ -3924,6 +3939,11 @@ static void HandleConnect(SINT8 node)
 	// If a server filled out, then it'd overwrite the host and turn everyone into weird husks.....
 	// It's too much effort to legimately fix right now. Just prevent it from reaching that state.
 	UINT8 maxplayers = min((dedicated ? MAXPLAYERS-1 : MAXPLAYERS), cv_maxplayers.value);
+	UINT8 connectedplayers = 0;
+
+	for (UINT8 i = dedicated ? 1 : 0; i < MAXPLAYERS; i++)
+		if (playernode[i] != UINT8_MAX) // We use this to count players because it is affected by SV_AddWaitingPlayers when more than one client joins on the same tic, unlike playeringame and D_NumPlayers. UINT8_MAX denotes no node for that player
+			connectedplayers++;
 
 	if (bannednode && bannednode[node].banid != SIZE_MAX)
 	{
@@ -3981,7 +4001,7 @@ static void HandleConnect(SINT8 node)
 	{
 		SV_SendRefuse(node, M_GetText("The server is not accepting\njoins for the moment."));
 	}
-	else if (D_NumPlayers() >= maxplayers)
+	else if (connectedplayers >= maxplayers)
 	{
 		SV_SendRefuse(node, va(M_GetText("Maximum players reached: %d"), maxplayers));
 	}
@@ -3989,7 +4009,7 @@ static void HandleConnect(SINT8 node)
 	{
 		SV_SendRefuse(node, M_GetText("Too many players from\nthis node."));
 	}
-	else if (netgame && D_NumPlayers() + netbuffer->u.clientcfg.localplayers > maxplayers)
+	else if (netgame && connectedplayers + netbuffer->u.clientcfg.localplayers > maxplayers)
 	{
 		SV_SendRefuse(node, va(M_GetText("Number of local players\nwould exceed maximum: %d"), maxplayers));
 	}

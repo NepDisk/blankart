@@ -2777,8 +2777,6 @@ static boolean F_GetTextPromptTutorialTag(char *tag, INT32 length)
 		gcs = G_GetControlScheme(gamecontrol[0], gcl_brake, num_gcl_brake);
 	else if (!strncmp(tag, "TAD", 3)) // Drift
 		gcs = G_GetControlScheme(gamecontrol[0], gcl_drift, num_gcl_drift);
-	else if (!strncmp(tag, "TAS", 3)) // Spindash
-		gcs = G_GetControlScheme(gamecontrol[0], gcl_spindash, num_gcl_spindash);
 	else if (!strncmp(tag, "TAM", 3)) // Movement
 		gcs = G_GetControlScheme(gamecontrol[0], gcl_movement, num_gcl_movement);
 	else if (!strncmp(tag, "TAI", 3)) // Item usage

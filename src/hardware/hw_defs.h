@@ -119,6 +119,7 @@ typedef struct
 	FLOAT       centerx, centery;
 	FLOAT       rollx, rollz;
 	boolean     mirror;          // SRB2Kart: Encore Mode
+	boolean     mirrorflip;      // Encore Mode with Flipcam
 } FTransform;
 
 // Transformed vector, as passed to HWR API

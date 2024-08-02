@@ -24,6 +24,7 @@
 #include "p_local.h"
 #include "p_mobj.h"
 #include "r_textures.h"
+#include "r_main.h"
 #include "w_wad.h"
 #include "z_zone.h"
 
@@ -332,6 +333,16 @@ terrain_t *K_GetDefaultTerrain(void)
 }
 
 /*--------------------------------------------------
+	size_t K_GetDefaultTerrainID(void)
+
+		See header file for description.
+--------------------------------------------------*/
+size_t K_GetDefaultTerrainID(void)
+{
+	return defaultTerrain;
+}
+
+/*--------------------------------------------------
 	terrain_t *K_GetTerrainForTextureName(const char *checkName)
 
 		See header file for description.
@@ -360,6 +371,34 @@ terrain_t *K_GetTerrainForTextureName(const char *checkName)
 }
 
 /*--------------------------------------------------
+	size_t K_GetTerrainIDForTextureName(const char *checkName)
+
+		See header file for description.
+--------------------------------------------------*/
+size_t K_GetTerrainIDForTextureName(const char *checkName)
+{
+	UINT32 checkHash = quickncasehash(checkName, 8);
+	size_t i;
+
+	if (numTerrainFloorDefs > 0)
+	{
+		for (i = 0; i < numTerrainFloorDefs; i++)
+		{
+			t_floor_t *f = &terrainFloorDefs[i];
+
+			if (checkHash == f->textureHash && !strncasecmp(checkName, f->textureName, 8))
+			{
+				return f->terrainID;
+			}
+		}
+	}
+
+	// This texture doesn't have a terrain directly applied to it,
+	// so we fallback to the default terrain.
+	return K_GetDefaultTerrainID();
+}
+
+/*--------------------------------------------------
 	terrain_t *K_GetTerrainForTextureNum(INT32 textureNum)
 
 		See header file for description.
@@ -369,7 +408,7 @@ terrain_t *K_GetTerrainForTextureNum(INT32 textureNum)
 	if (textureNum >= 0 && textureNum < numtextures)
 	{
 		texture_t *tex = textures[textureNum];
-		return K_GetTerrainForTextureName(tex->name);
+		return K_GetTerrainByIndex(tex->terrainID);
 	}
 
 	// This texture doesn't have a terrain directly applied to it,
@@ -472,28 +511,38 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 
 		K_DoSneaker(player, 0);
 	}
+	
+	// WaterRun Panel
+	if (terrain->flags & TRF_WATERRUNPANEL)
+	{
+		if (player->floorboost == 0)
+			player->floorboost = 3;
+		else
+			player->floorboost = 2;
+
+		K_DoSneaker(player, 0);
+	}
 
 	// Trick panel
-	if (terrain->trickPanel > 0 && !(mo->eflags & MFE_SPRUNG))
+	if (terrain->pogoSpring > 0 && !(mo->eflags & MFE_SPRUNG))
 	{
-		const fixed_t hscale = mapobjectscale + (mapobjectscale - mo->scale);
+		const fixed_t hscale = mapobjectscale + (mapobjectscale - player->mo->scale);
 		const fixed_t minspeed = 24*hscale;
-		fixed_t speed = FixedHypot(mo->momx, mo->momy);
-		fixed_t upwards = 16 * terrain->trickPanel;
+		const fixed_t maxspeed = 28*hscale;
+		angle_t pushangle = FixedHypot(player->mo->momx, player->mo->momy) ? R_PointToAngle2(0, 0, player->mo->momx, player->mo->momy) : player->mo->angle;
+		// if we have no speed for SOME REASON, use the player's angle, otherwise we'd be forcefully thrusted to what I can only assume is angle 0
 
-		player->trickpanel = 1;
-		player->pflags |= PF_TRICKDELAY;
-		K_DoPogoSpring(mo, upwards, 1);
+		if ((player->speed > maxspeed) && terrain->pogoSpring == 2) // Prevent overshooting jumps
+			P_InstaThrust(player->mo, pushangle, maxspeed);
+		else if (player->speed < minspeed) // Push forward to prevent getting stuck
+			P_InstaThrust(player->mo, pushangle, minspeed);
 
-		// Reduce speed
-		speed /= 2;
-
-		if (speed < minspeed)
-		{
-			speed = minspeed;
-		}
-
-		P_InstaThrust(mo, mo->angle, speed);
+		if (terrain->pogoSpring == 2)
+			player->pogospring = 2;
+		else
+			player->pogospring = 1;
+		
+		K_DoPogoSpring(player->mo, 0, 1);
 	}
 
 	// (Offroad is handled elsewhere!)
@@ -1405,7 +1454,7 @@ static void K_TerrainDefaults(terrain_t *terrain)
 	terrain->friction = 0;
 	terrain->offroad = 0;
 	terrain->damageType = -1;
-	terrain->trickPanel = 0;
+	terrain->pogoSpring = 0;
 	terrain->flags = 0;
 }
 
@@ -1472,9 +1521,9 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	{
 		terrain->damageType = (INT16)get_number(val);
 	}
-	else if (stricmp(param, "trickPanel") == 0)
+	else if (stricmp(param, "pogoSpring") == 0)
 	{
-		terrain->trickPanel = FLOAT_TO_FIXED(atof(val));
+		terrain->pogoSpring = FLOAT_TO_FIXED(atof(val));
 	}
 	else if (stricmp(param, "floorClip") == 0)
 	{
@@ -1487,6 +1536,10 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	else if (stricmp(param, "sneakerPanel") == 0)
 	{
 		K_FlagBoolean(&terrain->flags, TRF_SNEAKERPANEL, val);
+	}
+	else if (stricmp(param, "waterRunPanel") == 0)
+	{
+		K_FlagBoolean(&terrain->flags, TRF_WATERRUNPANEL, val);
 	}
 	else if (stricmp(param, "tripwire") == 0)
 	{
@@ -1813,6 +1866,12 @@ static boolean K_TERRAINLumpParser(UINT8 *data, size_t size)
 						{
 							f->terrainID = K_GetTerrainHeapIndex(t);
 							CONS_Printf("Texture '%s' set to Terrain '%s'\n", f->textureName, tkn);
+
+							INT32 tex = R_CheckTextureNumForName(f->textureName);
+							if (tex != -1)
+							{
+								textures[tex]->terrainID = f->terrainID;
+							}
 						}
 					}
 					else

@@ -1157,7 +1157,7 @@ static void R_SplitSprite(vissprite_t *sprite)
 		if (testheight <= sprite->gz)
 			return;
 
-		cutfrac = (INT16)((centeryfrac - FixedMul(testheight - viewz, sprite->sortscale))>>FRACBITS);
+		cutfrac = (INT16)((centeryfrac - FixedMul(testheight - viewz, sprite->linkscale))>>FRACBITS);
 		if (cutfrac < 0)
 			continue;
 		if (cutfrac > viewheight)
@@ -1568,6 +1568,7 @@ static void R_ProjectSprite(mobj_t *thing)
 	fixed_t tx, tz;
 	fixed_t xscale, yscale; //added : 02-02-98 : aaargll..if I were a math-guy!!!
 	fixed_t sortscale, sortsplat = 0;
+	fixed_t linkscale = 0;
 	fixed_t sort_x = 0, sort_y = 0, sort_z;
 
 	INT32 x1, x2;
@@ -1958,12 +1959,16 @@ static void R_ProjectSprite(mobj_t *thing)
 		ang = (viewangle >> ANGLETOFINESHIFT);
 		sort_x = FixedMul(FixedMul(FixedMul(spritexscale, this_scale), sort_z), FINECOSINE(ang));
 		sort_y = FixedMul(FixedMul(FixedMul(spriteyscale, this_scale), sort_z), FINESINE(ang));
+
+		tr_x = (interp.x + sort_x) - viewx;
+		tr_y = (interp.y + sort_y) - viewy;
+		sort_z = FixedMul(tr_x, viewcos) + FixedMul(tr_y, viewsin);
+		sortscale = FixedDiv((size_t)projectiony, sort_z);
 	}
 
 	if ((thing->flags2 & MF2_LINKDRAW) && thing->tracer) // toast 16/09/16 (SYMMETRY)
 	{
 		interpmobjstate_t tracer_interp = {0};
-		fixed_t linkscale;
 
 		thing = thing->tracer;
 
@@ -1995,7 +2000,9 @@ static void R_ProjectSprite(mobj_t *thing)
 		if (sortscale < linkscale)
 			dispoffset *= -1; // if it's physically behind, make sure it's ordered behind (if dispoffset > 0)
 
-		sortscale = linkscale; // now make sure it's linked
+		//sortscale = linkscale; // now make sure it's linked
+		// No need to do that, linkdraw already excludes it from regular sorting.
+
 		cut |= SC_LINKDRAW;
 	}
 	else if (splat)
@@ -2004,6 +2011,10 @@ static void R_ProjectSprite(mobj_t *thing)
 		tr_y = (interp.y + sort_y) - viewy;
 		sort_z = FixedMul(tr_x, viewcos) + FixedMul(tr_y, viewsin);
 		sortscale = FixedDiv(projectiony[viewssnum], sort_z);
+	}
+	else
+	{
+		linkscale = sortscale;
 	}
 
 	// Calculate the splat's sortscale
@@ -2163,6 +2174,7 @@ static void R_ProjectSprite(mobj_t *thing)
 	vis->mobjflags = thing->flags;
 	vis->sortscale = sortscale;
 	vis->sortsplat = sortsplat;
+	vis->linkscale = linkscale;
 	vis->dispoffset = dispoffset; // Monster Iestyn: 23/11/15
 	vis->gx = interp.x;
 	vis->gy = interp.y;
@@ -2190,8 +2202,10 @@ static void R_ProjectSprite(mobj_t *thing)
 	vis->x2 = x2 >= portalclipend ? portalclipend-1 : x2;
 
 	vis->sector = thing->subsector->sector;
-	vis->szt = (INT16)((centeryfrac - FixedMul(vis->gzt - viewz, sortscale))>>FRACBITS);
-	vis->sz = (INT16)((centeryfrac - FixedMul(vis->gz - viewz, sortscale))>>FRACBITS);
+
+	// Using linkscale here improves cut detection for LINKDRAW.
+	vis->szt = (INT16)((centeryfrac - FixedMul(vis->gzt - viewz, linkscale))>>FRACBITS);
+	vis->sz = (INT16)((centeryfrac - FixedMul(vis->gz - viewz, linkscale))>>FRACBITS);
 	vis->cut = cut;
 
 	if (thing->subsector->sector->numlights)
@@ -2317,6 +2331,12 @@ static void R_ProjectPrecipitationSprite(precipmobj_t *thing)
 
 	// uncapped/interpolation
 	interpmobjstate_t interp = {0};
+	
+	// okay... this is a hack, but weather isn't networked, so it should be ok
+	if (!P_PrecipThinker(thing))
+	{
+		return;
+	}
 
 	// do interpolation
 	if (R_UsingFrameInterpolation() && !paused)
@@ -2407,7 +2427,7 @@ static void R_ProjectPrecipitationSprite(precipmobj_t *thing)
 	if (thing->subsector->sector->cullheight)
 	{
 		if (R_DoCulling(thing->subsector->sector->cullheight, viewsector->cullheight, viewz, gz, gzt))
-			goto weatherthink;
+			return;
 	}
 
 	// Determine the blendmode and translucency value
@@ -2418,7 +2438,7 @@ static void R_ProjectPrecipitationSprite(precipmobj_t *thing)
 
 		trans = (thing->frame & FF_TRANSMASK) >> FF_TRANSSHIFT;
 		if (trans >= NUMTRANSMAPS)
-			goto weatherthink; // cap
+			return; // cap
 	}
 
 	// store information in a vissprite
@@ -2471,14 +2491,6 @@ static void R_ProjectPrecipitationSprite(precipmobj_t *thing)
 
 	// Fullbright
 	vis->colormap = colormaps;
-
-weatherthink:
-	// okay... this is a hack, but weather isn't networked, so it should be ok
-	if (!(thing->precipflags & PCF_THUNK))
-	{
-		P_PrecipThinker(thing);
-		thing->precipflags |= PCF_THUNK;
-	}
 }
 
 // R_AddSprites
@@ -2487,7 +2499,6 @@ weatherthink:
 void R_AddSprites(sector_t *sec, INT32 lightlevel)
 {
 	mobj_t *thing;
-	precipmobj_t *precipthing; // Tails 08-25-2002
 	INT32 lightnum;
 	fixed_t limit_dist;
 
@@ -2544,16 +2555,59 @@ void R_AddSprites(sector_t *sec, INT32 lightlevel)
 			}
 		}
 	}
+}
+
+// R_AddPrecipitationSprites
+// This renders through the blockmap instead of BSP to avoid
+// iterating a huge amount of precipitation sprites in sectors
+// that are beyond drawdist.
+//
+void R_AddPrecipitationSprites(void)
+{
+	const fixed_t drawdist = cv_drawdist_precip.value * mapobjectscale;
+
+	INT32 xl, xh, yl, yh, bx, by;
+	precipmobj_t *th, *next;
 
 	// no, no infinite draw distance for precipitation. this option at zero is supposed to turn it off
-	if ((limit_dist = (fixed_t)cv_drawdist_precip.value * mapobjectscale))
+	if (drawdist == 0)
 	{
-		for (precipthing = sec->preciplist; precipthing; precipthing = precipthing->snext)
+		return;
+	}
+
+	R_GetRenderBlockMapDimensions(drawdist, &xl, &xh, &yl, &yh);
+
+	for (bx = xl; bx <= xh; bx++)
+	{
+		for (by = yl; by <= yh; by++)
 		{
-			if (R_PrecipThingVisible(precipthing, limit_dist))
-				R_ProjectPrecipitationSprite(precipthing);
+			for (th = precipblocklinks[(by * bmapwidth) + bx]; th; th = next)
+			{
+				// Store this beforehand because R_ProjectPrecipitionSprite may free th (see P_PrecipThinker)
+				next = th->bnext;
+
+				if (R_PrecipThingVisible(th))
+				{
+					R_ProjectPrecipitationSprite(th);
+				}
+			}
 		}
 	}
+}
+
+static boolean R_SortVisSpriteFunc(vissprite_t *ds, fixed_t bestscale, INT32 bestdispoffset)
+{
+	if (ds->sortscale < bestscale)
+	{
+		return true;
+	}
+	// order visprites of same scale by dispoffset, smallest first
+	else if (ds->sortscale == bestscale && ds->dispoffset < bestdispoffset)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 //
@@ -2650,7 +2704,7 @@ static void R_SortVisSprites(vissprite_t* vsprsortedhead, UINT32 start, UINT32 e
 			// reusing dsnext...
 			dsnext = dsfirst->linkdraw;
 
-			if (!dsnext || ds->dispoffset < dsnext->dispoffset)
+			if (dsnext == NULL || R_SortVisSpriteFunc(ds, dsnext->sortscale, dsnext->dispoffset) == true)
 			{
 				ds->next = dsnext;
 				dsfirst->linkdraw = ds;
@@ -2658,8 +2712,13 @@ static void R_SortVisSprites(vissprite_t* vsprsortedhead, UINT32 start, UINT32 e
 			else
 			{
 				for (; dsnext->next != NULL; dsnext = dsnext->next)
-					if (ds->dispoffset < dsnext->next->dispoffset)
+				{
+					if (R_SortVisSpriteFunc(ds, dsnext->next->sortscale, dsnext->next->dispoffset) == true)
+					{
 						break;
+					}
+				}
+
 				ds->next = dsnext->next;
 				dsnext->next = ds;
 			}
@@ -2678,15 +2737,9 @@ static void R_SortVisSprites(vissprite_t* vsprsortedhead, UINT32 start, UINT32 e
 				I_Error("R_SortVisSprites: no link or discardal made for linkdraw!");
 #endif
 
-			if (ds->sortscale < bestscale)
+			if (R_SortVisSpriteFunc(ds, bestscale, bestdispoffset) == true)
 			{
 				bestscale = ds->sortscale;
-				bestdispoffset = ds->dispoffset;
-				best = ds;
-			}
-			// order visprites of same scale by dispoffset, smallest first
-			else if (ds->sortscale == bestscale && ds->dispoffset < bestdispoffset)
-			{
 				bestdispoffset = ds->dispoffset;
 				best = ds;
 			}
@@ -3420,17 +3473,12 @@ boolean R_ThingWithinDist (mobj_t *thing, fixed_t limit_dist)
 }
 
 /* Check if precipitation may be drawn from our current view. */
-boolean R_PrecipThingVisible (precipmobj_t *precipthing,
-		fixed_t limit_dist)
+boolean R_PrecipThingVisible (precipmobj_t *precipthing)
 {
-	fixed_t approx_dist;
-
 	if (( precipthing->precipflags & PCF_INVISIBLE ))
 		return false;
 
-	approx_dist = P_AproxDistance(viewx-precipthing->x, viewy-precipthing->y);
-
-	return ( approx_dist <= limit_dist );
+	return true;
 }
 
 boolean R_ThingHorizontallyFlipped(mobj_t *thing)
@@ -3520,14 +3568,20 @@ static void R_DrawMaskedList (drawnode_t* head)
 				vissprite_t *ds = r2->sprite->linkdraw;
 
 				for (;
-				(ds != NULL && r2->sprite->dispoffset > ds->dispoffset);
-				ds = ds->next)
+					(ds != NULL && r2->sprite->dispoffset > ds->dispoffset);
+					ds = ds->next)
+				{
 					R_DrawSprite(ds);
+				}
 
 				R_DrawSprite(r2->sprite);
 
-				for (; ds != NULL; ds = ds->next)
+				for (;
+					ds != NULL;
+					ds = ds->next)
+				{
 					R_DrawSprite(ds);
+				}
 			}
 
 			R_DoneWithNode(r2);

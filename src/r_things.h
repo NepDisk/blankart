@@ -63,6 +63,7 @@ fixed_t R_GetShadowZ(mobj_t *thing, pslope_t **shadowslope);
 
 //SoM: 6/5/2000: Light sprites correctly!
 void R_AddSprites(sector_t *sec, INT32 lightlevel);
+void R_AddPrecipitationSprites(void);
 void R_InitSprites(void);
 void R_ClearSprites(void);
 
@@ -74,8 +75,7 @@ boolean R_ThingVisible (mobj_t *thing);
 boolean R_ThingWithinDist (mobj_t *thing,
 		fixed_t        draw_dist);
 
-boolean R_PrecipThingVisible (precipmobj_t *precipthing,
-		fixed_t precip_draw_dist);
+boolean R_PrecipThingVisible (precipmobj_t *precipthing);
 
 boolean R_ThingHorizontallyFlipped (mobj_t *thing);
 boolean R_ThingVerticallyFlipped (mobj_t *thing);
@@ -165,8 +165,9 @@ typedef struct vissprite_s
 	fixed_t startfrac; // horizontal position of x1
 	fixed_t xscale, scale; // projected horizontal and vertical scales
 	fixed_t thingscale; // the object's scale
-	fixed_t sortscale; // sortscale only differs from scale for paper sprites, floor sprites, and MF2_LINKDRAW
+	fixed_t sortscale; // sortscale only differs from scale for paper sprites and floor sprites
 	fixed_t sortsplat; // the sortscale from behind the floor sprite
+	fixed_t linkscale; // the sortscale for MF2_LINKDRAW sprites
 	fixed_t scalestep; // only for paper sprites, 0 otherwise
 	fixed_t paperoffset, paperdistance; // for paper sprites, offset/dist relative to the angle
 	fixed_t xiscale; // negative if flipped
