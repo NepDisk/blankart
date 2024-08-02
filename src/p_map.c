@@ -292,153 +292,106 @@ static boolean P_SpecialIsLinedefCrossType(line_t *ld)
 //
 boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 {
-	const fixed_t scaleVal = FixedSqrt(FixedMul(mapobjectscale, spring->scale));
+	const fixed_t hscale = mapobjectscale + (mapobjectscale - object->scale);
+	const fixed_t vscale = mapobjectscale + (object->scale - mapobjectscale);
+	fixed_t offx, offy;
 	fixed_t vertispeed = spring->info->mass;
 	fixed_t horizspeed = spring->info->damage;
-	UINT16 starcolor = (spring->info->painchance % numskincolors);
-	fixed_t savemomx = 0;
-	fixed_t savemomy = 0;
-	statenum_t raisestate = spring->info->raisestate;
 
-	// Object was already sprung this tic
-	if (object->eflags & MFE_SPRUNG)
+	if (object->eflags & MFE_SPRUNG) // Object was already sprung this tic
 		return false;
 
 	// Spectators don't trigger springs.
 	if (object->player && object->player->spectator)
 		return false;
 
-	// "Even in Death" is a song from Volume 8, not a command.
-	if (!spring->health || !object->health)
-		return false;
+	object->standingslope = NULL; // Okay, now we can't return - no launching off at silly angles for you.
 
-#if 0
+	object->eflags |= MFE_SPRUNG; // apply this flag asap!
+	spring->flags &= ~(MF_SOLID|MF_SPECIAL); // De-solidify
+
 	if (horizspeed && vertispeed) // Mimic SA
 	{
 		object->momx = object->momy = 0;
 		P_TryMove(object, spring->x, spring->y, true);
 	}
-#endif
-
-	// Does nothing?
-	if (!vertispeed && !horizspeed)
-	{
-		return false;
-	}
-
-	object->standingslope = NULL; // Okay, now we know it's not going to be relevant - no launching off at silly angles for you.
-	object->terrain = NULL;
-
-	object->eflags |= MFE_SPRUNG; // apply this flag asap!
-	spring->flags &= ~(MF_SOLID|MF_SPECIAL); // De-solidify
 
 	if (spring->eflags & MFE_VERTICALFLIP)
 		vertispeed *= -1;
 
-	if ((spring->eflags ^ object->eflags) & MFE_VERTICALFLIP)
-		vertispeed *= 2;
-
-	// Vertical springs teleport you on TOP of them.
 	if (vertispeed > 0)
-	{
 		object->z = spring->z + spring->height + 1;
-	}
 	else if (vertispeed < 0)
-	{
 		object->z = spring->z - object->height - 1;
-	}
 	else
 	{
-		fixed_t offx, offy;
-
 		// Horizontal springs teleport you in FRONT of them.
-		savemomx = object->momx;
-		savemomy = object->momy;
 		object->momx = object->momy = 0;
 
 		// Overestimate the distance to position you at
 		offx = P_ReturnThrustX(spring, spring->angle, (spring->radius + object->radius + 1) * 2);
 		offy = P_ReturnThrustY(spring, spring->angle, (spring->radius + object->radius + 1) * 2);
 
-		// Then clip it down to a square, so it matches the hitbox size.
+		// Make it square by clipping
 		if (offx > (spring->radius + object->radius + 1))
 			offx = spring->radius + object->radius + 1;
 		else if (offx < -(spring->radius + object->radius + 1))
 			offx = -(spring->radius + object->radius + 1);
 
+		if (offy > (spring->radius + object->radius + 1))
+			offy = spring->radius + object->radius + 1;
+		else if (offy < -(spring->radius + object->radius + 1))
+			offy = -(spring->radius + object->radius + 1);
+
+		// Set position!
 		P_TryMove(object, spring->x + offx, spring->y + offy, true);
 	}
 
 	if (vertispeed)
-	{
-		object->momz = FixedMul(vertispeed, scaleVal);
-	}
+		object->momz = FixedMul(vertispeed,FixedSqrt(FixedMul(vscale, spring->scale)));
 
 	if (horizspeed)
 	{
-		angle_t finalAngle = spring->angle;
-		fixed_t finalSpeed = FixedMul(horizspeed, scaleVal);
-		fixed_t objectSpeed;
-
-		if (object->player)
-			objectSpeed = object->player->speed;
+		if (!object->player)
+			P_InstaThrust(object, spring->angle, FixedMul(horizspeed,FixedSqrt(FixedMul(hscale, spring->scale))));
 		else
-			objectSpeed = R_PointToDist2(0, 0, savemomx, savemomy);
-
-		if (!vertispeed)
 		{
-			// Scale to gamespeed
-			finalSpeed = FixedMul(finalSpeed, K_GetKartGameSpeedScalar(gamespeed));
+			fixed_t finalSpeed = FixedDiv(horizspeed, hscale);
+			fixed_t pSpeed = object->player->speed;
 
-			// Reflect your momentum angle against the surface of horizontal springs.
-			// This makes it a bit more interesting & unique than just being a speed boost in a pre-defined direction
-			if (savemomx || savemomy)
-			{
-				finalAngle = K_ReflectAngle(
-					R_PointToAngle2(0, 0, savemomx, savemomy), finalAngle,
-					objectSpeed, finalSpeed
-				);
-			}
+			if (pSpeed > finalSpeed)
+				finalSpeed = pSpeed;
+
+			P_InstaThrust(object, spring->angle, FixedMul(finalSpeed,FixedSqrt(FixedMul(hscale, spring->scale))));
 		}
-
-		// Horizontal speed is used as a minimum thrust, not a direct replacement
-		finalSpeed = max(objectSpeed, finalSpeed);
-
-		P_InstaThrust(object, finalAngle, finalSpeed);
 	}
 
 	// Re-solidify
-	spring->flags |= (spring->info->flags & (MF_SPRING|MF_SPECIAL));
+	spring->flags |= (spring->info->flags & (MF_SPECIAL|MF_SOLID));
+
+	P_SetMobjState(spring, spring->info->raisestate);
 
 	if (object->player)
 	{
 		if (spring->flags & MF_ENEMY) // Spring shells
-		{
 			P_SetTarget(&spring->target, object);
-		}
 
-		P_ResetPlayer(object->player);
-
-		object->player->springstars = max(vertispeed, horizspeed) / FRACUNIT / 2;
-		object->player->springcolor = starcolor;
-
-		if (spring->type == MT_POGOSPRING)
+		if (horizspeed && object->player->cmd.forwardmove == 0 && object->player->cmd.sidemove == 0)
 		{
-			if (spring->reactiontime == 0)
-			{
-				object->eflags &= ~MFE_SPRUNG;
-				object->player->pogospring = 1;
-				K_DoPogoSpring(object, 0, 0);
-			}
+			object->angle = spring->angle;
 
-			spring->reactiontime++;
+			if (!demo.playback)
+			{
+				for (int i = 0; i <= r_splitscreen; i++)
+				{
+						localangle[i] = spring->angle;
+				}
+			}
 		}
 	}
-
-	P_SetMobjState(spring, raisestate);
-
 	return true;
 }
+
 
 static void P_DoFanAndGasJet(mobj_t *spring, mobj_t *object)
 {
