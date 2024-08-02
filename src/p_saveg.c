@@ -4630,8 +4630,8 @@ static inline boolean P_NetUnArchiveMisc(boolean reloading)
 	leveltime = READUINT32(save_p);
 	ssspheres = READUINT32(save_p);
 	lastmap = READINT16(save_p);
-	bossdisabled = READUINT16(save_p);\
-	ringsdisabled = READUINT16(save_p);
+	bossdisabled = READUINT16(save_p);
+	ringsdisabled = READUINT8(save_p);
 
 	for (i = 0; i < 4; i++)
 	{
