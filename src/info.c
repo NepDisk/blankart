@@ -379,18 +379,18 @@ char sprnames[NUMSPRITES + 1][5] =
 	"STEM", // Steam riser
 	"BMPR", // Bumpers
 	"BLON", // Balloons
-	"SPVY", // Yellow Vertical Spring
-	"SPVR", // Red Vertical Spring
-	"SPVB", // Blue Vertical Spring
-	"SPVG", // Grey Vertical Spring
-	"SPDY", // Yellow Diagonal Spring
-	"SPDR", // Red Diagonal Spring
-	"SPDB", // Blue Diagonal Spring
-	"SPDG", // Grey Diagonal Spring
-	"SPHY", // Yellow Horizontal Spring
-	"SPHR", // Red Horizontal Spring
-	"SPHB", // Blue Horizontal Spring
-	"SPHG", // Grey Horizontal Spring
+	"SPRY", // Yellow Vertical Spring
+	"SPRR", // Red Vertical Spring
+	"SPRB", // Blue Vertical Spring
+	"SPRG", // Grey Vertical Spring
+	"YSPR", // Yellow Diagonal Spring
+	"RSPR", // Red Diagonal Spring
+	"BSPR", // Blue Diagonal Spring
+	"GSPR", // Grey Diagonal Spring
+	"SSWY", // Yellow Horizontal Spring
+	"SSWR", // Red Horizontal Spring
+	"SSWB", // Blue Horizontal Spring
+	"SSWG", // Grey Horizontal Spring
 	"POGS", // Pogo Spring
 	"BSTY", // Yellow Booster
 	"BSTR", // Red Booster
@@ -3032,28 +3032,28 @@ state_t states[NUMSTATES] =
 	{SPR_NULL, 0, 0, {A_SpawnFreshCopy}, 0, 0, S_NULL},        // S_BALLOONPOP6
 
 	// Yellow Spring
-	{SPR_SPVY, 0, -1, {NULL}, 0, 0, S_NULL},           // S_YELLOWSPRING1
-	{SPR_SPVY, 1, 1, {A_Pain}, 0, 0, S_YELLOWSPRING3}, // S_YELLOWSPRING2
-	{SPR_SPVY, 0, 1, {NULL}, 0, 0, S_YELLOWSPRING4},   // S_YELLOWSPRING3
-	{SPR_SPVY, 2, 4, {NULL}, 0, 0, S_YELLOWSPRING1},   // S_YELLOWSPRING4
+	{SPR_SPRY, 0, -1, {NULL}, 0, 0, S_NULL},           // S_YELLOWSPRING1
+	{SPR_SPRY, 1, 1, {A_Pain}, 0, 0, S_YELLOWSPRING3}, // S_YELLOWSPRING2
+	{SPR_SPRY, 0, 1, {NULL}, 0, 0, S_YELLOWSPRING4},   // S_YELLOWSPRING3
+	{SPR_SPRY, 2, 4, {NULL}, 0, 0, S_YELLOWSPRING1},   // S_YELLOWSPRING4
 
 	// Red Spring
-	{SPR_SPVR, 0, -1, {NULL}, 0, 0, S_NULL},        // S_REDSPRING1
-	{SPR_SPVR, 1, 1, {A_Pain}, 0, 0, S_REDSPRING3}, // S_REDSPRING2
-	{SPR_SPVR, 0, 1, {NULL}, 0, 0, S_REDSPRING4},   // S_REDSPRING3
-	{SPR_SPVR, 2, 4, {NULL}, 0, 0, S_REDSPRING1},   // S_REDSPRING4
+	{SPR_SPRR, 0, -1, {NULL}, 0, 0, S_NULL},        // S_REDSPRING1
+	{SPR_SPRR, 1, 1, {A_Pain}, 0, 0, S_REDSPRING3}, // S_REDSPRING2
+	{SPR_SPRR, 0, 1, {NULL}, 0, 0, S_REDSPRING4},   // S_REDSPRING3
+	{SPR_SPRR, 2, 4, {NULL}, 0, 0, S_REDSPRING1},   // S_REDSPRING4
 
 	// Blue Spring
-	{SPR_SPVB, 0, -1, {NULL}, 0, 0, S_NULL},         // S_BLUESPRING1
-	{SPR_SPVB, 1, 1, {A_Pain}, 0, 0, S_BLUESPRING3}, // S_BLUESPRING2
-	{SPR_SPVB, 0, 1, {NULL}, 0, 0, S_BLUESPRING4},   // S_BLUESPRING3
-	{SPR_SPVB, 2, 4, {NULL}, 0, 0, S_BLUESPRING1},   // S_BLUESPRING4
+	{SPR_SPRB, 0, -1, {NULL}, 0, 0, S_NULL},         // S_BLUESPRING1
+	{SPR_SPRB, 1, 1, {A_Pain}, 0, 0, S_BLUESPRING3}, // S_BLUESPRING2
+	{SPR_SPRB, 0, 1, {NULL}, 0, 0, S_BLUESPRING4},   // S_BLUESPRING3
+	{SPR_SPRB, 2, 4, {NULL}, 0, 0, S_BLUESPRING1},   // S_BLUESPRING4
 
 	// Grey Spring
-	{SPR_SPVG, 0, -1, {NULL}, 0, 0, S_NULL},         // S_GREYSPRING1
-	{SPR_SPVG, 1, 1, {A_Pain}, 0, 0, S_GREYSPRING3}, // S_GREYSPRING2
-	{SPR_SPVG, 0, 1, {NULL}, 0, 0, S_GREYSPRING4},   // S_GREYSPRING3
-	{SPR_SPVG, 2, 4, {NULL}, 0, 0, S_GREYSPRING1},   // S_GREYSPRING4
+	{SPR_SPRG, 0, -1, {NULL}, 0, 0, S_NULL},         // S_GREYSPRING1
+	{SPR_SPRG, 1, 1, {A_Pain}, 0, 0, S_GREYSPRING3}, // S_GREYSPRING2
+	{SPR_SPRG, 0, 1, {NULL}, 0, 0, S_GREYSPRING4},   // S_GREYSPRING3
+	{SPR_SPRG, 2, 4, {NULL}, 0, 0, S_GREYSPRING1},   // S_GREYSPRING4
 
 	// Orange Spring (Pogo)
 	{SPR_POGS, 0, -1, {NULL}, 0, 0, S_NULL},         // S_POGOSPRING1
@@ -3063,52 +3063,52 @@ state_t states[NUMSTATES] =
 	{SPR_POGS, 2, 4, {NULL}, 0, 0, S_POGOSPRING1},   // S_POGOSPRING4
 
 	// Yellow Diagonal Spring
-	{SPR_SPDY, 0, -1, {NULL}, 0, 0, S_NULL},    // S_YDIAG1
-	{SPR_SPDY, 1, 1, {A_Pain}, 0, 0, S_YDIAG3}, // S_YDIAG2
-	{SPR_SPDY, 0, 1, {NULL}, 0, 0, S_YDIAG4},   // S_YDIAG3
-	{SPR_SPDY, 2, 4, {NULL}, 0, 0, S_YDIAG1},   // S_YDIAG4
+	{SPR_YSPR, 0, -1, {NULL}, 0, 0, S_NULL},    // S_YDIAG1
+	{SPR_YSPR, 1, 1, {A_Pain}, 0, 0, S_YDIAG3}, // S_YDIAG2
+	{SPR_YSPR, 0, 1, {NULL}, 0, 0, S_YDIAG4},   // S_YDIAG3
+	{SPR_YSPR, 2, 4, {NULL}, 0, 0, S_YDIAG1},   // S_YDIAG4
 
 	// Red Diagonal Spring
-	{SPR_SPDR, 0, -1, {NULL}, 0, 0, S_NULL},    // S_RDIAG1
-	{SPR_SPDR, 1, 1, {A_Pain}, 0, 0, S_RDIAG3}, // S_RDIAG2
-	{SPR_SPDR, 0, 1, {NULL}, 0, 0, S_RDIAG4},   // S_RDIAG3
-	{SPR_SPDR, 2, 4, {NULL}, 0, 0, S_RDIAG1},   // S_RDIAG4
+	{SPR_RSPR, 0, -1, {NULL}, 0, 0, S_NULL},    // S_RDIAG1
+	{SPR_RSPR, 1, 1, {A_Pain}, 0, 0, S_RDIAG3}, // S_RDIAG2
+	{SPR_RSPR, 0, 1, {NULL}, 0, 0, S_RDIAG4},   // S_RDIAG3
+	{SPR_RSPR, 2, 4, {NULL}, 0, 0, S_RDIAG1},   // S_RDIAG4
 
 	// Blue Diagonal Spring
-	{SPR_SPDB, 0, -1, {NULL}, 0, 0, S_NULL},    // S_BDIAG1
-	{SPR_SPDB, 1, 1, {A_Pain}, 0, 0, S_BDIAG3}, // S_BDIAG2
-	{SPR_SPDB, 0, 1, {NULL}, 0, 0, S_BDIAG4},   // S_BDIAG3
-	{SPR_SPDB, 2, 4, {NULL}, 0, 0, S_BDIAG1},   // S_BDIAG4
+	{SPR_BSPR, 0, -1, {NULL}, 0, 0, S_NULL},    // S_BDIAG1
+	{SPR_BSPR, 1, 1, {A_Pain}, 0, 0, S_BDIAG3}, // S_BDIAG2
+	{SPR_BSPR, 0, 1, {NULL}, 0, 0, S_BDIAG4},   // S_BDIAG3
+	{SPR_BSPR, 2, 4, {NULL}, 0, 0, S_BDIAG1},   // S_BDIAG4
 
 	// Grey Diagonal Spring
-	{SPR_SPDG, 0, -1, {NULL}, 0, 0, S_NULL},    // S_GDIAG1
-	{SPR_SPDG, 1, 1, {A_Pain}, 0, 0, S_GDIAG3}, // S_GDIAG2
-	{SPR_SPDG, 0, 1, {NULL}, 0, 0, S_GDIAG4},   // S_GDIAG3
-	{SPR_SPDG, 2, 4, {NULL}, 0, 0, S_GDIAG1},   // S_GDIAG4
+	{SPR_GSPR, 0, -1, {NULL}, 0, 0, S_NULL},    // S_GDIAG1
+	{SPR_GSPR, 1, 1, {A_Pain}, 0, 0, S_GDIAG3}, // S_GDIAG2
+	{SPR_GSPR, 0, 1, {NULL}, 0, 0, S_GDIAG4},   // S_GDIAG3
+	{SPR_GSPR, 2, 4, {NULL}, 0, 0, S_GDIAG1},   // S_GDIAG4
 
 	// Yellow Horizontal Spring
-	{SPR_SPHY, 0, -1, {NULL}, 0, 0, S_NULL},     // S_YHORIZ1
-	{SPR_SPHY, 1, 1, {A_Pain}, 0, 0, S_YHORIZ3}, // S_YHORIZ2
-	{SPR_SPHY, 0, 1, {NULL}, 0, 0, S_YHORIZ4},   // S_YHORIZ3
-	{SPR_SPHY, 2, 4, {NULL}, 0, 0, S_YHORIZ1},   // S_YHORIZ4
+	{SPR_SSWY, 0, -1, {NULL}, 0, 0, S_NULL},     // S_YHORIZ1
+	{SPR_SSWY, 1, 1, {A_Pain}, 0, 0, S_YHORIZ3}, // S_YHORIZ2
+	{SPR_SSWY, 0, 1, {NULL}, 0, 0, S_YHORIZ4},   // S_YHORIZ3
+	{SPR_SSWY, 2, 4, {NULL}, 0, 0, S_YHORIZ1},   // S_YHORIZ4
 
 	// Red Horizontal Spring
-	{SPR_SPHR, 0, -1, {NULL}, 0, 0, S_NULL},     // S_RHORIZ1
-	{SPR_SPHR, 1, 1, {A_Pain}, 0, 0, S_RHORIZ3}, // S_RHORIZ2
-	{SPR_SPHR, 0, 1, {NULL}, 0, 0, S_RHORIZ4},   // S_RHORIZ3
-	{SPR_SPHR, 2, 4, {NULL}, 0, 0, S_RHORIZ1},   // S_RHORIZ4
+	{SPR_SSWR, 0, -1, {NULL}, 0, 0, S_NULL},     // S_RHORIZ1
+	{SPR_SSWR, 1, 1, {A_Pain}, 0, 0, S_RHORIZ3}, // S_RHORIZ2
+	{SPR_SSWR, 0, 1, {NULL}, 0, 0, S_RHORIZ4},   // S_RHORIZ3
+	{SPR_SSWR, 2, 4, {NULL}, 0, 0, S_RHORIZ1},   // S_RHORIZ4
 
 	// Blue Horizontal Spring
-	{SPR_SPHB, 0, -1, {NULL}, 0, 0, S_NULL},     // S_BHORIZ1
-	{SPR_SPHB, 1, 1, {A_Pain}, 0, 0, S_BHORIZ3}, // S_BHORIZ2
-	{SPR_SPHB, 0, 1, {NULL}, 0, 0, S_BHORIZ4},   // S_BHORIZ3
-	{SPR_SPHB, 2, 4, {NULL}, 0, 0, S_BHORIZ1},   // S_BHORIZ4
+	{SPR_SSWB, 0, -1, {NULL}, 0, 0, S_NULL},     // S_BHORIZ1
+	{SPR_SSWB, 1, 1, {A_Pain}, 0, 0, S_BHORIZ3}, // S_BHORIZ2
+	{SPR_SSWB, 0, 1, {NULL}, 0, 0, S_BHORIZ4},   // S_BHORIZ3
+	{SPR_SSWB, 2, 4, {NULL}, 0, 0, S_BHORIZ1},   // S_BHORIZ4
 
 	// Grey Horizontal Spring
-	{SPR_SPHG, 0, -1, {NULL}, 0, 0, S_NULL},     // S_GHORIZ1
-	{SPR_SPHG, 1, 1, {A_Pain}, 0, 0, S_GHORIZ3}, // S_GHORIZ2
-	{SPR_SPHG, 0, 1, {NULL}, 0, 0, S_GHORIZ4},   // S_GHORIZ3
-	{SPR_SPHG, 2, 4, {NULL}, 0, 0, S_GHORIZ1},   // S_GHORIZ4
+	{SPR_SSWG, 0, -1, {NULL}, 0, 0, S_NULL},     // S_GHORIZ1
+	{SPR_SSWG, 1, 1, {A_Pain}, 0, 0, S_GHORIZ3}, // S_GHORIZ2
+	{SPR_SSWG, 0, 1, {NULL}, 0, 0, S_GHORIZ4},   // S_GHORIZ3
+	{SPR_SSWG, 2, 4, {NULL}, 0, 0, S_GHORIZ1},   // S_GHORIZ4
 
 	// Boosters
 	{SPR_NULL, 0, 1, {A_Pain}, 0, 0, S_INVISIBLE}, // S_BOOSTERSOUND

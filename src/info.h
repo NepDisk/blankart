@@ -925,18 +925,18 @@ typedef enum sprite
 	SPR_STEM, // Steam riser
 	SPR_BMPR, // Bumpers
 	SPR_BLON, // Balloons
-	SPR_SPVY, // Yellow Vertical Spring
-	SPR_SPVR, // Red Vertical Spring
-	SPR_SPVB, // Blue Vertical Spring
-	SPR_SPVG, // Grey Vertical Spring
-	SPR_SPDY, // Yellow Diagonal Spring
-	SPR_SPDR, // Red Diagonal Spring
-	SPR_SPDB, // Blue Diagonal Spring
-	SPR_SPDG, // Grey Diagonal Spring
-	SPR_SPHY, // Yellow Horizontal Spring
-	SPR_SPHR, // Red Horizontal Spring
-	SPR_SPHB, // Blue Horizontal Spring
-	SPR_SPHG, // Grey Horizontal Spring
+	SPR_SPRY, // Yellow Vertical Spring
+	SPR_SPRR, // Red Vertical Spring
+	SPR_SPRB, // Blue Vertical Spring
+	SPR_SPRG, // Grey Vertical Spring
+	SPR_YSPR, // Yellow Diagonal Spring
+	SPR_RSPR, // Red Diagonal Spring
+	SPR_BSPR, // Blue Diagonal Spring
+	SPR_GSPR, // Grey Diagonal Spring
+	SPR_SSWY, // Yellow Horizontal Spring
+	SPR_SSWR, // Red Horizontal Spring
+	SPR_SSWB, // Blue Horizontal Spring
+	SPR_SSWG, // Grey Horizontal Spring
 	SPR_POGS, // Pogo Spring
 	SPR_BSTY, // Yellow Booster
 	SPR_BSTR, // Red Booster
