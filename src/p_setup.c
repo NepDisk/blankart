@@ -169,6 +169,13 @@ mapthing_t *playerstarts[MAXPLAYERS];
 mapthing_t *bluectfstarts[MAXPLAYERS];
 mapthing_t *redctfstarts[MAXPLAYERS];
 
+// Global state for PartialAddWadFile/MultiSetupWadFiles
+// Might be replacable with parameters, but non-trivial when the functions are called on separate tics
+static SINT8 partadd_stage = -1;
+static boolean partadd_replacescurrentmap = false;
+static boolean partadd_important = false;
+UINT16 partadd_earliestfile = UINT16_MAX;
+
 // Maintain *ZOOM TUBE* waypoints
 // Renamed because SRB2Kart owns real waypoints.
 mobj_t *tubewaypoints[NUMTUBEWAYPOINTSEQUENCES][TUBEWAYPOINTSEQUENCESIZE];
@@ -4665,22 +4672,32 @@ static lumpinfo_t* FindFolder(const char *folName, UINT16 *start, UINT16 *end, l
 	return lumpinfo;
 }
 
-UINT16 p_adding_file = INT16_MAX;
-
 //
 // Add a wadfile to the active wad files,
 // replace sounds, musics, patches, textures, sprites and maps
 //
 boolean P_AddWadFile(const char *wadfilename)
 {
+	UINT16 wadnum;
+
+	if ((wadnum = P_PartialAddWadFile(wadfilename)) == UINT16_MAX)
+		return false;
+
+	P_MultiSetupWadFiles(true);
+	return true;
+}
+
+//
+// Add a WAD file and do the per-WAD setup stages.
+// Call P_MultiSetupWadFiles as soon as possible after any number of these.
+//
+UINT16 P_PartialAddWadFile(const char *wadfilename)
+{
 	size_t i, j, sreplaces = 0, mreplaces = 0, digmreplaces = 0;
 	UINT16 numlumps, wadnum;
 	char *name;
 	lumpinfo_t *lumpinfo;
-
-	//boolean texturechange = false; ///\todo Useless; broken when back-frontporting PK3 changes?
 	boolean mapsadded = false;
-	boolean replacedcurrentmap = false;
 
 	// Vars to help us with the position start and amount of each resource type.
 	// Useful for PK3s since they use folders.
@@ -4699,12 +4716,21 @@ boolean P_AddWadFile(const char *wadfilename)
 	if ((numlumps = W_InitFile(wadfilename, false, false)) == INT16_MAX)
 	{
 		refreshdirmenu |= REFRESHDIR_NOTLOADED;
-		return false;
+		return UINT16_MAX;
 	}
-	else
-		wadnum = (UINT16)(numwadfiles-1);
+	wadnum = (UINT16)(numwadfiles-1);
 
-	p_adding_file = wadnum;
+	// Init partadd.
+	if (wadfiles[wadnum]->important)
+	{
+		partadd_important = true;
+	}
+	if (partadd_stage != 0)
+	{
+		partadd_earliestfile = wadnum;
+	}
+	partadd_stage = 0;
+
 
 	switch(wadfiles[wadnum]->type)
 	{
@@ -4804,29 +4830,25 @@ boolean P_AddWadFile(const char *wadfilename)
 	// TEXTURES/etc. list.
 	R_LoadTexturesPwad(wadnum); // numtexture changes
 
-	// Reload ANIMDEFS
-	P_InitPicAnims();
-
 	// Reload BRIGHT
 	K_InitBrightmapsPwad(wadnum);
-
-	// Flush and reload HUD graphics
-	//ST_UnloadGraphics();
-	HU_LoadGraphics();
-	ST_LoadGraphics();
 
 	//
 	// look for skins
 	//
 	R_AddSkins(wadnum); // faB: wadfile index in wadfiles[]
 	R_PatchSkins(wadnum); // toast: PATCH PATCH
-	ST_ReloadSkinFaceGraphics();
 
 	//
 	// edit music defs
 	//
 	S_LoadMusicDefs(wadnum);
 
+	//
+	// extra sprite/skin data
+	//
+	R_LoadSpriteInfoLumps(wadnum, numlumps);
+	
 	//
 	// search for maps
 	//
@@ -4848,46 +4870,102 @@ boolean P_AddWadFile(const char *wadfilename)
 				{
 					G_SetGameModified(multiplayer, true); // oops, double-defined - no record attack privileges for you
 				}
-
 				mapheaderinfo[num - 1]->alreadyExists = true;
 			}
 
-			//If you replaced the map you're on, end the level when done.
 			if (num == gamemap)
-				replacedcurrentmap = true;
+				partadd_replacescurrentmap = true;
 
 			CONS_Printf("%s\n", name);
 			mapsadded = true;
 		}
 	}
+	
 	if (!mapsadded)
 		CONS_Printf(M_GetText("No maps added\n"));
+	
+	refreshdirmenu &= ~REFRESHDIR_GAMEDATA; // Under usual circumstances we'd wait for REFRESHDIR_ flags to disappear the next frame, but this one's a bit too dangerous for that...
+	partadd_stage = 0;
+	return wadnum;
+}
 
-	R_LoadSpriteInfoLumps(wadnum, numlumps);
+// Only exists to make sure there's no way to overwrite partadd_stage externally
+// unless you really push yourself.
+SINT8 P_PartialAddGetStage(void)
+{
+	return partadd_stage;
+}
+
+//
+// Set up a series of partially added WAD files.
+// Setup functions that iterate over every loaded WAD go here.
+// If fullsetup false, only do one stage per call.
+//
+boolean P_MultiSetupWadFiles(boolean fullsetup)
+{
+	if (partadd_stage < 0)
+		I_Error(M_GetText("P_MultiSetupWadFiles: Post-load addon setup attempted without loading any addons first"));
+
+	if (partadd_stage == 0)
+	{
+		// Flush and reload HUD graphics
+		//ST_UnloadGraphics();
+		HU_LoadGraphics();
+		ST_LoadGraphics();
+		ST_ReloadSkinFaceGraphics();
+
+		if (!partadd_important)
+			partadd_stage = -1; // everything done
+		else if (fullsetup)
+			partadd_stage++;
+	}
+
+	if (partadd_stage == 1)
+	{
+		// Reload all textures, unconditionally for better or worse.
+		//R_LoadTextures();
+		
+		// Prevent savefile cheating
+		if (cursaveslot >= 0)
+			cursaveslot = -1;
+		
+		// Reload ANIMATED / ANIMDEFS
+		P_InitPicAnims();
+
+
+		// reload status bar (warning should have valid player!)
+		if (gamestate == GS_LEVEL)
+			ST_Start();
 
 #ifdef HWRENDER
 	HWR_ReloadModels();
 #endif
 
-	// reload status bar (warning should have valid player!)
-	if (gamestate == GS_LEVEL)
-		ST_Start();
-
-	// Prevent savefile cheating
-	if (cursaveslot > 0)
-		cursaveslot = 0;
-
-	if (replacedcurrentmap && gamestate == GS_LEVEL && (netgame || multiplayer))
-	{
-		CONS_Printf(M_GetText("Current map %d replaced by added file, ending the level to ensure consistency.\n"), gamemap);
-		if (server)
-			SendNetXCmd(XD_EXITLEVEL, NULL, 0);
+		if (fullsetup)
+			partadd_stage++;
 	}
 
-	refreshdirmenu &= ~REFRESHDIR_GAMEDATA; // Under usual circumstances we'd wait for REFRESHDIR_GAMEDATA to disappear the next frame, but it's a bit too dangerous for that...
+	if (partadd_stage == 2)
+	{
+		if (partadd_replacescurrentmap && gamestate == GS_LEVEL && (netgame || multiplayer))
+		{
+			CONS_Printf(M_GetText("Current map %d replaced, ending the level to ensure consistency.\n"), gamemap);
+			if (server)
+				SendNetXCmd(XD_EXITLEVEL, NULL, 0);
+		}
+		partadd_stage = -1;
+	}
 
-	p_adding_file = INT16_MAX;
-	LUA_HookVoid(HOOK(AddonLoaded));
-
-	return true;
+	I_Assert(!fullsetup || partadd_stage < 0);
+	
+	if (partadd_stage < 0)
+	{
+		partadd_important = false;
+		partadd_replacescurrentmap = false;
+		partadd_earliestfile = UINT16_MAX;
+		return true;
+	}
+		
+	partadd_stage++;
+	return false;
 }

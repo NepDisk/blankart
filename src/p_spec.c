@@ -166,7 +166,7 @@ void P_ParseAnimationDefintion(SINT8 istexture);
   * \author Steven McGranahan (original), Shadow Hog (had to rewrite it to handle multiple WADs), JTE (had to rewrite it to handle multiple WADs _correctly_)
   */
 
-static boolean animdeftempflats = false; // only until ANIMDEFS flats are removed
+static boolean animdeftempflats = false;
 
 void P_InitPicAnims(void)
 {
@@ -187,7 +187,7 @@ void P_InitPicAnims(void)
 
 		while (animdefsLumpNum != INT16_MAX)
 		{
-			animdeftempflats = ((p_adding_file == INT16_MAX) || p_adding_file == w);
+			animdeftempflats = ((partadd_earliestfile == UINT16_MAX) || partadd_earliestfile == w);
 			P_ParseANIMDEFSLump(w, animdefsLumpNum);
 			animdefsLumpNum = W_CheckNumForNamePwad("ANIMDEFS", (UINT16)w, animdefsLumpNum + 1);
 		}

@@ -96,8 +96,6 @@ INT32 P_CheckLevelFlat(const char *flatname);
 extern size_t nummapthings;
 extern mapthing_t *mapthings;
 
-extern UINT16 p_adding_file;
-
 void P_SetupLevelSky(const char *skytexname, boolean global);
 #ifdef SCANTHINGS
 void P_ScanThings(INT16 mapnum, INT16 wadnum, INT16 lumpnum);
@@ -108,6 +106,27 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate);
 void HWR_LoadLevel(void);
 #endif
 boolean P_AddWadFile(const char *wadfilename);
+
+// WARNING: The following functions should be grouped as follows:
+// any amount of PartialAdds followed by MultiSetups until returned true,
+// as soon as possible.
+UINT16 P_PartialAddWadFile(const char *wadfilename);
+// Run a single stage of multisetup, or all of them if fullsetup set.
+//   fullsetup true: run everything
+//   otherwise
+//   stage 0: reload UI graphics (enough for unimportant WADs)
+//   stage 1: reload textures
+//   stage 2: reload animdefs and run post-setup actions
+// returns true if setup finished on this call, false otherwise (always true on fullsetup)
+// throws I_Error if called without any partial adds started as a safeguard
+boolean P_MultiSetupWadFiles(boolean fullsetup);
+// Get the current setup stage.
+//   if negative, no PartialAdds done since last MultiSetup
+//   if 0, partial adds done but MultiSetup not called yet
+//   if positive, setup's partway done
+SINT8 P_PartialAddGetStage(void);
+extern UINT16 partadd_earliestfile;
+
 boolean P_RunSOC(const char *socfilename);
 void P_LoadSoundsRange(UINT16 wadnum, UINT16 first, UINT16 num);
 void P_LoadMusicsRange(UINT16 wadnum, UINT16 first, UINT16 num);
