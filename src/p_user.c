@@ -2068,29 +2068,9 @@ static void P_UpdateBotAngle(player_t* player)
 {
 	angle_t angleChange = K_GetKartTurnValue(player, player->cmd.turning) << TICCMD_REDUCE;
 	player->steering = player->cmd.turning;
-	UINT8 i;
 
 	P_SetPlayerAngle(player, player->angleturn + angleChange);
 	player->mo->angle = player->angleturn;
-
-	if (!cv_allowmlook.value || player->spectator == false)
-	{
-		player->aiming = 0;
-	}
-	else
-	{
-		player->aiming += (player->cmd.aiming << TICCMD_REDUCE);
-		player->aiming = G_ClipAimingPitch((INT32*) &player->aiming);
-	}
-
-	for (i = 0; i <= r_splitscreen; i++)
-	{
-		if (player == &players[displayplayers[i]])
-		{
-			localaiming[i] = player->aiming;
-			break;
-		}
-	}
 }
 
 //
