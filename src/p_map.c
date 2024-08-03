@@ -1579,11 +1579,6 @@ static BlockItReturn_t PIT_CheckLine(line_t *ld)
 		tmceilingrover = openceilingrover;
 		tmceilingslope = opentopslope;
 		tmceilingpic = opentoppic;
-		tmceilingstep = openceilingstep;
-		if (thingtop == tmthing->ceilingz)
-		{
-			tmthing->ceilingdrop = openceilingdrop;
-		}
 	}
 
 	if (openbottom > tmfloorz)
@@ -1592,11 +1587,6 @@ static BlockItReturn_t PIT_CheckLine(line_t *ld)
 		tmfloorrover = openfloorrover;
 		tmfloorslope = openbottomslope;
 		tmfloorpic = openbottompic;
-		tmfloorstep = openfloorstep;
-		if (tmthing->z == tmthing->floorz)
-		{
-			tmthing->floordrop = openfloordrop;
-		}
 	}
 
 	if (highceiling > tmdrpoffceilz)
@@ -2554,15 +2544,149 @@ boolean P_CheckMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 //
 boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 {
-	fixed_t oldx = thing->x;
-	fixed_t oldy = thing->y;
+	fixed_t tryx = thing->x;
+	fixed_t tryy = thing->y;
+	fixed_t oldx = tryx;
+	fixed_t oldy = tryy;
+	fixed_t radius = thing->radius;
+	fixed_t thingtop = thing->z + thing->height;
 	fixed_t startingonground = P_IsObjectOnGround(thing);
-	fixed_t stairjank = 0;
-	pslope_t *oldslope = thing->standingslope;
+	floatok = false;
+
+	// reset this to 0 at the start of each trymove call as it's only used here
+	numspechitint = 0U;
+
+	// This makes sure that there are no freezes from computing extremely small movements.
+	// Originally was MAXRADIUS/2, but that causes some inconsistencies for small players.
+	if (radius < mapobjectscale)
+		radius = mapobjectscale;
+
+	do {
+		if (thing->flags & MF_NOCLIP) {
+			tryx = x;
+			tryy = y;
+		} else {
+			if (x-tryx > radius)
+				tryx += radius;
+			else if (x-tryx < -radius)
+				tryx -= radius;
+			else
+				tryx = x;
+			if (y-tryy > radius)
+				tryy += radius;
+			else if (y-tryy < -radius)
+				tryy -= radius;
+			else
+				tryy = y;
+		}
+
+		if (!P_CheckPosition(thing, tryx, tryy))
+			return false; // solid wall or thing
+
+		// copy into the spechitint buffer from spechit
+		spechitint_copyinto();
+
+		if (!(thing->flags & MF_NOCLIP))
+		{
+			//All things are affected by their scale.
+			const fixed_t maxstepmove = FixedMul(MAXSTEPMOVE, mapobjectscale);
+			fixed_t maxstep = maxstepmove;
+
+			if (thing->player && thing->player->waterskip)
+				maxstep += maxstepmove; // Add some extra stepmove when waterskipping
+
+			// If using type Section1:13, double the maxstep.
+			if (P_MobjTouchingSectorSpecial(thing, 1, 13, false))
+				maxstep <<= 1;
+			// If using type Section1:12, no maxstep. For short walls, like Egg Zeppelin
+			else if (P_MobjTouchingSectorSpecial(thing, 1, 12, false))
+				maxstep = 0;
+
+			if (thing->type == MT_SKIM)
+				maxstep = 0;
+
+			if (tmceilingz - tmfloorz < thing->height)
+			{
+				if (tmfloorthing)
+					tmhitthing = tmfloorthing;
+				return false; // doesn't fit
+			}
+
+			floatok = true;
+
+			if (thing->eflags & MFE_VERTICALFLIP)
+			{
+				if (thing->z < tmfloorz)
+					return false; // mobj must raise itself to fit
+			}
+			else if (tmceilingz < thingtop)
+				return false; // mobj must lower itself to fit
+
+			// Ramp test
+			if ((maxstep > 0) && !(P_MobjTouchingSectorSpecial(thing, 1, 14, false)))
+			{
+				// If the floor difference is MAXSTEPMOVE or less, and the sector isn't Section1:14, ALWAYS
+				// step down! Formerly required a Section1:13 sector for the full MAXSTEPMOVE, but no more.
+
+				if (thing->eflags & MFE_VERTICALFLIP)
+				{
+					if (thingtop == thing->ceilingz && tmceilingz > thingtop && tmceilingz - thingtop <= maxstep)
+					{
+						thing->z = (thing->ceilingz = thingtop = tmceilingz) - thing->height;
+						thing->ceilingrover = tmceilingrover;
+						thing->eflags |= MFE_JUSTSTEPPEDDOWN;
+					}
+					else if (tmceilingz < thingtop && thingtop - tmceilingz <= maxstep)
+					{
+						thing->z = (thing->ceilingz = thingtop = tmceilingz) - thing->height;
+						thing->ceilingrover = tmceilingrover;
+						thing->eflags |= MFE_JUSTSTEPPEDDOWN;
+					}
+				}
+				else if (thing->z == thing->floorz && tmfloorz < thing->z && thing->z - tmfloorz <= maxstep)
+				{
+					thing->z = thing->floorz = tmfloorz;
+					thing->floorrover = tmfloorrover;
+					thing->eflags |= MFE_JUSTSTEPPEDDOWN;
+				}
+				else if (tmfloorz > thing->z && tmfloorz - thing->z <= maxstep)
+				{
+					thing->z = thing->floorz = tmfloorz;
+					thing->floorrover = tmfloorrover;
+					thing->eflags |= MFE_JUSTSTEPPEDDOWN;
+				}
+			}
+
+			if (thing->eflags & MFE_VERTICALFLIP)
+			{
+				if (thingtop - tmceilingz > maxstep)
+				{
+					if (tmfloorthing)
+						tmhitthing = tmfloorthing;
+					return false; // too big a step up
+				}
+			}
+			else if (tmfloorz - thing->z > maxstep)
+			{
+				if (tmfloorthing)
+					tmhitthing = tmfloorthing;
+				return false; // too big a step up
+			}
+
+			if (!allowdropoff && !(thing->flags & MF_FLOAT) && thing->type != MT_SKIM && !tmfloorthing)
+			{
+				if (thing->eflags & MFE_VERTICALFLIP)
+				{
+					if (tmdrpoffceilz - tmceilingz > maxstep)
+						return false;
+				}
+				else if (tmfloorz - tmdropoffz > maxstep)
+					return false; // don't stand over a dropoff
+			}
+		}
+	} while (tryx != x || tryy != y);
 
 	// The move is ok!
-	if (!increment_move(thing, x, y, allowdropoff))
-		return false;
 
 	// If it's a pushable object, check if anything is
 	// standing on top and move it, too.
@@ -2597,53 +2721,33 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 	if (!(thing->flags & MF_NOCLIPHEIGHT))
 	{
 		// Assign thing's standingslope if needed
-		if (thing->z <= tmfloorz && !(thing->eflags & MFE_VERTICALFLIP))
-		{
-			K_UpdateMobjTerrain(thing, tmfloorpic);
-
+		if (thing->z <= tmfloorz && !(thing->eflags & MFE_VERTICALFLIP)) {
 			if (!startingonground && tmfloorslope)
-			{
 				P_HandleSlopeLanding(thing, tmfloorslope);
-			}
 
 			if (thing->momz <= 0)
 			{
 				thing->standingslope = tmfloorslope;
-				P_SetPitchRollFromSlope(thing, thing->standingslope);
 
 				if (thing->momz == 0 && thing->player && !startingonground)
-				{
 					P_PlayerHitFloor(thing->player, true);
-				}
 			}
 		}
-		else if (thing->z+thing->height >= tmceilingz && (thing->eflags & MFE_VERTICALFLIP))
-		{
-			K_UpdateMobjTerrain(thing, tmceilingpic);
-
+		else if (thing->z+thing->height >= tmceilingz && (thing->eflags & MFE_VERTICALFLIP)) {
 			if (!startingonground && tmceilingslope)
-			{
 				P_HandleSlopeLanding(thing, tmceilingslope);
-			}
 
 			if (thing->momz >= 0)
 			{
 				thing->standingslope = tmceilingslope;
-				P_SetPitchRollFromSlope(thing, thing->standingslope);
 
 				if (thing->momz == 0 && thing->player && !startingonground)
-				{
 					P_PlayerHitFloor(thing->player, true);
-				}
 			}
 		}
 	}
-	else
-	{
-		// don't set standingslope if you're not going to clip against it
+	else // don't set standingslope if you're not going to clip against it
 		thing->standingslope = NULL;
-		thing->terrain = NULL;
-	}
 
 	thing->x = x;
 	thing->y = y;
@@ -2670,7 +2774,10 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 			oldside = P_PointOnLineSide(oldx, oldy, ld);
 			if (side != oldside)
 			{
-				P_CrossSpecialLine(ld, oldside, thing);
+				if (ld->special)
+				{
+					P_CrossSpecialLine(ld, oldside, thing);
+				}
 			}
 		}
 	}
