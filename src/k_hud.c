@@ -2493,7 +2493,8 @@ static void K_drawKartSpeedometer(void)
 	{
 		case 1: // Sonic Drift 2 style percentage
 		default:
-			convSpeed = (stplyr->speed * 100) / K_GetKartSpeed(stplyr, false, true); // Based on top speed!
+			if (stplyr->mo)
+				convSpeed = (FixedDiv(stplyr->speed, FixedMul(K_GetKartSpeed(stplyr, false, false), ORIG_FRICTION))*100)>>FRACBITS;
 			labeln = 0;
 			break;
 		case 2: // Kilometers

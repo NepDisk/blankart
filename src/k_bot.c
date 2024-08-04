@@ -13,6 +13,7 @@
 #include "doomdef.h"
 #include "d_player.h"
 #include "g_game.h"
+#include "p_mobj.h"
 #include "r_main.h"
 #include "p_local.h"
 #include "k_bot.h"
@@ -167,9 +168,13 @@ void K_UpdateMatchRaceBots(void)
 		}
 	}
 
-	if (difficulty == 0 || !(gametyperules & GTR_BOTS) || bossinfo.boss == true)
+	if (difficulty == 0 || !(gametyperules & GTR_BOTS) || bossinfo.boss == true || numbosswaypoints > 0)
 	{
 		wantedbots = 0;
+		if (numbosswaypoints > 0)
+		{
+			CONS_Alert(CONS_ERROR, "Bots do not work on maps using the legacy checkpoint system.\nPlease consider using waypoints instead if bot support is desired!\n");
+		}
 	}
 	else
 	{
@@ -278,7 +283,7 @@ boolean K_PlayerUsesBotMovement(player_t *player)
 boolean K_BotCanTakeCut(player_t *player)
 {
 	if (
-		(K_TripwirePassConditions(player) != TRIPWIRE_NONE || K_ApplyOffroad(player) == false)
+		((K_TripwirePassConditions(player) != TRIPWIRE_NONE) || (K_ApplyOffroad(player) == false))
 		|| player->itemtype == KITEM_SNEAKER
 		|| player->itemtype == KITEM_ROCKETSNEAKER
 		|| player->itemtype == KITEM_INVINCIBILITY

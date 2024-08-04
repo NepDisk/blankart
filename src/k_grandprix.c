@@ -208,7 +208,16 @@ void K_InitGrandPrixBots(void)
 		playercount += (numplayers-2) * 3;
 	}
 
-	wantedbots = playercount - numplayers;
+	if (numbosswaypoints > 0)
+	{
+		CONS_Alert(CONS_ERROR, "Bots do not work on maps using the legacy checkpoint system.\nPlease consider using waypoints instead if bot support is desired!\n");
+		wantedbots = 0;
+	}
+	else
+	{
+	
+		wantedbots = playercount - numplayers;
+	}
 
 	// Create rival list
 	if (numplayers > 0)

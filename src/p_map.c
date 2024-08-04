@@ -2722,24 +2722,32 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 	{
 		// Assign thing's standingslope if needed
 		if (thing->z <= tmfloorz && !(thing->eflags & MFE_VERTICALFLIP)) {
+			
+			K_UpdateMobjTerrain(thing, tmfloorpic);
+			
 			if (!startingonground && tmfloorslope)
 				P_HandleSlopeLanding(thing, tmfloorslope);
 
 			if (thing->momz <= 0)
 			{
 				thing->standingslope = tmfloorslope;
+				P_SetPitchRollFromSlope(thing, thing->standingslope);
 
 				if (thing->momz == 0 && thing->player && !startingonground)
 					P_PlayerHitFloor(thing->player, true);
 			}
 		}
 		else if (thing->z+thing->height >= tmceilingz && (thing->eflags & MFE_VERTICALFLIP)) {
+			
+			K_UpdateMobjTerrain(thing, tmceilingpic);
+			
 			if (!startingonground && tmceilingslope)
 				P_HandleSlopeLanding(thing, tmceilingslope);
 
 			if (thing->momz >= 0)
 			{
 				thing->standingslope = tmceilingslope;
+				P_SetPitchRollFromSlope(thing, thing->standingslope);
 
 				if (thing->momz == 0 && thing->player && !startingonground)
 					P_PlayerHitFloor(thing->player, true);
@@ -2747,8 +2755,10 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 		}
 	}
 	else // don't set standingslope if you're not going to clip against it
+	{
 		thing->standingslope = NULL;
-
+		thing->terrain = NULL;
+	}
 	thing->x = x;
 	thing->y = y;
 
@@ -2774,10 +2784,7 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 			oldside = P_PointOnLineSide(oldx, oldy, ld);
 			if (side != oldside)
 			{
-				if (ld->special)
-				{
-					P_CrossSpecialLine(ld, oldside, thing);
-				}
+				P_CrossSpecialLine(ld, oldside, thing);
 			}
 		}
 	}

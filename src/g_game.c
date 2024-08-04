@@ -1530,7 +1530,7 @@ boolean G_Responder(event_t *ev)
 	if (gamestate == GS_LEVEL && ev->type == ev_keydown
 		&& (ev->data1 == KEY_F12 || ev->data1 == gamecontrol[0][gc_viewpoint][0] || ev->data1 == gamecontrol[0][gc_viewpoint][1]))
 	{
-		if (!demo.playback && (r_splitscreen || !netgame))
+		if (!demo.playback && (r_splitscreen))
 			g_localplayers[0] = consoleplayer;
 		else
 		{

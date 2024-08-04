@@ -648,6 +648,7 @@ void P_LineOpening(line_t *linedef, mobj_t *mobj)
 			fixed_t textop, texbottom, texheight;
 			fixed_t texmid, delta1, delta2;
 			INT32 texnum = R_GetTextureNum(side->midtexture); // make sure the texture is actually valid
+			vertex_t cross;
 
 			if (texnum) {
 				// Get the midtexture's height
@@ -682,18 +683,22 @@ void P_LineOpening(line_t *linedef, mobj_t *mobj)
 						texbottom = textop - texheight*(side->repeatcnt+1);
 					}
 				}
+				P_ClosestPointOnLine(tmx, tmy, linedef, &cross);
+				
+				if (P_GetMidtextureTopBottom(linedef, cross.x, cross.y, &textop, &texbottom))
+				{
+					texmid = texbottom+(textop-texbottom)/2;
 
-				texmid = texbottom+(textop-texbottom)/2;
+					delta1 = abs(mobj->z - texmid);
+					delta2 = abs(thingtop - texmid);
 
-				delta1 = abs(mobj->z - texmid);
-				delta2 = abs(thingtop - texmid);
-
-				if (delta1 > delta2) { // Below
-					if (opentop > texbottom)
-						opentop = texbottom;
-				} else { // Above
-					if (openbottom < textop)
-						openbottom = textop;
+					if (delta1 > delta2) { // Below
+						if (opentop > texbottom)
+							opentop = texbottom;
+					} else { // Above
+						if (openbottom < textop)
+							openbottom = textop;
+					}
 				}
 			}
 		}
