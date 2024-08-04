@@ -27,9 +27,6 @@
 // Made it as small as possible without making it look like the bots are twitching constantly.
 #define BOTTURNCONFIRM 4
 
-// How many tics without being able to accelerate before we'll let you spindash.
-#define BOTSPINDASHCONFIRM (2*TICRATE)
-
 // Point for bots to aim for
 typedef struct botprediction_s {
 	fixed_t x, y;

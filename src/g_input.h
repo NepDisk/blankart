@@ -78,7 +78,6 @@ typedef enum
 	gc_accelerate,
 	gc_drift,
 	gc_brake,
-	gc_spindash,
 	gc_fire,
 	gc_lookback,
 	gc_camreset,
@@ -130,7 +129,6 @@ extern INT32 gamecontroldefault[MAXSPLITSCREENPLAYERS][num_gamecontrolschemes][n
 #define num_gcl_accelerate 1
 #define num_gcl_brake 1
 #define num_gcl_drift 1
-#define num_gcl_spindash 4
 #define num_gcl_movement 6
 #define num_gcl_item 3
 #define num_gcl_full 10
@@ -138,7 +136,6 @@ extern INT32 gamecontroldefault[MAXSPLITSCREENPLAYERS][num_gamecontrolschemes][n
 extern const INT32 gcl_accelerate[num_gcl_accelerate];
 extern const INT32 gcl_brake[num_gcl_brake];
 extern const INT32 gcl_drift[num_gcl_drift];
-extern const INT32 gcl_spindash[num_gcl_spindash];
 extern const INT32 gcl_movement[num_gcl_movement];
 extern const INT32 gcl_item[num_gcl_item];
 extern const INT32 gcl_full[num_gcl_full];
