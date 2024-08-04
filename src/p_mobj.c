@@ -8283,7 +8283,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 				break;
 			}
 
-			// Uses cmd.turning over steering intentionally.
 			if (abs(player->cmd.turning) > 100)
 			{
 				INT32 lastsign = 0;
@@ -8440,7 +8439,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 				break;
 			}
 
-			// Uses cmd.turning over steering intentionally.
 			if (abs(player->cmd.turning) > 100)
 			{
 				INT32 lastsign = 0;

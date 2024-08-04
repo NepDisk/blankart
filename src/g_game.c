@@ -901,10 +901,14 @@ static void G_DoAnglePrediction(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer, p
 {
 	if (player->mo)
 		cmd->angle = K_GetKartTurnValue(player, cmd->turning);
-
+	
 	cmd->angle *= realtics;
 
-	localangle[ssplayer-1] += (cmd->angle<<TICCMD_REDUCE);
+	if (((player->mo && player->speed > 0) // Moving
+		|| (leveltime > starttime && (cmd->buttons & BT_ACCELERATE && cmd->buttons & BT_BRAKE)) // Rubber-burn turn
+		|| (player->respawn.state == RESPAWNST_DROP) // Respawning
+		|| (player->spectator || objectplacing))) // Not a physical player
+		localangle[ssplayer-1] += (cmd->angle<<TICCMD_REDUCE);
 
 	cmd->angle = (INT16)(localangle[ssplayer-1] >> TICCMD_REDUCE);
 }
@@ -2185,7 +2189,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 
 	INT16 rings;
 	INT16 spheres;
-	INT16 steering;
 	angle_t playerangleturn;
 
 	UINT8 botdiffincrease;
@@ -2215,7 +2218,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	splitscreenindex = players[player].splitscreenindex;
 	spectator = players[player].spectator;
 
-	steering = players[player].steering;
 	playerangleturn = players[player].angleturn;
 
 	skincolor = players[player].skincolor;
@@ -2344,7 +2346,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->jointime = jointime;
 	p->splitscreenindex = splitscreenindex;
 	p->spectator = spectator;
-	p->steering = steering;
 	p->angleturn = playerangleturn;
 
 	// save player config truth reborn

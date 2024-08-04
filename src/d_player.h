@@ -343,7 +343,6 @@ typedef struct player_s
 	// TODO: expose to lua
 	angle_t tilt;
 
-	INT16 steering;
 	angle_t angleturn;
 
 	// Mouse aiming, where the guy is looking at!

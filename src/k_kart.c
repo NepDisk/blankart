@@ -2025,7 +2025,6 @@ void K_KartMoveAnimation(player_t *player)
 	{
 		player->pflags &= ~PF_GAINAX;
 
-		// Uses turning over steering -- it's important to show player feedback immediately.
 		if (player->cmd.turning < -minturn)
 		{
 			turndir = -1;
@@ -2616,7 +2615,7 @@ static void K_GetKartBoostPower(player_t *player)
 	const fixed_t sliptidehandling = FRACUNIT/2;
 
 	fixed_t boostpower = FRACUNIT;
-	fixed_t speedboost = 0, accelboost = 0, handleboost = 0;
+	fixed_t speedboost = 0, accelboost = 0;
 
 	if (player->spinouttimer && player->wipeoutslow == 1) // Slow down after you've been bumped
 	{
@@ -2642,10 +2641,9 @@ static void K_GetKartBoostPower(player_t *player)
 			S_StartSound(player->mo, sfx_cdfm70);
 	}
 
-#define ADDBOOST(s,a,h) { \
+#define ADDBOOST(s,a) { \
 	speedboost = max(speedboost,s); \
 	accelboost = max(accelboost,a); \
-	handleboost = max(h, handleboost); \
 }
 
 	if (player->sneakertimer) // Sneaker
@@ -2663,43 +2661,39 @@ static void K_GetKartBoostPower(player_t *player)
 				sneakerspeedboost = max(speedboost, 32768);
 				break;
 		}
-		ADDBOOST(sneakerspeedboost, 8*FRACUNIT, sliptidehandling); // + ???% top speed, + 800% acceleration, +50% handlin
+		ADDBOOST(sneakerspeedboost, 8*FRACUNIT); // + ???% top speed, + 800% acceleration, +50% handlin
 		
 	}
 
 	if (player->invincibilitytimer) // Invincibility
 	{
-		ADDBOOST(3*FRACUNIT/8, 3*FRACUNIT, sliptidehandling/2); // + 37.5% top speed, + 300% acceleration, +25% handling
+		ADDBOOST(3*FRACUNIT/8, 3*FRACUNIT); // + 37.5% top speed, + 300% acceleration, +25% handling
 	}
 
 	if (player->growshrinktimer > 0) // Grow
 	{
-		ADDBOOST(FRACUNIT/5, 0, sliptidehandling/2); // + 20% top speed, + 0% acceleration, +25% handling
+		ADDBOOST(FRACUNIT/5, 0); // + 20% top speed, + 0% acceleration, +25% handling
 	}
 
 	if (player->flamedash) // Flame Shield dash
 	{
 		fixed_t dash = K_FlameShieldDashVar(player->flamedash);
-		ADDBOOST(
-			dash, // + infinite top speed
-			3*FRACUNIT, // + 300% acceleration
-			FixedMul(FixedDiv(dash, FRACUNIT/2), sliptidehandling/2) // + infinite handling
-		);
+		ADDBOOST( dash,	3*FRACUNIT); // + infinite top speed // + 300% acceleration
 	}
 
 	if (player->startboost) // Startup Boost
 	{
-		ADDBOOST(FRACUNIT/4, 6*FRACUNIT, sliptidehandling/2); // + 25% top speed, + 300% acceleration, +25% handling
+		ADDBOOST(FRACUNIT/4, 6*FRACUNIT); // + 25% top speed, + 300% acceleration, +25% handling
 	}
 
 	if (player->driftboost) // Drift Boost
 	{
-		ADDBOOST(FRACUNIT/4, 4*FRACUNIT, 0); // + 25% top speed, + 400% acceleration, +0% handling
+		ADDBOOST(FRACUNIT/4, 4*FRACUNIT); // + 25% top speed, + 400% acceleration, +0% handling
 	}
 
 	if (player->trickboost)	// Trick pannel up-boost
 	{
-		ADDBOOST(player->trickboostpower, 5*FRACUNIT, 0);	// <trickboostpower>% speed, 500% accel, 0% handling
+		ADDBOOST(player->trickboostpower, 5*FRACUNIT);	// <trickboostpower>% speed, 500% accel, 0% handling
 	}
 
 	if (player->ringboost) // Ring Boost
@@ -2722,7 +2716,6 @@ static void K_GetKartBoostPower(player_t *player)
 	}
 
 	player->accelboost = accelboost;
-	player->handleboost = handleboost;
 }
 
 // Returns kart speed from a stat. Boost power and scale are NOT taken into account, no player or object is necessary.
@@ -7411,134 +7404,45 @@ static INT16 K_GetKartDriftValue(player_t *player, fixed_t countersteer)
 	return basedrift + (FixedMul(driftadjust * FRACUNIT, countersteer) / FRACUNIT);
 }
 
-INT16 K_UpdateSteeringValue(INT16 inputSteering, INT16 destSteering)
-{
-	// player->steering is the turning value, but with easing applied.
-	// Keeps micro-turning from old easing, but isn't controller dependent.
-
-	const INT16 amount = KART_FULLTURN/4;
-	INT16 diff = destSteering - inputSteering;
-	INT16 outputSteering = inputSteering;
-
-	if (abs(diff) <= amount)
-	{
-		// Reached the intended value, set instantly.
-		outputSteering = destSteering;
-	}
-	else
-	{
-		// Go linearly towards the value we wanted.
-		if (diff < 0)
-		{
-			outputSteering -= amount;
-		}
-		else
-		{
-			outputSteering += amount;
-		}
-	}
-
-	return outputSteering;
-}
-
 INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue)
 {
-	fixed_t turnfixed = turnvalue * FRACUNIT;
+	fixed_t p_topspeed = K_GetKartSpeed(player, false, false);
+	fixed_t p_curspeed = min(player->speed, p_topspeed * 2);
+	fixed_t p_maxspeed = p_topspeed * 3;
+	fixed_t adjustangle = FixedDiv((p_maxspeed>>16) - (p_curspeed>>16), (p_maxspeed>>16) + player->kartweight);
 
-	fixed_t currentSpeed = 0;
-	fixed_t p_maxspeed = INT32_MAX, p_speed = INT32_MAX;
-
-	fixed_t weightadjust = INT32_MAX;
-
-	if (player->mo == NULL || P_MobjWasRemoved(player->mo) || player->spectator || objectplacing)
-	{
-		// Invalid object, or incorporeal player. Return the value exactly.
+	if (player->spectator)
 		return turnvalue;
-	}
-
-	if (leveltime < introtime)
-	{
-		// No turning during the intro
-		return 0;
-	}
-	
-	if (leveltime <= starttime)
-	{
-		// No turning during Race Start
-		return 0;
-	}
-
-	if (player->respawn.state == RESPAWNST_MOVE)
-	{
-		// No turning during respawn
-		return 0;
-	}
-
-	if (player->trickpanel != 0 && player->trickpanel < 4)
-	{
-		// No turning during trick panel unless you did the upwards trick (4)
-		return 0;
-	}
-
-	if (player->justDI > 0)
-	{
-		// No turning until you let go after DI-ing.
-		return 0;
-	}
-
-	currentSpeed = FixedHypot(player->mo->momx, player->mo->momy);
-
-	if ((currentSpeed <= 0) // Not moving
-	&& ((K_GetKartButtons(player) & BT_EBRAKEMASK) != BT_EBRAKEMASK) // Not e-braking
-	&& (player->respawn.state == RESPAWNST_NONE) // Not respawning
-	&& (P_IsObjectOnGround(player->mo) == true)) // On the ground
-	{
-		return 0;
-	}
-
-	p_maxspeed = K_GetKartSpeed(player, false, true);
-	p_speed = min(currentSpeed, (p_maxspeed * 2));
-	weightadjust = FixedDiv((p_maxspeed * 3) - p_speed, (p_maxspeed * 3) + (player->kartweight * FRACUNIT));
-
-	if (K_PlayerUsesBotMovement(player))
-	{
-		turnfixed = FixedMul(turnfixed, 5*FRACUNIT/4); // Base increase to turning
-	}
 
 	if (player->drift != 0 && P_IsObjectOnGround(player->mo))
 	{
-		if (player->pflags & PF_DRIFTEND)
+		// If we're drifting we have a completely different turning value
+		if (!(player->pflags & PF_DRIFTEND))
 		{
-			// Sal: K_GetKartDriftValue is short-circuited to give a weird additive magic number,
-			// instead of an entirely replaced turn value. This gaslit me years ago when I was doing a
-			// code readability pass, where I missed that fact because it also returned early.
-			turnfixed += K_GetKartDriftValue(player, FRACUNIT) * FRACUNIT;
-			return (turnfixed / FRACUNIT);
-
+			// 800 is the max set in g_game.c with angleturn
+			fixed_t countersteer = FixedDiv(turnvalue*FRACUNIT, 800*FRACUNIT);
+			turnvalue = K_GetKartDriftValue(player, countersteer);
 		}
 		else
-		{
-			// If we're drifting we have a completely different turning value
-			fixed_t countersteer = FixedDiv(turnfixed, KART_FULLTURN * FRACUNIT);
-			return K_GetKartDriftValue(player, countersteer);
+			turnvalue = (INT16)(turnvalue + K_GetKartDriftValue(player, FRACUNIT));
 
-		}
+		return turnvalue;
 	}
 
-	if (player->handleboost > 0)
-	{
-		turnfixed = FixedMul(turnfixed, FRACUNIT + player->handleboost);
-	}
+	turnvalue = FixedMul(turnvalue, adjustangle); // Weight has a small effect on turning
 
-	// Weight has a small effect on turning
-	turnfixed = FixedMul(turnfixed, weightadjust);
+	if (player->invincibilitytimer || player->sneakertimer || player->growshrinktimer > 0)
+		turnvalue = FixedMul(turnvalue, FixedDiv(5*FRACUNIT, 4*FRACUNIT));
 
-	return (turnfixed / FRACUNIT);
+	return turnvalue;
 }
 
 INT32 K_GetKartDriftSparkValue(player_t *player)
 {
-	return (26*4 + player->kartspeed*2 + (9 - player->kartweight))*8;
+	UINT8 kartspeed = ((gametyperules & GTR_KARMA) && player->bumpers <= 0)
+		? 1
+		: player->kartspeed;
+	return (26*4 + kartspeed*2 + (9 - player->kartweight))*8;
 }
 
 static void K_KartDrift(player_t *player, boolean onground)
@@ -7686,10 +7590,10 @@ static void K_KartDrift(player_t *player, boolean onground)
 		player->pflags &= ~(PF_BRAKEDRIFT|PF_GETSPARKS);
 	}
 
-	if ((player->handleboost == 0)
-	|| (!player->steering)
+	if ((player->sneakertimer == 0)
+	|| (!stplyr->cmd.turning)
 	|| (!player->aizdriftstrat)
-	|| (player->steering > 0) != (player->aizdriftstrat > 0))
+	|| (stplyr->cmd.turning > 0) != (player->aizdriftstrat > 0))
 	{
 		if (!player->drift)
 			player->aizdriftstrat = 0;

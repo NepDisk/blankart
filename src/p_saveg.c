@@ -129,7 +129,6 @@ static void P_NetArchivePlayers(void)
 			WRITEINT32(save_p, splitscreen_original_party[i][j]);
 		}
 
-		WRITEINT16(save_p, players[i].steering);
 		WRITEANGLE(save_p, players[i].angleturn);
 		WRITEANGLE(save_p, players[i].aiming);
 		WRITEANGLE(save_p, players[i].drawangle);
@@ -432,7 +431,6 @@ static void P_NetUnArchivePlayers(void)
 			splitscreen_original_party[i][j] = READINT32(save_p);
 		}
 
-		players[i].steering = READINT16(save_p);
 		players[i].angleturn = READANGLE(save_p);
 		players[i].aiming = READANGLE(save_p);
 		players[i].drawangle = players[i].old_drawangle = READANGLE(save_p);
