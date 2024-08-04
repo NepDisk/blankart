@@ -5398,15 +5398,8 @@ static void HWR_ProjectSprite(mobj_t *thing)
 	if (spriterotangle != 0
 	&& !(splat && !(thing->renderflags & RF_NOSPLATROLLANGLE)))
 	{
-		if (papersprite)
-		{
-			// a positive rollangle should should pitch papersprites upwards relative to their facing angle
-			rollangle = R_GetRollAngle(InvAngle(thing->rollangle));
-		}
-		else
-		{
-			rollangle = R_GetRollAngle(thing->rollangle);
-		}
+		rollangle = R_GetRollAngle(papersprite == vflip
+				? spriterotangle : InvAngle(spriterotangle));
 		rotsprite = Patch_GetRotatedSprite(sprframe, (thing->frame & FF_FRAMEMASK), rot, flip, false, sprinfo, rollangle);
 
 		if (rotsprite != NULL)
