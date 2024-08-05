@@ -5588,7 +5588,6 @@ const char *const PLAYERFLAG_LIST[] = {
 	"BRAKEDRIFT", // Helper for brake-drift spark spawning
 
 	"AIRFAILSAFE", // Whenever or not try the air boost
-	"TRICKDELAY", // Prevent tricks until control stick is neutral
 
 	"HITFINISHLINE", // Already hit the finish line this tic
 	"WRONGWAY", // Moving the wrong way with respect to waypoints?

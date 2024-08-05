@@ -905,50 +905,6 @@ static void K_DrawPredictionDebug(botprediction_t *predict, player_t *player)
 }
 
 /*--------------------------------------------------
-	static void K_BotTrick(player_t *player, ticcmd_t *cmd, line_t *botController)
-
-		Determines inputs for trick panels.
-
-	Input Arguments:-
-		player - Player to generate the ticcmd for.
-		cmd - The player's ticcmd to modify.
-		botController - Linedef for the bot controller. 
-
-	Return:-
-		None
---------------------------------------------------*/
-static void K_BotTrick(player_t *player, ticcmd_t *cmd, const line_t *botController)
-{
-	// Trick panel state -- do nothing until a controller line is found, in which case do a trick.
-	if (botController == NULL)
-	{
-		return;
-	}
-
-	if (player->trickpanel == 1)
-	{
-		INT32 type = (sides[botController->sidenum[0]].rowoffset / FRACUNIT);
-
-		// Y Offset: Trick type
-		switch (type)
-		{
-			case 1:
-				cmd->turning = KART_FULLTURN;
-				break;
-			case 2:
-				cmd->turning = -KART_FULLTURN;
-				break;
-			case 3:
-				cmd->throwdir = KART_FULLTURN;
-				break;
-			case 4:
-				cmd->throwdir = -KART_FULLTURN;
-				break;
-		}
-	}
-}
-
-/*--------------------------------------------------
 	static INT32 K_HandleBotTrack(player_t *player, ticcmd_t *cmd, botprediction_t *predict)
 
 		Determines inputs for standard track driving.
@@ -1230,14 +1186,6 @@ void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
 	if (player->exiting && player->nextwaypoint == K_GetFinishLineWaypoint() && ((mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE) == LF_SECTIONRACE))
 	{
 		// Sprint map finish, don't give Sal's children migraines trying to pathfind out
-		return;
-	}
-
-	if (player->trickpanel != 0)
-	{
-		K_BotTrick(player, cmd, botController);
-
-		// Don't do anything else.
 		return;
 	}
 

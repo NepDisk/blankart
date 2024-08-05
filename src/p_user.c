@@ -474,7 +474,6 @@ void P_ResetPlayer(player_t *player)
 	player->onconveyor = 0;
 
 	player->drift = player->driftcharge = 0;
-	player->trickpanel = 0;
 	player->glanceDir = 0;
 	player->pogospring = 0;
 }

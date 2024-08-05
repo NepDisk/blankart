@@ -2739,11 +2739,6 @@ static void K_GetKartBoostPower(player_t *player)
 		ADDBOOST(FRACUNIT/4, 4*FRACUNIT); // + 25% top speed, + 400% acceleration, +0% handling
 	}
 
-	if (player->trickboost)	// Trick pannel up-boost
-	{
-		ADDBOOST(player->trickboostpower, 5*FRACUNIT);	// <trickboostpower>% speed, 500% accel, 0% handling
-	}
-
 	if (player->ringboost) // Ring Boost
 	{
 		// Make rings additive so they aren't useless with other boosts
@@ -6081,9 +6076,6 @@ void K_KartPlayerHUDUpdate(player_t *player)
 	if (player->karthud[khud_tauntvoices])
 		player->karthud[khud_tauntvoices]--;
 
-	if (player->karthud[khud_trickcool])
-		player->karthud[khud_trickcool]--;
-
 	if (player->karthud[khud_itemblink] && player->karthud[khud_itemblink]-- <= 0)
 	{
 		player->karthud[khud_itemblinkmode] = 0;
@@ -6439,8 +6431,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		{
 			// Speed lines
 			if (player->sneakertimer || player->ringboost
-				|| player->driftboost || player->startboost
-				|| player->eggmanexplode || player->trickboost)
+				|| player->driftboost || player->startboost)
 			{
 #if 0
 				if (player->invincibilitytimer)
@@ -6648,9 +6639,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->sneakertimer--;
 	}
 
-	if (player->trickboost)
-		player->trickboost--;
-
 	if (player->flamedash)
 		player->flamedash--;
 
@@ -6811,14 +6799,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	{
 		if (player->flamedash)
 			K_FlameDashLeftoverSmoke(player->mo);
-	}
-
-	if (P_IsObjectOnGround(player->mo) && player->trickpanel != 0)
-	{
-		if (P_MobjFlip(player->mo) * player->mo->momz <= 0)
-		{
-			player->trickpanel = 0;
-		}
 	}
 
 	if (cmd->buttons & BT_DRIFT)
@@ -8056,82 +8036,6 @@ static void K_AdjustPlayerFriction(player_t *player)
 	}
 }
 
-//
-// K_trickPanelTimingVisual
-// Spawns the timing visual for trick panels depending on the given player's momz.
-// If the player has tricked, this will send the half circles flying out.
-//
-
-#define RADIUSSCALING 6
-#define MINRADIUS 12
-
-static void K_trickPanelTimingVisual(player_t *player, fixed_t momz)
-{
-
-	fixed_t pos, tx, ty, tz;
-	mobj_t *flame;
-
-	angle_t hang = R_PointToAnglePlayer(player, player->mo->x, player->mo->y) + ANG1*90;			// horizontal angle
-	angle_t vang = -FixedAngle(momz)*12 + (ANG1*45);												// vertical angle dependant on momz, we want it to line up at 45 degrees at the perfect frame to trick at
-	fixed_t dist = FixedMul(max(MINRADIUS<<FRACBITS, abs(momz)*RADIUSSCALING), player->mo->scale);	// distance.
-
-	UINT8 i;
-
-	// Do you like trig? cool, me neither.
-	for (i=0; i < 2; i++)
-	{
-		pos = FixedMul(dist, FINESINE(vang>>ANGLETOFINESHIFT));
-		tx = player->mo->x + FixedMul(pos, FINECOSINE(hang>>ANGLETOFINESHIFT));
-		ty = player->mo->y + FixedMul(pos, FINESINE(hang>>ANGLETOFINESHIFT));
-		tz = player->mo->z + player->mo->height/2 + FixedMul(dist, FINECOSINE(vang>>ANGLETOFINESHIFT));
-
-		// All coordinates set, spawn our fire, now.
-		flame = P_SpawnMobj(tx, ty, tz, MT_THOK);
-
-		P_SetScale(flame, player->mo->scale);
-
-		// Visuals
-		flame->sprite = SPR_TRCK;
-		flame->frame = i|FF_FULLBRIGHT;
-
-		{
-			flame->tics = TICRATE;
-
-			if (player->trickpanel > 1)	// we tricked
-			{
-				// Send the thing outwards via ghetto maths which involves redoing the whole 3d sphere again, witht the "vertical" angle shifted by 90 degrees.
-				// There's probably a simplier way to do this the way I want to but this works.
-				pos = FixedMul(48*player->mo->scale, FINESINE((vang +ANG1*90)>>ANGLETOFINESHIFT));
-				tx = player->mo->x + FixedMul(pos, FINECOSINE(hang>>ANGLETOFINESHIFT));
-				ty = player->mo->y + FixedMul(pos, FINESINE(hang>>ANGLETOFINESHIFT));
-				tz = player->mo->z + player->mo->height/2 + FixedMul(48*player->mo->scale, FINECOSINE((vang +ANG1*90)>>ANGLETOFINESHIFT));
-
-				flame->momx = tx -player->mo->x;
-				flame->momy = ty -player->mo->y;
-				flame->momz = tz -(player->mo->z+player->mo->height/2);
-			}
-			else	// we failed the trick, drop the half circles, it'll be funny I promise.
-			{
-				flame->flags &= ~MF_NOGRAVITY;
-				P_SetObjectMomZ(flame, 4<<FRACBITS, false);
-				P_InstaThrust(flame, R_PointToAngle2(player->mo->x, player->mo->y, flame->x, flame->y), 8*mapobjectscale);
-				flame->momx += player->mo->momx;
-				flame->momy += player->mo->momy;
-				flame->momz += player->mo->momz;
-			}
-		}
-
-		// make sure this is only drawn for our local player
-		flame->renderflags |= (RF_DONTDRAW & ~K_GetPlayerDontDrawFlag(player));
-
-		vang += FixedAngle(180<<FRACBITS);	// Avoid overflow warnings...
-
-	}
-}
-
-#undef RADIUSSCALING
-#undef MINRADIUS
-
 void K_SetItemOut(player_t *player)
 {
 	player->pflags |= PF_ITEMOUT;
@@ -8766,10 +8670,10 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							break;
 						case KITEM_POGOSPRING:
-							if (ATTACK_IS_DOWN && !HOLDING_ITEM && onground && NO_HYUDORO && player->trickpanel == 0)
+							if (ATTACK_IS_DOWN && !HOLDING_ITEM && onground && NO_HYUDORO && player->pogospring == 0)
 							{
 								K_PlayBoostTaunt(player->mo);
-								//K_DoPogoSpring(player->mo, 32<<FRACBITS, 2);
+								K_DoPogoSpring(player->mo, 32<<FRACBITS, 2);
 								P_SpawnMobjFromMobj(player->mo, 0, 0, 0, MT_POGOSPRING);
 								player->pogospring = 1;
 								player->itemamount--;

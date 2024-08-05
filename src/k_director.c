@@ -99,11 +99,6 @@ static boolean K_CanSwitchDirector(void)
 {
 	INT32 *displayplayerp = &displayplayers[0];
 
-	if (players[*displayplayerp].trickpanel > 0)
-	{
-		return false;
-	}
-
 	if (directorinfo.cooldown > 0)
 	{
 		return false;

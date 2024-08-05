@@ -523,7 +523,7 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		K_DoSneaker(player, 0);
 	}
 
-	// Trick panel
+	// Pogospring panel
 	if (terrain->pogoSpring > 0 && !(mo->eflags & MFE_SPRUNG))
 	{
 		const fixed_t hscale = mapobjectscale + (mapobjectscale - player->mo->scale);

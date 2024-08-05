@@ -91,7 +91,7 @@ typedef enum
 	PF_BRAKEDRIFT		= 1<<21, // Helper for brake-drift spark spawning
 
 	PF_AIRFAILSAFE		= 1<<22, // Whenever or not try the air boost
-	PF_TRICKDELAY		= 1<<23, // Prevent tricks until control stick is neutral
+	//free		= 1<<23, 
 
 	PF_FLIPCAM	= 1<<24,
 	//free		= 1<<25,
@@ -248,19 +248,11 @@ typedef enum
 	khud_cardanimation,	// Used to determine the position of some full-screen Battle Mode graphics
 	khud_yougotem, 		// "You Got Em" gfx when hitting someone as a karma player via a method that gets you back in the game instantly
 
-	// Tricks
-	khud_trickcool,
-
 	NUMKARTHUD
 } karthudtype_t;
 
 // QUICKLY GET RING TOTAL, INCLUDING RINGS CURRENTLY IN THE PICKUP ANIMATION
 #define RINGTOTAL(p) (p->rings + p->pickuprings)
-
-// CONSTANTS FOR TRICK PANELS
-#define TRICKMOMZRAMP (30)
-#define TRICKLAG (9)
-#define TRICKDELAY (TICRATE/4)
 
 #define TRIPWIRETIME (TICRATE)
 
@@ -497,12 +489,6 @@ typedef struct player_s
 
 	UINT8 confirmVictim;		// Player ID that you dealt damage to
 	UINT8 confirmVictimDelay;	// Delay before playing the sound
-
-	UINT8 trickpanel; 	// Trick panel state
-	UINT8 tricktime;	// Increases while you're tricking. You can't input any trick until it's reached a certain threshold
-	fixed_t trickboostpower;	// Save the rough speed multiplier. Used for upwards tricks.
-	UINT8 trickboostdecay;		// used to know how long you've waited
-	UINT8 trickboost;			// Trick boost. This one is weird and has variable speed. Dear god.
 
 	tic_t ebrakefor;	// Ebrake timer, used for visuals.
 
