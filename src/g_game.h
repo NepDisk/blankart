@@ -65,6 +65,7 @@ extern consvar_t cv_aimaxis[MAXSPLITSCREENPLAYERS];
 extern consvar_t cv_lookaxis[MAXSPLITSCREENPLAYERS];
 extern consvar_t cv_fireaxis[MAXSPLITSCREENPLAYERS];
 extern consvar_t cv_driftaxis[MAXSPLITSCREENPLAYERS];
+extern consvar_t cv_lookbackaxis[MAXSPLITSCREENPLAYERS];
 extern consvar_t cv_deadzone[MAXSPLITSCREENPLAYERS];
 extern consvar_t cv_digitaldeadzone[MAXSPLITSCREENPLAYERS];
 

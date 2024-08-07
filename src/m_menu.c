@@ -1188,7 +1188,9 @@ static menuitem_t OP_Joystick1Menu[] =
 	{IT_STRING | IT_CVAR,  NULL, "Brake"              , {.cvar = &cv_brakeaxis[0]}     , 60},
 	{IT_STRING | IT_CVAR,  NULL, "Drift"              , {.cvar = &cv_driftaxis[0]}     , 70},
 	{IT_STRING | IT_CVAR,  NULL, "Use Item"           , {.cvar = &cv_fireaxis[0]}      , 80},
-	{IT_STRING | IT_CVAR,  NULL, "Look Up/Down"       , {.cvar = &cv_lookaxis[0]}      , 90},
+	{IT_STRING | IT_CVAR,  NULL, "Look Backward" 	  , {.cvar = &cv_lookbackaxis[0]}  , 90},
+	{IT_STRING | IT_CVAR,  NULL, "Spec. Look Up/Down" , {.cvar = &cv_lookaxis[0]}      , 100},
+	{IT_STRING | IT_CVAR,  NULL, "Deadzone"      	  , {.cvar = &cv_deadzone[0]}      , 110},
 };
 
 static menuitem_t OP_Joystick2Menu[] =
@@ -1200,7 +1202,9 @@ static menuitem_t OP_Joystick2Menu[] =
 	{IT_STRING | IT_CVAR,  NULL, "Brake"              , {.cvar = &cv_brakeaxis[1]}     , 60},
 	{IT_STRING | IT_CVAR,  NULL, "Drift"              , {.cvar = &cv_driftaxis[1]}     , 70},
 	{IT_STRING | IT_CVAR,  NULL, "Use Item"           , {.cvar = &cv_fireaxis[1]}      , 80},
-	{IT_STRING | IT_CVAR,  NULL, "Look Up/Down"       , {.cvar = &cv_lookaxis[1]}      , 90},
+	{IT_STRING | IT_CVAR,  NULL, "Look Backward" 	  , {.cvar = &cv_lookbackaxis[0]}  , 90},
+	{IT_STRING | IT_CVAR,  NULL, "Spec. Look Up/Down" , {.cvar = &cv_lookaxis[1]}      , 100},
+	{IT_STRING | IT_CVAR,  NULL, "Deadzone"      	  , {.cvar = &cv_deadzone[1]}      , 110},
 };
 
 static menuitem_t OP_Joystick3Menu[] =
@@ -1212,7 +1216,9 @@ static menuitem_t OP_Joystick3Menu[] =
 	{IT_STRING | IT_CVAR,  NULL, "Brake"              , {.cvar = &cv_brakeaxis[2]}     , 60},
 	{IT_STRING | IT_CVAR,  NULL, "Drift"              , {.cvar = &cv_driftaxis[2]}     , 70},
 	{IT_STRING | IT_CVAR,  NULL, "Use Item"           , {.cvar = &cv_fireaxis[2]}      , 80},
-	{IT_STRING | IT_CVAR,  NULL, "Look Up/Down"       , {.cvar = &cv_lookaxis[2]}      , 90},
+	{IT_STRING | IT_CVAR,  NULL, "Look Backward" 	  , {.cvar = &cv_lookbackaxis[0]}  , 90},
+	{IT_STRING | IT_CVAR,  NULL, "Spec. Look Up/Down" , {.cvar = &cv_lookaxis[2]}      , 100},
+	{IT_STRING | IT_CVAR,  NULL, "Deadzone"      	  , {.cvar = &cv_deadzone[2]}      , 110},
 };
 
 static menuitem_t OP_Joystick4Menu[] =
@@ -1224,7 +1230,9 @@ static menuitem_t OP_Joystick4Menu[] =
 	{IT_STRING | IT_CVAR,  NULL, "Brake"              , {.cvar = &cv_brakeaxis[3]}     , 60},
 	{IT_STRING | IT_CVAR,  NULL, "Drift"              , {.cvar = &cv_driftaxis[3]}     , 70},
 	{IT_STRING | IT_CVAR,  NULL, "Use Item"           , {.cvar = &cv_fireaxis[3]}      , 80},
-	{IT_STRING | IT_CVAR,  NULL, "Look Up/Down"       , {.cvar = &cv_lookaxis[3]}      , 90},
+	{IT_STRING | IT_CVAR,  NULL, "Look Backward" 	  , {.cvar = &cv_lookbackaxis[0]}  , 90},
+	{IT_STRING | IT_CVAR,  NULL, "Spec. Look Up/Down" , {.cvar = &cv_lookaxis[3]}      , 100},
+	{IT_STRING | IT_CVAR,  NULL, "Deadzone"      	  , {.cvar = &cv_deadzone[3]}      , 110},
 };
 
 static menuitem_t OP_JoystickSetMenu[] =
@@ -2576,7 +2584,8 @@ boolean M_Responder(event_t *ev)
 	}
 	else if (menuactive)
 	{
-		if (ev->type == ev_joystick  && ev->data1 == 0 && joywait < I_GetTime())
+		tic_t thistime = I_GetTime();
+		if (ev->type == ev_joystick)
 		{
 			const INT32 jdeadzone = ((JOYAXISRANGE-1) * cv_deadzone[0].value) >> FRACBITS;
 			if (ev->data3 != INT32_MAX)
@@ -2586,12 +2595,12 @@ boolean M_Responder(event_t *ev)
 					if (ev->data3 < 0 && pjoyy >= 0)
 					{
 						ch = KEY_UPARROW;
-						joywait = I_GetTime() + NEWTICRATE/7;
+						joywait = thistime + NEWTICRATE/7;
 					}
 					else if (ev->data3 > 0 && pjoyy <= 0)
 					{
 						ch = KEY_DOWNARROW;
-						joywait = I_GetTime() + NEWTICRATE/7;
+						joywait = thistime + NEWTICRATE/7;
 					}
 					pjoyy = ev->data3;
 				}
@@ -2606,12 +2615,12 @@ boolean M_Responder(event_t *ev)
 					if (ev->data2 < 0 && pjoyx >= 0)
 					{
 						ch = KEY_LEFTARROW;
-						joywait = I_GetTime() + NEWTICRATE/17;
+						joywait = thistime + NEWTICRATE/17;
 					}
 					else if (ev->data2 > 0 && pjoyx <= 0)
 					{
 						ch = KEY_RIGHTARROW;
-						joywait = I_GetTime() + NEWTICRATE/17;
+						joywait = thistime + NEWTICRATE/17;
 					}
 					pjoyx = ev->data2;
 				}

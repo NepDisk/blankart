@@ -345,12 +345,12 @@ INT16 prevmap, nextmap;
 static UINT8 *savebuffer;
 
 static CV_PossibleValue_t joyaxis_cons_t[] = {{0, "None"},
-{1, "X-Axis"}, {2, "Y-Axis"}, {-1, "X-Axis-"}, {-2, "Y-Axis-"},
+{1, "Left X"}, {2, "Left Y"}, {-1, "Left X-"}, {-2, "Left Y-"},
 #if JOYAXISSET > 1
-{3, "Z-Axis"}, {4, "X-Rudder"}, {-3, "Z-Axis-"}, {-4, "X-Rudder-"},
+{3, "Right X"}, {4, "Right Y"}, {-3, "Right X-"}, {-4, "Right Y-"},
 #endif
 #if JOYAXISSET > 2
-{5, "Y-Rudder"}, {6, "Z-Rudder"}, {-5, "Y-Rudder-"}, {-6, "Z-Rudder-"},
+{5, "L Trigger"}, {6, "R Trigger"}, {-5, "L Trigger-"}, {-6, "R Trigger-"},
 #endif
 #if JOYAXISSET > 3
 {7, "U-Axis"}, {8, "V-Axis"}, {-7, "U-Axis-"}, {-8, "V-Axis-"},
@@ -447,10 +447,10 @@ consvar_t cv_shrinkme[MAXSPLITSCREENPLAYERS] = {
 };
 
 consvar_t cv_turnaxis[MAXSPLITSCREENPLAYERS] = {
-	CVAR_INIT ("joyaxis_turn", "X-Axis", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis2_turn", "X-Axis", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis3_turn", "X-Axis", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis4_turn", "X-Axis", CV_SAVE, joyaxis_cons_t, NULL)
+	CVAR_INIT ("joyaxis_turn", "Left X", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis2_turn", "Left X", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis3_turn", "Left X", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis4_turn", "Left X", CV_SAVE, joyaxis_cons_t, NULL)
 };
 
 consvar_t cv_moveaxis[MAXSPLITSCREENPLAYERS] = {
@@ -468,10 +468,10 @@ consvar_t cv_brakeaxis[MAXSPLITSCREENPLAYERS] = {
 };
 
 consvar_t cv_aimaxis[MAXSPLITSCREENPLAYERS] = {
-	CVAR_INIT ("joyaxis_aim", "Y-Axis", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis2_aim", "Y-Axis", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis3_aim", "Y-Axis", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis4_aim", "Y-Axis", CV_SAVE, joyaxis_cons_t, NULL)
+	CVAR_INIT ("joyaxis_aim", "Left Y", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis2_aim", "Left Y", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis3_aim", "Left Y", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis4_aim", "Left Y", CV_SAVE, joyaxis_cons_t, NULL)
 };
 
 consvar_t cv_lookaxis[MAXSPLITSCREENPLAYERS] = {
@@ -482,17 +482,24 @@ consvar_t cv_lookaxis[MAXSPLITSCREENPLAYERS] = {
 };
 
 consvar_t cv_fireaxis[MAXSPLITSCREENPLAYERS] = {
-	CVAR_INIT ("joyaxis_fire", "Z-Axis", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis_fire2", "Z-Axis", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis_fire3", "Z-Axis", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis_fire4", "Z-Axis", CV_SAVE, joyaxis_cons_t, NULL)
+	CVAR_INIT ("joyaxis_fire", "L Trigger", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis_fire2", "L Trigger", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis_fire3", "L Trigger", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis_fire4", "L Trigger", CV_SAVE, joyaxis_cons_t, NULL)
 };
 
 consvar_t cv_driftaxis[MAXSPLITSCREENPLAYERS] = {
-	CVAR_INIT ("joyaxis_drift", "Z-Rudder", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis2_drift", "Z-Rudder", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis3_drift", "Z-Rudder", CV_SAVE, joyaxis_cons_t, NULL),
-	CVAR_INIT ("joyaxis4_drift", "Z-Rudder", CV_SAVE, joyaxis_cons_t, NULL)
+	CVAR_INIT ("joyaxis_drift", "R Trigger", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis2_drift", "R Trigger", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis3_drift", "R Trigger", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis4_drift", "R Trigger", CV_SAVE, joyaxis_cons_t, NULL)
+};
+
+consvar_t cv_lookbackaxis[MAXSPLITSCREENPLAYERS] = {
+	CVAR_INIT ("joyaxis_lookback", "None", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis2_lookback", "None", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis3_lookback", "None", CV_SAVE, joyaxis_cons_t, NULL),
+	CVAR_INIT ("joyaxis4_lookback", "None", CV_SAVE, joyaxis_cons_t, NULL)
 };
 
 static CV_PossibleValue_t zerotoone_cons_t[] = {{0, "MIN"}, {FRACUNIT, "MAX"}, {0, NULL}};
@@ -786,6 +793,9 @@ INT32 PlayerJoyAxis(UINT8 player, axis_input_e axissel)
 			break;
 		case AXISDRIFT:
 			axisval = cv_driftaxis[player-1].value;
+			break;
+		case AXISLOOKBACK:
+			axisval = cv_lookbackaxis[player-1].value;
 			break;
 		default:
 			return 0;

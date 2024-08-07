@@ -1025,6 +1025,7 @@ void D_RegisterClientCommands(void)
 		CV_RegisterVar(&cv_lookaxis[i]);
 		CV_RegisterVar(&cv_fireaxis[i]);
 		CV_RegisterVar(&cv_driftaxis[i]);
+		CV_RegisterVar(&cv_lookbackaxis[i]);
 		CV_RegisterVar(&cv_deadzone[i]);
 		CV_RegisterVar(&cv_digitaldeadzone[i]);
 	}

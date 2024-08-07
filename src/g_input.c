@@ -876,32 +876,32 @@ void G_DefineDefaultControls(void)
 		gamecontroldefault[0][i][gc_accelerate ][1] = KEY_JOY1+0; // A
 		gamecontroldefault[0][i][gc_lookback   ][1] = KEY_JOY1+2; // X
 		gamecontroldefault[0][i][gc_brake      ][1] = KEY_JOY1+1; // B
-		gamecontroldefault[0][i][gc_fire       ][1] = KEY_JOY1+4; // LB
-		gamecontroldefault[0][i][gc_drift      ][1] = KEY_JOY1+5; // RB
+		gamecontroldefault[0][i][gc_fire       ][1] = KEY_JOY1+9; // LB
+		gamecontroldefault[0][i][gc_drift      ][1] = KEY_JOY1+10; // RB
 
 		gamecontroldefault[0][i][gc_viewpoint  ][1] = KEY_JOY1+3; // Y
-		gamecontroldefault[0][i][gc_pause      ][1] = KEY_JOY1+6; // Back
-		gamecontroldefault[0][i][gc_systemmenu ][0] = KEY_JOY1+7; // Start
+		gamecontroldefault[0][i][gc_pause      ][1] = KEY_JOY1+4; // Back
+		gamecontroldefault[0][i][gc_systemmenu ][0] = KEY_JOY1+6; // Start
 		gamecontroldefault[0][i][gc_talkkey    ][1] = KEY_HAT1+1; // D-Pad Down
 		gamecontroldefault[0][i][gc_scores     ][1] = KEY_HAT1+0; // D-Pad Up
 
 		gamecontroldefault[1][i][gc_accelerate ][0] = KEY_2JOY1+0; // A
 		gamecontroldefault[1][i][gc_lookback   ][0] = KEY_2JOY1+2; // X
 		gamecontroldefault[1][i][gc_brake      ][0] = KEY_2JOY1+1; // B
-		gamecontroldefault[1][i][gc_fire       ][0] = KEY_2JOY1+4; // LB
-		gamecontroldefault[1][i][gc_drift      ][0] = KEY_2JOY1+5; // RB
+		gamecontroldefault[1][i][gc_fire       ][0] = KEY_2JOY1+9; // LB
+		gamecontroldefault[1][i][gc_drift      ][0] = KEY_2JOY1+10; // RB
 
 		gamecontroldefault[2][i][gc_accelerate ][0] = KEY_3JOY1+0; // A
 		gamecontroldefault[2][i][gc_lookback   ][0] = KEY_3JOY1+2; // X
 		gamecontroldefault[2][i][gc_brake      ][0] = KEY_3JOY1+1; // B
-		gamecontroldefault[2][i][gc_fire       ][0] = KEY_3JOY1+4; // LB
-		gamecontroldefault[2][i][gc_drift      ][0] = KEY_3JOY1+5; // RB
+		gamecontroldefault[2][i][gc_fire       ][0] = KEY_3JOY1+9; // LB
+		gamecontroldefault[2][i][gc_drift      ][0] = KEY_3JOY1+10; // RB
 
 		gamecontroldefault[3][i][gc_accelerate ][0] = KEY_3JOY1+0; // A
 		gamecontroldefault[3][i][gc_lookback   ][0] = KEY_3JOY1+2; // X
 		gamecontroldefault[3][i][gc_brake      ][0] = KEY_3JOY1+1; // B
-		gamecontroldefault[3][i][gc_fire       ][0] = KEY_3JOY1+4; // LB
-		gamecontroldefault[3][i][gc_drift      ][0] = KEY_3JOY1+5; // RB
+		gamecontroldefault[3][i][gc_fire       ][0] = KEY_3JOY1+9; // LB
+		gamecontroldefault[3][i][gc_drift      ][0] = KEY_3JOY1+10; // RB
 	}
 }
 

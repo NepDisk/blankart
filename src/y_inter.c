@@ -766,7 +766,9 @@ void Y_Ticker(void)
 
 	if (demo.recording)
 	{
-		if (demo.savemode == DSM_NOTSAVING && PlayerInputDown(1, gc_lookback))
+		INT32 axis = PlayerJoyAxis(AXISLOOKBACK, 1);
+
+		if (demo.savemode == DSM_NOTSAVING && (PlayerInputDown(gc_lookback, 1) || (cv_usejoystick->value && axis > 0)))
 			demo.savemode = DSM_TITLEENTRY;
 
 		if (demo.savemode == DSM_WILLSAVE || demo.savemode == DSM_WILLAUTOSAVE)
