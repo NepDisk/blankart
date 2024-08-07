@@ -4272,7 +4272,7 @@ void K_drawKartFreePlay(void)
 	if (((leveltime-lt_endtime) % TICRATE) < TICRATE/2)
 		return;
 
-	V_DrawKartString((BASEVIDWIDTH - (LAPS_X+1)) - 72, // mirror the laps thingy
+	V_DrawKartString((BASEVIDWIDTH - (LAPS_X+1)) - (12*9), // mirror the laps thingy
 		LAPS_Y+3, V_HUDTRANS|V_SLIDEIN|V_SNAPTOBOTTOM|V_SNAPTORIGHT|V_SPLITSCREEN, "FREE PLAY");
 }
 
