@@ -8050,25 +8050,11 @@ static void K_AdjustPlayerFriction(player_t *player)
 void K_SetItemOut(player_t *player)
 {
 	player->pflags |= PF_ITEMOUT;
-
-	if (player->mo->scale >= FixedMul(GROW_SCALE, mapobjectscale))
-	{
-		player->itemscale = ITEMSCALE_GROW;
-	}
-	else if (player->mo->scale <= FixedMul(SHRINK_SCALE, mapobjectscale))
-	{
-		player->itemscale = ITEMSCALE_SHRINK;
-	}
-	else
-	{
-		player->itemscale = ITEMSCALE_NORMAL;
-	}
 }
 
 void K_UnsetItemOut(player_t *player)
 {
 	player->pflags &= ~PF_ITEMOUT;
-	player->itemscale = ITEMSCALE_NORMAL;
 	player->bananadrag = 0;
 }
 
@@ -8268,7 +8254,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									mo->threshold = 10;
 									mo->movecount = player->itemamount;
 									mo->movedir = moloop+1;
-									mo->cusval = player->itemscale;
 									P_SetTarget(&mo->target, player->mo);
 									P_SetTarget(&mo->hprev, prev);
 									P_SetTarget(&prev->hnext, mo);
@@ -8298,7 +8283,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									mo->threshold = 10;
 									mo->movecount = 1;
 									mo->movedir = 1;
-									mo->cusval = player->itemscale;
 									P_SetTarget(&mo->target, player->mo);
 									P_SetTarget(&player->mo->hnext, mo);
 								}
@@ -8331,7 +8315,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									mo->movecount = player->itemamount;
 									mo->movedir = mo->lastlook = moloop+1;
 									mo->color = player->skincolor;
-									mo->cusval = player->itemscale;
 									P_SetTarget(&mo->target, player->mo);
 									P_SetTarget(&mo->hprev, prev);
 									P_SetTarget(&prev->hnext, mo);
@@ -8372,7 +8355,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									mo->threshold = 10;
 									mo->movecount = player->itemamount;
 									mo->movedir = mo->lastlook = moloop+1;
-									mo->cusval = player->itemscale;
 									P_SetTarget(&mo->target, player->mo);
 									P_SetTarget(&mo->hprev, prev);
 									P_SetTarget(&prev->hnext, mo);
@@ -8403,7 +8385,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									mo->threshold = 10;
 									mo->movecount = 1;
 									mo->movedir = 1;
-									mo->cusval = player->itemscale;
 									P_SetTarget(&mo->target, player->mo);
 									P_SetTarget(&player->mo->hnext, mo);
 								}
@@ -8438,7 +8419,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									mo->threshold = 10;
 									mo->movecount = 1;
 									mo->movedir = 1;
-									mo->cusval = player->itemscale;
 									P_SetTarget(&mo->target, player->mo);
 									P_SetTarget(&player->mo->hnext, mo);
 								}
@@ -8710,7 +8690,6 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									mo->threshold = 10;
 									mo->movecount = 1;
 									mo->movedir = 1;
-									mo->cusval = player->itemscale;
 									P_SetTarget(&mo->target, player->mo);
 									P_SetTarget(&player->mo->hnext, mo);
 								}
