@@ -236,10 +236,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->wipeoutslow);
 	else if (fastcmp(field,"justbumped"))
 		lua_pushinteger(L, plr->justbumped);
-	else if (fastcmp(field,"justDI"))
-		lua_pushinteger(L, plr->justDI);
-	else if (fastcmp(field,"flipDI"))
-		lua_pushboolean(L, plr->flipDI);
 	else if (fastcmp(field,"drift"))
 		lua_pushinteger(L, plr->drift);
 	else if (fastcmp(field,"driftcharge"))
@@ -564,10 +560,6 @@ static int player_set(lua_State *L)
 		plr->wipeoutslow = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"justbumped"))
 		plr->justbumped = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"justDI"))
-		plr->justDI = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"flipDI"))
-		plr->flipDI = luaL_checkboolean(L, 3);
 	else if (fastcmp(field,"drift"))
 		plr->drift = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"driftcharge"))

@@ -2164,11 +2164,6 @@ void P_MovePlayer(player_t *player)
 
 	P_3dMovement(player);
 
-	if (cmd->turning == 0)
-	{
-		player->justDI = 0;
-	}
-
 	if (player->squishedtimer > 0)
 	{
 		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
