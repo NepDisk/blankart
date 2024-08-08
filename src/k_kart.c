@@ -4372,7 +4372,18 @@ void K_PuntMine(mobj_t *origMine, mobj_t *punter)
 	if (mine->threshold > 0)
 		return;
 
-	spd = FixedMul(82 * punter->scale, K_GetKartGameSpeedScalar(gamespeed)); // Avg Speed is 41 in Normal
+	switch (gamespeed)
+	{
+		case 0:
+			spd = 68*mapobjectscale; // Avg Speed is 34
+			break;
+		case 2:
+			spd = 96*mapobjectscale; // Avg Speed is 48
+			break;
+		default:
+			spd = 82*mapobjectscale; // Avg Speed is 41
+			break;
+	}
 
 	mine->flags |= MF_NOCLIPTHING;
 

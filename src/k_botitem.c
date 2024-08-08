@@ -187,8 +187,6 @@ static player_t *K_PlayerPredictThrow(player_t *player, UINT8 extra)
 			break;
 	}
 	
-	throwspeed = FixedMul(throwspeed, mapobjectscale);
-	
 	estx = player->mo->x + P_ReturnThrustX(NULL, player->mo->angle, (throwspeed + player->speed) * airtime);
 	
 	esty = player->mo->y + P_ReturnThrustY(NULL, player->mo->angle, (throwspeed + player->speed) * airtime);
