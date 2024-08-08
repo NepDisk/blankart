@@ -490,8 +490,6 @@ typedef struct player_s
 	UINT8 confirmVictim;		// Player ID that you dealt damage to
 	UINT8 confirmVictimDelay;	// Delay before playing the sound
 
-	tic_t ebrakefor;	// Ebrake timer, used for visuals.
-
 	UINT32 roundscore; // battle score this round
 	UINT8 emeralds;
 	UINT8 bumpers;

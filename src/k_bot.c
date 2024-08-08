@@ -1122,20 +1122,6 @@ static INT32 K_HandleBotReverse(player_t *player, ticcmd_t *cmd, botprediction_t
 			}
 		}
 
-#define STEEP_SLOPE (FRACUNIT*11/10)
-		if (slopeMul > STEEP_SLOPE)
-		{
-			// Slope is too steep to reverse -- EBrake.
-			cmd->forwardmove = 0;
-			cmd->buttons |= BT_ACCELERATE|BT_BRAKE;
-		}
-		else
-		{
-			cmd->forwardmove = -MAXPLMOVE;
-			cmd->buttons |= BT_BRAKE; //|BT_LOOKBACK
-		}
-#undef STEEP_SLOPE
-
 		if (anglediff < 10)
 		{
 			turnamt = 0;

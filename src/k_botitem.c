@@ -169,9 +169,30 @@ static player_t *K_PlayerPredictThrow(player_t *player, UINT8 extra)
 {
 	const fixed_t dist = (30 + (extra * 10)) * player->mo->scale;
 	const UINT32 airtime = FixedDiv(dist + player->mo->momz, gravity);
-	const fixed_t throwspeed = FixedMul(82 * mapobjectscale, K_GetKartGameSpeedScalar(gamespeed));
-	const fixed_t estx = player->mo->x + P_ReturnThrustX(NULL, player->mo->angle, (throwspeed + player->speed) * airtime);
-	const fixed_t esty = player->mo->y + P_ReturnThrustY(NULL, player->mo->angle, (throwspeed + player->speed) * airtime);
+	fixed_t throwspeed;
+	UINT8 gsv;
+	fixed_t estx;
+	fixed_t esty;
+	
+	switch (gamespeed)
+	{
+		case 0:
+			throwspeed = 68*mapobjectscale; // Avg Speed is 34
+			break;
+		case 2:
+			throwspeed = 96*mapobjectscale; // Avg Speed is 48
+			break;
+		default:
+			throwspeed = 82*mapobjectscale; // Avg Speed is 41
+			break;
+	}
+	
+	throwspeed = FixedMul(throwspeed, mapobjectscale);
+	
+	estx = player->mo->x + P_ReturnThrustX(NULL, player->mo->angle, (throwspeed + player->speed) * airtime);
+	
+	esty = player->mo->y + P_ReturnThrustY(NULL, player->mo->angle, (throwspeed + player->speed) * airtime);
+	
 	return K_PlayerNearSpot(player, estx, esty, player->mo->radius * 2);
 }
 

@@ -32,8 +32,6 @@ typedef enum
 	BT_ATTACK		  = 1<<4,	// Use Item
 	BT_LOOKBACK		  = 1<<5,	// Look Backward
 
-	BT_EBRAKEMASK	= (BT_ACCELERATE|BT_BRAKE),
-
 	// free: 1<<6 to 1<<12
 
 	// Lua garbage
