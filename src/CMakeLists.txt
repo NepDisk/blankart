@@ -349,7 +349,6 @@ if((CMAKE_COMPILER_IS_GNUCC) AND NOT (${CMAKE_SYSTEM} MATCHES Darwin))
 endif()
 
 add_subdirectory(sdl)
-add_subdirectory(objects)
 
 if(NOT ${SRB2_SDL2_AVAILABLE})
 	message(FATAL_ERROR "There are no targets available to build an SRB2Kart executable. :(")

@@ -1142,7 +1142,7 @@ static void K_drawKartItem(void)
 		// The only actual reason is to make sneakers line up this way in the code below
 		// This shouldn't have any actual baring over how it functions
 		// Hyudoro is first, because we're drawing it on top of the player's current item
-		if (stplyr->stealingtimer < 0)
+		if (stplyr->stolentimer > 0)
 		{
 			if (leveltime & 2)
 				localpatch = kp_hyudoro[offset];

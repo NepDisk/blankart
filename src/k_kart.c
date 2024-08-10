@@ -42,7 +42,6 @@
 #include "k_director.h"
 #include "k_collide.h"
 #include "k_follower.h"
-#include "k_objects.h"
 #include "k_grandprix.h"
 
 // SOME IMPORTANT VARIABLES DEFINED IN DOOMDEF.H:
@@ -4478,7 +4477,6 @@ static void K_FlameDashLeftoverSmoke(mobj_t *src)
 	}
 }
 
-#if 0
 static void K_DoHyudoroSteal(player_t *player)
 {
 	INT32 i, numplayers = 0;
@@ -4542,7 +4540,7 @@ static void K_DoHyudoroSteal(player_t *player)
 	{
 		player->hyudorotimer = hyu;
 		player->stealingtimer = stealtime;
-		players[stealplayer].stealingtimer = -stealtime;
+		players[stealplayer].stolentimer = stealtime;
 
 		player->itemtype = players[stealplayer].itemtype;
 		player->itemamount = players[stealplayer].itemamount;
@@ -4556,7 +4554,6 @@ static void K_DoHyudoroSteal(player_t *player)
 			S_StartSound(NULL, sfx_s3k92);
 	}
 }
-#endif
 
 void K_DoSneaker(player_t *player, INT32 type)
 {
@@ -6707,7 +6704,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if ((numbosswaypoints > 0) && (player->laps == 0) && (numlaps > 0))
 		player->laps = 1;
 	
-	if (player->stealingtimer == 0
+	if (player->stealingtimer == 0 && player->stolentimer == 0
 		&& player->rocketsneakertimer)
 		player->rocketsneakertimer--;
 
@@ -6717,10 +6714,11 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->sadtimer)
 		player->sadtimer--;
 
-	if (player->stealingtimer > 0)
+	if (player->stealingtimer)
 		player->stealingtimer--;
-	else if (player->stealingtimer < 0)
-		player->stealingtimer++;
+
+	if (player->stolentimer)
+		player->stolentimer--;
 	
 	if (player->squishedtimer > 0)
 		player->squishedtimer--;
@@ -6760,15 +6758,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (player->instashield)
 		player->instashield--;
-
-	if (player->justDI)
-	{
-		player->justDI--;
-
-		// return turning if player is fully actionable, no matter when!
-		if (!P_PlayerInPain(player))
-			player->justDI = 0;
-	}
 
 	if (player->eggmanexplode)
 	{
@@ -7899,6 +7888,7 @@ void K_StripItems(player_t *player)
 
 	player->hyudorotimer = 0;
 	player->stealingtimer = 0;
+	player->stolentimer = 0;
 
 	player->curshield = KSHIELD_NONE;
 	player->bananadrag = 0;
@@ -8066,7 +8056,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	ticcmd_t *cmd = &player->cmd;
 	boolean ATTACK_IS_DOWN = ((cmd->buttons & BT_ATTACK) && !(player->oldcmd.buttons & BT_ATTACK));
 	boolean HOLDING_ITEM = (player->pflags & (PF_ITEMOUT|PF_EGGMANOUT));
-	boolean NO_HYUDORO = (player->stealingtimer == 0);
+	boolean NO_HYUDORO = (player->stealingtimer == 0 && player->stolentimer == 0);
 
 	if (!player->exiting)
 	{
@@ -8655,8 +8645,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							if (ATTACK_IS_DOWN && !HOLDING_ITEM && NO_HYUDORO)
 							{
 								player->itemamount--;
-								//K_DoHyudoroSteal(player); // yes. yes they do.
-								Obj_HyudoroDeploy(player->mo);
+								K_DoHyudoroSteal(player); // yes. yes they do.
 								K_PlayAttackTaunt(player->mo);
 							}
 							break;

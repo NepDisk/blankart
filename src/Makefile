@@ -219,7 +219,6 @@ objdir:=$(makedir)/objs
 sources+=\
 	$(call List,Sourcefile)\
 	$(call List,blua/Sourcefile)\
-	$(call List,objects/Sourcefile)\
 
 depends:=$(basename $(filter %.c %.s,$(sources)))
 objects:=$(basename $(filter %.c %.s %.nas,$(sources)))

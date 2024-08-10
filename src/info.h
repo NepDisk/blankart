@@ -1114,7 +1114,6 @@ typedef enum sprite
 	SPR_FLMP, // Flame Shield paper sprites
 	SPR_FLML, // Flame Shield speed lines
 	SPR_FLMF, // Flame Shield flash
-	SPR_HYUU, // Hyudoro
 	SPR_SINK, // Kitchen Sink
 	SPR_SITR, // Kitchen Sink Trail
 	SPR_KBLN, // Battle Mode Bumper
@@ -4656,9 +4655,6 @@ typedef enum state
 	S_FLAMESHIELDLINE3,
 	S_FLAMESHIELDFLASH,
 
-	// Caked-Up Booty-Sheet Ghost
-	S_HYUDORO,
-
 	// The legend
 	S_SINK,
 	S_SINK_SHIELD,
@@ -6223,9 +6219,6 @@ typedef enum mobj_type
 	MT_FLAMESHIELDUNDERLAY,
 	MT_FLAMESHIELDPAPER,
 	MT_BUBBLESHIELDTRAP,
-
-	MT_HYUDORO,
-	MT_HYUDORO_CENTER,
 
 	MT_SINK, // Kitchen Sink Stuff
 	MT_SINK_SHIELD,

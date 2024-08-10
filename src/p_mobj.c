@@ -46,7 +46,6 @@
 #include "k_bot.h"
 #include "k_terrain.h"
 #include "k_collide.h"
-#include "k_objects.h"
 
 static CV_PossibleValue_t CV_BobSpeed[] = {{0, "MIN"}, {4*FRACUNIT, "MAX"}, {0, NULL}};
 consvar_t cv_movebob = CVAR_INIT ("movebob", "1.0", CV_FLOAT|CV_SAVE, CV_BobSpeed, NULL);
@@ -5017,7 +5016,6 @@ boolean P_IsKartItem(INT32 type)
 		case MT_JAWZ_SHIELD:
 		case MT_SSMINE_SHIELD:
 		case MT_SINK_SHIELD:
-		case MT_HYUDORO:
 			return true;
 
 		// Primarily for minimap data, handle with care
@@ -7693,16 +7691,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		}
 		break;
 	}
-	case MT_HYUDORO:
-	{
-		Obj_HyudoroThink(mobj);
-		break;
-	}
-	case MT_HYUDORO_CENTER:
-	{
-		Obj_HyudoroCenterThink(mobj);
-		break;
-	}
 	case MT_ROCKETSNEAKER:
 		if (!mobj->target || !mobj->target->health)
 		{
@@ -9655,7 +9643,6 @@ static void P_DefaultMobjShadowScale(mobj_t *thing)
 		case MT_SSMINE_SHIELD:
 		case MT_LANDMINE:
 		case MT_BALLHOG:
-		case MT_HYUDORO:
 		case MT_SINK:
 		case MT_ROCKETSNEAKER:
 		case MT_SPB:

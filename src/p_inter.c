@@ -38,7 +38,6 @@
 #include "k_boss.h"
 #include "k_respawn.h"
 #include "p_spec.h"
-#include "k_objects.h"
 
 // CTF player names
 #define CTFTEAMCODE(pl) pl->ctfteam ? (pl->ctfteam == 1 ? "\x85" : "\x84") : ""
@@ -143,7 +142,7 @@ boolean P_CanPickupItem(player_t *player, UINT8 weapon)
 		else
 		{
 			// Item-specific timer going off
-			if (player->stealingtimer
+			if (player->stealingtimer || player->stolentimer
 				|| player->rocketsneakertimer
 				|| player->eggmanexplode
 				|| (player->growshrinktimer > 0))
@@ -487,11 +486,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			toucher->momz = (8*toucher->scale) * P_MobjFlip(toucher);
 			S_StartSound(toucher, sfx_s1b2);
 			return;
-
-		case MT_HYUDORO:
-			Obj_HyudoroCollide(special, toucher);
-			return;
-
 		case MT_RING:
 		case MT_FLINGRING:
 			if (special->extravalue1)

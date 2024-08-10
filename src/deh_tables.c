@@ -3686,9 +3686,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_FLAMESHIELDLINE3",
 	"S_FLAMESHIELDFLASH",
 
-	// Caked-Up Booty-Sheet Ghost
-	"S_HYUDORO",
-
 	// The legend
 	"S_SINK",
 	"S_SINK_SHIELD",
@@ -5214,9 +5211,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_FLAMESHIELDUNDERLAY",
 	"MT_FLAMESHIELDPAPER",
 	"MT_BUBBLESHIELDTRAP",
-
-	"MT_HYUDORO",
-	"MT_HYUDORO_CENTER",
 
 	"MT_SINK", // Kitchen Sink Stuff
 	"MT_SINK_SHIELD",
