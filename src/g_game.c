@@ -19,6 +19,7 @@
 #include "d_clisrv.h"
 #include "f_finale.h"
 #include "filesrch.h" // for refreshdirmenu
+#include "m_fixed.h"
 #include "p_setup.h"
 #include "p_saveg.h"
 #include "i_time.h"
@@ -2174,10 +2175,16 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 
 	UINT8 ctfteam;
 
+	fixed_t starpostx;
+	fixed_t starposty;
+	fixed_t starpostz;
+	angle_t starpostangle;
+	boolean starpostflip;
 	INT32 starpostnum;
 	tic_t starposttime; // The time of the last cheatcheck you hit
 	INT32 prevcheck; // Distance from Previous Legacy Checkpoint
 	INT32 nextcheck; // Distace to Next Legacy Checkpoint
+	
 	INT32 exiting;
 	INT32 khudcardanimation;
 	INT16 totalring;
@@ -2273,6 +2280,11 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		roundscore = 0;
 		exiting = 0;
 		khudcardanimation = 0;
+		starpostx =0;
+		starposty = 0;
+		starpostz = 0;
+		starpostangle = 0;
+		starpostflip = 0;
 		starpostnum = 0;
 		starposttime = 0;
 		prevcheck = 0;
@@ -2318,12 +2330,17 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		exiting = players[player].exiting;
 		khudcardanimation = (exiting > 0) ? players[player].karthud[khud_cardanimation] : 0;
 
+		follower = players[player].follower;
+		
+		starpostx = players[player].starpostx;
+		starposty = players[player].starposty;
+		starpostz = players[player].starpostz;
+		starpostangle = players[player].starpostangle;
+		starpostflip = players[player].starpostflip;
 		starpostnum = players[player].starpostnum;
 		starposttime = players[player].starposttime;
 		prevcheck = players[player].prevcheck;
 		prevcheck = players[player].nextcheck;
-
-		follower = players[player].follower;
 
 		pflags |= (players[player].pflags & (PF_STASIS|PF_ELIMINATED|PF_NOCONTEST|PF_LOSTLIFE));
 	}
@@ -2361,10 +2378,16 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->availabilities = availabilities;
 	p->followitem = followitem;
 
+	p->starpostx = starpostx;
+	p->starposty = starposty;
+	p->starpostz = starpostz;
+	p->starpostangle = starpostangle;
+	p->starpostflip = starpostflip;
 	p->starpostnum = starpostnum;
 	p->starposttime = starposttime;
 	p->prevcheck = prevcheck;
 	p->nextcheck = nextcheck;
+	
 	p->exiting = exiting;
 	p->karthud[khud_cardanimation] = khudcardanimation;
 
@@ -2503,29 +2526,22 @@ static boolean G_CheckSpot(INT32 playernum, mapthing_t *mthing)
 // or a not-so-appropriate spot, if it initially fails
 // due to a lack of starts open or something.
 //
-void G_SpawnPlayer(INT32 playernum)
+void G_SpawnPlayer(INT32 playernum, boolean starpost)
 {
 	if (!playeringame[playernum])
 		return;
 
 	P_SpawnPlayer(playernum);
-	G_MovePlayerToSpawnOrStarpost(playernum);
+	G_MovePlayerToSpawnOrStarpost(playernum, starpost);
 	LUA_HookPlayer(&players[playernum], HOOK(PlayerSpawn)); // Lua hook for player spawning :)
 }
 
-void G_MovePlayerToSpawnOrStarpost(INT32 playernum)
-{
-#if 0
-	if (leveltime <= introtime && !players[playernum].spectator)
-		P_MovePlayerToSpawn(playernum, G_FindMapStart(playernum));
-	else
-		P_MovePlayerToStarpost(playernum);
-#else
-	if (leveltime > starttime)
+void G_MovePlayerToSpawnOrStarpost(INT32 playernum, boolean starpost)
+{	
+	if ((leveltime > starttime) && starpost)
 		P_MovePlayerToStarpost(playernum);
 	else
 		P_MovePlayerToSpawn(playernum, G_FindMapStart(playernum));
-#endif
 }
 
 mapthing_t *G_FindTeamStart(INT32 playernum)
@@ -2817,6 +2833,7 @@ void G_ChangePlayerReferences(mobj_t *oldmo, mobj_t *newmo)
 void G_DoReborn(INT32 playernum)
 {
 	player_t *player = &players[playernum];
+	boolean starpost = false;
 
 	// Make sure objectplace is OFF when you first start the level!
 	OP_ResetObjectplace();
@@ -2824,6 +2841,12 @@ void G_DoReborn(INT32 playernum)
 	{
 		// respawn at the start
 		mobj_t *oldmo = NULL;
+		
+		if (player->spectator)
+			;
+		else if ((player->starpostnum || ((player->nextwaypoint != NULL) && player->starposttime)) 
+		|| ((mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE) && player->laps)) // SRB2kart
+			starpost = true;
 
 		// first dissasociate the corpse
 		if (player->mo)
@@ -2833,7 +2856,7 @@ void G_DoReborn(INT32 playernum)
 			P_RemoveMobj(player->mo);
 		}
 
-		G_SpawnPlayer(playernum);
+		G_SpawnPlayer(playernum, starpost);
 		if (oldmo)
 			G_ChangePlayerReferences(oldmo, players[playernum].mo);
 	}

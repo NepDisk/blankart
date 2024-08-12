@@ -4081,7 +4081,12 @@ static void P_InitPlayers(void)
 		}
 		else // gametype is race
 		{
-			G_SpawnPlayer(i);
+			if (players[i].starposttime)
+			{
+				G_SpawnPlayer(i, true);
+			}
+			else
+				G_SpawnPlayer(i, false);
 		}
 	}
 }

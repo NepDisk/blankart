@@ -2127,8 +2127,6 @@ void K_RespawnChecker(player_t *player)
 */
 void K_KartMoveAnimation(player_t *player)
 {
-	const INT16 minturn = KART_FULLTURN/8;
-
 	const fixed_t fastspeed = (K_GetKartSpeed(player, false, true) * 17) / 20; // 85%
 	const fixed_t speedthreshold = player->mo->scale / 8;
 
@@ -2146,11 +2144,11 @@ void K_KartMoveAnimation(player_t *player)
 	{
 		player->pflags &= ~PF_GAINAX;
 
-		if (player->cmd.turning < -minturn)
+		if (player->cmd.turning < 0)
 		{
 			turndir = -1;
 		}
-		else if (player->cmd.turning > minturn)
+		else if (player->cmd.turning > 0)
 		{
 			turndir = 1;
 		}
@@ -7098,6 +7096,32 @@ void K_KartPlayerAfterThink(player_t *player)
 }
 
 /*--------------------------------------------------
+	size_t K_NextRespawnWaypointIndex(waypoint_t *waypoint)
+		See header file for description.
+--------------------------------------------------*/
+size_t K_NextRespawnWaypointIndex(waypoint_t *waypoint)
+{
+	size_t           i = 0U;
+	size_t newwaypoint = SIZE_MAX;
+
+	// Set to the first valid nextwaypoint, for simplicity's sake.
+	// If we reach the last waypoint and it's still not valid, just use it anyway. Someone needs to fix their map!
+	for (i = 0U; i < waypoint->numnextwaypoints; i++)
+	{
+		newwaypoint = i;
+
+		if ((i == waypoint->numnextwaypoints - 1U)
+		|| ((K_GetWaypointIsEnabled(waypoint->nextwaypoints[newwaypoint]) == true)
+		&& (K_GetWaypointIsSpawnpoint(waypoint->nextwaypoints[newwaypoint]) == true)))
+		{
+			break;
+		}
+	}
+
+	return newwaypoint;
+}
+
+/*--------------------------------------------------
 	static waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 
 		Gets the next waypoint of a player, by finding their closest waypoint, then checking which of itself and next or
@@ -7109,7 +7133,7 @@ void K_KartPlayerAfterThink(player_t *player)
 	Return:-
 		The waypoint that is the player's next waypoint
 --------------------------------------------------*/
-static waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
+waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 {
 	waypoint_t *bestwaypoint = NULL;
 
@@ -7297,14 +7321,25 @@ static waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 
 		// Respawn point should only be updated when we're going to a nextwaypoint
 		if ((updaterespawn) &&
+		(!player->respawn) &&
 		(bestwaypoint != NULL) &&
 		(bestwaypoint != player->nextwaypoint) &&
 		(K_GetWaypointIsSpawnpoint(bestwaypoint)) &&
 		(K_GetWaypointIsEnabled(bestwaypoint) == true))
 		{
-			player->starpostx = bestwaypoint->mobj->x;
-			player->starposty = bestwaypoint->mobj->y;
-			player->starpostz = bestwaypoint->mobj->z;
+			size_t nwp = K_NextRespawnWaypointIndex(bestwaypoint);
+			player->starposttime = leveltime;
+			player->starpostx = bestwaypoint->mobj->x >> FRACBITS;
+			player->starposty = bestwaypoint->mobj->y >> FRACBITS;
+			player->starpostz = bestwaypoint->mobj->z >> FRACBITS;
+			
+			// Set angle to be used
+			player->starpostangle = R_PointToAngle2(
+				bestwaypoint->mobj->x,
+				bestwaypoint->mobj->y,
+				bestwaypoint->nextwaypoints[nwp]->mobj->x,
+				bestwaypoint->nextwaypoints[nwp]->mobj->y
+			);
 		}
 	}
 

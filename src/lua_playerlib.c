@@ -220,6 +220,10 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->oldposition);
 	else if (fastcmp(field,"positiondelay"))
 		lua_pushinteger(L, plr->positiondelay);
+	else if (fastcmp(field,"prevcheck"))
+		lua_pushinteger(L, plr->prevcheck);
+	else if (fastcmp(field,"nextcheck"))
+		lua_pushinteger(L, plr->nextcheck);
 	else if (fastcmp(field,"distancetofinish"))
 		lua_pushinteger(L, plr->distancetofinish);
 	else if (fastcmp(field,"airtime"))
@@ -240,6 +244,10 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->driftcharge);
 	else if (fastcmp(field,"driftboost"))
 		lua_pushinteger(L, plr->driftboost);
+	else if (fastcmp(field,"boostcharge"))
+		lua_pushinteger(L, plr->boostcharge);
+	else if (fastcmp(field,"startboost"))
+		lua_pushinteger(L, plr->startboost);
 	else if (fastcmp(field,"aizdriftstraft"))
 		lua_pushinteger(L, plr->aizdriftstrat);
 	else if (fastcmp(field,"aizdrifttilt"))
@@ -418,8 +426,20 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->ctfteam);
 	else if (fastcmp(field,"checkskip"))
 		lua_pushinteger(L, plr->checkskip);
+	else if (fastcmp(field,"starpostx"))
+		lua_pushfixed(L, plr->starpostx);
+	else if (fastcmp(field,"starposty"))
+		lua_pushfixed(L, plr->starposty);
+	else if (fastcmp(field,"starpostz"))
+		lua_pushfixed(L, plr->starpostz);
+	else if (fastcmp(field,"starpostangle"))
+		lua_pushangle(L, plr->starpostangle);
+	else if (fastcmp(field,"starpostflip"))
+		lua_pushboolean(L, plr->starpostflip);
 	else if (fastcmp(field,"starpostnum"))
 		lua_pushinteger(L, plr->starpostnum);
+	else if (fastcmp(field,"starposttime"))
+		lua_pushinteger(L, plr->starposttime);
 	else if (fastcmp(field,"lastsidehit"))
 		lua_pushinteger(L, plr->lastsidehit);
 	else if (fastcmp(field,"lastlinehit"))
@@ -544,6 +564,10 @@ static int player_set(lua_State *L)
 		plr->oldposition = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"positiondelay"))
 		plr->positiondelay = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"prevcheck"))
+		plr->prevcheck = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"nextcheck"))
+		plr->nextcheck = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"distancetofinish"))
 		return NOSET;
 	else if (fastcmp(field,"airtime"))
@@ -564,6 +588,10 @@ static int player_set(lua_State *L)
 		plr->driftcharge = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"driftboost"))
 		plr->driftboost = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"boostcharge"))
+		plr->boostcharge = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"startboost"))
+		plr->startboost = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"aizdriftstraft"))
 		plr->aizdriftstrat = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"aizdrifttilt"))
@@ -730,8 +758,20 @@ static int player_set(lua_State *L)
 		plr->ctfteam = (INT32)luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"checkskip"))
 		plr->checkskip = (INT32)luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"starpostx"))
+		plr->starpostx = luaL_checkfixed(L, 3);
+	else if (fastcmp(field,"starposty"))
+		plr->starposty = luaL_checkfixed(L, 3);
+	else if (fastcmp(field,"starpostz"))
+		plr->starpostz = luaL_checkfixed(L, 3);
+	else if (fastcmp(field,"starpostangle"))
+		plr->starpostangle = luaL_checkangle(L, 3);
+	else if (fastcmp(field,"starpostflip"))
+		plr->starpostflip = luaL_checkboolean(L, 3);
 	else if (fastcmp(field,"starpostnum"))
 		plr->starpostnum = (INT32)luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"starposttime"))
+		plr->starposttime = (tic_t)luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"lastsidehit"))
 		plr->lastsidehit = (INT16)luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"lastlinehit"))

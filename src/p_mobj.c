@@ -11265,6 +11265,10 @@ void P_MovePlayerToSpawn(INT32 playernum, mapthing_t *mthing)
 		x = mthing->x << FRACBITS;
 		y = mthing->y << FRACBITS;
 		angle = FixedAngle(mthing->angle*FRACUNIT);
+		
+		p->starpostx = mthing->x >> FRACBITS;
+		p->starposty = mthing->y >> FRACBITS;
+		p->starpostangle = FixedAngle(mthing->angle*FRACUNIT);
 	}
 	//spawn at the origin as a desperation move if there is no mapthing
 

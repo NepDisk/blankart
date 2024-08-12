@@ -622,12 +622,14 @@ void P_TouchStarPost(mobj_t *post, player_t *player, boolean snaptopost)
 		
 	if (numbosswaypoints > 0) // Handles Respawning related things on Binary maps using legacy checkpoints
 	{
-		player->starposttime = player->realtime;
-		player->starpostx = toucher->x;
-		player->starposty= toucher->y;
-		player->starpostz = post->z;
+		// Save the player's time and position.
+		player->starposttime = player->realtime; //this makes race mode's timers work correctly whilst not affecting sp -x
+		//player->starposttime = leveltime;
+		player->starpostx = toucher->x>>FRACBITS;
+		player->starposty = toucher->y>>FRACBITS;
+		player->starpostz = post->z>>FRACBITS;
 		player->starpostangle = post->angle;
-		player->starpostflip = ((post->flags2 & MF2_OBJECTFLIP) || (post->spawnpoint->options & MTF_OBJECTFLIP)) ? true : false;	// store flipping
+		player->starpostflip = post->spawnpoint->options & MTF_OBJECTFLIP;	// store flipping
 
 	}
 
