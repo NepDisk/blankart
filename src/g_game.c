@@ -55,7 +55,6 @@
 #include "k_battle.h"
 #include "k_pwrlv.h"
 #include "k_color.h"
-#include "k_respawn.h"
 #include "k_grandprix.h"
 #include "k_boss.h"
 #include "k_bot.h"
@@ -916,7 +915,7 @@ static void G_DoAnglePrediction(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer, p
 
 	if (((player->mo && player->speed > 0) // Moving
 		|| (leveltime > starttime && (cmd->buttons & BT_ACCELERATE && cmd->buttons & BT_BRAKE)) // Rubber-burn turn
-		|| (player->respawn.state == RESPAWNST_DROP) // Respawning
+		|| (player->respawn) // Respawning
 		|| (player->spectator || objectplacing))) // Not a physical player
 		localangle[ssplayer-1] += (cmd->angle<<TICCMD_REDUCE);
 
@@ -2134,8 +2133,6 @@ static inline void G_PlayerFinishLevel(INT32 player)
 	p->starposttime = 0;
 	p->prevcheck = 0;
 	p->nextcheck = 0;
-	
-	memset(&p->respawn, 0, sizeof (p->respawn));
 
 	// SRB2kart: Increment the "matches played" counter.
 	if (player == consoleplayer)
@@ -2207,7 +2204,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	SINT8 xtralife;
 
 	// SRB2kart
-	respawnvars_t respawn;
 	INT32 itemtype;
 	INT32 itemamount;
 	INT32 itemroulette;
@@ -2342,8 +2338,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		P_SetTarget(&players[player].follower, NULL);
 	}
 
-	memcpy(&respawn, &players[player].respawn, sizeof (respawn));
-
 	p = &players[player];
 	memset(p, 0, sizeof (*p));
 
@@ -2402,8 +2396,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->botvars.rubberband = FRACUNIT;
 	p->botvars.controller = UINT16_MAX;
 
-	memcpy(&p->respawn, &respawn, sizeof (p->respawn));
-
 	if (follower)
 		P_RemoveMobj(follower);
 
@@ -2459,6 +2451,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 
 	if (songcredit)
 		S_ShowMusicCredit();
+	
+	if (leveltime > (starttime + (TICRATE/2)) && !p->spectator)
+		p->respawn = 48; // Respawn effect
 }
 
 //
@@ -4596,7 +4591,6 @@ void G_InitNew(UINT8 pencoremode, const char *mapname, boolean resetplayer, bool
 	for (i = 0; i < MAXPLAYERS; i++)
 	{
 		players[i].playerstate = PST_REBORN;
-		memset(&players[i].respawn, 0, sizeof (players[i].respawn));
 
 		// Clear cheatcodes too, just in case.
 		players[i].pflags &= ~(PF_GODMODE|PF_NOCLIP);

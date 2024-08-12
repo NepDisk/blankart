@@ -261,24 +261,6 @@ typedef enum
 // for kickstartaccel
 #define ACCEL_KICKSTART (TICRATE)
 
-// player_t struct for all respawn variables
-typedef struct respawnvars_s
-{
-	UINT8 state; // see RESPAWNST_ constants in k_respawn.h
-	waypoint_t *wp; // Waypoint that we're going towards, NULL if the position isn't linked to one
-	fixed_t pointx; // Respawn position coords to go towards
-	fixed_t pointy;
-	fixed_t pointz;
-	angle_t pointangle; // Only used when wp is NULL
-	boolean manual; // Respawn coords were manually set, please respawn exactly there
-	boolean flip; // Flip upside down or not
-	tic_t timer; // Time left on respawn animation once you're there
-	tic_t airtimer; // Time spent in the air before respawning
-	UINT32 distanceleft; // How far along the course to respawn you
-	tic_t dropdash; // Drop Dash charge timer
-	boolean truedeath; // Your soul has left your body
-} respawnvars_t;
-
 // player_t struct for all bot variables
 typedef struct botvars_s
 {
@@ -391,10 +373,13 @@ typedef struct player_s
 	UINT8 positiondelay;	// Used for position number, so it can grow when passing/being passed
 	UINT32 distancetofinish;
 	waypoint_t *nextwaypoint;
-	respawnvars_t respawn; // Respawn info
 	tic_t airtime; 			// Keep track of how long you've been in the air
 	UINT8 startboost;		// (0 to 125) - Boost you get from start of race or respawn drop dash
 
+	// Respawn
+	UINT8 dropdash;
+	UINT8 respawn;
+	
 	UINT16 flashing;
 	UINT16 spinouttimer;	// Spin-out from a banana peel or oil slick (was "pw_bananacam")
 	UINT8 spinouttype;		// Determines the mode of spinout/wipeout, see kartspinoutflags_t
@@ -518,8 +503,16 @@ typedef struct player_s
 	tic_t realtime; // integer replacement for leveltime
 	UINT8 laps; // Number of laps (optional)
 	UINT8 latestlap;
+	
+	// Starpost information
+	INT16 starpostx;
+	INT16 starposty;
+	INT16 starpostz;
+	angle_t starpostangle; // Angle that the starpost is facing - you respawn facing this way
 	INT32 starpostnum; // The number of the last starpost you hit
 	tic_t starposttime; // NOIRE: The time of the last cheatcheck you hit
+	boolean starpostflip;
+	
 	INT32 prevcheck; // Distance from Previous Legacy Checkpoint
 	INT32 nextcheck; // Distace to Next Legacy Checkpoint
 

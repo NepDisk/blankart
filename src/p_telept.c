@@ -84,9 +84,9 @@ void P_MixUp(mobj_t *thing, fixed_t x, fixed_t y, fixed_t z, angle_t angle,
 			thing->player->speed = 0;
 
 		// Starpost information
-		thing->player->respawn.pointx = starpostx;
-		thing->player->respawn.pointy = starposty;
-		thing->player->respawn.pointz = starpostz;
+		thing->player->starpostx = starpostx;
+		thing->player->starposty = starposty;
+		thing->player->starpostz = starpostz;
 		thing->player->starpostnum = starpostnum;
 
 		thing->player->drawangle = drawangle;

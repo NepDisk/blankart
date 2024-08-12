@@ -29,7 +29,6 @@
 #include "r_things.h" // numskins
 #include "k_boss.h"
 #include "m_perfstats.h"
-#include "k_respawn.h"
 #include "m_easing.h"
 
 /*--------------------------------------------------
@@ -169,13 +168,9 @@ void K_UpdateMatchRaceBots(void)
 		}
 	}
 
-	if (difficulty == 0 || !(gametyperules & GTR_BOTS) || bossinfo.boss == true || numbosswaypoints > 0)
+	if (difficulty == 0 || !(gametyperules & GTR_BOTS) || bossinfo.boss == true)
 	{
 		wantedbots = 0;
-		if (numbosswaypoints > 0)
-		{
-			CONS_Alert(CONS_ERROR, "Bots do not work on maps using the legacy checkpoint system.\nPlease consider using waypoints instead if bot support is desired!\n");
-		}
 	}
 	else
 	{
@@ -184,6 +179,11 @@ void K_UpdateMatchRaceBots(void)
 		if (wantedbots < 0)
 		{
 			wantedbots = 0;
+		}
+		
+		if (numbosswaypoints > 0)
+		{
+			CONS_Alert(CONS_ERROR, "Bots do not work on maps using the legacy checkpoint system.\nPlease consider using waypoints instead if bot support is desired!\n");
 		}
 	}
 

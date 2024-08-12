@@ -48,7 +48,6 @@
 
 #include "k_kart.h"
 #include "k_battle.h"
-#include "k_respawn.h"
 #include "k_bot.h"
 #include "k_color.h"
 #include "k_follower.h"
@@ -261,7 +260,7 @@ void G_ReadDemoExtraData(void)
 			if (players[p].mo)
 			{
 				// Is this how this should work..?
-				K_DoIngameRespawn(&players[p]);
+				P_DamageMobj(players[p].mo, NULL, NULL, 1, DMG_INSTAKILL);
 			}
 		}
 		if (extradata & DXD_SKIN)

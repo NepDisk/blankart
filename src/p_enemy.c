@@ -30,7 +30,6 @@
 #include "k_kart.h"
 #include "k_waypoint.h"
 #include "k_battle.h"
-#include "k_respawn.h"
 #include "k_collide.h"
 
 #ifdef HW3SOUND
@@ -5706,15 +5705,15 @@ void A_MixUp(mobj_t *actor)
 		angle = players[one].mo->angle;
 		drawangle = players[one].drawangle;
 
-		starpostx = players[one].respawn.pointx;
-		starposty = players[one].respawn.pointy;
-		starpostz = players[one].respawn.pointz;
+		starpostx = players[one].starpostx;
+		starposty = players[one].starposty;
+		starpostz = players[one].starpostz;
 		starpostnum = players[one].starpostnum;
 
 		mflags2 = players[one].mo->flags2;
 
 		P_MixUp(players[one].mo, players[two].mo->x, players[two].mo->y, players[two].mo->z, players[two].mo->angle,
-				players[two].respawn.pointx, players[two].respawn.pointy, players[two].respawn.pointz,
+				players[two].starpostx, players[two].starposty, players[two].starpostz,
 				players[two].starpostnum, 0, 0,
 				FRACUNIT, players[two].drawangle, players[two].mo->flags2);
 
@@ -5776,9 +5775,9 @@ void A_MixUp(mobj_t *actor)
 				transspeed[counter] = players[i].speed;
 				transtracer[counter] = players[i].mo->tracer;
 
-				spposition[counter][0] = players[i].respawn.pointx;
-				spposition[counter][1] = players[i].respawn.pointy;
-				spposition[counter][2] = players[i].respawn.pointz;
+				spposition[counter][0] = players[i].starpostx;
+				spposition[counter][1] = players[i].starposty;
+				spposition[counter][2] = players[i].starpostz;
 				starpostnum[counter] = players[i].starpostnum;
 
 				flags2[counter] = players[i].mo->flags2;
@@ -9549,8 +9548,9 @@ void A_RemoteDamage(mobj_t *actor)
 
 	if (locvar2 == 1) // Kill mobj!
 	{
-		if (target->player)
-			K_DoIngameRespawn(target->player);
+		if (target->player) // players die using P_DamageMobj instead for some reason
+			//K_DoIngameRespawn(target->player);
+			P_DamageMobj(target, source, source, 1, DMG_INSTAKILL);
 		else
 			P_KillMobj(target, source, source, DMG_NORMAL);
 	}
@@ -13646,7 +13646,7 @@ void A_SPBChase(mobj_t *actor)
 	{
 		actor->lastlook = -1; // Just make sure this is reset
 
-		if (!player || !player->mo || player->mo->health <= 0 /*|| player->respawn.state != RESPAWNST_NONE*/)
+		if (!player || !player->mo || player->mo->health <= 0 || player->respawn)
 		{
 			// No one there? Completely STOP.
 			actor->momx = actor->momy = actor->momz = 0;

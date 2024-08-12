@@ -354,21 +354,6 @@ static void P_NetArchivePlayers(void)
 
 		WRITEUINT8(save_p, players[i].kickstartaccel);
 
-		// respawnvars_t
-		WRITEUINT8(save_p, players[i].respawn.state);
-		WRITEUINT32(save_p, K_GetWaypointHeapIndex(players[i].respawn.wp));
-		WRITEFIXED(save_p, players[i].respawn.pointx);
-		WRITEFIXED(save_p, players[i].respawn.pointy);
-		WRITEFIXED(save_p, players[i].respawn.pointz);
-		WRITEANGLE(save_p, players[i].respawn.pointangle);
-		WRITEUINT8(save_p, players[i].respawn.flip);
-		WRITEUINT8(save_p, players[i].respawn.manual);
-		WRITEUINT32(save_p, players[i].respawn.timer);
-		WRITEUINT32(save_p, players[i].respawn.airtimer);
-		WRITEUINT32(save_p, players[i].respawn.distanceleft);
-		WRITEUINT32(save_p, players[i].respawn.dropdash);
-		WRITEUINT8(save_p, players[i].respawn.truedeath);
-
 		// botvars_t
 		WRITEUINT8(save_p, players[i].botvars.difficulty);
 		WRITEUINT8(save_p, players[i].botvars.diffincrease);
@@ -627,21 +612,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].typing_duration = READUINT8(save_p);
 
 		players[i].kickstartaccel = READUINT8(save_p);
-
-		// respawnvars_t
-		players[i].respawn.state = READUINT8(save_p);
-		players[i].respawn.wp = (waypoint_t *)(size_t)READUINT32(save_p);
-		players[i].respawn.pointx = READFIXED(save_p);
-		players[i].respawn.pointy = READFIXED(save_p);
-		players[i].respawn.pointz = READFIXED(save_p);
-		players[i].respawn.pointangle = READANGLE(save_p);
-		players[i].respawn.flip = (boolean)READUINT8(save_p);
-		players[i].respawn.manual = READUINT8(save_p);
-		players[i].respawn.timer = READUINT32(save_p);
-		players[i].respawn.airtimer = READUINT32(save_p);
-		players[i].respawn.distanceleft = READUINT32(save_p);
-		players[i].respawn.dropdash = READUINT32(save_p);
-		players[i].respawn.truedeath = READUINT8(save_p);
 
 		// botvars_t
 		players[i].botvars.difficulty = READUINT8(save_p);
@@ -4253,15 +4223,6 @@ static void P_RelinkPointers(void)
 				if (mobj->player->nextwaypoint == NULL)
 				{
 					CONS_Debug(DBG_GAMELOGIC, "nextwaypoint not found on %d\n", mobj->type);
-				}
-			}
-			if (mobj->player->respawn.wp)
-			{
-				temp = (UINT32)(size_t)mobj->player->respawn.wp;
-				mobj->player->respawn.wp = K_GetWaypointFromIndex(temp);
-				if (mobj->player->respawn.wp == NULL)
-				{
-					CONS_Debug(DBG_GAMELOGIC, "respawn.wp not found on %d\n", mobj->type);
 				}
 			}
 			if (mobj->player->hoverhyudoro)

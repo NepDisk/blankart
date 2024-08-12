@@ -776,7 +776,7 @@ boolean K_KitchenSinkCollide(mobj_t *t1, mobj_t *t2)
 		if (t2->player->flashing > 0)
 			return true;
 
-		S_StartSound(NULL, sfx_bsnipe); // let all players hear it.
+		S_StartSound(NULL, sfx_cgot); //let all players hear it.
 
 		HU_SetCEchoFlags(0);
 		HU_SetCEchoDuration(5);

@@ -12,7 +12,6 @@
 #include "k_boss.h"
 #include "k_pwrlv.h"
 #include "k_color.h"
-#include "k_respawn.h"
 #include "doomdef.h"
 #include "hu_stuff.h"
 #include "g_game.h"
@@ -1385,8 +1384,8 @@ boolean K_KartBouncing(mobj_t *mobj1, mobj_t *mobj2)
 		|| (mobj2->player && mobj2->player->playerstate != PST_LIVE))
 		return false;
 
-	if ((mobj1->player && mobj1->player->respawn.state != RESPAWNST_NONE)
-		|| (mobj2->player && mobj2->player->respawn.state != RESPAWNST_NONE))
+	if ((mobj1->player && mobj1->player->respawn)
+		|| (mobj2->player && mobj2->player->respawn))
 		return false;
 
 	if (mobj1->type != MT_DROPTARGET && mobj1->type != MT_DROPTARGET_SHIELD)
@@ -1518,7 +1517,7 @@ boolean K_KartSolidBounce(mobj_t *bounceMobj, mobj_t *solidMobj)
 	if (bounceMobj->player && bounceMobj->player->playerstate != PST_LIVE)
 		return false;
 
-	if (bounceMobj->player && bounceMobj->player->respawn.state != RESPAWNST_NONE)
+	if (bounceMobj->player && bounceMobj->player->respawn)
 		return false;
 
 	// Don't bump if you've recently bumped
@@ -2020,6 +2019,104 @@ static SINT8 K_GlanceAtPlayers(player_t *glancePlayer)
 	}
 
 	return lastValidGlance;
+}
+
+/**	\brief	Calculates the respawn timer and drop-boosting
+
+	\param	player	player object passed from K_KartPlayerThink
+
+	\return	void
+*/
+void K_RespawnChecker(player_t *player)
+{
+	ticcmd_t *cmd = &player->cmd;
+
+	if (player->spectator)
+		return;
+
+	if (player->respawn > 1)
+	{
+		player->respawn--;
+		player->mo->momz = 0;
+		player->flashing = 2;
+		player->nocontrol = 2;
+		if (leveltime % 8 == 0)
+		{
+			INT32 i;
+			if (!mapreset)
+				S_StartSound(player->mo, sfx_s3kcas);
+
+			for (i = 0; i < 8; i++)
+			{
+				mobj_t *mo;
+				angle_t newangle;
+				fixed_t newx, newy, newz;
+
+				newangle = FixedAngle(((360/8)*i)*FRACUNIT);
+				newx = player->mo->x + P_ReturnThrustX(player->mo, newangle, 31<<FRACBITS); // does NOT use scale, since this effect doesn't scale properly
+				newy = player->mo->y + P_ReturnThrustY(player->mo, newangle, 31<<FRACBITS);
+				if (player->mo->eflags & MFE_VERTICALFLIP)
+					newz = player->mo->z + player->mo->height;
+				else
+					newz = player->mo->z;
+
+				mo = P_SpawnMobj(newx, newy, newz, MT_DEZLASER);
+				if (mo)
+				{
+					if (player->mo->eflags & MFE_VERTICALFLIP)
+						mo->eflags |= MFE_VERTICALFLIP;
+					P_SetTarget(&mo->target, player->mo);
+					mo->angle = newangle+ANGLE_90;
+					mo->momz = (8<<FRACBITS) * P_MobjFlip(player->mo);
+					P_SetScale(mo, (mo->destscale = FRACUNIT));
+				}
+			}
+		}
+	}
+	else if (player->respawn == 1)
+	{
+		if (player->growshrinktimer < 0)
+		{
+			player->mo->scalespeed = mapobjectscale/TICRATE;
+			player->mo->destscale = (6*mapobjectscale)/8;
+			if (K_PlayerShrinkCheat(player) && !modeattacking && !player->bot)
+				player->mo->destscale = (6*player->mo->destscale)/8;
+		}
+
+		if (!P_IsObjectOnGround(player->mo) && !mapreset)
+		{
+			player->flashing = K_GetKartFlashing(player);
+
+			// Sal: The old behavior was stupid and prone to accidental usage.
+			// Let's rip off Mania instead, and turn this into a Drop Dash!
+
+			if (cmd->buttons & BT_ACCELERATE)
+				player->dropdash++;
+			else
+				player->dropdash = 0;
+
+			if (player->dropdash == TICRATE/4)
+				S_StartSound(player->mo, sfx_ddash);
+
+			if ((player->dropdash >= TICRATE/4)
+				&& (player->dropdash & 1))
+				player->mo->colorized = true;
+			else
+				player->mo->colorized = false;
+		}
+		else
+		{
+			if ((cmd->buttons & BT_ACCELERATE) && (player->dropdash >= TICRATE/4))
+			{
+				S_StartSound(player->mo, sfx_s23c);
+				player->startboost = 50;
+				K_SpawnDashDustRelease(player);
+			}
+			player->mo->colorized = false;
+			player->dropdash = 0;
+			player->respawn = 0;
+		}
+	}
 }
 
 /**	\brief Handles the state changing for moving players, moved here to eliminate duplicate code
@@ -5938,7 +6035,7 @@ static void K_UpdateEngineSounds(player_t *player)
 		return;
 	}
 
-	if (player->respawn.state == RESPAWNST_DROP) // Dropdashing
+	if (player->dropdash) // Dropdashing
 	{
 		// Dropdashing
 		targetsnd = ((buttons & BT_ACCELERATE) ? 12 : 0);
@@ -6668,7 +6765,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->checkskip)
 		player->checkskip--;
 
-	if ((player->respawn.state == RESPAWNST_NONE) && player->growshrinktimer != 0)
+	if (player->growshrinktimer != 0)
 	{
 		if (player->growshrinktimer > 0)
 			player->growshrinktimer--;
@@ -6804,6 +6901,10 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	{
 		player->pflags &= ~PF_DRIFTINPUT;
 	}
+	
+	// Respawn Checker
+	if (player->respawn)
+		K_RespawnChecker(player);
 
 	// Roulette Code
 	K_KartItemRoulette(player, cmd);
@@ -6846,7 +6947,7 @@ void K_KartResetPlayerColor(player_t *player)
 	if (!player->mo || P_MobjWasRemoved(player->mo)) // Can't do anything
 		return;
 
-	if (player->mo->health <= 0 || player->playerstate == PST_DEAD || (player->respawn.state == RESPAWNST_MOVE)) // Override everything
+	if (player->mo->health <= 0 || player->playerstate == PST_DEAD) // Override everything
 	{
 		player->mo->colorized = (player->dye != 0);
 		player->mo->color = player->dye ? player->dye : player->skincolor;
@@ -7196,13 +7297,14 @@ static waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 
 		// Respawn point should only be updated when we're going to a nextwaypoint
 		if ((updaterespawn) &&
-		(player->respawn.state == RESPAWNST_NONE) &&
 		(bestwaypoint != NULL) &&
 		(bestwaypoint != player->nextwaypoint) &&
 		(K_GetWaypointIsSpawnpoint(bestwaypoint)) &&
 		(K_GetWaypointIsEnabled(bestwaypoint) == true))
 		{
-			player->respawn.wp = bestwaypoint;
+			player->starpostx = bestwaypoint->mobj->x;
+			player->starposty = bestwaypoint->mobj->y;
+			player->starpostz = bestwaypoint->mobj->z;
 		}
 	}
 
@@ -7770,7 +7872,7 @@ void K_KartLegacyUpdatePosition(player_t *player)
 		if (!playeringame[i] || players[i].spectator || !players[i].mo)
 			continue;
 
-		//if (G_RaceGametype())
+		if (gametyperules & GTR_CIRCUIT)
 		{
 			if ((((players[i].starpostnum) + (numstarposts + 1) * players[i].laps) >
 				((player->starpostnum) + (numstarposts + 1) * player->laps)))
@@ -7838,21 +7940,6 @@ void K_KartLegacyUpdatePosition(player_t *player)
 				}
 			}
 		}
-		/*else if (G_BattleGametype())
-		{
-			if (player->exiting) // Ends of match standings
-			{
-				if (players[i].marescore > player->marescore) // Only score matters
-					position++;
-			}
-			else
-			{
-				if (players[i].kartstuff[k_bumper] == player->kartstuff[k_bumper] && players[i].marescore > player->marescore)
-					position++;
-				else if (players[i].kartstuff[k_bumper] > player->kartstuff[k_bumper])
-					position++;
-			}
-		}*/
 	}
 
 	if (leveltime < starttime || oldposition == 0)
@@ -7954,7 +8041,7 @@ static void K_AirFailsafe(player_t *player)
 	const fixed_t thrustSpeed = 6*player->mo->scale; // 10*player->mo->scale
 
 	if (player->speed > maxSpeed // Above the max speed that you're allowed to use this technique.
-		|| player->respawn.state != RESPAWNST_NONE) // Respawning, you don't need this AND drop dash :V
+		|| player->respawn) // Respawning, you don't need this AND drop dash :V
 	{
 		player->pflags &= ~PF_AIRFAILSAFE;
 		return;

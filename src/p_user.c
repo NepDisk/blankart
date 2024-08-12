@@ -53,7 +53,6 @@
 #include "m_cond.h" // M_UpdateUnlockablesAndExtraEmblems
 #include "k_kart.h"
 #include "console.h" // CON_LogMessage
-#include "k_respawn.h"
 #include "k_bot.h"
 #include "k_grandprix.h"
 #include "k_boss.h"
@@ -2017,7 +2016,7 @@ static void P_UpdatePlayerAngle(player_t *player)
 	// Kart: store the current turn range for later use
 	if (((player->mo && player->speed > 0) // Moving
 		|| (leveltime > starttime && (cmd->buttons & BT_ACCELERATE && cmd->buttons & BT_BRAKE)) // Rubber-burn turn
-		|| (player->respawn.state == RESPAWNST_DROP) // Respawning
+		|| (player->respawn) // Respawning
 		|| (player->spectator || objectplacing)) // Not a physical player
 		)
 	{
@@ -3185,7 +3184,7 @@ boolean P_MoveChaseCamera(player_t *player, camera_t *thiscam, boolean resetcall
 		else
 			lookbackdelay[num]--;
 	}
-	else if (player->respawn.state != RESPAWNST_NONE)
+	else if (player->respawn)
 	{
 		camspeed = 3*FRACUNIT/4;
 	}
@@ -4037,7 +4036,7 @@ DoABarrelRoll (player_t *player)
 
 	fixed_t smoothing;
 
-	if (player->respawn.state != RESPAWNST_NONE)
+	if (player->respawn)
 	{
 		player->tilt = 0;
 		return;
@@ -4317,18 +4316,7 @@ void P_PlayerThink(player_t *player)
 		//CONS_Printf("player %s wants to join on tic %d\n", player_names[player-players], leveltime);
 	}
 
-	if (player->respawn.state != RESPAWNST_NONE)
-	{
-		K_RespawnChecker(player);
-		player->rmomx = player->rmomy = 0;
-
-		if (player->respawn.state == RESPAWNST_DROP)
-		{
-			// Allows some turning
-			P_MovePlayer(player);
-		}
-	}
-	else if (player->mo->reactiontime)
+	if (player->mo->reactiontime)
 	{
 		// Reactiontime is used to prevent movement
 		// for a bit after a teleport.
@@ -4404,7 +4392,7 @@ void P_PlayerThink(player_t *player)
 	// Flash player after being hit.
 	if (!(player->hyudorotimer // SRB2kart - fixes Hyudoro not flashing when it should.
 		|| player->growshrinktimer > 0 // Grow doesn't flash either.
-		|| (player->respawn.state != RESPAWNST_NONE) // Respawn timer (for drop dash effect)
+		|| (player->respawn) // Respawn timer (for drop dash effect)
 		|| (player->pflags & PF_NOCONTEST) // NO CONTEST explosion
 		|| ((gametyperules & GTR_BUMPERS) && player->bumpers <= 0 && player->karmadelay)))
 	{

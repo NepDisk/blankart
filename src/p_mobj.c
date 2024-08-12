@@ -42,7 +42,6 @@
 #include "k_battle.h"
 #include "k_boss.h"
 #include "k_color.h"
-#include "k_respawn.h"
 #include "k_bot.h"
 #include "k_terrain.h"
 #include "k_collide.h"
@@ -3767,8 +3766,7 @@ static void P_PlayerMobjThinker(mobj_t *mobj)
 	mobj->eflags &= ~MFE_JUSTSTEPPEDDOWN;
 
 	// Zoom tube
-	if ((mobj->player->carry == CR_ZOOMTUBE && mobj->tracer && !P_MobjWasRemoved(mobj->tracer))
-		|| mobj->player->respawn.state == RESPAWNST_MOVE)
+	if ((mobj->player->carry == CR_ZOOMTUBE && mobj->tracer && !P_MobjWasRemoved(mobj->tracer)))
 	{
 		P_HitSpecialLines(mobj, mobj->x, mobj->y, mobj->momx, mobj->momy);
 		P_UnsetThingPosition(mobj);
@@ -11256,7 +11254,7 @@ void P_MovePlayerToSpawn(INT32 playernum, mapthing_t *mthing)
 
 	fixed_t z;
 	sector_t *sector;
-	fixed_t floor, ceiling, ceilingspawn;
+	fixed_t floor, ceiling;
 
 	player_t *p = &players[playernum];
 	mobj_t *mobj = p->mo;
@@ -11266,47 +11264,54 @@ void P_MovePlayerToSpawn(INT32 playernum, mapthing_t *mthing)
 	{
 		x = mthing->x << FRACBITS;
 		y = mthing->y << FRACBITS;
-		angle = FixedAngle(mthing->angle<<FRACBITS);
+		angle = FixedAngle(mthing->angle*FRACUNIT);
 	}
 	//spawn at the origin as a desperation move if there is no mapthing
 
 	// set Z height
 	sector = R_PointInSubsector(x, y)->sector;
 
-	floor   = P_GetSectorFloorZAt  (sector, x, y);
-	ceiling = P_GetSectorCeilingZAt(sector, x, y);
-	ceilingspawn = ceiling - mobjinfo[MT_PLAYER].height;
+	floor =
+	sector->f_slope ? P_GetSlopeZAt(sector->f_slope, x, y) :
+	sector->floorheight;
+	ceiling =
+	sector->c_slope ? P_GetSlopeZAt(sector->c_slope, x, y) :
+	sector->ceilingheight;
 
 	if (mthing)
 	{
-		fixed_t offset = mthing->z << FRACBITS;
-
-		if (p->respawn.state != RESPAWNST_NONE || p->spectator)
-			offset += K_RespawnOffset(p, (mthing->options & MTF_OBJECTFLIP));
-
 		// Flagging a player's ambush will make them start on the ceiling
 		// Objectflip inverts
 		if (!!(mthing->options & MTF_AMBUSH) ^ !!(mthing->options & MTF_OBJECTFLIP))
-			z = ceilingspawn - offset;
+		{
+			z = ceiling - mobjinfo[MT_PLAYER].height;
+			if (mthing->options >> ZSHIFT)
+				z -= ((mthing->options >> ZSHIFT) << FRACBITS);
+			if (p->respawn)
+				z -= 128*mapobjectscale;
+		}
 		else
-			z = floor + offset;
+		{
+			z = floor;
+			if (mthing->options >> ZSHIFT)
+				z += ((mthing->options >> ZSHIFT) << FRACBITS);
+			if (p->respawn)
+				z += 128*mapobjectscale;
+		}
 
 		if (mthing->options & MTF_OBJECTFLIP) // flip the player!
 		{
 			mobj->eflags |= MFE_VERTICALFLIP;
 			mobj->flags2 |= MF2_OBJECTFLIP;
 		}
-
-		if (mthing->options & MTF_AMBUSH)
-			P_SetPlayerMobjState(mobj, S_KART_SPINOUT);
 	}
 	else
 		z = floor;
 
 	if (z < floor)
 		z = floor;
-	else if (z > ceilingspawn)
-		z = ceilingspawn;
+	else if (z > ceiling - mobjinfo[MT_PLAYER].height)
+		z = ceiling - mobjinfo[MT_PLAYER].height;
 
 	mobj->floorz = floor;
 	mobj->ceilingz = ceiling;
@@ -11317,30 +11322,10 @@ void P_MovePlayerToSpawn(INT32 playernum, mapthing_t *mthing)
 	P_SetThingPosition(mobj);
 
 	mobj->z = z;
-	if (mobj->flags2 & MF2_OBJECTFLIP)
-	{
-		if (mobj->z + mobj->height == mobj->ceilingz)
-			mobj->eflags |= MFE_ONGROUND;
-	}
-	else if (mobj->z == mobj->floorz)
+	if (mobj->z == mobj->floorz)
 		mobj->eflags |= MFE_ONGROUND;
 
 	mobj->angle = angle;
-
-	if (gamestate == GS_LEVEL && leveltime > introtime && !p->spectator)
-	{
-		K_DoIngameRespawn(p);
-	}
-	else
-	{
-		// This is important for spectators. If you are
-		// a spectator now, then when you enter the game,
-		// respawn back at this point.
-		p->respawn.pointx = x;
-		p->respawn.pointy = y;
-		p->respawn.pointz = z;
-		//p->respawn.pointangle = angle;
-	}
 
 	P_AfterPlayerSpawn(playernum);
 }
@@ -11356,52 +11341,46 @@ void P_MovePlayerToStarpost(INT32 playernum)
 	I_Assert(mobj != NULL);
 
 	P_UnsetThingPosition(mobj);
-	mobj->x = p->respawn.pointx;
-	mobj->y = p->respawn.pointy;
+	mobj->x = p->starpostx << FRACBITS;
+	mobj->y = p->starposty << FRACBITS;
 	P_SetThingPosition(mobj);
 	sector = R_PointInSubsector(mobj->x, mobj->y)->sector;
 
-	floor   = P_GetSectorFloorZAt  (sector, mobj->x, mobj->y);
-	ceiling = P_GetSectorCeilingZAt(sector, mobj->x, mobj->y);
+	floor =
+	sector->f_slope ? P_GetSlopeZAt(sector->f_slope, mobj->x, mobj->y) :
+	sector->floorheight;
+	ceiling =
+	sector->c_slope ? P_GetSlopeZAt(sector->c_slope, mobj->x, mobj->y) :
+	sector->ceilingheight;
 
-	z = p->respawn.pointz;
+	if (mobj->player->starpostflip)
+		z = (p->starpostz<<FRACBITS) - FixedMul(128<<FRACBITS, mapobjectscale) - mobj->height;
+	else
+		z = (p->starpostz<<FRACBITS) + FixedMul(128<<FRACBITS, mapobjectscale);
 
-	if (z <= floor)
-	{
-		mobj->eflags |= MFE_ONGROUND;
+	//z = (p->starpostz + 128) << FRACBITS; // reverse gravity exists, pls
+	mobj->player->starpostflip = 0;
+
+	if (z < floor)
 		z = floor;
-	}
+	else if (z > ceiling - mobjinfo[MT_PLAYER].height)
+		z = ceiling - mobjinfo[MT_PLAYER].height;
 
 	mobj->floorz = floor;
 	mobj->ceilingz = ceiling;
 
 	mobj->z = z;
+	if (mobj->z == mobj->floorz)
+		mobj->eflags |= MFE_ONGROUND;
 
-	// Correct angle
-	if (p->respawn.wp != NULL)
-	{
-		size_t nwp = K_NextRespawnWaypointIndex(p->respawn.wp);
-		waypoint_t *wp;
+	mobj->angle = p->starpostangle;
 
-		if (nwp != SIZE_MAX)
-		{
-			wp = p->respawn.wp->nextwaypoints[nwp];
-
-			mobj->angle = p->drawangle = R_PointToAngle2(
-				mobj->x, mobj->y,
-				wp->mobj->x, wp->mobj->y
-			);
-		}
-	}
-	else
-		p->drawangle = mobj->angle; // default to the camera angle
-
-	K_DoIngameRespawn(p);
-	p->respawn.truedeath = true;
-
-	mobj->renderflags |= RF_DONTDRAW;
+	//p->kartstuff[k_waypoint] = p->kartstuff[k_starpostwp]; // SRB2kart
 
 	P_AfterPlayerSpawn(playernum);
+
+	//if (!(netgame || multiplayer))
+	//	leveltime = p->starposttime;
 }
 
 fixed_t P_GetMobjSpawnHeight(const mobjtype_t mobjtype, const fixed_t x, const fixed_t y, const fixed_t dz, const fixed_t offset, const boolean flip, const fixed_t scale)

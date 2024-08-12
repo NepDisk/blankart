@@ -43,7 +43,6 @@
 // SRB2kart
 #include "k_kart.h"
 #include "console.h" // CON_LogMessage
-#include "k_respawn.h"
 #include "k_terrain.h"
 
 #ifdef HW3SOUND
@@ -2078,7 +2077,7 @@ void P_CrossSpecialLine(line_t *line, INT32 side, mobj_t *thing)
 				/* No Climb: only trigger from front side */
 				if
 					(
-							player->respawn.state == RESPAWNST_NONE &&
+							(!player->respawn) &&
 							(!(line->flags & ML_NOCLIMB) || side == 0)
 					)
 				{

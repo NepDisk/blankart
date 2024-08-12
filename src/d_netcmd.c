@@ -57,7 +57,6 @@
 #include "k_pwrlv.h"
 #include "y_inter.h"
 #include "k_color.h"
-#include "k_respawn.h"
 #include "k_grandprix.h"
 #include "k_boss.h"
 #include "k_follower.h"
@@ -3251,7 +3250,7 @@ static void Got_Respawn(UINT8 **cp, INT32 playernum)
 		if (!P_IsObjectOnGround(players[respawnplayer].mo))
 			return;
 
-		K_DoIngameRespawn(&players[respawnplayer]);
+		P_DamageMobj(players[respawnplayer].mo, NULL, NULL, 1,DMG_INSTAKILL);
 		demo_extradata[playernum] |= DXD_RESPAWN;
 	}
 }

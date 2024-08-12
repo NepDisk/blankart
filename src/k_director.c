@@ -4,7 +4,6 @@
 /// \brief SRB2kart automatic spectator camera.
 
 #include "k_kart.h"
-#include "k_respawn.h"
 #include "doomdef.h"
 #include "g_game.h"
 #include "v_video.h"

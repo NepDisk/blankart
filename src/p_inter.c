@@ -36,7 +36,6 @@
 #include "k_pwrlv.h"
 #include "k_grandprix.h"
 #include "k_boss.h"
-#include "k_respawn.h"
 #include "p_spec.h"
 
 // CTF player names
@@ -624,12 +623,11 @@ void P_TouchStarPost(mobj_t *post, player_t *player, boolean snaptopost)
 	if (numbosswaypoints > 0) // Handles Respawning related things on Binary maps using legacy checkpoints
 	{
 		player->starposttime = player->realtime;
-		player->respawn.pointx = toucher->x;
-		player->respawn.pointy = toucher->y;
-		player->respawn.pointz = post->z;
-		player->respawn.pointangle = post->angle;
-		player->respawn.flip = ((post->flags2 & MF2_OBJECTFLIP) || (post->spawnpoint->options & MTF_OBJECTFLIP)) ? true : false;	// store flipping
-		player->respawn.manual = true;
+		player->starpostx = toucher->x;
+		player->starposty= toucher->y;
+		player->starpostz = post->z;
+		player->starpostangle = post->angle;
+		player->starpostflip = ((post->flags2 & MF2_OBJECTFLIP) || (post->spawnpoint->options & MTF_OBJECTFLIP)) ? true : false;	// store flipping
 
 	}
 
@@ -1106,11 +1104,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 		target->pmomz = 0;
 
 		target->player->playerstate = PST_DEAD;
-
-		// respawn from where you died
-		target->player->respawn.pointx = target->x;
-		target->player->respawn.pointy = target->y;
-		target->player->respawn.pointz = target->z;
 
 		if (target->player == &players[consoleplayer])
 		{
@@ -1835,8 +1828,8 @@ static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source,
 	{
 		case DMG_DEATHPIT:
 			// Respawn kill types
-			K_DoIngameRespawn(player);
-			return false;
+			//K_DoIngameRespawn(player);
+			//return false;
 		case DMG_SPECTATOR:
 			// disappearifies, but still gotta put items back in play
 			break;
