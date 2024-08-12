@@ -2819,9 +2819,7 @@ fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberb
 			finalspeed = FixedMul(finalspeed, 11*FRACUNIT/10);
 		}
 	}
-
-	finalspeed = FixedMul(finalspeed, mapobjectscale);
-
+	
 	if (doboostpower == true)
 	{
 		if (mobjValid == true)
