@@ -2946,10 +2946,10 @@ fixed_t K_GetNewSpeed(player_t *player)
 	const fixed_t accelmax = 4000;
 	const fixed_t p_speed = K_GetKartSpeed(player, true, true);
 	fixed_t p_accel = K_GetKartAccel(player);
-
 	fixed_t newspeed, oldspeed, finalspeed;
+	boolean onground = (P_IsObjectOnGround(player->mo) || (player->pogospring));
 	
-	if (!P_IsObjectOnGround(player->mo)) return 0; // If the player isn't on the ground, there is no change in speed
+	if (!onground) return 0; // If the player isn't on the ground, there is no change in speed
 
 	if (K_PlayerUsesBotMovement(player) == true && player->botvars.rubberband > 0)
 	{
@@ -2959,9 +2959,6 @@ fixed_t K_GetNewSpeed(player_t *player)
 	}
 
 	oldspeed = R_PointToDist2(0, 0, player->rmomx, player->rmomy);
-	// Don't calculate the acceleration as ever being above top speed
-	if (oldspeed > p_speed)
-		oldspeed = p_speed;
 	newspeed = FixedDiv(FixedDiv(FixedMul(oldspeed, accelmax - p_accel) + FixedMul(p_speed, p_accel), accelmax), ORIG_FRICTION);
 	
 	if (player->pogospring) // Pogo Spring minimum/maximum thrust
