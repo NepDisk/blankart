@@ -4668,7 +4668,7 @@ void K_drawKartHUD(void)
 	if (islonesome)
 		K_drawKartFreePlay();
 
-	if (r_splitscreen == 0 && (stplyr->pflags & PF_WRONGWAY) && ((leveltime / 8) & 1))
+	if (r_splitscreen == 0 && (stplyr->pflags & PF_WRONGWAY) && ((leveltime / 8) & 1) && !stplyr->exiting)
 	{
 		V_DrawCenteredString(BASEVIDWIDTH>>1, 176, V_REDMAP|V_SNAPTOBOTTOM, "WRONG WAY");
 	}

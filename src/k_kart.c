@@ -7122,37 +7122,6 @@ size_t K_NextRespawnWaypointIndex(waypoint_t *waypoint)
 	return newwaypoint;
 }
 
-fixed_t avgnoov (fixed_t si_a, fixed_t si_b)
-{
-    if ((si_b > 0) && (si_a > (INT32_MAX - si_b)))
-    {
-      /* will overflow, so use difference method */
-      /* both si_a and si_b > 0; 
-          we want difference also > 0
-          so rounding works correctly */
-      if (si_a >= si_b)
-        return FixedDiv(si_b + (si_a - si_b), 2);
-      else
-        return FixedDiv(si_a + (si_b - si_a),2);
-    } 
-    else if ((si_b < 0) && (si_a < (INT32_MIN - si_b)))
-    {
-      /* will overflow, so use difference method */
-      /* both si_a and si_b < 0; 
-          we want difference also < 0
-          so rounding works correctly */
-      if (si_a <= si_b)
-        return FixedDiv(si_b + (si_a - si_b), 2);
-      else
-        return FixedDiv(si_a + (si_b - si_a), 2);
-    }
-    else
-    {
-     /* the addition will not overflow */
-      return FixedDiv((si_a + si_b), 2);
-    }
-}
-
 /*--------------------------------------------------
 	static waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 
