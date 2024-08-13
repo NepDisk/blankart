@@ -15,6 +15,7 @@
 #include "doomdef.h"
 #include "hu_stuff.h"
 #include "g_game.h"
+#include "m_fixed.h"
 #include "m_random.h"
 #include "p_local.h"
 #include "p_mobj.h"
@@ -7121,6 +7122,37 @@ size_t K_NextRespawnWaypointIndex(waypoint_t *waypoint)
 	return newwaypoint;
 }
 
+fixed_t avgnoov (fixed_t si_a, fixed_t si_b)
+{
+    if ((si_b > 0) && (si_a > (INT32_MAX - si_b)))
+    {
+      /* will overflow, so use difference method */
+      /* both si_a and si_b > 0; 
+          we want difference also > 0
+          so rounding works correctly */
+      if (si_a >= si_b)
+        return FixedDiv(si_b + (si_a - si_b), 2);
+      else
+        return FixedDiv(si_a + (si_b - si_a),2);
+    } 
+    else if ((si_b < 0) && (si_a < (INT32_MIN - si_b)))
+    {
+      /* will overflow, so use difference method */
+      /* both si_a and si_b < 0; 
+          we want difference also < 0
+          so rounding works correctly */
+      if (si_a <= si_b)
+        return FixedDiv(si_b + (si_a - si_b), 2);
+      else
+        return FixedDiv(si_a + (si_b - si_a), 2);
+    }
+    else
+    {
+     /* the addition will not overflow */
+      return FixedDiv((si_a + si_b), 2);
+    }
+}
+
 /*--------------------------------------------------
 	static waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 
@@ -7314,32 +7346,35 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 			}
 		}
 
-		if (!P_IsObjectOnGround(player->mo))
+		if (!P_IsObjectOnGround(player->mo) || player->respawn)
 		{
 			updaterespawn = false;
 		}
 
 		// Respawn point should only be updated when we're going to a nextwaypoint
 		if ((updaterespawn) &&
-		(!player->respawn) &&
 		(bestwaypoint != NULL) &&
 		(bestwaypoint != player->nextwaypoint) &&
 		(K_GetWaypointIsSpawnpoint(bestwaypoint)) &&
 		(K_GetWaypointIsEnabled(bestwaypoint) == true))
 		{
 			size_t nwp = K_NextRespawnWaypointIndex(bestwaypoint);
-			player->starposttime = leveltime;
-			player->starpostx = bestwaypoint->mobj->x >> FRACBITS;
-			player->starposty = bestwaypoint->mobj->y >> FRACBITS;
-			player->starpostz = bestwaypoint->mobj->z >> FRACBITS;
 			
-			// Set angle to be used
+			// Set time, z, flip and angle first.
+			player->starposttime = leveltime;
+			player->starpostz = player->mo->z >> FRACBITS;
+			player->starpostflip = (player->mo->eflags & MFE_VERTICALFLIP) ? true : false;
 			player->starpostangle = R_PointToAngle2(
-				bestwaypoint->mobj->x,
-				bestwaypoint->mobj->y,
+				player->mo->x,
+				player->mo->y,
 				bestwaypoint->nextwaypoints[nwp]->mobj->x,
 				bestwaypoint->nextwaypoints[nwp]->mobj->y
 			);
+			
+			// Then do x and y
+			player->starpostx = player->mo->x >> FRACBITS;
+			player->starposty = player->mo->y >> FRACBITS;
+
 		}
 	}
 
