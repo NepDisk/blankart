@@ -7330,7 +7330,7 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 			size_t nwp = K_NextRespawnWaypointIndex(bestwaypoint);
 			
 			// Set time, z, flip and angle first.
-			player->starposttime = leveltime;
+			player->starposttime = player->realtime;
 			player->starpostz = player->mo->z >> FRACBITS;
 			player->starpostflip = (player->mo->eflags & MFE_VERTICALFLIP) ? true : false;
 			player->starpostangle = R_PointToAngle2(
