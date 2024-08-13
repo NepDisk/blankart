@@ -620,7 +620,7 @@ void P_TouchStarPost(mobj_t *post, player_t *player, boolean snaptopost)
 	if (player->starpostnum >= post->health)
 		return; // Already hit this post
 		
-	if (numbosswaypoints > 0) // Handles Respawning related things on Binary maps using legacy checkpoints
+	// Handles Respawning related things on maps wtih starposts
 	{
 		// Save the player's time and position.
 		player->starposttime = player->realtime; //this makes race mode's timers work correctly whilst not affecting sp -x
