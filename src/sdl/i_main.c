@@ -269,7 +269,7 @@ int main(int argc, char **argv)
 #endif
 
 	// startup SRB2
-	CONS_Printf("Setting up Dr. Robotnik's Ring Racers...\n");
+	CONS_Printf("Setting up SRB2Kart...\n");
 	D_SRB2Main();
 #ifdef LOGMESSAGES
 	if (!M_CheckParm("-nolog"))

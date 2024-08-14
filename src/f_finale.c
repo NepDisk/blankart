@@ -516,7 +516,7 @@ boolean F_IntroResponder(event_t *event)
 //  CREDITS
 // =========
 static const char *credits[] = {
-	"\1Dr. Robotnik's Ring Racers",
+	"\1SRB2Kart",
 	"\1Credits",
 	"",
 	"\1Game Design",

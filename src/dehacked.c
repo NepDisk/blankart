@@ -572,7 +572,7 @@ static void DEH_LoadDehackedFile(MYFILE *f, boolean mainfile)
 						if (i != PATCHVERSION)
 						{
 							deh_warning(
-									"Patch is for Ring Racers version %d, "
+									"Patch is for SRB2Kart version %d, "
 									"only version %d is supported",
 									i,
 									PATCHVERSION
@@ -582,7 +582,7 @@ static void DEH_LoadDehackedFile(MYFILE *f, boolean mainfile)
 					else
 					{
 						deh_warning(
-								"Ring Racers version definition has incorrect format, "
+								"SRB2Kart version definition has incorrect format, "
 								"use \"RINGRACERS %d\"",
 								PATCHVERSION
 						);
