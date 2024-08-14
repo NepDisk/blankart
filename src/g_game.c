@@ -4053,7 +4053,7 @@ void G_LoadGameData(void)
 	// Version check
 	if (READUINT32(save_p) != 0xFCAFE211)
 	{
-		const char *gdfolder = "the Ring Racers folder";
+		const char *gdfolder = "the SRB2Kart folder";
 		if (strcmp(srb2home,"."))
 			gdfolder = srb2home;
 
@@ -4143,7 +4143,7 @@ void G_LoadGameData(void)
 	// Landing point for corrupt gamedata
 	datacorrupt:
 	{
-		const char *gdfolder = "the Ring Racers folder";
+		const char *gdfolder = "the SRB2Kart folder";
 		if (strcmp(srb2home,"."))
 			gdfolder = srb2home;
 

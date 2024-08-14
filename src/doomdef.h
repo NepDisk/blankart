@@ -168,7 +168,7 @@ extern char logfilename[1024];
 // The string used in the alert that pops up in the event of an update being available.
 // Please change to apply to your modification (we don't want everyone asking where your mod is on SRB2.org!).
 #define UPDATE_ALERT_STRING \
-"A new update is available for Ring Racers.\n"\
+"A new update is available for SRB2Kart.\n"\
 "Please visit kartkrew.org to download it.\n"\
 "\n"\
 "You are using version: %s\n"\
@@ -444,9 +444,9 @@ enum {
 
 // Name of local directory for config files and savegames
 #if (((defined (__unix__) && !defined (MSDOS)) || defined (UNIXCOMMON)) && !defined (__CYGWIN__)) && !defined (__APPLE__)
-#define DEFAULTDIR ".ringracers"
+#define DEFAULTDIR ".srb2kart"
 #else
-#define DEFAULTDIR "ringracers"
+#define DEFAULTDIR "srb2kart"
 #endif
 
 #include "g_state.h"
