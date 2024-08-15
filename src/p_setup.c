@@ -4333,7 +4333,7 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		}
 	}
 
-	levelfadecol = (encoremode && !ranspecialwipe ? 122 : 120);
+	levelfadecol = (encoremode && !ranspecialwipe ? 209 : 0);
 
 	// Let's fade to white here
 	// But only if we didn't do the encore startup wipe
