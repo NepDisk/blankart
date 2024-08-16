@@ -4190,10 +4190,6 @@ mobj_t *K_ThrowKartItem(player_t *player, boolean missile, mobjtype_t mapthing, 
 		}
 	}
 
-	// Scale to map scale
-	// Intentionally NOT player scale, that doesn't work.
-	PROJSPEED = FixedMul(PROJSPEED, mapobjectscale);
-
 	if (altthrow)
 	{
 		if (altthrow == 2) // Kitchen sink throwing
