@@ -1719,7 +1719,7 @@ static void K_DrawKartPositionNum(INT32 num)
 		V_DrawFixedPatch(
 			(fx<<FRACBITS) + ((overtake && flipdraw) ? (SHORT(localpatch->width)*scale/2) : 0),
 			(fy<<FRACBITS) + ((overtake && flipvdraw) ? (SHORT(localpatch->height)*scale/2) : 0),
-			scale, addOrSub|V_SLIDEIN|fflags, localpatch, NULL
+			scale, addOrSub|V_SLIDEIN|V_HUDTRANSHALF|fflags, localpatch, NULL
 		);
 		// ^ if we overtake as p1 or p3 in splitscren, we shift it so that it doesn't go off screen.
 		// ^ if we overtake as p1 in 2p splits, shift vertically so that this doesn't happen either.

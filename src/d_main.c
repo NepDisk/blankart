@@ -1486,40 +1486,6 @@ void D_SRB2Main(void)
 	W_InitMultipleFiles(startuppwads, true);
 	D_CleanFile(startuppwads);
 
-	//
-	// search for maps... again.
-	//
-	for (wadnum = mainwads+1; wadnum < numwadfiles; wadnum++)
-	{
-		lumpinfo = wadfiles[wadnum]->lumpinfo;
-		for (i = 0; i < wadfiles[wadnum]->numlumps; i++, lumpinfo++)
-		{
-			name = lumpinfo->name;
-
-			if (name[0] == 'M' && name[1] == 'A' && name[2] == 'P') // Ignore the headers
-			{
-				INT16 num;
-				if (name[5] != '\0')
-					continue;
-				num = (INT16)M_MapNumber(name[3], name[4]);
-
-				// we want to record whether this map exists. if it doesn't have a header, we can assume it's not relephant
-				if (num <= NUMMAPS && mapheaderinfo[num - 1])
-				{
-					if (mapheaderinfo[num - 1]->alreadyExists != false)
-					{
-						G_SetGameModified(multiplayer, true); // oops, double-defined - no record attack privileges for you
-					}
-
-					mapheaderinfo[num - 1]->alreadyExists = true;
-				}
-
-				CONS_Printf("%s\n", name);
-			}
-		}
-	}
-
-	CON_SetLoadingProgress(LOADED_PWAD);
 
 	cht_Init();
 
@@ -1563,6 +1529,41 @@ void D_SRB2Main(void)
 	S_RegisterSoundStuff();
 
 	I_RegisterSysCommands();
+	
+	//
+	// search for maps... again.
+	//
+	for (wadnum = mainwads+1; wadnum < numwadfiles; wadnum++)
+	{
+		lumpinfo = wadfiles[wadnum]->lumpinfo;
+		for (i = 0; i < wadfiles[wadnum]->numlumps; i++, lumpinfo++)
+		{
+			name = lumpinfo->name;
+
+			if (name[0] == 'M' && name[1] == 'A' && name[2] == 'P') // Ignore the headers
+			{
+				INT16 num;
+				if (name[5] != '\0')
+					continue;
+				num = (INT16)M_MapNumber(name[3], name[4]);
+
+				// we want to record whether this map exists. if it doesn't have a header, we can assume it's not relephant
+				if (num <= NUMMAPS && mapheaderinfo[num - 1])
+				{
+					if (mapheaderinfo[num - 1]->alreadyExists != false)
+					{
+						G_SetGameModified(multiplayer, true); // oops, double-defined - no record attack privileges for you
+					}
+
+					mapheaderinfo[num - 1]->alreadyExists = true;
+				}
+
+				CONS_Printf("%s\n", name);
+			}
+		}
+	}
+
+	CON_SetLoadingProgress(LOADED_PWAD);
 
 	//--------------------------------------------------------- CONFIG.CFG
 	M_FirstLoadConfig(); // WARNING : this do a "COM_BufExecute()"
