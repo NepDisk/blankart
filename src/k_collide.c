@@ -806,7 +806,7 @@ boolean K_FallingRockCollide(mobj_t *t1, mobj_t *t2)
 
 boolean K_SMKIceBlockCollide(mobj_t *t1, mobj_t *t2)
 {
-	if (!(t2->flags & MF_SOLID || t2->flags & MF_SHOOTABLE))
+	if (!(t2->flags & MF_SOLID || t2->flags & MF_SHOOTABLE || t2->flags & MF_BOUNCE))
 		return true;
 
 	if (!(t2->health))

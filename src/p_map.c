@@ -3658,6 +3658,13 @@ retry:
 		sector_t *sec = P_PointOnLineSide(mo->x, mo->y, bestslideline) ? bestslideline->frontsector : bestslideline->backsector;
 		P_CheckLavaWall(mo, sec);
 	}
+	
+	// Some walls are bouncy even if you're not
+	if (bestslideline && !(bestslideline->flags & ML_NOTBOUNCY)) // SRB2kart - All walls are bouncy unless specified otherwise
+	{
+		P_BounceMove(mo);
+		return;
+	}
 
 papercollision:
 	// move up to the wall

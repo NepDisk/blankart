@@ -11,6 +11,7 @@
 /// \file  p_mobj.c
 /// \brief Moving object handling. Spawn functions
 
+#include "p_mobj.h"
 #include "d_netcmd.h"
 #include "doomdef.h"
 #include "doomtype.h"
@@ -1608,6 +1609,66 @@ void P_XYMovement(mobj_t *mo)
 			}
 		}
 		//}
+		else if (mo->flags & MF_BOUNCE)
+		{
+			P_BounceMove(mo);
+			if (P_MobjWasRemoved(mo))
+				return;
+			xmove = ymove = 0;
+			S_StartSound(mo, mo->info->activesound);
+
+			//{ SRB2kart - Orbinaut, Ballhog
+			// Ballhog dies on contact with walls
+			if (mo->type == MT_ORBINAUT || mo->type == MT_BALLHOG)
+			{
+				mobj_t *fx;
+				fx = P_SpawnMobj(mo->x, mo->y, mo->z, MT_BUMP);
+				if (mo->eflags & MFE_VERTICALFLIP)
+					fx->eflags |= MFE_VERTICALFLIP;
+				else
+					fx->eflags &= ~MFE_VERTICALFLIP;
+				fx->scale = mo->scale;
+			}
+
+			switch (mo->type)
+			{
+				case MT_ORBINAUT: // Orbinaut speed decreasing
+					if (mo->health > 1)
+					{
+						S_StartSound(mo, mo->info->attacksound);
+						mo->health--;
+						// This prevents an item thrown at a wall from
+						// phasing through you on its return.
+						mo->threshold = 0;
+					}
+					/*FALLTHRU*/
+
+				case MT_JAWZ:
+					if (mo->health == 1)
+					{
+						// This Item Damage
+						S_StartSound(mo, mo->info->deathsound);
+						P_KillMobj(mo, NULL, NULL, DMG_NORMAL);
+
+						P_SetObjectMomZ(mo, 8*FRACUNIT, false);
+						P_InstaThrust(mo, R_PointToAngle2(mo->x, mo->y, mo->x + xmove, mo->y + ymove)+ANGLE_90, 16*FRACUNIT);
+					}
+					break;
+
+				case MT_BUBBLESHIELDTRAP:
+					S_StartSound(mo, sfx_s3k44); // Bubble bounce
+					break;
+
+				case MT_DROPTARGET:
+					// This prevents an item thrown at a wall from
+					// phasing through you on its return.
+					mo->threshold = 0;
+					break;
+
+				default:
+					break;
+			}
+		}
 		else if (mo->flags & MF_MISSILE)
 		{
 			// explode a missile
@@ -1667,79 +1728,14 @@ void P_XYMovement(mobj_t *mo)
 				return;
 			}
 		}
-		else
+		if (mo->flags & MF_SLIDEME|MF_PUSHABLE)
 		{
-			
-			{
-				if (mo->flags & MF_SLIDEME)
-				{
-					P_SlideMove(mo);
-					if (P_MobjWasRemoved(mo))
-						return;
-					xmove = ymove = 0;
-				}
-				else
-				{
-					P_BounceMove(mo);
-					if (P_MobjWasRemoved(mo))
-						return;
-					xmove = ymove = 0;
-					S_StartSound(mo, mo->info->activesound);
-
-					//{ SRB2kart - Orbinaut, Ballhog
-					// Ballhog dies on contact with walls
-					if (mo->type == MT_ORBINAUT || mo->type == MT_BALLHOG)
-					{
-						mobj_t *fx;
-						fx = P_SpawnMobj(mo->x, mo->y, mo->z, MT_BUMP);
-						if (mo->eflags & MFE_VERTICALFLIP)
-							fx->eflags |= MFE_VERTICALFLIP;
-						else
-							fx->eflags &= ~MFE_VERTICALFLIP;
-						fx->scale = mo->scale;
-					}
-
-					switch (mo->type)
-					{
-						case MT_ORBINAUT: // Orbinaut speed decreasing
-							if (mo->health > 1)
-							{
-								S_StartSound(mo, mo->info->attacksound);
-								mo->health--;
-								// This prevents an item thrown at a wall from
-								// phasing through you on its return.
-								mo->threshold = 0;
-							}
-							/*FALLTHRU*/
-
-						case MT_JAWZ:
-							if (mo->health == 1)
-							{
-								// This Item Damage
-								S_StartSound(mo, mo->info->deathsound);
-								P_KillMobj(mo, NULL, NULL, DMG_NORMAL);
-
-								P_SetObjectMomZ(mo, 8*FRACUNIT, false);
-								P_InstaThrust(mo, R_PointToAngle2(mo->x, mo->y, mo->x + xmove, mo->y + ymove)+ANGLE_90, 16*FRACUNIT);
-							}
-							break;
-
-						case MT_BUBBLESHIELDTRAP:
-							S_StartSound(mo, sfx_s3k44); // Bubble bounce
-							break;
-
-						case MT_DROPTARGET:
-							// This prevents an item thrown at a wall from
-							// phasing through you on its return.
-							mo->threshold = 0;
-							break;
-
-						default:
-							break;
-					}
-				}
-			}
+			P_SlideMove(mo);
+			if (P_MobjWasRemoved(mo))
+				return;
+			xmove = ymove = 0;
 		}
+		//
 	}
 	else
 		moved = true;
@@ -2224,7 +2220,7 @@ boolean P_ZMovement(mobj_t *mo)
 			break;
 		case MT_FLAMEJET:
 		case MT_VERTICALFLAMEJET:
-			if (mo->flags & MF_SLIDEME)
+			if (mo->flags & MF_BOUNCE)
 				return true;
 			break;
 		case MT_SPIKE:
@@ -2860,7 +2856,7 @@ boolean P_SceneryZMovement(mobj_t *mo)
 	{
 		case MT_BOOMEXPLODE:
 		case MT_BOOMPARTICLE:
-			if (!(mo->flags & MF_SLIDEME) && (mo->z <= mo->floorz || mo->z+mo->height >= mo->ceilingz))
+			if (!(mo->flags & MF_BOUNCE) && (mo->z <= mo->floorz || mo->z+mo->height >= mo->ceilingz))
 			{
 				// set standingslope
 				P_TryMove(mo, mo->x, mo->y, true);
@@ -12820,7 +12816,16 @@ static mobj_t *P_SpawnMobjFromMapThing(mapthing_t *mthing, fixed_t x, fixed_t y,
 			P_SetAmbush(mobj);
 
 		if (mthing->options & MTF_OBJECTSPECIAL)
+		{
 			P_SetObjectSpecial(mobj);
+		
+			// Pushables bounce and slide coolly with object special flag set
+			if (mobj->flags & MF_PUSHABLE)
+			{
+				mobj->flags2 |= MF2_SLIDEPUSH;
+				mobj->flags |= MF_BOUNCE;
+			}
+		}
 	}
 
 	// Generic reverse gravity for individual objects flag.
