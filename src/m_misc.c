@@ -697,21 +697,21 @@ static void M_CreateScreenShotPalette(void)
 
 #if NUMSCREENS > 2
 static const char *Newsnapshotfile(const char *pathname, const char *ext)
-{								
-	static char freename[17] = "srb2kartXXXX.ext";
+{
+	static char freename[13] = "kartXXXX.ext";
 	int i = 5000; // start in the middle: num screenshots divided by 2
 	int add = i; // how much to add or subtract if wrong; gets divided by 2 each time
 	int result; // -1 = guess too high, 0 = correct, 1 = guess too low
 
 	// find a file name to save it to
-	strcpy(freename+13,ext);
+	strcpy(freename+9,ext);
 
 	for (;;)
 	{
-		freename[9] = (char)('0' + (char)(i/1000));
-		freename[10] = (char)('0' + (char)((i/100)%10));
-		freename[11] = (char)('0' + (char)((i/10)%10));
-		freename[12] = (char)('0' + (char)(i%10));
+		freename[4] = (char)('0' + (char)(i/1000));
+		freename[5] = (char)('0' + (char)((i/100)%10));
+		freename[6] = (char)('0' + (char)((i/10)%10));
+		freename[7] = (char)('0' + (char)(i%10));
 
 		if (FIL_WriteFileOK(va(pandf,pathname,freename))) // access succeeds
 			result = 1; // too low
@@ -720,10 +720,10 @@ static const char *Newsnapshotfile(const char *pathname, const char *ext)
 			if (!i)
 				break; // not too high, so it must be equal! YAY!
 
-			freename[9] = (char)('0' + (char)((i-1)/1000));
-			freename[10] = (char)('0' + (char)(((i-1)/100)%10));
-			freename[11] = (char)('0' + (char)(((i-1)/10)%10));
-			freename[12] = (char)('0' + (char)((i-1)%10));
+			freename[4] = (char)('0' + (char)((i-1)/1000));
+			freename[5] = (char)('0' + (char)(((i-1)/100)%10));
+			freename[6] = (char)('0' + (char)(((i-1)/10)%10));
+			freename[7] = (char)('0' + (char)((i-1)%10));
 			if (!FIL_WriteFileOK(va(pandf,pathname,freename))) // access fails
 				result = -1; // too high
 			else
@@ -741,10 +741,10 @@ static const char *Newsnapshotfile(const char *pathname, const char *ext)
 			return NULL;
 	}
 
-	freename[9] = (char)('0' + (char)(i/1000));
-	freename[10] = (char)('0' + (char)((i/100)%10));
-	freename[11] = (char)('0' + (char)((i/10)%10));
-	freename[12] = (char)('0' + (char)(i%10));
+	freename[4] = (char)('0' + (char)(i/1000));
+	freename[5] = (char)('0' + (char)((i/100)%10));
+	freename[6] = (char)('0' + (char)((i/10)%10));
+	freename[7] = (char)('0' + (char)(i%10));
 
 	return freename;
 }
