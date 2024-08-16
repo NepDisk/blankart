@@ -102,8 +102,8 @@ typedef struct
 // Solid, is an obstacle.
 #define ML_IMPASSABLE           1
 
-// SRB2Kart: Blocks players only; items can be thrown through these.
-#define ML_BLOCKPLAYERS         2
+// Blocks monsters only.
+#define ML_BLOCKMONSTERS        2
 
 // Backside will not be present at all if not two sided.
 #define ML_TWOSIDED             4

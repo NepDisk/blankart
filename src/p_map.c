@@ -1477,9 +1477,9 @@ boolean P_IsLineBlocking(const line_t *ld, const mobj_t *thing)
 		return
 			(
 					(ld->flags & ML_IMPASSABLE) || // block objects from moving through this linedef.
-					(thing->player && !thing->player->spectator &&
-						ld->flags & ML_BLOCKPLAYERS) || // SRB2Kart: Only block players, not items
-					((thing->flags & (MF_ENEMY|MF_BOSS)) && ld->special == 81) // case 81: block monsters only
+					((thing->flags & (MF_ENEMY|MF_BOSS)) &&
+						ld->flags & ML_BLOCKMONSTERS) || 
+					((thing->player && !thing->player->spectator) && ld->special == 81) // case 81: Only block players
 			);
 	}
 }
@@ -3429,7 +3429,7 @@ static void P_CheckLavaWall(mobj_t *mo, sector_t *sec)
 		if (GETSECSPECIAL(rover->master->frontsector->special, 1) != 3)
 			continue;
 
-		if (rover->master->flags & ML_BLOCKPLAYERS)
+		if (rover->master->flags & ML_BLOCKMONSTERS)
 			continue;
 
 		topheight = P_GetFFloorTopZAt(rover, mo->x, mo->y);

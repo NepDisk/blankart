@@ -484,7 +484,7 @@ INT32 EV_DoCeiling(line_t *line, ceiling_e type)
 				}
 
 				// chained linedef executing ability
-				if (line->flags & ML_BLOCKPLAYERS)
+				if (line->flags & ML_BLOCKMONSTERS)
 				{
 					// only set it on ONE of the moving sectors (the smallest numbered)
 					// and front side x offset must be positive

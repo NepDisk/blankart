@@ -1713,7 +1713,7 @@ static void ParseTextmapLinedefParameter(UINT32 i, char *param, char *val)
 	else if (fastcmp(param, "blocking") && fastcmp("true", val))
 		lines[i].flags |= ML_IMPASSABLE;
 	else if (fastcmp(param, "blockplayers") && fastcmp("true", val))
-		lines[i].flags |= ML_BLOCKPLAYERS;
+		lines[i].flags |= ML_BLOCKMONSTERS;
 	else if (fastcmp(param, "twosided") && fastcmp("true", val))
 		lines[i].flags |= ML_TWOSIDED;
 	else if (fastcmp(param, "dontpegtop") && fastcmp("true", val))

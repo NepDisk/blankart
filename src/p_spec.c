@@ -1422,7 +1422,7 @@ boolean P_RunTriggerLinedef(line_t *triggerline, mobj_t *actor, sector_t *caller
 			if (rings > dist)
 				return false;
 		}
-		else if (triggerline->flags & ML_BLOCKPLAYERS)
+		else if (triggerline->flags & ML_BLOCKMONSTERS)
 		{
 			if (rings < dist)
 				return false;
@@ -1992,7 +1992,7 @@ static void K_HandleLapIncrement(player_t *player)
 						if (lap < (sides[lines[i].sidenum[0]].textureoffset >> FRACBITS))
 							continue;
 					}
-					else if (lines[i].flags & ML_BLOCKPLAYERS) // Need lower than or equal to
+					else if (lines[i].flags & ML_BLOCKMONSTERS) // Need lower than or equal to
 					{
 						if (lap > (sides[lines[i].sidenum[0]].textureoffset >> FRACBITS))
 							continue;
@@ -2123,7 +2123,7 @@ static void P_SwitchSkybox(INT32 ldflags, player_t *player, skybox_t *skybox)
 		player->skybox.viewpoint = skybox->viewpoint;
 	}
 
-	if (ldflags & ML_BLOCKPLAYERS) // Block Enemies turns ON centerpoint setting
+	if (ldflags & ML_BLOCKMONSTERS) // Block Enemies turns ON centerpoint setting
 	{
 		player->skybox.centerpoint = skybox->centerpoint;
 	}
@@ -2310,7 +2310,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 					if (!dest)
 						return;
 
-					if (line->flags & ML_BLOCKPLAYERS)
+					if (line->flags & ML_BLOCKMONSTERS)
 						P_Teleport(mo, dest->x, dest->y, dest->z, (line->flags & ML_NOCLIMB) ?  mo->angle : dest->angle, false, (line->flags & ML_EFFECT4) == ML_EFFECT4);
 					else
 					{
@@ -2372,7 +2372,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 					mapmusname[6] = 0;
 
 					mapmusflags = tracknum & MUSIC_TRACKMASK;
-					if (!(line->flags & ML_BLOCKPLAYERS))
+					if (!(line->flags & ML_BLOCKMONSTERS))
 						mapmusflags |= MUSIC_RELOADRESET;
 					if (line->flags & ML_NOTBOUNCY)
 						mapmusflags |= MUSIC_FORCERESET;
@@ -2393,7 +2393,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 					}
 				}
 
-				// Except, you can use the ML_BLOCKPLAYERS flag to change this behavior.
+				// Except, you can use the ML_BLOCKMONSTERS flag to change this behavior.
 				// if (mapmusflags & MUSIC_RELOADRESET) then it will reset the music in G_PlayerReborn.
 			}
 			break;
@@ -2482,7 +2482,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 						// play the sound from nowhere
 						S_StartSound(NULL, sfxnum);
 					}
-					else if (line->flags & ML_BLOCKPLAYERS)
+					else if (line->flags & ML_BLOCKMONSTERS)
 					{
 						// play the sound from calling sector's soundorg
 						if (callsec)
@@ -3100,7 +3100,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 						{
 							foundrover = true;
 
-							if (line->flags & ML_BLOCKPLAYERS) // FOF flags determine respawn ability instead?
+							if (line->flags & ML_BLOCKMONSTERS) // FOF flags determine respawn ability instead?
 								respawn = !(rover->flags & FF_NORETURN) ^ !!(line->flags & ML_NOCLIMB); // no climb inverts
 
 							EV_StartCrumble(rover->master->frontsector, rover, (rover->flags & FF_FLOATBOB), player, rover->alpha, respawn);
@@ -3188,7 +3188,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 				INT32 viewid = sides[line->sidenum[0]].textureoffset>>FRACBITS;
 				INT32 centerid = sides[line->sidenum[0]].rowoffset>>FRACBITS;
 
-				if ((line->flags & (ML_EFFECT4|ML_BLOCKPLAYERS)) == ML_EFFECT4) // Solid Midtexture is on but Block Enemies is off?
+				if ((line->flags & (ML_EFFECT4|ML_BLOCKMONSTERS)) == ML_EFFECT4) // Solid Midtexture is on but Block Enemies is off?
 				{
 					CONS_Alert(CONS_WARNING,
 					M_GetText("Skybox switch linedef (tag %d) doesn't have anything to do.\nConsider changing the linedef's flag configuration or removing it entirely.\n"),
@@ -3228,7 +3228,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 						viewid,
 						centerid,
 						((line->flags & ML_EFFECT4) ? "no" : "yes"),
-						((line->flags & ML_BLOCKPLAYERS) ? "yes" : "no"));
+						((line->flags & ML_BLOCKMONSTERS) ? "yes" : "no"));
 			}
 			break;
 
@@ -3379,7 +3379,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 								speed,
 								(line->flags & ML_EFFECT4),         // tic-based logic
 								(line->flags & ML_EFFECT3),         // Relative destvalue
-								!(line->flags & ML_BLOCKPLAYERS),  // do not handle FF_EXISTS
+								!(line->flags & ML_BLOCKMONSTERS),  // do not handle FF_EXISTS
 								!(line->flags & ML_NOCLIMB),        // do not handle FF_TRANSLUCENT
 								!(line->flags & ML_EFFECT2),        // do not handle lighting
 								!(line->flags & ML_EFFECT2),        // do not handle colormap (ran out of flags)
@@ -3404,7 +3404,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 								max(1, min(256, (line->flags & ML_EFFECT3) ? rover->alpha + destvalue : destvalue)),
 								0,                                  // set alpha immediately
 								false, NULL,                        // tic-based logic
-								!(line->flags & ML_BLOCKPLAYERS),  // do not handle FF_EXISTS
+								!(line->flags & ML_BLOCKMONSTERS),  // do not handle FF_EXISTS
 								!(line->flags & ML_NOCLIMB),        // do not handle FF_TRANSLUCENT
 								!(line->flags & ML_EFFECT2),        // do not handle lighting
 								!(line->flags & ML_EFFECT2),        // do not handle colormap (ran out of flags)
@@ -3450,7 +3450,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 						foundrover = true;
 
 						P_ResetFakeFloorFader(rover, NULL,
-							!(line->flags & ML_BLOCKPLAYERS)); // do not finalize collision flags
+							!(line->flags & ML_BLOCKMONSTERS)); // do not finalize collision flags
 					}
 				}
 
@@ -3611,7 +3611,7 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 				INT32 pagenum = max(0, (sides[line->sidenum[0]].rowoffset>>FRACBITS)-1);
 				INT32 postexectag = abs((line->sidenum[1] != 0xFFFF) ? sides[line->sidenum[1]].textureoffset>>FRACBITS : tag);
 
-				boolean closetextprompt = (line->flags & ML_BLOCKPLAYERS);
+				boolean closetextprompt = (line->flags & ML_BLOCKMONSTERS);
 				//boolean allplayers = (line->flags & ML_NOCLIMB);
 				boolean runpostexec = (line->flags & ML_EFFECT1);
 				boolean blockcontrols = !(line->flags & ML_EFFECT2);
@@ -6284,7 +6284,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 				break;
 
 			case 64: // Appearing/Disappearing FOF option
-				if (lines[i].flags & ML_BLOCKPLAYERS) { // Find FOFs by control sector tag
+				if (lines[i].flags & ML_BLOCKMONSTERS) { // Find FOFs by control sector tag
 					TAG_ITER_SECTORS(tag, s)
 						for (j = 0; (unsigned)j < sectors[s].linecount; j++)
 							if (sectors[s].lines[j]->special >= 100 && sectors[s].lines[j]->special < 300)
@@ -6612,7 +6612,7 @@ void P_SpawnSpecials(boolean fromnetsave)
 					ffloorflags |= FF_NOSHADE;
 				P_AddFakeFloorsByLine(i, ffloorflags, secthinkers);
 
-				P_AddRaiseThinker(lines[i].frontsector, tag, speed, ceilingtop, ceilingbottom, !!(lines[i].flags & ML_BLOCKPLAYERS));
+				P_AddRaiseThinker(lines[i].frontsector, tag, speed, ceilingtop, ceilingbottom, !!(lines[i].flags & ML_BLOCKMONSTERS));
 				break;
 			}
 

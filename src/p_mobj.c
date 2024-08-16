@@ -2077,7 +2077,7 @@ boolean P_CheckDeathPitCollide(mobj_t *mo)
 boolean P_CheckSolidLava(ffloor_t *rover)
 {
 	if (rover->flags & FF_SWIMMABLE && GETSECSPECIAL(rover->master->frontsector->special, 1) == 3
-		&& !(rover->master->flags & ML_BLOCKPLAYERS))
+		&& !(rover->master->flags & ML_BLOCKMONSTERS))
 			return true;
 
 	return false;

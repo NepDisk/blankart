@@ -1831,7 +1831,7 @@ void EV_DoFloor(line_t *line, floor_e floortype)
 					dofloor->direction = -1; // down
 
 				// chained linedef executing ability
-				if (line->flags & ML_BLOCKPLAYERS)
+				if (line->flags & ML_BLOCKMONSTERS)
 				{
 					// Only set it on one of the moving sectors (the
 					// smallest numbered) and only if the front side
