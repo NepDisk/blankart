@@ -4660,6 +4660,10 @@ static inline boolean P_NetUnArchiveMisc(boolean reloading)
 
 	introtime = READUINT32(save_p);
 	starttime = READUINT32(save_p);
+	
+	timelimitintics = READUINT32(save_p);
+	extratimeintics = READUINT32(save_p);
+	secretextratime = READUINT32(save_p);
 
 	// Is it paused?
 	if (READUINT8(save_p) == 0x2f)
