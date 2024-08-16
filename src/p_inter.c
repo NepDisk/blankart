@@ -1290,22 +1290,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 				target->fuse = TICRATE*3; // timer before mobj disappears from view (even if not an actual player)
 				target->momx = target->momy = target->momz = 0;
 
-				kart = P_SpawnMobjFromMobj(target, 0, 0, 0, MT_KART_LEFTOVER);
-
-				if (kart && !P_MobjWasRemoved(kart))
-				{
-					kart->angle = target->angle;
-					kart->color = target->color;
-					P_SetObjectMomZ(kart, 6*FRACUNIT, false);
-					kart->extravalue1 = target->player->kartweight;
-
-					// Copy interp data
-					kart->old_angle = target->old_angle;
-					kart->old_x = target->old_x;
-					kart->old_y = target->old_y;
-					kart->old_z = target->old_z;
-				}
-
 				if (source && !P_MobjWasRemoved(source))
 				{
 					flingAngle = R_PointToAngle2(

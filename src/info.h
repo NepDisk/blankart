@@ -1376,12 +1376,6 @@ typedef enum state
 	// technically the player goes here but it's an infinite tic state
 	S_OBJPLACE_DUMMY,
 
-	S_KART_LEFTOVER,
-	S_KART_LEFTOVER_NOTIRES,
-
-	S_KART_TIRE1,
-	S_KART_TIRE2,
-
 	// Blue Crawla
 	S_POSS_STND,
 	S_POSS_RUN1,
@@ -3510,6 +3504,8 @@ typedef enum state
 	S_GREYSPRING2,
 	S_GREYSPRING3,
 	S_GREYSPRING4,
+	
+	S_INVISSPRING,
 
 	// Orange Spring (Pogo)
 	S_POGOSPRING1,
@@ -5400,9 +5396,6 @@ typedef enum mobj_type
 	MT_THOK, // Thok! mobj
 	MT_SHADOW, // Linkdraw Shadow (for invisible objects)
 	MT_PLAYER,
-	MT_KART_LEFTOVER,
-	MT_KART_TIRE,
-
 	// Enemies
 	MT_BLUECRAWLA, // Crawla (Blue)
 	MT_REDCRAWLA, // Crawla (Red)
@@ -5533,6 +5526,7 @@ typedef enum mobj_type
 	MT_REDSPRING,
 	MT_BLUESPRING,
 	MT_GREYSPRING,
+	MT_INVISSPRING,
 	MT_POGOSPRING,
 	MT_YELLOWDIAG, // Yellow Diagonal Spring
 	MT_REDDIAG, // Red Diagonal Spring

@@ -876,12 +876,6 @@ state_t states[NUMSTATES] =
 
 	{SPR_NULL, 0, -1, {NULL}, 0, 0, S_OBJPLACE_DUMMY}, // S_OBJPLACE_DUMMY
 
-	{SPR_KART, 0, -1, {NULL}, 0, 0, S_NULL}, // S_KART_LEFTOVER
-	{SPR_KART, 1, -1, {NULL}, 0, 0, S_NULL}, // S_KART_LEFTOVER_NOTIRES
-
-	{SPR_TIRE, 0, -1, {NULL}, 0, 0, S_NULL}, // S_KART_TIRE1
-	{SPR_TIRE, 1, -1, {NULL}, 0, 0, S_NULL}, // S_KART_TIRE2
-
 	// Blue Crawla
 	{SPR_POSS, 0, 5, {A_Look}, 0, 0, S_POSS_STND},   // S_POSS_STND
 	{SPR_POSS, 0, 3, {A_Chase}, 0, 0, S_POSS_RUN2},   // S_POSS_RUN1
@@ -3053,6 +3047,8 @@ state_t states[NUMSTATES] =
 	{SPR_SPRG, 1, 1, {A_Pain}, 0, 0, S_GREYSPRING3}, // S_GREYSPRING2
 	{SPR_SPRG, 0, 1, {NULL}, 0, 0, S_GREYSPRING4},   // S_GREYSPRING3
 	{SPR_SPRG, 2, 4, {NULL}, 0, 0, S_GREYSPRING1},   // S_GREYSPRING4
+	
+	{SPR_NULL, 0, 1, {A_Pain}, 0, 0, S_INVISIBLE}, // S_INVISSPRING
 
 	// Orange Spring (Pogo)
 	{SPR_POGS, 0, -1, {NULL}, 0, 0, S_NULL},         // S_POGOSPRING1
@@ -5115,60 +5111,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,       // activesound
 		MF_SOLID|MF_SHOOTABLE|MF_DONTENCOREMAP|MF_APPLYTERRAIN, // flags
 		(statenum_t)MT_THOK // raisestate
-	},
-
-	{           // MT_KART_LEFTOVER
-		4095,            // doomednum
-		S_KART_LEFTOVER, // spawnstate
-		2,              // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		1,              // speed
-		16*FRACUNIT,    // radius
-		48*FRACUNIT,    // height
-		-1,             // display offset
-		1000,           // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_SOLID|MF_DONTENCOREMAP|MF_APPLYTERRAIN, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_KART_TIRE
-		-1,             // doomednum
-		S_KART_TIRE1,   // spawnstate
-		1,              // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		1,              // speed
-		6*FRACUNIT,     // radius
-		12*FRACUNIT,    // height
-		-1,             // display offset
-		1000,           // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
 	},
 
 	{           // MT_BLUECRAWLA
@@ -8138,6 +8080,33 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,       // activesound
 		MF_SOLID|MF_SPRING|MF_NOGRAVITY|MF_DONTENCOREMAP, // flags
 		S_GREYSPRING2   // raisestate
+	},
+	
+	{           // MT_INVISSPRING
+		554,            // doomednum
+		S_INVISIBLE,    // spawnstate
+		100,            // spawnhealth
+		S_INVISSPRING,  // seestate
+		sfx_None,       // seesound
+		8,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		0,              // painchance
+		sfx_spring,     // painsound
+		S_NULL,         // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		0,              // speed
+		20*FRACUNIT,    // radius
+		16*FRACUNIT,    // height
+		0,              // display offset
+		6*FRACUNIT,     // mass
+		0,              // damage
+		sfx_None,       // activesound
+		MF_SOLID|MF_SPRING, // flags
+		S_INVISSPRING   // raisestate
 	},
 
 	{           // MT_POGOSPRING

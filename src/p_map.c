@@ -1280,17 +1280,6 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 
 			return BMIT_CONTINUE;
 		}
-		else if (thing->type == MT_KART_LEFTOVER)
-		{
-			// see if it went over / under
-			if (tmthing->z > thing->z + thing->height)
-				return BMIT_CONTINUE; // overhead
-			if (tmthing->z + tmthing->height < thing->z)
-				return BMIT_CONTINUE; // underneath
-
-			K_KartBouncing(tmthing, thing);
-			return BMIT_CONTINUE;
-		}
 		else if (thing->flags & MF_SOLID)
 		{
 			// see if it went over / under

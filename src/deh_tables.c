@@ -407,12 +407,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	// technically the player goes here but it's an infinite tic state
 	"S_OBJPLACE_DUMMY",
 
-	"S_KART_LEFTOVER",
-	"S_KART_LEFTOVER_NOTIRES",
-
-	"S_KART_TIRE1",
-	"S_KART_TIRE2",
-
 	// Blue Crawla
 	"S_POSS_STND",
 	"S_POSS_RUN1",
@@ -2541,6 +2535,9 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_GREYSPRING2",
 	"S_GREYSPRING3",
 	"S_GREYSPRING4",
+	
+	// Invis-spring - this is used just for the sproing sound.
+	"S_INVISSPRING",
 
 	// Orange Spring (Pogo)
 	"S_POGOSPRING1",
@@ -4392,8 +4389,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_THOK", // Thok! mobj
 	"MT_SHADOW", // Linkdraw Shadow (for invisible objects)
 	"MT_PLAYER",
-	"MT_KART_LEFTOVER",
-	"MT_KART_TIRE",
 
 	// Enemies
 	"MT_BLUECRAWLA", // Crawla (Blue)

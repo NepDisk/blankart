@@ -2262,7 +2262,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	pflags = (players[player].pflags & (PF_WANTSTOJOIN|PF_KICKSTARTACCEL|PF_SHRINKME|PF_SHRINKACTIVE));
 
 	// SRB2kart
-	if (betweenmaps || leveltime < introtime)
+	if (betweenmaps || leveltime <= starttime || spectator == true)
 	{
 		itemroulette = 0;
 		roulettetype = 0;
@@ -2270,7 +2270,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		itemamount = 0;
 		growshrinktimer = 0;
 		bumper = ((gametyperules & GTR_BUMPERS) ? K_StartingBumperCount() : 0);
-		rings = ((gametyperules & GTR_SPHERES) ? 0 : 5);
+		rings = ((gametyperules & GTR_SPHERES) ? 0 : 10);
 		spheres = 0;
 		kickstartaccel = 0;
 		khudfault = 0;

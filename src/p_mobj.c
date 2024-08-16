@@ -2380,68 +2380,6 @@ boolean P_ZMovement(mobj_t *mo)
 
 			if (mo->flags2 & MF2_SKULLFLY) // the skull slammed into something
 				mom.z = -mom.z;
-			else if (mo->type == MT_KART_LEFTOVER)
-			{
-				if (mo->health > 1)
-				{
-					const fixed_t tireOffset = 32;
-					const angle_t aOffset = ANGLE_22h;
-
-					UINT8 i;
-					angle_t tireAngle;
-					mobj_t *tire;
-
-					// Spawn tires!
-					mo->health = 1;
-					P_SetMobjState(mo, S_KART_LEFTOVER_NOTIRES);
-
-					// Front tires
-					tireAngle = mo->angle - aOffset;
-					for (i = 0; i < 2; i++)
-					{
-						tire = P_SpawnMobjFromMobj(
-							mo,
-							tireOffset * FINECOSINE(tireAngle >> ANGLETOFINESHIFT),
-							tireOffset * FINESINE(tireAngle >> ANGLETOFINESHIFT),
-							0,
-							MT_KART_TIRE
-						);
-
-						P_InitAngle(tire, mo->angle);
-						tire->fuse = 3*TICRATE;
-						P_InstaThrust(tire, tireAngle, 4 * mo->scale);
-						P_SetObjectMomZ(tire, 4*FRACUNIT, false);
-
-						tireAngle += (aOffset * 2);
-					}
-
-					// Back tires
-					tireAngle = (mo->angle + ANGLE_180) - aOffset;
-					for (i = 0; i < 2; i++)
-					{
-						tire = P_SpawnMobjFromMobj(
-							mo,
-							tireOffset * FINECOSINE(tireAngle >> ANGLETOFINESHIFT),
-							tireOffset * FINESINE(tireAngle >> ANGLETOFINESHIFT),
-							0,
-							MT_KART_TIRE
-						);
-
-						P_InitAngle(tire, mo->angle);
-						tire->fuse = 3*TICRATE;
-						P_InstaThrust(tire, tireAngle, 4 * mo->scale);
-						P_SetObjectMomZ(tire, 4*FRACUNIT, false);
-
-						P_SetMobjState(tire, S_KART_TIRE2);
-
-						tireAngle += (aOffset * 2);
-					}
-				}
-			}
-			else if (mo->type == MT_KART_TIRE)
-			{
-				mom.z = -mom.z;
-			}
 			else if (mo->type == MT_BIGTUMBLEWEED
 				|| mo->type == MT_LITTLETUMBLEWEED
 				|| mo->type == MT_CANNONBALLDECOR
@@ -9616,9 +9554,6 @@ static void P_DefaultMobjShadowScale(mobj_t *thing)
 	switch (thing->type)
 	{
 		case MT_PLAYER:
-		case MT_KART_LEFTOVER:
-			thing->shadowscale = FRACUNIT;
-			break;
 		case MT_SMALLMACE:
 		case MT_BIGMACE:
 		case MT_PUMA:
@@ -9951,9 +9886,6 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 			break;
 		case MT_POGOSPRING:
 			P_SetScale(mobj, (mobj->destscale = 3 * mobj->destscale / 2));
-			break;
-		case MT_KART_LEFTOVER:
-			mobj->color = SKINCOLOR_RED;
 			break;
 		case MT_EGGROBO1:
 			mobj->movecount = P_RandomKey(13);
