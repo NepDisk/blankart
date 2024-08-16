@@ -25,10 +25,10 @@
 #define SKINNAMESIZE 16
 #define SKINRIVALS 3
 // should be all lowercase!! S_SKIN processing does a strlwr
-#define DEFAULTSKIN "eggman"
+#define DEFAULTSKIN "sonic"
 #define DEFAULTSKIN2 "tails" // secondary player
-#define DEFAULTSKIN3 "sonic" // third player
-#define DEFAULTSKIN4 "knuckles" // fourth player
+#define DEFAULTSKIN3 "knuckles" // third player
+#define DEFAULTSKIN4 "eggman" // fourth player
 
 /// The skin_t struct
 typedef struct

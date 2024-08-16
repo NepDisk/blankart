@@ -564,7 +564,7 @@ static void DEH_LoadDehackedFile(MYFILE *f, boolean mainfile)
 						ignorelines(f);
 					}
 				}
-				else if (fastcmp(word, "RINGRACERS"))
+				else if (fastcmp(word, "SRB2KART"))
 				{
 					if (isdigit(word2[0]))
 					{
@@ -583,14 +583,14 @@ static void DEH_LoadDehackedFile(MYFILE *f, boolean mainfile)
 					{
 						deh_warning(
 								"SRB2Kart version definition has incorrect format, "
-								"use \"RINGRACERS %d\"",
+								"use \"SRB2KART %d\"",
 								PATCHVERSION
 						);
 					}
 				}
-				else if (fastcmp(word, "SRB2KART"))
+				else if (fastcmp(word, "RINGRACERS"))
 				{
-					deh_warning("Patch is only compatible with SRB2Kart.");
+					deh_warning("Patch is only compatible with Ring Racers.");
 				}
 				else if (fastcmp(word, "SRB2"))
 				{

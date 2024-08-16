@@ -144,10 +144,10 @@ typedef LPVOID (WINAPI *p_MapViewOfFile) (HANDLE, DWORD, DWORD, DWORD, SIZE_T);
 
 // Locations for searching for main.pk3
 #if defined (__unix__) || defined(__APPLE__) || defined (UNIXCOMMON)
-#define DEFAULTWADLOCATION1 "/usr/local/share/games/RingRacers"
-#define DEFAULTWADLOCATION2 "/usr/local/games/RingRacers"
-#define DEFAULTWADLOCATION3 "/usr/share/games/RingRacers"
-#define DEFAULTWADLOCATION4 "/usr/games/RingRacers"
+#define DEFAULTWADLOCATION1 "/usr/local/share/games/SRB2Kart-V2"
+#define DEFAULTWADLOCATION2 "/usr/local/games/SRB2Kart-V2"
+#define DEFAULTWADLOCATION3 "/usr/share/games/SRB2Kart-V2"
+#define DEFAULTWADLOCATION4 "/usr/games/SRB2Kart-V2"
 #define DEFAULTSEARCHPATH1 "/usr/local/games"
 #define DEFAULTSEARCHPATH2 "/usr/games"
 #define DEFAULTSEARCHPATH3 "/usr/local"

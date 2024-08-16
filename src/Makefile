@@ -247,7 +247,7 @@ endif
 
 # append branch name by default
 ifndef EXENAME
-base:=ringracers
+base:=srb2kart-v2
 branch:=$(shell git symbolic-ref -q --short HEAD)
 EXENAME:=$(base)$(call _,$(filter-out master,$(branch)))$(exesuffix)
 endif
