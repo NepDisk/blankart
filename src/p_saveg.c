@@ -64,7 +64,7 @@ typedef enum
 	FOLLOWER   = 0x04,
 	SKYBOXVIEW = 0x08,
 	SKYBOXCENTER = 0x10,
-	HOVERHYUDORO = 0x20,
+	//free = 0x20,
 } player_saveflags;
 
 static inline void P_ArchivePlayer(void)
@@ -169,8 +169,14 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT32(save_p, players[i].realtime);
 		WRITEUINT8(save_p, players[i].laps);
 		WRITEUINT8(save_p, players[i].latestlap);
-		WRITEINT32(save_p, players[i].starpostnum);
+		
 		WRITEUINT32(save_p, players[i].starposttime);
+		WRITEINT16(save_p, players[i].starpostx);
+		WRITEINT16(save_p, players[i].starposty);
+		WRITEINT16(save_p, players[i].starpostz);
+		WRITEINT32(save_p, players[i].starpostnum);
+		WRITEANGLE(save_p, players[i].starpostangle);
+		WRITEUINT8(save_p, (UINT8)players[i].starpostflip);
 		WRITEINT32(save_p, players[i].prevcheck);
 		WRITEINT32(save_p, players[i].nextcheck);
 
@@ -202,9 +208,6 @@ static void P_NetArchivePlayers(void)
 		if (players[i].skybox.centerpoint)
 			flags |= SKYBOXCENTER;
 
-		if (players[i].hoverhyudoro)
-			flags |= HOVERHYUDORO;
-
 		WRITEUINT16(save_p, flags);
 
 		if (flags & SKYBOXVIEW)
@@ -218,9 +221,6 @@ static void P_NetArchivePlayers(void)
 
 		if (flags & FOLLOWITEM)
 			WRITEUINT32(save_p, players[i].followmobj->mobjnum);
-
-		if (flags & HOVERHYUDORO)
-			WRITEUINT32(save_p, players[i].hoverhyudoro->mobjnum);
 
 		WRITEUINT32(save_p, (UINT32)players[i].followitem);
 
@@ -445,8 +445,14 @@ static void P_NetUnArchivePlayers(void)
 		players[i].realtime = READUINT32(save_p); // integer replacement for leveltime
 		players[i].laps = READUINT8(save_p); // Number of laps (optional)
 		players[i].latestlap = READUINT8(save_p);
-		players[i].starpostnum = READINT32(save_p);
+		
 		players[i].starposttime = READUINT32(save_p);
+		players[i].starpostx = READINT16(save_p);
+		players[i].starposty = READINT16(save_p);
+		players[i].starpostz = READINT16(save_p);
+		players[i].starpostnum = READINT32(save_p);
+		players[i].starpostangle = READANGLE(save_p);
+		players[i].starpostflip = (boolean)READUINT8(save_p);
 		players[i].prevcheck = READINT32(save_p);
 		players[i].nextcheck = READINT32(save_p);
 
@@ -476,10 +482,7 @@ static void P_NetUnArchivePlayers(void)
 
 		if (flags & FOLLOWITEM)
 			players[i].followmobj = (mobj_t *)(size_t)READUINT32(save_p);
-
-		if (flags & HOVERHYUDORO)
-			players[i].hoverhyudoro = (mobj_t *)(size_t)READUINT32(save_p);
-
+		
 		players[i].followitem = (mobjtype_t)READUINT32(save_p);
 
 		//SetPlayerSkinByNum(i, players[i].skin);
@@ -4224,13 +4227,6 @@ static void P_RelinkPointers(void)
 				{
 					CONS_Debug(DBG_GAMELOGIC, "nextwaypoint not found on %d\n", mobj->type);
 				}
-			}
-			if (mobj->player->hoverhyudoro)
-			{
-				temp = (UINT32)(size_t)mobj->player->hoverhyudoro;
-				mobj->player->hoverhyudoro = NULL;
-				if (!P_SetTarget(&mobj->player->hoverhyudoro, P_FindNewPosition(temp)))
-					CONS_Debug(DBG_GAMELOGIC, "hoverhyudoro not found on %d\n", mobj->type);
 			}
 		}
 	}
