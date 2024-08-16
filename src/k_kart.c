@@ -6034,9 +6034,9 @@ static void K_UpdateEngineSounds(player_t *player)
 		return;
 	}
 
-	if (player->dropdash) // Dropdashing
+	if ((leveltime >= starttime-(2*TICRATE) && leveltime <= starttime) || player->dropdash) // Startup boost and dropdashing
 	{
-		// Dropdashing
+		// Startup boosts only want to check for BT_ACCELERATE being pressed.
 		targetsnd = ((buttons & BT_ACCELERATE) ? 12 : 0);
 	}
 	else
