@@ -5554,7 +5554,7 @@ const char *const PLAYERFLAG_LIST[] = {
 	"WANTSTOJOIN", // Spectator that wants to join
 
 	"STASIS", // Player is not allowed to move
-	"FAULT", // F A U L T
+	"SKIDDOWN", // SKIDDOWN
 	"ELIMINATED", // Battle-style elimination, no extra penalty
 	"NOCONTEST", // Did not finish (last place explosion)
 	"LOSTLIFE", // Do not lose life more than once
@@ -5573,6 +5573,10 @@ const char *const PLAYERFLAG_LIST[] = {
 	"BRAKEDRIFT", // Helper for brake-drift spark spawning
 
 	"AIRFAILSAFE", // Whenever or not try the air boost
+	
+	//free
+	"FLIPCAM",
+	//free
 
 	"HITFINISHLINE", // Already hit the finish line this tic
 	"WRONGWAY", // Moving the wrong way with respect to waypoints?
