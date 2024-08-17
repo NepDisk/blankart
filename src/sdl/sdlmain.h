@@ -41,8 +41,8 @@ extern SDL_bool framebuffer;
 */
 typedef struct SDLJoyInfo_s
 {
-	/// Joystick handle
-	SDL_Joystick *dev;
+	/// Controller handle
+	SDL_GameController *dev;
 	/// number of old joystick
 	int oldjoy;
 	/// number of axies
@@ -58,7 +58,7 @@ typedef struct SDLJoyInfo_s
 
 } SDLJoyInfo_t;
 
-/**	\brief SDL info about joysticks
+/**	\brief SDL info about controllers
 */
 extern SDLJoyInfo_t JoyInfo[MAXSPLITSCREENPLAYERS];
 
@@ -72,8 +72,8 @@ void I_GetConsoleEvents(void);
 // So we can call this from i_video event loop
 void I_ShutdownJoystick(UINT8 index);
 
-// Cheat to get the device index for a joystick handle
-INT32 I_GetJoystickDeviceIndex(SDL_Joystick *dev);
+// Cheat to get the device index for a game controller handle
+INT32 I_GetJoystickDeviceIndex(SDL_GameController *dev);
 
 // Quick thing to make SDL_JOYDEVICEADDED events less of an abomination
 void I_UpdateJoystickDeviceIndex(UINT8 player);

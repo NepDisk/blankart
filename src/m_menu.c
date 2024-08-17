@@ -2532,8 +2532,8 @@ boolean M_Responder(event_t *ev)
 {
 	INT32 ch = -1;
 //	INT32 i;
-	static tic_t joywait = 0, mousewait = 0;
-	static INT32 pjoyx = 0, pjoyy = 0;
+	static tic_t joywait = 0, joywaitaccel = 0, mousewait = 0;
+	static INT32 pjoyx = 0, pjoyy = 0, pjoyaccel = 0;
 	static INT32 pmousex = 0, pmousey = 0;
 	static INT32 lastx = 0, lasty = 0;
 	void (*routine)(INT32 choice); // for some casting problem
@@ -2588,44 +2588,74 @@ boolean M_Responder(event_t *ev)
 		if (ev->type == ev_joystick)
 		{
 			const INT32 jdeadzone = ((JOYAXISRANGE-1) * cv_deadzone[0].value) >> FRACBITS;
-			if (ev->data3 != INT32_MAX)
+			
+			INT32 accelaxis = abs(cv_moveaxis->value);
+			if (ev->data1 == 0)
 			{
-				if (Joystick[0].bGamepadStyle || abs(ev->data3) > jdeadzone)
+				if (ev->data3 != INT32_MAX)
 				{
-					if (ev->data3 < 0 && pjoyy >= 0)
+					if (Joystick[0].bGamepadStyle || abs(ev->data3) > jdeadzone)
 					{
-						ch = KEY_UPARROW;
-						joywait = thistime + NEWTICRATE/7;
-					}
-					else if (ev->data3 > 0 && pjoyy <= 0)
-					{
-						ch = KEY_DOWNARROW;
-						joywait = thistime + NEWTICRATE/7;
-					}
-					pjoyy = ev->data3;
-				}
-				else
-					pjoyy = 0;
-			}
+						if (joywait < thistime
+							&& (pjoyy == 0 || (ev->data3 < 0) != (pjoyy < 0))) // no previous direction OR change direction
+						{
+							ch = (ev->data3 < 0) ? KEY_UPARROW : KEY_DOWNARROW;
+							joywait = thistime + NEWTICRATE/7;
+						}
+						pjoyy = ev->data3;
 
-			if (ev->data2 != INT32_MAX)
-			{
-				if (Joystick[0].bGamepadStyle || abs(ev->data2) > jdeadzone)
-				{
-					if (ev->data2 < 0 && pjoyx >= 0)
-					{
-						ch = KEY_LEFTARROW;
-						joywait = thistime + NEWTICRATE/17;
 					}
-					else if (ev->data2 > 0 && pjoyx <= 0)
-					{
-						ch = KEY_RIGHTARROW;
-						joywait = thistime + NEWTICRATE/17;
-					}
-					pjoyx = ev->data2;
+					else
+						pjoyy = 0;
 				}
-				else
-					pjoyx = 0;
+
+			
+				if (ev->data2 != INT32_MAX && joywait < thistime)
+				{
+					if (Joystick[0].bGamepadStyle || abs(ev->data2) > jdeadzone)
+					{
+						if (joywait < thistime
+							&& (pjoyx == 0 || (ev->data2 < 0) != (pjoyx < 0))) // no previous direction OR change direction
+						{
+							ch = (ev->data2 < 0) ? KEY_LEFTARROW : KEY_RIGHTARROW;
+							joywait = thistime + NEWTICRATE/7;
+						}
+						pjoyx = ev->data2;
+					}
+					else
+						pjoyx = 0;
+				}
+			}
+			else if (!(accelaxis > JOYAXISSET*2 || accelaxis == 0))
+			{
+				// The following borrows heavily from Joy1Axis.
+				const boolean xmode = (accelaxis%2);
+				INT32 retaxis = 0;
+				if (!xmode)
+					accelaxis--;
+				accelaxis /= 2;
+				if (ev->data1 == accelaxis)
+				{
+					const INT32 jacceldeadzone = xmode ? jdeadzone : jdeadzone;
+					retaxis = xmode ? ev->data2 : ev->data3;
+					if (retaxis != INT32_MAX)
+					{
+						if (cv_moveaxis[0].value < 0)
+							retaxis = -retaxis;
+
+						if (Joystick[0].bGamepadStyle || retaxis > jacceldeadzone)
+						{
+							if (joywaitaccel < thistime && retaxis > pjoyaccel) // only on upwards event
+							{
+								ch = KEY_ENTER;
+								joywaitaccel = thistime + NEWTICRATE/3;
+							}
+							pjoyaccel = retaxis;
+						}
+						else
+							pjoyaccel = 0;
+					}
+				}
 			}
 		}
 		else if (ev->type == ev_mouse && mousewait < I_GetTime())

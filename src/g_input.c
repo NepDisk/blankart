@@ -1021,25 +1021,53 @@ INT32 G_CheckDoubleUsage(INT32 keynum, boolean modify)
 
 static INT32 G_FilterKeyByVersion(INT32 numctrl, INT32 keyidx, INT32 player, INT32 *keynum1, INT32 *keynum2, boolean *nestedoverride)
 {
-	// Special case: ignore KEY_PAUSE because it's hardcoded
-	if (keyidx == 0 && *keynum1 == KEY_PAUSE)
-	{
-		if (*keynum2 != KEY_PAUSE)
-		{
-			*keynum1 = *keynum2; // shift down keynum2 and continue
-			*keynum2 = 0;
-		}
-		else
-			return -1; // skip setting control
-	}
-	else if (keyidx == 1 && *keynum2 == KEY_PAUSE)
-		return -1; // skip setting control
-
-#if 1
-	// We don't have changed control defaults yet
-	(void)numctrl;
-	(void)player;
+#if 1 // SRB2Kart filters/migrations
 	(void)nestedoverride;
+
+	// Migration: 1.6 (majorexec 10) Joystick Defaults changed to use SDL Game Controllers
+	if (GETMAJOREXECVERSION(cv_execversion.value) < 10)
+	{
+
+		INT32 joybuttonbase = KEY_JOY1;
+
+		switch (player)
+		{
+			case 0:
+				joybuttonbase = KEY_JOY1;
+				break;
+			case 1:
+				joybuttonbase = KEY_2JOY1;
+				break;
+			case 2:
+				joybuttonbase = KEY_3JOY1;
+				break;
+			case 3:
+				joybuttonbase = KEY_4JOY1;
+				break;
+		}
+
+		// The face buttons match, so we don't need to rebind those.
+
+		if (keyidx == 1 && numctrl == gc_fire && *keynum2 == joybuttonbase + 4) // Xbox DInput LB
+		{
+			*keynum2 = joybuttonbase + 9; // SDL LEFTSHOULDER
+		}
+		if (keyidx == 1 && numctrl == gc_drift && *keynum2 == joybuttonbase + 5) // Xbox DInput RB
+		{
+			*keynum2 = joybuttonbase + 10; // SDL RIGHTSHOULDER
+		}
+
+		// Pause and Systemmenu are only bound for P1
+		if (keyidx == 1 && player == 0 && numctrl == gc_pause && *keynum2 == joybuttonbase + 6) // Xbox DInput Back
+		{
+			*keynum2 = joybuttonbase + 4; // SDL BACK
+		}
+		if (keyidx == 0 && player == 0 && numctrl == gc_systemmenu && *keynum1 == joybuttonbase + 7) // Xbox DInput Start
+		{
+			*keynum1 = joybuttonbase + 6; // SDL START
+		}
+	}
+
 #else
 	if (GETMAJOREXECVERSION(cv_execversion.value) < 27 && ( // v2.1.22
 		numctrl == gc_weaponnext || numctrl == gc_weaponprev || numctrl == gc_tossflag ||

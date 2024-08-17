@@ -2233,6 +2233,12 @@ static boolean CV_FilterVarByVersion(consvar_t *v, const char *valstr)
 
 		// axis defaults were changed to be friendly to 360 controllers
 		// if ALL axis settings are defaults, then change them to new values
+		if (!CV_FilterJoyAxisVars(v, valstr))
+			return false;
+	}
+	
+	if (GETMAJOREXECVERSION(cv_execversion.value) < 10) // 10 = 1.6
+	{
 		// axis defaults changed again to SDL game controllers
 		if (!CV_FilterJoyAxisVars2(v, valstr))
 			return false;
