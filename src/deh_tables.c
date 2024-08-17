@@ -5626,7 +5626,7 @@ const char *const GAMETYPERULE_LIST[] = {
 // Linedef flags
 const char *const ML_LIST[16] = {
 	"IMPASSABLE",
-	"BLOCKPLAYERS",
+	"BLOCKMONSTERS",
 	"TWOSIDED",
 	"DONTPEGTOP",
 	"DONTPEGBOTTOM",

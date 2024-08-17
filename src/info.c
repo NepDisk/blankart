@@ -7948,7 +7948,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_BALLOON
-		543,            // doomednum
+		462,            // doomednum
 		S_BALLOON,      // spawnstate
 		1,              // spawnhealth
 		S_NULL,         // seestate
