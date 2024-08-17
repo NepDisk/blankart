@@ -563,6 +563,7 @@ void A_ReaperThinker();
 void A_MementosTPParticles();
 void A_FlameShieldPaper();
 void A_InvincSparkleRotate();
+void A_DeathSpin();
 
 extern boolean actionsoverridden[NUMACTIONS];
 
@@ -1375,6 +1376,9 @@ typedef enum state
 
 	// technically the player goes here but it's an infinite tic state
 	S_OBJPLACE_DUMMY,
+
+	S_KART_LEFTOVER,
+	S_KART_TIRE,
 
 	// Blue Crawla
 	S_POSS_STND,
@@ -5396,6 +5400,9 @@ typedef enum mobj_type
 	MT_THOK, // Thok! mobj
 	MT_SHADOW, // Linkdraw Shadow (for invisible objects)
 	MT_PLAYER,
+	MT_KART_LEFTOVER,
+	MT_KART_TIRE,
+
 	// Enemies
 	MT_BLUECRAWLA, // Crawla (Blue)
 	MT_REDCRAWLA, // Crawla (Red)

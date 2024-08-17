@@ -325,6 +325,7 @@ void A_ReaperThinker(mobj_t *actor);
 void A_MementosTPParticles(mobj_t *actor);
 void A_FlameShieldPaper(mobj_t *actor);
 void A_InvincSparkleRotate(mobj_t *actor);
+void A_DeathSpin(mobj_t *actor);
 
 //for p_enemy.c
 
@@ -14322,4 +14323,10 @@ void A_InvincSparkleRotate(mobj_t *actor)
 		ghost->frame |= FF_ADD;
 		ghost->fuse = 4;
 	}
+}
+
+void A_DeathSpin(mobj_t *actor)
+{
+	INT32 locvar1 = var1;
+	actor->angle += locvar1;
 }

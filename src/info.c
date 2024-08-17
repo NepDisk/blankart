@@ -876,6 +876,9 @@ state_t states[NUMSTATES] =
 
 	{SPR_NULL, 0, -1, {NULL}, 0, 0, S_OBJPLACE_DUMMY}, // S_OBJPLACE_DUMMY
 
+	{SPR_KART, 0, 1, {A_DeathSpin}, ANG15, 0, S_KART_LEFTOVER}, // S_KART_LEFTOVER
+	{SPR_TIRE, 0, 1, {A_DeathSpin}, ANG30, 0, S_KART_TIRE}, // S_KART_TIRE
+
 	// Blue Crawla
 	{SPR_POSS, 0, 5, {A_Look}, 0, 0, S_POSS_STND},   // S_POSS_STND
 	{SPR_POSS, 0, 3, {A_Chase}, 0, 0, S_POSS_RUN2},   // S_POSS_RUN1
@@ -5111,6 +5114,60 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,       // activesound
 		MF_SOLID|MF_SHOOTABLE|MF_DONTENCOREMAP|MF_APPLYTERRAIN, // flags
 		(statenum_t)MT_THOK // raisestate
+	},
+
+	{           // MT_KART_LEFTOVER
+		4095,            // doomednum
+		S_KART_LEFTOVER, // spawnstate
+		1,              // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		0,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		0,              // painchance
+		sfx_None,       // painsound
+		S_NULL,         // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		1,              // speed
+		16*FRACUNIT,    // radius
+		48*FRACUNIT,    // height
+		-1,             // display offset
+		1000,           // mass
+		0,              // damage
+		sfx_None,       // activesound
+		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_DONTENCOREMAP|MF_APPLYTERRAIN, // flags
+		S_NULL          // raisestate
+	},
+
+	{           // MT_KART_TIRE
+		-1,             // doomednum
+		S_KART_TIRE,    // spawnstate
+		1,              // spawnhealth
+		S_NULL,         // seestate
+		sfx_None,       // seesound
+		0,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		0,              // painchance
+		sfx_None,       // painsound
+		S_NULL,         // meleestate
+		S_NULL,         // missilestate
+		S_NULL,         // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		1,              // speed
+		6*FRACUNIT,     // radius
+		12*FRACUNIT,    // height
+		-1,             // display offset
+		1000,           // mass
+		0,              // damage
+		sfx_None,       // activesound
+		MF_NOBLOCKMAP|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_DONTENCOREMAP|MF_APPLYTERRAIN, // flags
+		S_NULL          // raisestate
 	},
 
 	{           // MT_BLUECRAWLA

@@ -9554,6 +9554,8 @@ static void P_DefaultMobjShadowScale(mobj_t *thing)
 	switch (thing->type)
 	{
 		case MT_PLAYER:
+			thing->shadowscale = FRACUNIT;
+			break;
 		case MT_SMALLMACE:
 		case MT_BIGMACE:
 		case MT_PUMA:
@@ -9886,6 +9888,9 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 			break;
 		case MT_POGOSPRING:
 			P_SetScale(mobj, (mobj->destscale = 3 * mobj->destscale / 2));
+			break;
+		case MT_KART_LEFTOVER:
+			mobj->color = SKINCOLOR_RED;
 			break;
 		case MT_EGGROBO1:
 			mobj->movecount = P_RandomKey(13);
