@@ -1284,34 +1284,79 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 		case MT_PLAYER:
 			if (damagetype != DMG_SPECTATOR)
 			{
-				angle_t flingAngle;
-				mobj_t *kart;
-
-				target->fuse = TICRATE*3; // timer before mobj disappears from view (even if not an actual player)
+				target->fuse = 2*TICRATE; // timer before mobj disappears from view (even if not an actual player)
 				target->momx = target->momy = target->momz = 0;
+
+				angle_t playerFlingAngle;
+				angle_t kartFlingAngle;
 
 				if (source && !P_MobjWasRemoved(source))
 				{
-					flingAngle = R_PointToAngle2(
+					playerFlingAngle = kartFlingAngle = R_PointToAngle2(
 						source->x - source->momx, source->y - source->momy,
 						target->x, target->y
 					);
 				}
 				else
 				{
-					flingAngle = target->angle + ANGLE_180;
+					kartFlingAngle = target->angle;
 
 					if (P_RandomByte() & 1)
 					{
-						flingAngle -= ANGLE_45;
+						kartFlingAngle -= ANGLE_45;
 					}
 					else
 					{
-						flingAngle += ANGLE_45;
+						kartFlingAngle += ANGLE_45;
+					}
+
+					playerFlingAngle = kartFlingAngle + ANGLE_180;
+				}
+
+				// Spawn kart frame
+				mobj_t *kart = P_SpawnMobjFromMobj(target, 0, 0, 0, MT_KART_LEFTOVER);
+
+				if (kart && !P_MobjWasRemoved(kart))
+				{
+					kart->angle = target->angle;
+					kart->color = target->color;
+					kart->extravalue1 = target->player->kartweight;
+					kart->fuse = 2*TICRATE;
+
+					// Copy interp data
+					kart->old_angle = target->old_angle;
+					kart->old_x = target->old_x;
+					kart->old_y = target->old_y;
+					kart->old_z = target->old_z;
+
+					P_InstaThrust(kart, kartFlingAngle, 1 * kart->scale);
+					P_SetObjectMomZ(kart, 10*FRACUNIT, false);
+
+					const fixed_t tireOffset = 32;
+					const angle_t aOffset = ANGLE_22h;
+
+					UINT8 i;
+					angle_t tireAngle;
+					mobj_t *tire;
+
+					// Spawn tires
+					tireAngle = kartFlingAngle - ANGLE_90 - ANGLE_22h;
+					for (i = 0; i < 4; i++)
+					{
+						if (i == 2) tireAngle += ANGLE_90;
+
+						tire = P_SpawnMobjFromMobj(kart, 0, 0, 0, MT_KART_TIRE);
+						tire->fuse = 2*TICRATE;
+
+						P_InitAngle(tire, tireAngle);
+						P_InstaThrust(tire, tireAngle, 3 * tire->scale);
+						P_SetObjectMomZ(tire, 10*FRACUNIT, false);
+
+						tireAngle += (aOffset * 2);
 					}
 				}
 
-				P_InstaThrust(target, flingAngle, 14 * target->scale);
+				P_InstaThrust(target, playerFlingAngle, 4 * target->scale);
 				P_SetObjectMomZ(target, 14*FRACUNIT, false);
 
 				P_PlayDeathSound(target);
