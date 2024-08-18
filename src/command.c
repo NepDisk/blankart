@@ -2081,7 +2081,7 @@ void CV_AddValue(consvar_t *var, INT32 increment)
 			}
 			else if (var == &cv_kartspeed)
 			{
-				max = (M_SecretUnlocked(SECRET_HARDSPEED) ? 3 : 2);
+				max = (M_SecretUnlocked(SECRET_HARDSPEED) ? 4 : 3);
 			}
 #ifdef PARANOIA
 			if (currentindice == -1)
