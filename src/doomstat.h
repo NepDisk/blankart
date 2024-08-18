@@ -710,6 +710,7 @@ extern tic_t mapreset;
 extern boolean thwompsactive;
 extern UINT8 lastLowestLap;
 extern SINT8 spbplace;
+extern boolean startedInFreePlay;
 
 extern tic_t bombflashtimer;	// Used to avoid causing seizures if multiple mines explode close to you :)
 extern boolean legitimateexit;

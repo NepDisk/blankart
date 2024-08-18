@@ -595,7 +595,15 @@ void P_TouchStarPost(mobj_t *post, player_t *player, boolean snaptopost)
 	if ((post->health - player->starpostnum > 1) && (numbosswaypoints == 0))
 	{
 		if (!player->checkskip)
+		{
 			S_StartSound(toucher, sfx_lose);
+			if (netgame && cv_antigrief.value)
+			{
+				player->grieftime += TICRATE;
+			}
+
+			
+		}
 		player->checkskip = 3;
 		return;
 	}
@@ -630,9 +638,9 @@ void P_TouchStarPost(mobj_t *post, player_t *player, boolean snaptopost)
 		player->starpostz = post->z>>FRACBITS;
 		player->starpostangle = post->angle;
 		player->starpostflip = post->spawnpoint->options & MTF_OBJECTFLIP;	// store flipping
-
 	}
 
+	player->grieftime = 0;
 	player->starpostnum = post->health;
 }
 

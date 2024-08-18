@@ -1963,6 +1963,7 @@ static void K_HandleLapIncrement(player_t *player)
 			}
 
 			thwompsactive = true; // Lap 2 effects
+			player->grieftime = 0;
 
 			lowestLap = P_FindLowestLap();
 

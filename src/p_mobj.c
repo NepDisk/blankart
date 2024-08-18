@@ -11009,6 +11009,7 @@ void P_SpawnPlayer(INT32 playernum)
 			p->pflags |= PF_WANTSTOJOIN;
 		p->jointime = 2;
 #endif
+		p->spectatorreentry = 0; //(cv_spectatorreentry.value * TICRATE);
 	}
 	else if (multiplayer && !netgame)
 	{
@@ -11022,6 +11023,8 @@ void P_SpawnPlayer(INT32 playernum)
 			// Spawn as a spectator,
 			// yes even in splitscreen mode
 			p->spectator = true;
+			p->spectatorreentry = 0; //(cv_spectatorreentry.value * TICRATE);
+			
 			if (playernum&1) p->skincolor = skincolor_redteam;
 			else             p->skincolor = skincolor_blueteam;
 
@@ -11043,7 +11046,10 @@ void P_SpawnPlayer(INT32 playernum)
 	{
 		// Fix stupid non spectator spectators.
 		if (!p->spectator && !p->ctfteam)
+		{
 			p->spectator = true;
+			p->spectatorreentry = 0; //(cv_spectatorreentry.value * TICRATE);
+		}
 
 		// Fix team colors.
 		// This code isn't being done right somewhere else. Oh well.
@@ -11098,6 +11104,8 @@ void P_SpawnPlayer(INT32 playernum)
 	P_SetScale(mobj, mobj->destscale);
 	P_FlashPal(p, 0, 0); // Resets
 
+	p->grieftime = 0;
+	
 	if (gametyperules & GTR_BUMPERS)
 	{
 		mobj_t *overheadarrow = P_SpawnMobj(mobj->x, mobj->y, mobj->z + mobj->height + 16*FRACUNIT, MT_PLAYERARROW);

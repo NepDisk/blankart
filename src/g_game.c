@@ -320,6 +320,7 @@ tic_t mapreset; // Map reset delay when enough players have joined an empty game
 boolean thwompsactive; // Thwomps activate on lap 2
 UINT8 lastLowestLap; // Last lowest lap, for activating race lap executors
 SINT8 spbplace; // SPB exists, give the person behind better items
+boolean startedInFreePlay; // Map was started in free play
 
 // Client-sided, unsynched variables (NEVER use in anything that needs to be synced with other players)
 tic_t bombflashtimer = 0;	// Cooldown before another FlashPal can be intialized by a bomb exploding near a displayplayer. Avoids seizures.
@@ -2218,6 +2219,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	INT32 growshrinktimer;
 	INT32 bumper;
 	boolean songcredit = false;
+	tic_t spectatorreentry;
+	tic_t grieftime;
+	UINT8 griefstrikes;
 	UINT16 nocontrol;
 	INT32 khudfault;
 	INT32 kickstartaccel;
@@ -2354,6 +2358,11 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		// Obliterate follower from existence (if valid memory)
 		P_SetTarget(&players[player].follower, NULL);
 	}
+	
+	spectatorreentry = players[player].spectatorreentry;
+
+	grieftime = players[player].grieftime;
+	griefstrikes = players[player].griefstrikes;
 
 	p = &players[player];
 	memset(p, 0, sizeof (*p));
@@ -2415,6 +2424,10 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->eggmanblame = -1;
 	p->nocontrol = nocontrol;
 	p->kickstartaccel = kickstartaccel;
+	
+	p->spectatorreentry = spectatorreentry;
+	p->grieftime = grieftime;
+	p->griefstrikes = griefstrikes;
 
 	p->botvars.rubberband = FRACUNIT;
 	p->botvars.controller = UINT16_MAX;

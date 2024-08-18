@@ -4073,6 +4073,8 @@ static void P_InitPlayers(void)
 		if (!playeringame[i])
 			continue;
 
+		players[i].spectatorreentry = 0; // SRB2Kart 1.4
+		
 		players[i].mo = NULL;
 
 		if (!(gametyperules & GTR_CIRCUIT))
@@ -4130,6 +4132,30 @@ static void P_InitGametype(void)
 	thwompsactive = false;
 	lastLowestLap = 0;
 	spbplace = -1;
+	
+	startedInFreePlay = false;
+	{
+		UINT8 nump = 0;
+		for (i = 0; i < MAXPLAYERS; i++)
+		{
+			if (!playeringame[i] || players[i].spectator)
+			{
+				continue;
+			}
+
+			nump++;
+			if (nump == 2)
+			{
+				break;
+			}
+		}
+
+		if (nump <= 1)
+		{
+			startedInFreePlay = true;
+		}
+	}
+
 
 	// Start recording replay in multiplayer with a temp filename
 	//@TODO I'd like to fix dedis crashing when recording replays for the future too...
