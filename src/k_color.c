@@ -43,11 +43,11 @@ UINT16 K_RainbowColor(tic_t time)
 }
 
 /*--------------------------------------------------
-	void K_RainbowColormap(UINT8 *dest_colormap, UINT8 skincolor)
+	void K_RainbowColormap(UINT8 *dest_colormap, skincolornum_t skincolor)
 
 		See header file for description.
 --------------------------------------------------*/
-void K_RainbowColormap(UINT8 *dest_colormap, UINT8 skincolor)
+void K_RainbowColormap(UINT8 *dest_colormap, skincolornum_t skincolor)
 {
 	INT32 i;
 	RGBA_t color;
@@ -95,7 +95,7 @@ void K_RainbowColormap(UINT8 *dest_colormap, UINT8 skincolor)
 
 		See header file for description.
 --------------------------------------------------*/
-void K_GenerateKartColormap(UINT8 *dest_colormap, INT32 skinnum, UINT8 color)
+void K_GenerateKartColormap(UINT8 *dest_colormap, INT32 skinnum, skincolornum_t color)
 {
 	INT32 i;
 	INT32 starttranscolor;
