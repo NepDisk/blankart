@@ -2405,8 +2405,17 @@ static void Command_connect(void)
 
 	if (Playing() || demo.title)
 	{
-		CONS_Printf(M_GetText("You cannot connect while in a game. End this game first.\n"));
-		return;
+		M_ClearMenus(true);
+		if (demo.playback && demo.title)
+			G_CheckDemoStatus();
+
+		if (netgame)
+		{
+			D_QuitNetGame();
+			CL_Reset();
+		}
+
+		D_StartTitle();
 	}
 
 	// modified game check: no longer handled
@@ -2431,8 +2440,12 @@ static void Command_connect(void)
 		}
 		else if (netgame)
 		{
-			CONS_Printf(M_GetText("You cannot connect while in a game. End this game first.\n"));
-			return;
+			M_ClearMenus(true);
+			D_QuitNetGame();
+			CL_Reset();
+			
+			D_StartTitle();
+			
 		}
 		else if (I_NetOpenSocket)
 		{
