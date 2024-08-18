@@ -3847,77 +3847,6 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 	}
 }
 
-static void P_SetupSignObject(mobj_t *sign, mobj_t *pmo, boolean error)
-{
-	mobj_t *cur = sign, *prev = NULL;
-
-	// Setup the sign itself
-	P_SetScale(sign, (sign->destscale = 3 * sign->scale / 2)); // 1.5x
-	P_SetTarget(&sign->target, pmo);
-	P_SetMobjState(sign, S_SIGN_POLE);
-
-	sign->movefactor = sign->z;
-	sign->z += (768*sign->scale) * P_MobjFlip(sign);
-	sign->movecount = 1;
-	sign->extravalue1 = AngleFixed(sign->angle) >> FRACBITS;
-
-	// Setup the overlay pieces
-	// Front
-	cur->hnext = P_SpawnMobjFromMobj(sign, 0, 0, 0, MT_SIGN_PIECE);
-	P_SetTarget(&cur->hnext->target, sign);
-	P_SetMobjState(cur->hnext, S_SIGN_FACE);
-	cur->hnext->extravalue1 = 6;
-	cur->hnext->extravalue2 = 0;
-
-	prev = cur;
-	cur = cur->hnext;
-	cur->hprev = prev;
-
-	// Player icon
-	cur->hnext = P_SpawnMobjFromMobj(sign, 0, 0, 0, MT_SIGN_PIECE);
-	P_SetTarget(&cur->hnext->target, sign);
-	cur->hnext->skin = pmo->skin;
-	P_SetMobjState(cur->hnext, (error == true) ? S_SIGN_ERROR : S_KART_SIGN);
-	cur->hnext->extravalue1 = 7;
-	cur->hnext->extravalue2 = 0;
-
-	prev = cur;
-	cur = cur->hnext;
-	cur->hprev = prev;
-
-	// Back
-	cur->hnext = P_SpawnMobjFromMobj(sign, 0, 0, 0, MT_SIGN_PIECE);
-	P_SetTarget(&cur->hnext->target, sign);
-	P_SetMobjState(cur->hnext, S_SIGN_BACK);
-	cur->hnext->extravalue1 = 6;
-	cur->hnext->extravalue2 = 2;
-
-	prev = cur;
-	cur = cur->hnext;
-	cur->hprev = prev;
-
-	// Sides
-	cur->hnext = P_SpawnMobjFromMobj(sign, 0, 0, 0, MT_SIGN_PIECE);
-	P_SetTarget(&cur->hnext->target, sign);
-	P_SetMobjState(cur->hnext, S_SIGN_SIDE);
-	cur->hnext->extravalue1 = 30;
-	cur->hnext->extravalue2 = 1;
-
-	prev = cur;
-	cur = cur->hnext;
-	cur->hprev = prev;
-
-	cur->hnext = P_SpawnMobjFromMobj(sign, 0, 0, 0, MT_SIGN_PIECE);
-	P_SetTarget(&cur->hnext->target, sign);
-	P_SetMobjState(cur->hnext, S_SIGN_SIDE);
-	cur->hnext->extravalue1 = 30;
-	cur->hnext->extravalue2 = 3;
-
-	prev = cur;
-	cur = cur->hnext;
-	cur->hprev = prev;
-}
-
 //
 // P_SetupSignExit
 //
@@ -3943,7 +3872,13 @@ void P_SetupSignExit(player_t *player)
 		if (thing->state != &states[thing->info->spawnstate])
 			continue;
 
-		P_SetupSignObject(thing, player->mo, false);
+		P_SetTarget(&thing->target, player->mo);
+		P_SetMobjState(thing, S_SIGN1);
+
+		// SRB2Kart: Set sign spinning variables
+		thing->movefactor = thing->z;
+		thing->z = thing->old_z = thing->z + (768*thing->scale) * P_MobjFlip(thing);
+		thing->movecount = 1;
 		++numfound;
 	}
 
@@ -3964,7 +3899,14 @@ void P_SetupSignExit(player_t *player)
 		if (thing->state != &states[thing->info->spawnstate])
 			continue;
 
-		P_SetupSignObject(thing, player->mo, false);
+		P_SetTarget(&thing->target, player->mo);
+		P_SetMobjState(thing, S_SIGN1);
+
+		// SRB2Kart: Set sign spinning variables
+		thing->movefactor = thing->z;
+		thing->z = thing->old_z = thing->z + (768*thing->scale) * P_MobjFlip(thing);
+		thing->movecount = 1;
+
 		++numfound;
 	}
 
@@ -3974,9 +3916,11 @@ void P_SetupSignExit(player_t *player)
 	// SRB2Kart: FINALLY, add in an alternative if no place is found
 	if (player->mo && !P_MobjWasRemoved(player->mo))
 	{
-		thing = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->floorz, MT_SIGN);
-		P_InitAngle(thing, player->mo->angle);
-		P_SetupSignObject(thing, player->mo, true); // Use :youfuckedup: sign face
+		mobj_t *sign = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z + (768*mapobjectscale), MT_SIGN);
+		P_SetTarget(&sign->target, player->mo);
+		P_SetMobjState(sign, S_SIGN1);
+		sign->movefactor = player->mo->floorz;
+		sign->movecount = 1;
 	}
 }
 

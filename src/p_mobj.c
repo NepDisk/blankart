@@ -1219,6 +1219,14 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 
 					gravityadd = (5*gravityadd)/2;
 					break;
+				case MT_ORBINAUT:
+				case MT_JAWZ:
+				case MT_JAWZ_DUD:
+					gravityadd = (5*gravityadd)/2;
+					break;
+				case MT_SIGN:
+					gravityadd /= 8;
+					break;
 				case MT_KARMAFIREWORK:
 					gravityadd /= 3;
 					break;
@@ -7724,139 +7732,35 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			}
 		}
 		break;
-	case MT_SIGN: // Kart's unique sign behavior
-		if (mobj->movecount != 0)
-		{
-			mobj_t *cur = mobj->hnext;
-			SINT8 newskin = -1;
-			UINT8 newcolor = SKINCOLOR_NONE;
-			angle_t endangle = FixedAngle(mobj->extravalue1 << FRACBITS);
-
-			if (mobj->movecount == 1)
+		case MT_SIGN: // Kart's unique sign behavior
+			if (mobj->movecount)
 			{
-				if (mobj->z + mobj->momz <= mobj->movefactor)
+				if (mobj->z <= mobj->movefactor)
 				{
+					P_SetMobjState(mobj, S_SIGN_END);
 					if (mobj->info->attacksound)
 						S_StartSound(mobj, mobj->info->attacksound);
-
+					mobj->flags |= MF_NOGRAVITY; // ?
+					mobj->flags &= ~MF_NOCLIPHEIGHT;
 					mobj->z = mobj->movefactor;
-					mobj->momz = 0;
-					mobj->movecount = 2;
-
-					newskin = ((skin_t*)mobj->target->skin) - skins;
-					newcolor = mobj->target->player->skincolor;
+					mobj->movecount = 0;
 				}
 				else
 				{
-					fixed_t g = (6*mobj->scale);
-					UINT16 ticstilimpact = abs(mobj->z - mobj->movefactor) / g;
-
-					P_SpawnMobj(
-						mobj->x + FixedMul(48*mobj->scale, FINECOSINE(mobj->angle >> ANGLETOFINESHIFT)),
-						mobj->y + FixedMul(48*mobj->scale, FINESINE(mobj->angle >> ANGLETOFINESHIFT)),
-						mobj->z + ((24 + ((leveltime % 4) * 8)) * mobj->scale),
-						MT_SIGNSPARKLE
-					);
-
-					if (ticstilimpact == (3*TICRATE/2))
+					P_SpawnMobj(mobj->x + (P_RandomRange(-48,48)*mobj->scale),
+						mobj->y + (P_RandomRange(-48,48)*mobj->scale),
+						mobj->z + (24*mobj->scale) + (P_RandomRange(-8,8)*mobj->scale),
+						MT_SIGNSPARKLE);
+					mobj->flags &= ~MF_NOGRAVITY;
+					if (abs(mobj->z - mobj->movefactor) <= (512*mobj->scale) && !mobj->cvmem)
 					{
 						if (mobj->info->seesound)
 							S_StartSound(mobj, mobj->info->seesound);
-					}
-
-					mobj->angle += ANGLE_45;
-					mobj->momz = -g;
-
-					if (mobj->angle == endangle + ANGLE_180)
-					{
-						if (ticstilimpact <= 8)
-						{
-							newskin = ((skin_t*)mobj->target->skin) - skins;
-							newcolor = mobj->target->player->skincolor;
-						}
-						else
-						{
-							UINT8 plist[MAXPLAYERS];
-							UINT8 plistlen = 0;
-							UINT8 i;
-
-							memset(plist, 0, sizeof(plist));
-
-							for (i = 0; i < MAXPLAYERS; i++)
-							{
-								if (playeringame[i] && !players[i].spectator)
-								{
-									plist[plistlen] = i;
-									plistlen++;
-								}
-							}
-
-							if (plistlen <= 1)
-							{
-								// Default to the winner
-								newskin = ((skin_t*)mobj->target->skin) - skins;
-								newcolor = mobj->target->player->skincolor;
-							}
-							else
-							{
-								// Pick another player in the server!
-								player_t *p = &players[plist[P_RandomKey(plistlen)]];
-								newskin = ((skin_t*)p->mo->skin) - skins;
-								newcolor = p->skincolor;
-							}
-						}
+						mobj->cvmem = 1;
 					}
 				}
 			}
-			else if (mobj->movecount == 2)
-			{
-				if (mobj->angle != endangle)
-					mobj->angle += ANGLE_11hh;
-			}
-
-			while (cur && !P_MobjWasRemoved(cur))
-			{
-				fixed_t amt = cur->extravalue1 * mobj->scale;
-				angle_t dir = mobj->angle + (cur->extravalue2 * ANGLE_90);
-				fixed_t z = mobj->z + (23*mobj->scale);
-
-				if (cur->state == &states[S_SIGN_FACE])
-				{
-					if (newcolor != SKINCOLOR_NONE)
-					{
-						cur->color = skincolors[newcolor].invcolor;
-						cur->frame = cur->state->frame + skincolors[newcolor].invshade;
-					}
-				}
-				else if (cur->state == &states[S_KART_SIGN])
-				{
-					z += (5*mobj->scale);
-					amt += 1;
-
-					if (newskin != -1)
-					{
-						cur->skin = &skins[newskin];
-						cur->color = newcolor;
-					}
-				}
-				else if (cur->state == &states[S_SIGN_ERROR])
-				{
-					z += (5*mobj->scale);
-					amt += 1;
-				}
-
-				P_MoveOrigin(
-					cur,
-					mobj->x + FixedMul(amt, FINECOSINE(dir >> ANGLETOFINESHIFT)),
-					mobj->y + FixedMul(amt, FINESINE(dir >> ANGLETOFINESHIFT)),
-					z
-				);
-				cur->angle = dir + ANGLE_90;
-
-				cur = cur->hnext;
-			}
-		}
-		break;
+			break;
 	case MT_CDUFO:
 		if (!mobj->spawnpoint || mobj->fuse)
 			break;

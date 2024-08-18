@@ -120,6 +120,7 @@ void A_DropMine(mobj_t *actor);
 void A_FishJump(mobj_t *actor);
 void A_SetSolidSteam(mobj_t *actor);
 void A_UnsetSolidSteam(mobj_t *actor);
+void A_SignPlayer(mobj_t *actor);
 void A_OverlayThink(mobj_t *actor);
 void A_JetChase(mobj_t *actor);
 void A_JetbThink(mobj_t *actor);
@@ -4272,6 +4273,36 @@ void A_UnsetSolidSteam(mobj_t *actor)
 
 	actor->flags &= ~MF_SOLID;
 	actor->flags |= MF_NOCLIP;
+}
+
+// Function: A_SignPlayer
+//
+// Description: Changes the state of a level end sign to reflect the player that hit it.
+//
+// var1 = unused
+// var2 = unused
+//
+void A_SignPlayer(mobj_t *actor)
+{
+	mobj_t *ov;
+	if (LUA_CallAction(A_SIGNPLAYER, actor))
+		return;
+	if (!actor->target)
+		return;
+
+	if (!actor->target->player)
+		return;
+	
+	// Set the sign to be an appropriate background color for this player's skincolor.
+	actor->color = skincolors[actor->target->player->skincolor*2].invcolor;
+	actor->frame += skincolors[actor->target->player->skincolor*2+1].invcolor;
+
+	// spawn an overlay of the player's face.
+	ov = P_SpawnMobj(actor->x, actor->y, actor->z, MT_OVERLAY);
+	P_SetTarget(&ov->target, actor);
+	ov->color = actor->target->player->skincolor;
+	ov->skin = &skins[actor->target->player->skin];
+	P_SetMobjState(ov, actor->info->seestate); // S_KART_SIGN
 }
 
 // Function: A_OverlayThink
