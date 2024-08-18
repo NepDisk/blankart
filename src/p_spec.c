@@ -16,6 +16,7 @@
 ///        Line Tag handling. Line and Sector triggers.
 
 #include "doomdef.h"
+#include "doomstat.h"
 #include "g_game.h"
 #include "p_local.h"
 #include "p_setup.h" // levelflats for flat animation
@@ -6060,8 +6061,8 @@ void P_SpawnSpecials(boolean fromnetsave)
 		switch(GETSECSPECIAL(sector->special, 4))
 		{
 			case 10: // Circuit finish line (Unused)
-				// Remove before release
-				//CONS_Alert(CONS_WARNING, "Finish line sector type is deprecated.\n");
+				if (gametyperules & GTR_CIRCUIT)
+					circuitmap = true;
 				break;
 		}
 	}
