@@ -8422,6 +8422,16 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			}
 		}
 		break;
+	case MT_TUMBLEGEM:
+	case MT_TUMBLECOIN:
+		mobj->friction = 95*FRACUNIT/100;
+		if ((((statenum_t)(mobj->state-states)) == mobj->info->seestate)
+			&& abs(mobj->momx) < mobj->scale && abs(mobj->momy) < mobj->scale && P_IsObjectOnGround(mobj))
+		{
+			mobj->momx = mobj->momy = 0;
+			P_SetMobjState(mobj, mobj->info->spawnstate);
+		}
+			break;
 	case MT_KARMAFIREWORK:
 		if (mobj->flags & MF_NOGRAVITY)
 			break;
@@ -10090,10 +10100,8 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 				}
 			}
 			break;
-		case MT_BOSS3WAYPOINT:
-			// Remove before release
-			//CONS_Alert(CONS_WARNING, "Boss waypoints are deprecated. Did you forget to remove the old checkpoints, too?\n");
-			break;
+		case MT_TUMBLEGEM:
+			mobj->color = P_RandomKey(numskincolors - 1) + 1;
 		default:
 			break;
 	}

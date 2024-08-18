@@ -1152,6 +1152,7 @@ typedef enum
 	sfx_chain,
 	sfx_mkuma,
 	sfx_toada,
+	sfx_gemhit,
 	sfx_bhurry,
 	sfx_bsnipe,
 	sfx_sploss,

@@ -1088,6 +1088,7 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"chain",  false, 255,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Mementos Reaper
   {"mkuma",  false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Trigger Happy Havoc Monokuma
   {"toada",  false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Arid Sands Toad scream
+  {"gemhit", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR}, // Opulence gem/coin tumbling
   {"bhurry", false, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // v1.0.2 Battle overtime
   {"bsnipe", false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Banana sniping
   {"sploss", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Down to yellow sparks
