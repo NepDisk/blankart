@@ -78,13 +78,11 @@ void K_TimerInit(void)
 			numPlayers++;
 		}
 
-		// No intro in Record Attack / 1v1
-		if (numPlayers > 2)
-		{
-			introtime = (108) + 5; // 108 for rotation, + 5 for white fade
-		}
-
+		introtime = (108) + 5; // 108 for rotation, + 5 for white fade
 		starttime = 6*TICRATE + (3*TICRATE/4);
+		
+		if (gametyperules & GTR_FREEROAM)
+			starttime = introtime+1;
 	}
 
 	// NOW you can try to spawn in the Battle capsules, if there's not enough players for a match
@@ -112,7 +110,6 @@ void K_TimerInit(void)
 			timelimitintics = cv_timelimit.value * (60*TICRATE);
 		}
 	}
-	//CONS_Printf("numbulbs set to %d (%d players, %d spectators) on tic %d\n", numbulbs, numPlayers, numspec, leveltime);
 }
 
 UINT32 K_GetPlayerDontDrawFlag(player_t *player)
@@ -6919,7 +6916,8 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	K_HandleDelayedHitByEm(player);
 	
-	K_RaceStart(player);
+	if (!(gametyperules & GTR_FREEROAM))
+		K_RaceStart(player);
 	
 	// Squishing
 	// If a Grow player or a sector crushes you, get flattened instead of being killed.
@@ -8916,7 +8914,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	}
 
 	// Play the starting countdown sounds
-	if (player == &players[g_localplayers[0]]) // Don't play louder in splitscreen
+	if (!(gametyperules & GTR_FREEROAM) && player == &players[g_localplayers[0]]) // Don't play louder in splitscreen
 	{
 		if ((leveltime == starttime-(3*TICRATE)) || (leveltime == starttime-(2*TICRATE)) || (leveltime == starttime-TICRATE))
 			S_StartSound(NULL, sfx_s3ka7);

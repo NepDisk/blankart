@@ -916,7 +916,7 @@ static void G_DoAnglePrediction(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer, p
 	cmd->angle *= realtics;
 
 	if (((player->mo && player->speed > 0) // Moving
-		|| (leveltime > starttime && (cmd->buttons & BT_ACCELERATE && cmd->buttons & BT_BRAKE)) // Rubber-burn turn
+		|| (((gametyperules & GTR_FREEROAM) || leveltime > starttime) && (cmd->buttons & BT_ACCELERATE && cmd->buttons & BT_BRAKE)) // Rubber-burn turn
 		|| (player->respawn) // Respawning
 		|| (player->spectator || objectplacing))) // Not a physical player
 		localangle[ssplayer-1] += (cmd->angle<<TICCMD_REDUCE);

@@ -4630,7 +4630,7 @@ void K_drawKartHUD(void)
 	}
 
 	// Draw the countdowns after everything else.
-	if (starttime != introtime
+	if (!(gametyperules & GTR_FREEROAM) && starttime != introtime
 	&& leveltime >= introtime
 	&& leveltime < starttime+TICRATE)
 	{
