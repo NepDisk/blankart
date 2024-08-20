@@ -2120,6 +2120,7 @@ static boolean K_RaiseWaypoint(
 
 	fixed_t sort;
 	fixed_t z;
+	fixed_t delta;
 
 	if (
 			!( riser->spawnpoint->options & MTF_OBJECTSPECIAL ) ||
@@ -2164,6 +2165,13 @@ static boolean K_RaiseWaypoint(
 				}
 			}
 
+			// Keep changes for -writetextmap
+			if (descending)
+				delta = sort - waypointmobj->z;
+			else
+				delta = waypointmobj->z - sort;
+			waypointmobj->spawnpoint->z += delta;
+
 			waypointmobj->z = sort;
 		}
 
@@ -2198,6 +2206,8 @@ static boolean K_AnchorWaypointRadius(
 				waypointmobj->x, waypointmobj->y,
 				anchor->x, anchor->y);
 
+		// Keep changes for -writetextmap
+		waypointmobj->spawnpoint->args[0] = waypointmobj->radius >> FRACBITS;
 		return true;
 	}
 	else
