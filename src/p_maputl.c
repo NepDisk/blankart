@@ -681,6 +681,7 @@ void P_LineOpening(line_t *linedef, mobj_t *mobj)
 			if (texnum) {
 				// Get the midtexture's height
 				texheight = textures[texnum]->height << FRACBITS;
+				P_ClosestPointOnLine(tmx, tmy, linedef, &cross);
 				
 				if (P_GetMidtextureTopBottom(linedef, cross.x, cross.y, &textop, &texbottom))
 				{
