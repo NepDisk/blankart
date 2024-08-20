@@ -46,7 +46,7 @@ boolean R_NoEncore(sector_t *sector, levelflat_t *flat, boolean ceiling)
 	const boolean invertEncore = (sector->flags & MSF_INVERTENCORE);
 	const terrain_t *terrain = (flat != NULL ? flat->terrain : NULL);
 
-	if ((terrain == NULL)
+	if ((terrain != NULL)
 		&& !(terrain->flags & TRF_SNEAKERPANEL))
 	{
 		return invertEncore;
