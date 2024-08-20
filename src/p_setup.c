@@ -4237,7 +4237,7 @@ static void P_ConvertBinaryLinedefTypes(void)
 			lines[i].args[2] = !!(lines[i].flags & ML_MIDSOLID);
 			break;
 		case 4: //Speed pad parameters
-			CONS_Alert(CONS_WARNING, "Speed Pad linedef is deprecated. Use the TERRAIN effect!\n");
+			//CONS_Alert(CONS_WARNING, "Speed Pad linedef is deprecated. Use the TERRAIN effect!\n");
 			break;
 		case 7: //Sector flat alignment
 			lines[i].args[0] = tag;
@@ -6113,10 +6113,8 @@ static void P_ConvertBinarySectorTypes(void)
 		{
 			case 1: //Trick panel
 			case 3:
-				CONS_Alert(CONS_WARNING, "Trick Panel special is deprecated. Use the TERRAIN effect!\n");
 				break;
 			case 5: //Speed pad
-				CONS_Alert(CONS_WARNING, "Speed Pad special is deprecated. Use the TERRAIN effect!\n");
 				break;
 			default:
 				break;
