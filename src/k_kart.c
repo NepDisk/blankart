@@ -7325,12 +7325,7 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 			player->starposttime = player->realtime;
 			player->starpostz = player->mo->z >> FRACBITS;
 			player->starpostflip = (player->mo->eflags & MFE_VERTICALFLIP) ? true : false;
-			player->starpostangle = R_PointToAngle2(
-				player->mo->x,
-				player->mo->y,
-				bestwaypoint->nextwaypoints[nwp]->mobj->x,
-				bestwaypoint->nextwaypoints[nwp]->mobj->y
-			);
+			player->starpostangle = player->mo->angle;
 			
 			// Then do x and y
 			player->starpostx = player->mo->x >> FRACBITS;
