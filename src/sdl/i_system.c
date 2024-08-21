@@ -1964,7 +1964,7 @@ void I_Error(const char *error, ...)
 	{
 		// This makes crashes funnier by stimulating the funnicampus of the brain
 		S_StopSounds();
-		S_StartSound(NULL, sfx_etexpl);
+		S_StartSound(NULL, sfx_s3k35);
 	}
 
 	shutdowning = true;
