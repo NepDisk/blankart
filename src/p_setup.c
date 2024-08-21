@@ -4193,8 +4193,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	INT32 i, ranspecialwipe = 0;
 	sector_t *ss;
 
-	K_TimerReset();
-
 	levelloading = true;
 
 	// This is needed. Don't touch.
