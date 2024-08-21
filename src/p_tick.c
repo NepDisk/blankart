@@ -672,7 +672,7 @@ void P_Ticker(boolean run)
 		// Bosses have a punchy start, so no position.
 		if (bossinfo.boss == true)
 		{
-			if (leveltime == 3)
+			if (leveltime == 0)
 			{
 				S_ChangeMusicEx(mapmusname, mapmusflags, true, mapmusposition, 0, 0);
 				S_ShowMusicCredit();
