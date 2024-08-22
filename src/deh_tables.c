@@ -4551,6 +4551,7 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_REDSPRING",
 	"MT_BLUESPRING",
 	"MT_GREYSPRING",
+	"MT_INVISSPRING",
 	"MT_POGOSPRING",
 	"MT_YELLOWDIAG", // Yellow Diagonal Spring
 	"MT_REDDIAG", // Red Diagonal Spring
