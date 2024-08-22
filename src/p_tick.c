@@ -672,7 +672,7 @@ void P_Ticker(boolean run)
 		// Bosses have a punchy start, so no position.
 		if (bossinfo.boss == true)
 		{
-			if (leveltime == 3)
+			if (leveltime == 0)
 			{
 				S_ChangeMusicEx(mapmusname, mapmusflags, true, mapmusposition, 0, 0);
 				S_ShowMusicCredit();
@@ -681,6 +681,19 @@ void P_Ticker(boolean run)
 		// Plays the music after the starting countdown.
 		else
 		{
+			if (leveltime == starttime-(3*TICRATE))
+			{
+				S_StartSound(NULL, sfx_s3ka7); // 3,
+				S_FadeOutStopMusic(3500);
+			}
+			else if ((leveltime == starttime-(2*TICRATE)) || (leveltime == starttime-TICRATE))
+			{
+				S_StartSound(NULL, sfx_s3ka7); // 2, 1,
+			}
+			else if (leveltime == starttime)
+			{
+				S_StartSound(NULL, sfx_s3kad); // GO!
+			}
 			if (leveltime == (starttime + (TICRATE/2)))
 			{
 				S_ChangeMusicEx(mapmusname, mapmusflags, true, mapmusposition, 0, 0);
@@ -689,7 +702,7 @@ void P_Ticker(boolean run)
 		}
 
 		ps_lua_thinkframe_time = I_GetPreciseTime();
-		LUA_HOOK(ThinkFrame);
+		LUA_HookThinkFrame();
 		ps_lua_thinkframe_time = I_GetPreciseTime() - ps_lua_thinkframe_time;
 	}
 

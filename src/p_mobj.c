@@ -12276,7 +12276,7 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 		// Ambush = double size (grounded) / half size (aerial)
 		if (!(mthing->args[2] & TMICF_INVERTSIZE) == !P_IsObjectOnGround(mobj))
 		{
-			mobj->extravalue1 = min(mobj->extravalue1 << 1, FixedDiv(64*FRACUNIT, mobj->info->radius)); // don't make them larger than the blockmap can handle
+			mobj->extravalue1 = min(mobj->extravalue1 << 1, FixedDiv(MAPBLOCKSIZE, mobj->info->radius)); // don't make them larger than the blockmap can handle
 			mobj->scalespeed <<= 1;
 		}
 		break;
@@ -13237,6 +13237,65 @@ void P_FlashPal(player_t *pl, UINT16 type, UINT16 duration)
 fixed_t P_ScaleFromMap(fixed_t n, fixed_t scale)
 {
 	return FixedMul(n, FixedDiv(scale, mapobjectscale));
+}
+
+//
+// P_SpawnMobjFromMobjUnscaled
+// Spawns an object with offsets relative to the position of another object.
+// Scale, gravity flip, etc. is taken into account automatically.
+//
+mobj_t *P_SpawnMobjFromMobjUnscaled(mobj_t *mobj, fixed_t xofs, fixed_t yofs, fixed_t zofs, mobjtype_t type)
+{
+	mobj_t *newmobj;
+
+	newmobj = P_SpawnMobj(mobj->x + xofs, mobj->y + yofs, mobj->z + zofs, type);
+	if (!newmobj)
+		return NULL;
+
+	newmobj->destscale = P_ScaleFromMap(mobj->destscale, newmobj->destscale);
+	P_SetScale(newmobj, P_ScaleFromMap(mobj->scale, newmobj->scale));
+
+	if (mobj->eflags & MFE_VERTICALFLIP)
+	{
+		newmobj->eflags |= MFE_VERTICALFLIP;
+		newmobj->flags2 |= MF2_OBJECTFLIP;
+		newmobj->z = mobj->z + mobj->height - zofs - newmobj->height;
+
+		newmobj->old_z = mobj->old_z + mobj->height - zofs - newmobj->height;
+		newmobj->old_z2 = mobj->old_z2 + mobj->height - zofs - newmobj->height;
+	}
+	else
+	{
+		newmobj->old_z = mobj->old_z + zofs;
+		newmobj->old_z2 = mobj->old_z2 + zofs;
+	}
+
+	newmobj->old_x2 = mobj->old_x2 + xofs;
+	newmobj->old_y2 = mobj->old_y2 + yofs;
+	newmobj->old_x = mobj->old_x + xofs;
+	newmobj->old_y = mobj->old_y + yofs;
+
+	// This angle hack is needed for Lua scripts that set the angle after
+	// spawning, to avoid erroneous interpolation.
+	if (mobj->player)
+	{
+		newmobj->old_angle2 = mobj->player->old_drawangle2;
+		newmobj->old_angle = mobj->player->old_drawangle;
+	}
+	else
+	{
+		newmobj->old_angle2 = mobj->old_angle2;
+		newmobj->old_angle = mobj->old_angle;
+	}
+
+	newmobj->old_scale2 = mobj->old_scale2;
+	newmobj->old_scale = mobj->old_scale;
+	newmobj->old_spritexscale = mobj->old_spritexscale;
+	newmobj->old_spriteyscale = mobj->old_spriteyscale;
+	newmobj->old_spritexoffset = mobj->old_spritexoffset;
+	newmobj->old_spriteyoffset = mobj->old_spriteyoffset;
+
+	return newmobj;
 }
 
 //

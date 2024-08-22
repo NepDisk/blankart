@@ -6143,7 +6143,7 @@ typedef enum mobj_type
 	MT_SKYBOX,
 
 	// Debris
-	MT_SPARK, //spark
+	MT_SPARK, //spark, only used for debugging, actually
 	MT_EXPLODE, // Robot Explosion
 	MT_UWEXPLODE, // Underwater Explosion
 	MT_DUST,

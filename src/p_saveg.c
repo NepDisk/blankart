@@ -1749,6 +1749,10 @@ static void SaveMobjThinker(const thinker_t *th, const UINT8 type)
 	if (mobj->type == MT_HOOPCENTER && mobj->threshold == 4242)
 		return;
 
+	// MT_SPARK: used for debug stuff
+	if (mobj->type == MT_SPARK)
+		return;
+
 	if (mobj->spawnpoint)
 	{
 		// spawnpoint is not modified but we must save it since it is an identifier
@@ -4236,7 +4240,9 @@ static void P_RelinkPointers(void)
 
 		mobj = (mobj_t *)currentthinker;
 
-		if (mobj->type == MT_HOOP || mobj->type == MT_HOOPCOLLIDE || mobj->type == MT_HOOPCENTER)
+		if (mobj->type == MT_HOOP || mobj->type == MT_HOOPCOLLIDE || mobj->type == MT_HOOPCENTER
+			// MT_SPARK: used for debug stuff
+			|| mobj->type == MT_SPARK)
 			continue;
 
 		if (mobj->tracer)
@@ -4869,7 +4875,9 @@ void P_SaveNetGame(boolean resending)
 				continue;
 
 			mobj = (mobj_t *)th;
-			if (mobj->type == MT_HOOP || mobj->type == MT_HOOPCOLLIDE || mobj->type == MT_HOOPCENTER)
+			if (mobj->type == MT_HOOP || mobj->type == MT_HOOPCOLLIDE || mobj->type == MT_HOOPCENTER
+				// MT_SPARK: used for debug stuff
+				|| mobj->type == MT_SPARK)
 				continue;
 			mobj->mobjnum = i++;
 		}
