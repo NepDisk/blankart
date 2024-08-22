@@ -333,16 +333,6 @@ terrain_t *K_GetDefaultTerrain(void)
 }
 
 /*--------------------------------------------------
-	size_t K_GetDefaultTerrainID(void)
-
-		See header file for description.
---------------------------------------------------*/
-size_t K_GetDefaultTerrainID(void)
-{
-	return defaultTerrain;
-}
-
-/*--------------------------------------------------
 	terrain_t *K_GetTerrainForTextureName(const char *checkName)
 
 		See header file for description.
@@ -371,34 +361,6 @@ terrain_t *K_GetTerrainForTextureName(const char *checkName)
 }
 
 /*--------------------------------------------------
-	size_t K_GetTerrainIDForTextureName(const char *checkName)
-
-		See header file for description.
---------------------------------------------------*/
-size_t K_GetTerrainIDForTextureName(const char *checkName)
-{
-	UINT32 checkHash = quickncasehash(checkName, 8);
-	size_t i;
-
-	if (numTerrainFloorDefs > 0)
-	{
-		for (i = 0; i < numTerrainFloorDefs; i++)
-		{
-			t_floor_t *f = &terrainFloorDefs[i];
-
-			if (checkHash == f->textureHash && !strncasecmp(checkName, f->textureName, 8))
-			{
-				return f->terrainID;
-			}
-		}
-	}
-
-	// This texture doesn't have a terrain directly applied to it,
-	// so we fallback to the default terrain.
-	return K_GetDefaultTerrainID();
-}
-
-/*--------------------------------------------------
 	terrain_t *K_GetTerrainForTextureNum(INT32 textureNum)
 
 		See header file for description.
@@ -408,7 +370,7 @@ terrain_t *K_GetTerrainForTextureNum(INT32 textureNum)
 	if (textureNum >= 0 && textureNum < numtextures)
 	{
 		texture_t *tex = textures[textureNum];
-		return K_GetTerrainByIndex(tex->terrainID);
+		return K_GetTerrainForTextureName(tex->name);
 	}
 
 	// This texture doesn't have a terrain directly applied to it,
@@ -1866,12 +1828,6 @@ static boolean K_TERRAINLumpParser(UINT8 *data, size_t size)
 						{
 							f->terrainID = K_GetTerrainHeapIndex(t);
 							CONS_Printf("Texture '%s' set to Terrain '%s'\n", f->textureName, tkn);
-
-							INT32 tex = R_CheckTextureNumForName(f->textureName);
-							if (tex != -1)
-							{
-								textures[tex]->terrainID = f->terrainID;
-							}
 						}
 					}
 					else
