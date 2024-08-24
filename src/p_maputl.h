@@ -61,6 +61,10 @@ boolean P_GetMidtextureTopBottom(line_t *linedef, fixed_t x, fixed_t y, fixed_t 
 extern fixed_t opentop, openbottom, openrange, lowfloor, highceiling;
 extern pslope_t *opentopslope, *openbottomslope;
 extern ffloor_t *openfloorrover, *openceilingrover;
+extern fixed_t openceilingstep;
+extern fixed_t openceilingdrop;
+extern fixed_t openfloorstep;
+extern fixed_t openfloordrop;
 extern INT32 opentoppic, openbottompic;
 
 void P_LineOpening(line_t *plinedef, mobj_t *mobj);
