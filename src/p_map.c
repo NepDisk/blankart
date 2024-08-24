@@ -1567,11 +1567,6 @@ static BlockItReturn_t PIT_CheckLine(line_t *ld)
 		tmceilingrover = openceilingrover;
 		tmceilingslope = opentopslope;
 		tmceilingpic = opentoppic;
-		tmceilingstep = openceilingstep;
-		if (thingtop == tmthing->ceilingz)
-		{
-			tmthing->ceilingdrop = openceilingdrop;
-		}
 	}
 
 	if (openbottom > tmfloorz)
@@ -1580,11 +1575,6 @@ static BlockItReturn_t PIT_CheckLine(line_t *ld)
 		tmfloorrover = openfloorrover;
 		tmfloorslope = openbottomslope;
 		tmfloorpic = openbottompic;
-		tmfloorstep = openfloorstep;
-		if (tmthing->z == tmthing->floorz)
-		{
-			tmthing->floordrop = openfloordrop;
-		}
 	}
 
 	if (highceiling > tmdrpoffceilz)
