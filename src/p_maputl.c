@@ -670,44 +670,42 @@ void P_LineOpening(line_t *linedef, mobj_t *mobj)
 	if (mobj)
 	{
 		// Check for collision with front side's midtexture if Effect 4 is set
-		if (linedef->flags & ML_EFFECT4 && !linedef->polyobj) // don't do anything for polyobjects! ...for now
+		if ((linedef->flags & ML_EFFECT4 || (mobj->player && P_IsLineTripWire(linedef) && !K_TripwirePass(mobj->player)))
+			&& !linedef->polyobj) // don't do anything for polyobjects! ...for now
 		{
 			side_t *side = &sides[linedef->sidenum[0]];
 			fixed_t textop, texbottom, texheight;
 			fixed_t texmid, delta1, delta2;
-			INT32 texnum = R_GetTextureNum(side->midtexture); // make sure the texture is actually valid
 
-			if (texnum) {
-				// Get the midtexture's height
-				texheight = textures[texnum]->height << FRACBITS;
+			if (P_GetMidtextureTopBottom(linedef, cross.x, cross.y, &textop, &texbottom))
+			{
+				texmid = texbottom+(textop-texbottom)/2;
 
-				// Set texbottom and textop to the Z coordinates of the texture's boundaries
+				delta1 = abs(mobj->z - texmid);
+				delta2 = abs(thingtop - texmid);
+
+				if (delta1 > delta2)
 				{
-					if (linedef->flags & ML_EFFECT5 && !side->repeatcnt) { // "infinite" repeat
-						texbottom = openbottom + side->rowoffset;
-						textop = opentop + side->rowoffset;
-					} else if (!!(linedef->flags & ML_DONTPEGBOTTOM) ^ !!(linedef->flags & ML_EFFECT3)) {
-						texbottom = openbottom + side->rowoffset;
-						textop = texbottom + texheight*(side->repeatcnt+1);
-					} else {
-						textop = opentop + side->rowoffset;
-						texbottom = textop - texheight*(side->repeatcnt+1);
+					// Below
+					if (opentop > texbottom)
+					{
+						topedge[lo] -= ( opentop - texbottom );
+
+						opentop = texbottom;
+						openceilingstep = ( thingtop    - topedge[lo] );
+						openceilingdrop = ( topedge[hi] - topedge[lo] );
 					}
 				}
-				
-				if (P_GetMidtextureTopBottom(linedef, cross.x, cross.y, &textop, &texbottom))
+				else
 				{
-					texmid = texbottom+(textop-texbottom)/2;
+					// Above
+					if (openbottom < textop)
+					{
+						botedge[hi] += ( textop - openbottom );
 
-					delta1 = abs(mobj->z - texmid);
-					delta2 = abs(thingtop - texmid);
-
-					if (delta1 > delta2) { // Below
-						if (opentop > texbottom)
-							opentop = texbottom;
-					} else { // Above
-						if (openbottom < textop)
-							openbottom = textop;
+						openbottom = textop;
+						openfloorstep = ( botedge[hi] - mobj->z );
+						openfloordrop = ( botedge[hi] - botedge[lo] );
 					}
 				}
 			}
