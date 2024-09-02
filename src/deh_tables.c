@@ -5688,14 +5688,15 @@ const char *const MSF_LIST[] = {
 
 // Sector special flags
 const char *const SSF_LIST[] = {
-	"DELETEITEMS",
+	"NOSTEPUP",
 	"DOUBLESTEPUP",
+	"NOSTEPDOWN",
 	"WINDCURRENT",
 	"CONVEYOR",
 	"\x01",			  // free (name un-matchable)
 	"STARPOSTACTIVATOR",
 	"EXIT",
-	"\x01",			  // free (name un-matchable)
+	"DELETEITEMS",
 	"\x01",			  // free (name un-matchable)
 	"\x01",			  // free (name un-matchable)
 	"\x01",			  // free (name un-matchable)
@@ -5704,8 +5705,6 @@ const char *const SSF_LIST[] = {
 	"\x01",			  // free (name un-matchable)
 	"ZOOMTUBESTART",
 	"ZOOMTUBEEND",
-	"\x01",			  // free (name un-matchable)
-	"\x01",			  // free (name un-matchable)
 	NULL
 };
 
