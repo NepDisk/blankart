@@ -226,6 +226,8 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->nextcheck);
 	else if (fastcmp(field,"distancetofinish"))
 		lua_pushinteger(L, plr->distancetofinish);
+	else if (fastcmp(field,"distancetofinishprev"))
+		lua_pushinteger(L, plr->distancetofinishprev);
 	else if (fastcmp(field,"airtime"))
 		lua_pushinteger(L, plr->airtime);
 	else if (fastcmp(field,"flashing"))
@@ -575,6 +577,8 @@ static int player_set(lua_State *L)
 	else if (fastcmp(field,"nextcheck"))
 		plr->nextcheck = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"distancetofinish"))
+		return NOSET;
+	else if (fastcmp(field,"distancetofinishprev"))
 		return NOSET;
 	else if (fastcmp(field,"airtime"))
 		plr->airtime = luaL_checkinteger(L, 3);

@@ -446,14 +446,44 @@ static boolean P_CanWaypointTraverse(seg_t *seg, divline_t *divl, register los_t
 	}
 
 	// calculate fractional intercept (how far along we are divided by how far we are from t2)
-	frac = P_InterceptVector2(&los->strace, divl);
+	frac = P_InterceptVector(&los->strace, divl);
 
 	// calculate position at intercept
 	tmx = los->strace.x + FixedMul(los->strace.dx, frac);
 	tmy = los->strace.y + FixedMul(los->strace.dy, frac);
 
+	// set openrange, opentop, openbottom
+	open.fofType = (flip ? LO_FOF_CEILINGS : LO_FOF_FLOORS);
 	P_LineOpening(line, los->t1, &open);
 	maxstep = P_GetThingStepUp(los->t1, tmx, tmy);
+
+#if 0
+	if (los->t2->type == MT_WAYPOINT)
+	{
+		waypoint_t *wp = K_SearchWaypointHeapForMobj(los->t2);
+
+		if (wp != NULL)
+		{
+			CONS_Printf(
+				"========\nID: %d\nrange: %.2f >= %.2f\n",
+				K_GetWaypointID(wp),
+				FIXED_TO_FLOAT(open.range),
+				FIXED_TO_FLOAT(los->t1->height)
+			);
+
+			if (open.range >= los->t1->height)
+			{
+				CONS_Printf(
+					"floor: %.2f\nlowfloor: %.2f\nstep: %.2f <= %.2f\n",
+					FIXED_TO_FLOAT(open.floor),
+					FIXED_TO_FLOAT(open.lowfloor),
+					FIXED_TO_FLOAT(open.floor - open.lowfloor),
+					FIXED_TO_FLOAT(maxstep)
+				);
+			}
+		}
+	}
+#endif
 
 	if (open.range < los->t1->height)
 	{
@@ -467,7 +497,13 @@ static boolean P_CanWaypointTraverse(seg_t *seg, divline_t *divl, register los_t
 	// Or if we're on the higher side...
 	canDropOff = (flip ? (los->t1->z + los->t1->height <= open.ceiling) : (los->t1->z >= open.floor));
 
-	return (canStepUp || canDropOff);
+	if (canStepUp || canDropOff)
+	{
+		return true;
+	}
+
+	los->traversed++;
+	return (los->traversed < TRAVERSE_MAX);
 }
 
 //

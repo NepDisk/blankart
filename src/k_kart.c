@@ -7527,11 +7527,12 @@ static void K_UpdatePlayerWaypoints(player_t *const player)
 	boolean updaterespawn = K_SetPlayerNextWaypoint(player);
 
 	// Update prev value (used for grief prevention code)
+	player->distancetofinishprev = player->distancetofinish;
 	K_UpdateDistanceFromFinishLine(player);
 
 	// Respawning should be a full reset.
 	UINT32 delta = u32_delta(player->distancetofinish, player->distancetofinishprev);
-	if (player->respawn.state == RESPAWNST_NONE && delta > distance_threshold)
+	if (!player->respawn && delta > distance_threshold)
 	{
 		CONS_Debug(DBG_GAMELOGIC, "Player %s: waypoint ID %d too far away (%u > %u)\n",
 			sizeu1(player - players), K_GetWaypointID(player->nextwaypoint), delta, distance_threshold);
@@ -7539,7 +7540,7 @@ static void K_UpdatePlayerWaypoints(player_t *const player)
 		// Distance jump is too great, keep the old waypoints and recalculate distance.
 		player->currentwaypoint = old_currentwaypoint;
 		player->nextwaypoint = old_nextwaypoint;
-		K_UpdateDistanceFromFinishLine(player);
+		player->distancetofinish = player->distancetofinishprev;
 	}
 
 	// Respawn point should only be updated when we're going to a nextwaypoint

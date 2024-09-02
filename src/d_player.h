@@ -372,6 +372,7 @@ typedef struct player_s
 	UINT8 oldposition;		// Used for taunting when you pass someone
 	UINT8 positiondelay;	// Used for position number, so it can grow when passing/being passed
 	UINT32 distancetofinish;
+	UINT32 distancetofinishprev;
 	waypoint_t *currentwaypoint;
 	waypoint_t *nextwaypoint;
 	tic_t airtime; 			// Keep track of how long you've been in the air
