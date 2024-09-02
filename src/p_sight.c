@@ -51,7 +51,7 @@ typedef struct
 
 static INT32 sightcounts[2];
 
-#define TRAVERSE_MAX (2)
+#define TRAVERSE_MAX (8)
 
 //
 // P_DivlineSide
