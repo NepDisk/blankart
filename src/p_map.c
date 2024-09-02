@@ -1400,6 +1400,8 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 // Adjusts tmfloorz and tmceilingz as lines are contacted - FOR CAMERA ONLY
 static BlockItReturn_t PIT_CheckCameraLine(line_t *ld)
 {
+	opening_t open = {0};
+
 	if (ld->polyobj && !(ld->polyobj->flags & POF_SOLID))
 		return BMIT_CONTINUE;
 
@@ -1433,25 +1435,25 @@ static BlockItReturn_t PIT_CheckCameraLine(line_t *ld)
 	}
 
 	// set openrange, opentop, openbottom
-	P_CameraLineOpening(ld);
+	P_CameraLineOpening(ld, &open);
 
 	// adjust floor / ceiling heights
-	if (opentop < tmceilingz)
+	if (open.ceiling < tmceilingz)
 	{
-		tmceilingz = opentop;
+		tmceilingz = open.ceiling;
 		ceilingline = ld;
 	}
 
-	if (openbottom > tmfloorz)
+	if (open.floor > tmfloorz)
 	{
-		tmfloorz = openbottom;
+		tmfloorz = open.floor;
 	}
 
-	if (highceiling > tmdrpoffceilz)
-		tmdrpoffceilz = highceiling;
+	if (open.highceiling > tmdrpoffceilz)
+		tmdrpoffceilz = open.highceiling;
 
-	if (lowfloor < tmdropoffz)
-		tmdropoffz = lowfloor;
+	if (open.lowfloor < tmdropoffz)
+		tmdropoffz = open.lowfloor;
 
 	return BMIT_CONTINUE;
 }
@@ -1502,6 +1504,7 @@ boolean P_IsLineTripWire(const line_t *ld)
 static BlockItReturn_t PIT_CheckLine(line_t *ld)
 {
 	const fixed_t thingtop = tmthing->z + tmthing->height;
+	opening_t open = {0};
 
 	if (ld->polyobj && !(ld->polyobj->flags & POF_SOLID))
 		return BMIT_CONTINUE;
@@ -1574,41 +1577,41 @@ static BlockItReturn_t PIT_CheckLine(line_t *ld)
 		return BMIT_ABORT;
 
 	// set openrange, opentop, openbottom
-	P_LineOpening(ld, tmthing);
+	P_LineOpening(ld, tmthing, &open);
 
 	// adjust floor / ceiling heights
-	if (opentop < tmceilingz)
+	if (open.ceiling < tmceilingz)
 	{
-		tmceilingz = opentop;
+		tmceilingz = open.ceiling;
 		ceilingline = ld;
-		tmceilingrover = openceilingrover;
-		tmceilingslope = opentopslope;
-		tmceilingpic = opentoppic;
-		tmceilingstep = openceilingstep;
+		tmceilingrover = open.ceilingrover;
+		tmceilingslope = open.ceilingslope;
+		tmceilingpic = open.ceilingpic;
+		tmceilingstep = open.ceilingstep;
 		if (thingtop == tmthing->ceilingz)
 		{
-			tmthing->ceilingdrop = openceilingdrop;
+			tmthing->ceilingdrop = open.ceilingdrop;
 		}
 	}
 
-	if (openbottom > tmfloorz)
+	if (open.floor > tmfloorz)
 	{
-		tmfloorz = openbottom;
-		tmfloorrover = openfloorrover;
-		tmfloorslope = openbottomslope;
-		tmfloorpic = openbottompic;
-		tmfloorstep = openfloorstep;
+		tmfloorz = open.floor;
+		tmfloorrover = open.floorrover;
+		tmfloorslope = open.floorslope;
+		tmfloorpic = open.floorpic;
+		tmfloorstep = open.floorstep;
 		if (tmthing->z == tmthing->floorz)
 		{
-			tmthing->floordrop = openfloordrop;
+			tmthing->floordrop = open.floordrop;
 		}
 	}
 
-	if (highceiling > tmdrpoffceilz)
-		tmdrpoffceilz = highceiling;
+	if (open.highceiling > tmdrpoffceilz)
+		tmdrpoffceilz = open.highceiling;
 
-	if (lowfloor < tmdropoffz)
-		tmdropoffz = lowfloor;
+	if (open.lowfloor < tmdropoffz)
+		tmdropoffz = open.lowfloor;
 
 	// we've crossed the line
 	if (P_SpecialIsLinedefCrossType(ld))
@@ -2629,7 +2632,7 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 		else if (thing->z+thing->height >= tmceilingz && (thing->eflags & MFE_VERTICALFLIP))
 		{
 			K_UpdateMobjTerrain(thing, tmceilingpic);
-			
+
 			if (!startingonground && tmceilingslope)
 			{
 				P_HandleSlopeLanding(thing, tmceilingslope);
@@ -3112,6 +3115,7 @@ static void P_HitBounceLine(line_t *ld)
 static boolean PTR_SlideCameraTraverse(intercept_t *in)
 {
 	line_t *li;
+	opening_t open = {0};
 
 	I_Assert(in->isaline);
 
@@ -3126,15 +3130,15 @@ static boolean PTR_SlideCameraTraverse(intercept_t *in)
 	}
 
 	// set openrange, opentop, openbottom
-	P_CameraLineOpening(li);
+	P_CameraLineOpening(li, &open);
 
-	if (openrange < mapcampointer->height)
+	if (open.range < mapcampointer->height)
 		goto isblocking; // doesn't fit
 
-	if (opentop - mapcampointer->z < mapcampointer->height)
+	if (open.ceiling - mapcampointer->z < mapcampointer->height)
 		goto isblocking; // mobj is too high
 
-	if (openbottom - mapcampointer->z > 0) // We don't want to make the camera step up.
+	if (open.floor - mapcampointer->z > 0) // We don't want to make the camera step up.
 		goto isblocking; // too big a step up
 
 	// this line doesn't block movement
@@ -3158,6 +3162,8 @@ isblocking:
 
 static boolean PTR_LineIsBlocking(line_t *li)
 {
+	opening_t open = {0};
+
 	// one-sided linedefs are always solid to sliding movement.
 	if (!li->backsector)
 		return !P_PointOnLineSide(slidemo->x, slidemo->y, li);
@@ -3166,15 +3172,15 @@ static boolean PTR_LineIsBlocking(line_t *li)
 		return true;
 
 	// set openrange, opentop, openbottom
-	P_LineOpening(li, slidemo);
+	P_LineOpening(li, slidemo, &open);
 
-	if (openrange < slidemo->height)
+	if (open.range < slidemo->height)
 		return true; // doesn't fit
 
-	if (opentop - slidemo->z < slidemo->height)
+	if (open.ceiling - slidemo->z < slidemo->height)
 		return true; // mobj is too high
 
-	if (openbottom - slidemo->z > P_GetThingStepUp(slidemo, slidemo->x, slidemo->y))
+	if (open.floor - slidemo->z > P_GetThingStepUp(slidemo, slidemo->x, slidemo->y))
 		return true; // too big a step up
 
 	return false;

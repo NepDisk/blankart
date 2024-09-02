@@ -46,7 +46,24 @@ void P_ClosestPointOnLine(fixed_t x, fixed_t y, line_t *line, vertex_t *result);
 void P_ClosestPointOnLine3D(const vector3_t *p, const vector3_t *line, vector3_t *result);
 INT32 P_PointOnLineSide(fixed_t x, fixed_t y, line_t *line);
 void P_MakeDivline(line_t *li, divline_t *dl);
-void P_CameraLineOpening(line_t *plinedef);
+typedef struct
+{
+	fixed_t ceiling, floor, range;
+	fixed_t lowfloor, highceiling;
+	pslope_t *floorslope, *ceilingslope;
+	ffloor_t *floorrover, *ceilingrover;
+	fixed_t ceilingstep, ceilingdrop;
+	fixed_t floorstep, floordrop;
+	INT32 ceilingpic, floorpic;
+	UINT8 fofType; // LO_FOF_ types for forcing FOF collide
+} opening_t;
+
+#define LO_FOF_ANY		(0)
+#define LO_FOF_FLOORS	(1)
+#define LO_FOF_CEILINGS	(2)
+
+void P_LineOpening(line_t *plinedef, mobj_t *mobj, opening_t *open);
+void P_CameraLineOpening(line_t *plinedef, opening_t *open);
 fixed_t P_InterceptVector(divline_t *v2, divline_t *v1);
 INT32 P_BoxOnLineSide(fixed_t *tmbox, line_t *ld);
 line_t * P_FindNearestLine(const fixed_t x, const fixed_t y, const sector_t *, const INT32 special);
@@ -57,17 +74,6 @@ boolean P_SceneryTryMove(mobj_t *thing, fixed_t x, fixed_t y);
 void P_HitSpecialLines(mobj_t *thing, fixed_t x, fixed_t y, fixed_t momx, fixed_t momy);
 
 boolean P_GetMidtextureTopBottom(line_t *linedef, fixed_t x, fixed_t y, fixed_t *return_top, fixed_t *return_bottom);
-
-extern fixed_t opentop, openbottom, openrange, lowfloor, highceiling;
-extern pslope_t *opentopslope, *openbottomslope;
-extern ffloor_t *openfloorrover, *openceilingrover;
-extern fixed_t openceilingstep;
-extern fixed_t openceilingdrop;
-extern fixed_t openfloorstep;
-extern fixed_t openfloordrop;
-extern INT32 opentoppic, openbottompic;
-
-void P_LineOpening(line_t *plinedef, mobj_t *mobj);
 
 typedef enum
 {
