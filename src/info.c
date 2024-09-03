@@ -8302,7 +8302,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_GREYDIAG
-		558,            // doomednum
+		2171,            // doomednum
 		S_GDIAG1,       // spawnstate
 		1,              // spawnhealth
 		S_GDIAG2,       // seestate
@@ -8329,7 +8329,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_YELLOWHORIZ
-		559,            // doomednum
+		2172,            // doomednum
 		S_YHORIZ1,      // spawnstate
 		1,              // spawnhealth
 		S_YHORIZ2,      // seestate
@@ -8356,7 +8356,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_REDHORIZ
-		560,            // doomednum
+		2173,            // doomednum
 		S_RHORIZ1,      // spawnstate
 		1,              // spawnhealth
 		S_RHORIZ2,      // seestate
@@ -8383,7 +8383,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_BLUEHORIZ
-		561,            // doomednum
+		2174,            // doomednum
 		S_BHORIZ1,      // spawnstate
 		1,              // spawnhealth
 		S_BHORIZ2,      // seestate
@@ -8410,7 +8410,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_GREYHORIZ
-		562,            // doomednum
+		2175,            // doomednum
 		S_GHORIZ1,      // spawnstate
 		1,              // spawnhealth
 		S_GHORIZ2,      // seestate

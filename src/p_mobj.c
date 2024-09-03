@@ -1340,6 +1340,7 @@ static void P_SceneryXYFriction(mobj_t *mo, fixed_t oldx, fixed_t oldy)
 		{
 			// Stolen from P_SpawnFriction
 			mo->friction = FRACUNIT - 0x100;
+			//mo->movefactor = ((0x10092 - mo->friction)*(0x70))/0x158;
 		}
 		else
 			mo->friction = ORIG_FRICTION;
@@ -1361,21 +1362,23 @@ static void P_XYFriction(mobj_t *mo, fixed_t oldx, fixed_t oldy)
 	player = mo->player;
 	if (player) // valid only if player avatar
 	{
-		if (FixedHypot(player->rmomx, player->rmomy) < FixedMul(STOPSPEED, mo->scale) && (K_GetForwardMove(player) == 0)
-			&& !(player->mo->standingslope && (!(player->mo->standingslope->flags & SL_NOPHYSICS)) /*&& (abs(player->mo->standingslope->zdelta) >= FRACUNIT/2)*/))
+		if (abs(player->rmomx) < FixedMul(STOPSPEED, mo->scale)
+		    && abs(player->rmomy) < FixedMul(STOPSPEED, mo->scale)
+		    && (!(player->cmd.forwardmove && !player->cmd.sidemove))
+			&& !(player->mo->standingslope && (!(player->mo->standingslope->flags & SL_NOPHYSICS)) && (abs(player->mo->standingslope->zdelta) >= FRACUNIT/2))
+				)
 		{
 			// if in a walking frame, stop moving
 			if (player->panim == PA_SLOW)
 			{
 				P_SetPlayerMobjState(mo, S_KART_STILL);
 			}
-
 			mo->momx = player->cmomx;
 			mo->momy = player->cmomy;
 		}
 		else
 		{
-			if (oldx == mo->x && oldy == mo->y)
+			if (oldx == mo->x && oldy == mo->y) // didn't go anywhere
 			{
 				mo->momx = FixedMul(mo->momx, ORIG_FRICTION);
 				mo->momy = FixedMul(mo->momy, ORIG_FRICTION);
@@ -1386,13 +1389,11 @@ static void P_XYFriction(mobj_t *mo, fixed_t oldx, fixed_t oldy)
 				mo->momy = FixedMul(mo->momy, mo->friction);
 			}
 
-			K_SetDefaultFriction(mo);
+			mo->friction = ORIG_FRICTION;
 		}
 	}
 	else
-	{
 		P_SceneryXYFriction(mo, oldx, oldy);
-	}
 }
 
 static void P_PushableCheckBustables(mobj_t *mo)

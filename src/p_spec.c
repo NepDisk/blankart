@@ -8018,9 +8018,21 @@ void T_Friction(friction_t *f)
 
 	sec = sectors + f->affectee;
 
-	// Get FOF control sector
+	// Get FOF control sector   (was "Make sure the sector type hasn't changed")
 	if (f->roverfriction)
+	//{
 		referrer = sectors + f->referrer;
+
+	/*	if (!(GETSECSPECIAL(referrer->special, 3) == 1
+			|| GETSECSPECIAL(referrer->special, 3) == 3))
+			return;
+	}
+	else
+	{
+		if (!(GETSECSPECIAL(sec->special, 3) == 1
+			|| GETSECSPECIAL(sec->special, 3) == 3))
+			return;
+	}*/
 
 	// Assign the friction value to players on the floor, non-floating,
 	// and clipped. Normally the object's friction value is kept at
@@ -8037,8 +8049,7 @@ void T_Friction(friction_t *f)
 		// apparently, all I had to do was comment out part of the next line and
 		// friction works for all mobj's
 		// (or at least MF_PUSHABLEs, which is all I care about anyway)
-		// Readded v1 kart condition - Nep
-		if (!(thing->flags & (MF_NOGRAVITY | MF_NOCLIP)) && thing->z == thing->floorz && (thing->player
+		if ((!(thing->flags & (MF_NOGRAVITY | MF_NOCLIP)) && thing->z == thing->floorz) && (thing->player
 			&& (thing->player->invincibilitytimer == 0 && thing->player->hyudorotimer == 0
 			&& thing->player->sneakertimer == 0 && thing->player->growshrinktimer <= 0)))
 		{
@@ -8096,9 +8107,13 @@ static void P_SpawnFriction(void)
 
 		movefactor = FixedDiv(ORIG_FRICTION, friction);
 		if (movefactor < FRACUNIT)
-			movefactor = 8*movefactor - 7*FRACUNIT;
+			movefactor = 19*movefactor - 18*FRACUNIT;
 		else
 			movefactor = FRACUNIT;
+		
+		// killough 8/28/98: prevent odd situations
+		if (movefactor < 32)
+			movefactor = 32;
 
 		Add_Friction(friction, movefactor, (INT32)(s-sectors), -1);
 
