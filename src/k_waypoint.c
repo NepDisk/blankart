@@ -1973,8 +1973,6 @@ static UINT32 K_SetupCircuitLength(void)
 	if ((mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE) == LF_SECTIONRACE)
 	{
 		path_t bestsprintpath = {0};
-
-		Z_Free(bestsprintpath.array);
 		const boolean useshortcuts = false;
 		const boolean huntbackwards = true;
 		const UINT32 traveldist = UINT32_MAX - UINT16_MAX; // Go as far back as possible. Not exactly UINT32_MAX to avoid possible overflow.
@@ -1991,6 +1989,7 @@ static UINT32 K_SetupCircuitLength(void)
 		{
 			startingwaypoint = (waypoint_t *)bestsprintpath.array[ bestsprintpath.numnodes - 1 ].nodedata;
 		}
+		Z_Free(bestsprintpath.array);
 		
 	}
 	else
@@ -1999,8 +1998,6 @@ static UINT32 K_SetupCircuitLength(void)
 		waypoint_t    fakefinishline  = *finishline;
 
 		path_t        bestcircuitpath = {0};
-
-		Z_Free(bestcircuitpath.array);
 		const boolean useshortcuts    = false;
 		const boolean huntbackwards   = false;
 
@@ -2014,7 +2011,7 @@ static UINT32 K_SetupCircuitLength(void)
 			// this instead would be the most ideal
 			startingwaypoint = finishline->nextwaypoints[0];
 		}
-		
+		Z_Free(bestcircuitpath.array);
 	}
 
 	return circuitlength;
