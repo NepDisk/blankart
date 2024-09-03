@@ -1468,8 +1468,8 @@ static boolean TextmapCount(size_t size)
 
 	// Check if namespace is valid.
 	tkn = M_TokenizerRead(0);
-	if (!fastcmp(tkn, "srb2")) // Would like to use "ringracers", but it turns off features in UZB.
-		CONS_Alert(CONS_WARNING, "Invalid namespace '%s', only 'srb2' is supported.\n", tkn);
+	if (!(fastcmp(tkn, "srb2") || fastcmp(tkn, "ringracers"))) // Would like to use "ringracers", but it turns off features in UZB.
+		CONS_Alert(CONS_WARNING, "Invalid namespace '%s', only 'srb2' or 'ringracers' is supported.\n", tkn);
 
 	while ((tkn = M_TokenizerRead(0)) && M_TokenizerGetEndPos() < size)
 	{
@@ -1915,6 +1915,23 @@ static void ParseTextmapThingParameter(UINT32 i, const char *param, const char *
 		if (argnum >= NUMMAPTHINGARGS)
 			return;
 		mapthings[i].args[argnum] = atol(val);
+	}
+	else if (fastncmp(param, "thingarg", 8) && strlen(param) > 8)
+	{
+		size_t argnum = atol(param + 8);
+		if (argnum >= NUMMAPTHINGARGS)
+			return;
+		mapthings[i].args[argnum] = atol(val);
+	}
+	else if (fastncmp(param, "thingstringarg", 14) && strlen(param) > 14)
+	{
+		size_t argnum = atol(param + 14);
+		if (argnum >= NUMMAPTHINGSTRINGARGS)
+			return;
+		size_t len = strlen(val);
+		mapthings[i].stringargs[argnum] = Z_Malloc(len + 1, PU_LEVEL, NULL);
+		M_Memcpy(mapthings[i].stringargs[argnum], val, len);
+		mapthings[i].stringargs[argnum][len] = '\0';
 	}
 }
 

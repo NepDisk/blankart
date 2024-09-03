@@ -12284,9 +12284,17 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 		// Ambush = double size (grounded) / half size (aerial)
 		if (!(mthing->args[2] & TMICF_INVERTSIZE) == !P_IsObjectOnGround(mobj))
 		{
-			mobj->extravalue1 = min(mobj->extravalue1 << 1, FixedDiv(MAPBLOCKSIZE, mobj->info->radius)); // don't make them larger than the blockmap can handle
+			mobj->extravalue1 <<= 1;
 			mobj->scalespeed <<= 1;
 		}
+
+		const fixed_t blimit = FixedDiv(MAPBLOCKSIZE, mobj->info->radius);
+		if (mobj->extravalue1 > blimit)
+		{
+			 // don't make them larger than the blockmap can handle
+			mobj->extravalue1 = blimit;
+		}
+
 		break;
 	}
 	case MT_AAZTREE_HELPER:

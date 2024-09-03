@@ -7328,17 +7328,22 @@ static boolean K_SetPlayerNextWaypoint(player_t *player)
 	Return:-
 		None
 --------------------------------------------------*/
-static void K_UpdateDistanceFromFinishLine(player_t *const player)
+static void K_UpdateDistanceFromFinishLine(player_t *player)
 {
 	if ((player != NULL) && (player->mo != NULL))
 	{
 		waypoint_t *finishline   = K_GetFinishLineWaypoint();
 
 		// nextwaypoint is now the waypoint that is in front of us
-		if (player->exiting || player->spectator)
+		if ((player->exiting && !(player->pflags & PF_NOCONTEST)) || player->spectator)
 		{
 			// Player has finished, we don't need to calculate this
 			player->distancetofinish = 0U;
+		}
+		else if (player->pflags & PF_NOCONTEST)
+		{
+			// We also don't need to calculate this, but there's also no need to destroy the data...
+			;
 		}
 		else if ((player->currentwaypoint != NULL) && (player->nextwaypoint != NULL) && (finishline != NULL))
 		{
@@ -7423,7 +7428,7 @@ static void K_UpdateDistanceFromFinishLine(player_t *const player)
 
 								bestPoint = pDist;
 
-								bestDist = 
+								bestDist =
 									P_AproxDistance(
 										(result.x >> FRACBITS) - (line[0].x >> FRACBITS),
 										(result.y >> FRACBITS) - (line[0].y >> FRACBITS));
@@ -7433,6 +7438,7 @@ static void K_UpdateDistanceFromFinishLine(player_t *const player)
 							}
 						}
 
+#if 0
 						if (cv_kartdebugwaypoints.value)
 						{
 							mobj_t *debugmobj = P_SpawnMobj(best.x, best.y, best.z, MT_SPARK);
@@ -7441,9 +7447,10 @@ static void K_UpdateDistanceFromFinishLine(player_t *const player)
 							debugmobj->frame &= ~FF_TRANSMASK;
 							debugmobj->frame |= FF_FULLBRIGHT; //FF_TRANS20
 
-							debugmobj->tics = 2;
+							debugmobj->tics = 1;
 							debugmobj->color = SKINCOLOR_BANANA;
 						}
+#endif
 
 						adddist = bestGScore;
 					}
@@ -7461,6 +7468,7 @@ static void K_UpdateDistanceFromFinishLine(player_t *const player)
 						adddist = (UINT32)disttowaypoint;
 					}
 					*/
+					Z_Free(pathBackwards.array);
 				}
 				/*
 				else
@@ -7491,6 +7499,7 @@ static void K_UpdateDistanceFromFinishLine(player_t *const player)
 				// correct we need to add to it the length of the entire circuit multiplied by the number of laps
 				// left after this one. This will give us the total distance to the finish line, and allow item
 				// distance calculation to work easily
+				const mapheader_t *mapheader = mapheaderinfo[gamemap - 1];
 				if ((mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE) == 0U)
 				{
 					const UINT8 numfulllapsleft = ((UINT8)numlaps - player->laps);

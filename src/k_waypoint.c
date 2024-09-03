@@ -350,6 +350,7 @@ static void K_CompareOverlappingWaypoint
 	const boolean huntbackwards = false;
 	boolean pathfindsuccess = false;
 	path_t pathtofinish = {0};
+	Z_Free(pathtofinish.array);
 
 	if (K_GetWaypointIsShortcut(*bestwaypoint) == false
 		&& K_GetWaypointIsShortcut(checkwaypoint) == true)
@@ -368,8 +369,6 @@ static void K_CompareOverlappingWaypoint
 			*bestwaypoint = checkwaypoint;
 			*bestfindist = pathtofinish.totaldist;
 		}
-
-		Z_Free(pathtofinish.array);
 	}
 }
 
@@ -1975,6 +1974,7 @@ static UINT32 K_SetupCircuitLength(void)
 	{
 		path_t bestsprintpath = {0};
 
+		Z_Free(bestsprintpath.array);
 		const boolean useshortcuts = false;
 		const boolean huntbackwards = true;
 		const UINT32 traveldist = UINT32_MAX - UINT16_MAX; // Go as far back as possible. Not exactly UINT32_MAX to avoid possible overflow.
@@ -1992,7 +1992,6 @@ static UINT32 K_SetupCircuitLength(void)
 			startingwaypoint = (waypoint_t *)bestsprintpath.array[ bestsprintpath.numnodes - 1 ].nodedata;
 		}
 		
-		Z_Free(bestsprintpath.array);
 	}
 	else
 	{
@@ -2001,6 +2000,7 @@ static UINT32 K_SetupCircuitLength(void)
 
 		path_t        bestcircuitpath = {0};
 
+		Z_Free(bestcircuitpath.array);
 		const boolean useshortcuts    = false;
 		const boolean huntbackwards   = false;
 
@@ -2015,7 +2015,6 @@ static UINT32 K_SetupCircuitLength(void)
 			startingwaypoint = finishline->nextwaypoints[0];
 		}
 		
-		Z_Free(bestcircuitpath.array);
 	}
 
 	return circuitlength;
