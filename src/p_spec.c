@@ -8215,9 +8215,21 @@ void T_Friction(friction_t *f)
 
 	sec = sectors + f->affectee;
 
-	// Get FOF control sector
+	// Get FOF control sector   (was "Make sure the sector type hasn't changed")
 	if (f->roverfriction)
+	//{
 		referrer = sectors + f->referrer;
+
+	/*	if (!(GETSECSPECIAL(referrer->special, 3) == 1
+			|| GETSECSPECIAL(referrer->special, 3) == 3))
+			return;
+	}
+	else
+	{
+		if (!(GETSECSPECIAL(sec->special, 3) == 1
+			|| GETSECSPECIAL(sec->special, 3) == 3))
+			return;
+	}*/
 
 	// Assign the friction value to players on the floor, non-floating,
 	// and clipped. Normally the object's friction value is kept at
@@ -8234,8 +8246,7 @@ void T_Friction(friction_t *f)
 		// apparently, all I had to do was comment out part of the next line and
 		// friction works for all mobj's
 		// (or at least MF_PUSHABLEs, which is all I care about anyway)
-		// Readded v1 kart condition - Nep
-		if (!(thing->flags & (MF_NOGRAVITY | MF_NOCLIP)) && thing->z == thing->floorz && (thing->player
+		if ((!(thing->flags & (MF_NOGRAVITY | MF_NOCLIP)) && thing->z == thing->floorz) && (thing->player
 			&& (thing->player->invincibilitytimer == 0 && thing->player->hyudorotimer == 0
 			&& thing->player->sneakertimer == 0 && thing->player->growshrinktimer <= 0)))
 		{
@@ -8277,7 +8288,7 @@ static void P_SpawnFriction(void)
 	line_t *l = lines;
 	mtag_t tag;
 	register INT32 s;
-	fixed_t strength; // frontside texture offset controls magnitude
+	fixed_t strength; // frontside texture offset controls magnitude   //fixed_t length; // line length controls magnitude
 	fixed_t friction; // friction value to be applied during movement
 	INT32 movefactor; // applied to each player move to simulate inertia
 
@@ -8285,11 +8296,13 @@ static void P_SpawnFriction(void)
 		if (l->special == 540)
 		{
 			tag = Tag_FGet(&l->tags);
+			//length = P_AproxDistance(l->dx, l->dy)>>FRACBITS;
+			//friction = (0x1EB8*length)/0x80 + 0xD000;
 			strength = sides[l->sidenum[0]].textureoffset>>FRACBITS;
 			if (strength > 0) // sludge
 				strength = strength*2; // otherwise, the maximum sludginess value is +967...
 
-			// The following might seem odd. At the time of movement,
+			// The following check might seem odd. At the time of movement,
 			// the move distance is multiplied by 'friction/0x10000', so a
 			// higher friction value actually means 'less friction'.
 			friction = ORIG_FRICTION - (0x1EB8*strength)/0x80; // ORIG_FRICTION is 0xE800
@@ -8299,11 +8312,17 @@ static void P_SpawnFriction(void)
 			if (friction < 0)
 				friction = 0;
 
+			//if (friction > ORIG_FRICTION) // ice
+			//	movefactor = ((0x10092 - friction)*(0x70))/0x158;
 			movefactor = FixedDiv(ORIG_FRICTION, friction);
 			if (movefactor < FRACUNIT)
 				movefactor = 19*movefactor - 18*FRACUNIT;
 			else
-				movefactor = FRACUNIT;
+				movefactor = FRACUNIT; //movefactor = ((friction - 0xDB34)*(0xA))/0x80;
+
+			// killough 8/28/98: prevent odd situations
+			if (movefactor < 32)
+				movefactor = 32;
 
 			TAG_ITER_SECTORS(tag, s)
 				Add_Friction(friction, movefactor, s, -1);
