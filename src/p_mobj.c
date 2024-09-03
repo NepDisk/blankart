@@ -1613,6 +1613,8 @@ void P_XYMovement(mobj_t *mo)
 		}
 		else if (P_MobjWasRemoved(mo))
 			return;
+		
+		P_PushSpecialLine(blockingline, mo);
 
 		//{ SRB2kart - Jawz
 		if (mo->type == MT_JAWZ || mo->type == MT_JAWZ_DUD)
@@ -4983,6 +4985,23 @@ boolean P_IsKartItem(INT32 type)
 		default:
 			return P_IsKartFieldItem(type);
 	}
+}
+
+boolean K_IsMissileOrKartItem(mobj_t *mo)
+{
+	if (mo->flags & MF_MISSILE)
+	{
+		// It's already a missile!
+		return true;
+	}
+
+	if (mo->type == MT_SPB)
+	{
+		// Not considered a field item, so manually include.
+		return true;
+	}
+
+	return P_IsKartFieldItem(mo->type);
 }
 
 // This item can die in death sectors. There may be some

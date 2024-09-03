@@ -530,6 +530,7 @@ typedef struct line_s
 
 	// Animation related.
 	UINT32 flags;
+	UINT32 activation;
 	INT16 special;
 	taglist_t tags;
 	INT32 args[NUMLINEARGS];
