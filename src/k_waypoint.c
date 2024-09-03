@@ -30,11 +30,15 @@ static const UINT32 SPARKLES_PER_CONNECTION = 16U;
 #define CLOSEDSET_BASE_SIZE  (256U)
 #define NODESARRAY_BASE_SIZE (256U)
 
-static waypoint_t *waypointheap = NULL;
+static waypoint_t *waypointheap  = NULL;
 static waypoint_t *firstwaypoint = NULL;
 static waypoint_t *finishline    = NULL;
+static waypoint_t *startingwaypoint = NULL;
 
 static UINT32 circuitlength = 0U;
+
+#define BASE_TRACK_COMPLEXITY (-5000) // Arbritrary, vibes-based value
+static INT32 trackcomplexity = 0;
 
 static size_t numwaypoints       = 0U;
 static size_t numwaypointmobjs   = 0U;
@@ -51,6 +55,16 @@ static size_t basenodesarraysize = NODESARRAY_BASE_SIZE;
 waypoint_t *K_GetFinishLineWaypoint(void)
 {
 	return finishline;
+}
+
+/*--------------------------------------------------
+	waypoint_t *K_GetStartingWaypoint(void)
+
+		See header file for description.
+--------------------------------------------------*/
+waypoint_t *K_GetStartingWaypoint(void)
+{
+	return startingwaypoint;
 }
 
 /*--------------------------------------------------
@@ -236,6 +250,29 @@ INT32 K_GetWaypointID(waypoint_t *waypoint)
 }
 
 /*--------------------------------------------------
+	waypoint_t *K_GetWaypointFromID(INT32 waypointID)
+
+		See header file for description.
+--------------------------------------------------*/
+waypoint_t *K_GetWaypointFromID(INT32 waypointID)
+{
+	waypoint_t *waypoint = NULL;
+	size_t i = SIZE_MAX;
+
+	for (i = 0; i < numwaypoints; i++)
+	{
+		waypoint = &waypointheap[i];
+
+		if (K_GetWaypointID(waypoint) == waypointID)
+		{
+			return waypoint;
+		}
+	}
+
+	return NULL;
+}
+
+/*--------------------------------------------------
 	UINT32 K_GetCircuitLength(void)
 
 		See header file for description.
@@ -243,6 +280,16 @@ INT32 K_GetWaypointID(waypoint_t *waypoint)
 UINT32 K_GetCircuitLength(void)
 {
 	return circuitlength;
+}
+
+/*--------------------------------------------------
+	INT32 K_GetTrackComplexity(void)
+
+		See header file for description.
+--------------------------------------------------*/
+INT32 K_GetTrackComplexity(void)
+{
+	return trackcomplexity;
 }
 
 /*--------------------------------------------------
@@ -345,7 +392,7 @@ waypoint_t *K_GetBestWaypointForMobj(mobj_t *const mobj, waypoint_t *const hint)
 		fixed_t    checkdist      = INT32_MAX;
 		fixed_t    bestfindist    = INT32_MAX;
 
-		void sort_waypoint(waypoint_t *const checkwaypoint)
+		void sort_waypoint (waypoint_t *const checkwaypoint)
 		{
 			if (!K_GetWaypointIsEnabled(checkwaypoint))
 			{
@@ -633,7 +680,7 @@ static void K_DebugWaypointDrawRadius(waypoint_t *const waypoint)
 
 	spawnX = waypointmobj->x;
 	spawnY = waypointmobj->y;
-	spawnZ = waypointmobj->z + 16*mapobjectscale;
+	spawnZ = waypointmobj->z;
 
 	radiusOrb = P_SpawnMobj(spawnX, spawnY, spawnZ, MT_SPARK);
 
@@ -641,7 +688,7 @@ static void K_DebugWaypointDrawRadius(waypoint_t *const waypoint)
 	radiusOrb->tics = 1;
 
 	radiusOrb->frame &= ~FF_TRANSMASK;
-	radiusOrb->frame |= FF_FULLBRIGHT;
+	radiusOrb->frame |= FF_FULLBRIGHT|FF_REVERSESUBTRACT;
 	radiusOrb->color = SKINCOLOR_PURPLE;
 
 	radiusOrb->destscale = FixedDiv(waypointmobj->radius, spriteRadius);
@@ -1133,6 +1180,45 @@ static boolean K_WaypointPathfindReachedEnd(void *data, void *setupData)
 }
 
 /*--------------------------------------------------
+	static boolean K_WaypointPathfindNextValid(void *data, void *setupData)
+
+		Returns if the current waypoint data has a next waypoint.
+
+	Input Arguments:-
+		data - Should point to a pathfindnode_t to compare
+		setupData - Should point to the pathfindsetup_t to compare
+
+	Return:-
+		True if the waypoint has a next waypoint, false otherwise.
+--------------------------------------------------*/
+static boolean K_WaypointPathfindNextValid(void *data, void *setupData)
+{
+	boolean nextValid = false;
+
+	if (data == NULL || setupData == NULL)
+	{
+		CONS_Debug(DBG_GAMELOGIC, "K_WaypointPathfindNextValid received NULL data.\n");
+	}
+	else
+	{
+		pathfindnode_t *node = (pathfindnode_t *)data;
+		pathfindsetup_t *setup = (pathfindsetup_t *)setupData;
+		waypoint_t *wp = (waypoint_t *)node->nodedata;
+
+		if (setup->getconnectednodes == K_WaypointPathfindGetPrev)
+		{
+			nextValid = (wp->numprevwaypoints > 0U);
+		}
+		else
+		{
+			nextValid = (wp->numnextwaypoints > 0U);
+		}
+	}
+
+	return nextValid;
+}
+
+/*--------------------------------------------------
 	static boolean K_WaypointPathfindReachedGScore(void *data, void *setupData)
 
 		Returns if the current waypoint data reaches our end G score.
@@ -1156,11 +1242,47 @@ static boolean K_WaypointPathfindReachedGScore(void *data, void *setupData)
 	{
 		pathfindnode_t *node = (pathfindnode_t *)data;
 		pathfindsetup_t *setup = (pathfindsetup_t *)setupData;
+		boolean nextValid = K_WaypointPathfindNextValid(data, setupData);
 
-		scoreReached = (node->gscore >= setup->endgscore);
+		scoreReached = (node->gscore >= setup->endgscore) || (nextValid == false);
 	}
 
 	return scoreReached;
+}
+
+/*--------------------------------------------------
+	static boolean K_WaypointPathfindReachedGScoreSpawnable(void *data, void *setupData)
+
+		Returns if the current waypoint data reaches our end G score.
+
+	Input Arguments:-
+		data - Should point to a pathfindnode_t to compare
+		setupData - Should point to the pathfindsetup_t to compare
+
+	Return:-
+		True if the waypoint reached the G score, false otherwise.
+--------------------------------------------------*/
+static boolean K_WaypointPathfindReachedGScoreSpawnable(void *data, void *setupData)
+{
+	boolean scoreReached = false;
+	boolean spawnable = false;
+
+	if (data == NULL || setupData == NULL)
+	{
+		CONS_Debug(DBG_GAMELOGIC, "K_WaypointPathfindReachedGScoreSpawnable received NULL data.\n");
+	}
+	else
+	{
+		pathfindnode_t *node = (pathfindnode_t *)data;
+		pathfindsetup_t *setup = (pathfindsetup_t *)setupData;
+		waypoint_t *wp = (waypoint_t *)node->nodedata;
+		boolean nextValid = K_WaypointPathfindNextValid(data, setupData);
+
+		scoreReached = (node->gscore >= setup->endgscore) || (nextValid == false);
+		spawnable = K_GetWaypointIsSpawnpoint(wp);
+	}
+
+	return (scoreReached && spawnable);
 }
 
 /*--------------------------------------------------
@@ -1279,13 +1401,6 @@ boolean K_PathfindThruCircuit(
 			"K_PathfindThruCircuit: sourcewaypoint with ID %d has no next waypoint\n",
 			K_GetWaypointID(sourcewaypoint));
 	}
-	else if (((huntbackwards == false) && (finishline->numprevwaypoints == 0))
-		|| ((huntbackwards == true) && (finishline->numnextwaypoints == 0)))
-	{
-		CONS_Debug(DBG_GAMELOGIC,
-			"K_PathfindThruCircuit: finishline with ID %d has no previous waypoint\n",
-			K_GetWaypointID(finishline));
-	}
 	else
 	{
 		pathfindsetup_t            pathfindsetup   = {0};
@@ -1294,6 +1409,82 @@ boolean K_PathfindThruCircuit(
 		getnodeheuristicfunc       heuristicfunc   = K_WaypointPathfindGetHeuristic;
 		getnodetraversablefunc     traversablefunc = K_WaypointPathfindTraversableNoShortcuts;
 		getpathfindfinishedfunc    finishedfunc    = K_WaypointPathfindReachedGScore;
+
+		if (huntbackwards)
+		{
+			nextnodesfunc = K_WaypointPathfindGetPrev;
+			nodecostsfunc = K_WaypointPathfindGetPrevCosts;
+		}
+
+		if (useshortcuts)
+		{
+			traversablefunc = K_WaypointPathfindTraversableAllEnabled;
+		}
+
+		pathfindsetup.opensetcapacity    = K_GetOpensetBaseSize();
+		pathfindsetup.closedsetcapacity  = K_GetClosedsetBaseSize();
+		pathfindsetup.nodesarraycapacity = K_GetNodesArrayBaseSize();
+		pathfindsetup.startnodedata      = sourcewaypoint;
+		pathfindsetup.endnodedata        = finishline;
+		pathfindsetup.endgscore          = traveldistance;
+		pathfindsetup.getconnectednodes  = nextnodesfunc;
+		pathfindsetup.getconnectioncosts = nodecostsfunc;
+		pathfindsetup.getheuristic       = heuristicfunc;
+		pathfindsetup.gettraversable     = traversablefunc;
+		pathfindsetup.getfinished        = finishedfunc;
+
+		pathfound = K_PathfindAStar(returnpath, &pathfindsetup);
+
+		K_UpdateOpensetBaseSize(pathfindsetup.opensetcapacity);
+		K_UpdateClosedsetBaseSize(pathfindsetup.closedsetcapacity);
+		K_UpdateNodesArrayBaseSize(pathfindsetup.nodesarraycapacity);
+	}
+
+	return pathfound;
+}
+
+/*--------------------------------------------------
+	boolean K_PathfindThruCircuitSpawnable(
+		waypoint_t *const sourcewaypoint,
+		const UINT32      traveldistance,
+		path_t *const     returnpath,
+		const boolean     useshortcuts,
+		const boolean     huntbackwards)
+
+		See header file for description.
+--------------------------------------------------*/
+boolean K_PathfindThruCircuitSpawnable(
+	waypoint_t *const sourcewaypoint,
+	const UINT32      traveldistance,
+	path_t *const     returnpath,
+	const boolean     useshortcuts,
+	const boolean     huntbackwards)
+{
+	boolean pathfound = false;
+
+	if (sourcewaypoint == NULL)
+	{
+		CONS_Debug(DBG_GAMELOGIC, "NULL sourcewaypoint in K_PathfindThruCircuitSpawnable.\n");
+	}
+	else if (finishline == NULL)
+	{
+		CONS_Debug(DBG_GAMELOGIC, "NULL finishline in K_PathfindThruCircuitSpawnable.\n");
+	}
+	else if (((huntbackwards == false) && (sourcewaypoint->numnextwaypoints == 0))
+		|| ((huntbackwards == true) && (sourcewaypoint->numprevwaypoints == 0)))
+	{
+		CONS_Debug(DBG_GAMELOGIC,
+			"K_PathfindThruCircuitSpawnable: sourcewaypoint with ID %d has no next waypoint\n",
+			K_GetWaypointID(sourcewaypoint));
+	}
+	else
+	{
+		pathfindsetup_t            pathfindsetup   = {0};
+		getconnectednodesfunc      nextnodesfunc   = K_WaypointPathfindGetNext;
+		getnodeconnectioncostsfunc nodecostsfunc   = K_WaypointPathfindGetNextCosts;
+		getnodeheuristicfunc       heuristicfunc   = K_WaypointPathfindGetHeuristic;
+		getnodetraversablefunc     traversablefunc = K_WaypointPathfindTraversableNoShortcuts;
+		getpathfindfinishedfunc    finishedfunc    = K_WaypointPathfindReachedGScoreSpawnable;
 
 		if (huntbackwards)
 		{
@@ -1782,13 +1973,34 @@ static UINT32 K_SetupCircuitLength(void)
 	// line places people correctly relative to each other
 	if ((mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE) == LF_SECTIONRACE)
 	{
-		circuitlength = 0U;
+		path_t bestsprintpath = {0};
+
+		const boolean useshortcuts = false;
+		const boolean huntbackwards = true;
+		const UINT32 traveldist = UINT32_MAX - UINT16_MAX; // Go as far back as possible. Not exactly UINT32_MAX to avoid possible overflow.
+
+		boolean pathfindsuccess = K_PathfindThruCircuit(
+			finishline, traveldist,
+			&bestsprintpath,
+			useshortcuts, huntbackwards
+		);
+
+		circuitlength = bestsprintpath.totaldist;
+
+		if (pathfindsuccess == true)
+		{
+			startingwaypoint = (waypoint_t *)bestsprintpath.array[ bestsprintpath.numnodes - 1 ].nodedata;
+		}
+		
+		Z_Free(bestsprintpath.array);
 	}
 	else
 	{
 		// Create a fake finishline waypoint, then try and pathfind to the finishline from it
 		waypoint_t    fakefinishline  = *finishline;
+
 		path_t        bestcircuitpath = {0};
+
 		const boolean useshortcuts    = false;
 		const boolean huntbackwards   = false;
 
@@ -1796,6 +2008,13 @@ static UINT32 K_SetupCircuitLength(void)
 
 		circuitlength = bestcircuitpath.totaldist;
 
+		if (finishline->numnextwaypoints > 0)
+		{
+			// TODO: Implementing a version of the fakefinishline hack for
+			// this instead would be the most ideal
+			startingwaypoint = finishline->nextwaypoints[0];
+		}
+		
 		Z_Free(bestcircuitpath.array);
 	}
 
@@ -1996,8 +2215,7 @@ static waypoint_t *K_SetupWaypoint(mobj_t *const mobj)
 			}
 			else
 			{
-				CONS_Alert(
-					CONS_WARNING, "Waypoint with ID %d has no next waypoint.\n", K_GetWaypointID(thiswaypoint));
+				CONS_Debug(DBG_SETUP, "Waypoint with ID %d has no next waypoint.\n", K_GetWaypointID(thiswaypoint));
 			}
 		}
 		else
@@ -2107,6 +2325,7 @@ boolean K_SetupWaypointList(void)
 			// Loop through the waypointcap here so that all waypoints are added to the heap, and allow easier debugging
 			for (waypointmobj = waypointcap; waypointmobj; waypointmobj = waypointmobj->tracer)
 			{
+				waypointmobj->cusval = (INT32)numwaypoints;
 				K_SetupWaypoint(waypointmobj);
 			}
 
@@ -2125,11 +2344,15 @@ boolean K_SetupWaypointList(void)
 					finishline = firstwaypoint;
 				}
 
-				if (K_SetupCircuitLength() == 0
-					&& ((mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE) != LF_SECTIONRACE))
+				if (K_SetupCircuitLength() == 0)
 				{
 					CONS_Alert(CONS_ERROR, "Circuit track waypoints do not form a circuit.\n");
 				}
+
+				/*if (startingwaypoint != NULL)
+				{
+					K_CalculateTrackComplexity();
+				}*/
 
 				setupsuccessful = true;
 			}
@@ -2149,9 +2372,11 @@ void K_ClearWaypoints(void)
 	waypointheap     = NULL;
 	firstwaypoint    = NULL;
 	finishline       = NULL;
+	startingwaypoint = NULL;
 	numwaypoints     = 0U;
 	numwaypointmobjs = 0U;
 	circuitlength    = 0U;
+	trackcomplexity  = 0U;
 }
 
 /*--------------------------------------------------
