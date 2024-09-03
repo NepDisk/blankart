@@ -7536,8 +7536,8 @@ static void K_UpdatePlayerWaypoints(player_t *const player)
 	boolean updaterespawn = K_SetPlayerNextWaypoint(player);
 
 	// Update prev value (used for grief prevention code)
-	player->distancetofinishprev = player->distancetofinish;
 	K_UpdateDistanceFromFinishLine(player);
+	player->distancetofinishprev = player->distancetofinish;
 
 	// Respawning should be a full reset.
 	UINT32 delta = u32_delta(player->distancetofinish, player->distancetofinishprev);
