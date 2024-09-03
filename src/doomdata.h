@@ -220,6 +220,7 @@ typedef struct
 	UINT8 extrainfo;
 	taglist_t tags;
 	fixed_t scale;
+	fixed_t spritexscale, spriteyscale;
 	INT32 args[NUMMAPTHINGARGS];
 	char *stringargs[NUMMAPTHINGSTRINGARGS];
 	UINT8 layer; // FOF layer to spawn on, see P_GetMobjSpawnHeight
