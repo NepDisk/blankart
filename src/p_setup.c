@@ -6316,6 +6316,13 @@ static void P_ConvertBinaryThingTypes(void)
 		case 409: //Extra life monitor
 			mapthings[i].args[2] = !(mapthings[i].options & (MTF_AMBUSH|MTF_OBJECTSPECIAL));
 			break;
+		case 462: //Balloon
+			if (mapthings[i].angle > 0)
+			{
+				P_WriteSkincolor(((mapthings[i].angle - 1) % (numskincolors - 1)) + 1, &mapthings[i].stringargs[0]);
+			}
+			mapthings[i].args[0] = !!(mapthings[i].options & MTF_AMBUSH);
+			break;
 		case 500: //Air bubble patch
 			mapthings[i].args[0] = !!(mapthings[i].options & MTF_AMBUSH);
 			break;
@@ -6364,24 +6371,19 @@ static void P_ConvertBinaryThingTypes(void)
 			mapthings[i].args[0] = !!(mapthings[i].options & MTF_AMBUSH);
 			mapthings[i].args[1] = !!(mapthings[i].options & MTF_OBJECTSPECIAL);
 			break;
-		case 543: //Balloon
-			if (mapthings[i].angle > 0)
-			{
-				P_WriteSkincolor(((mapthings[i].angle - 1) % (numskincolors - 1)) + 1, &mapthings[i].stringargs[0]);
-			}
-			mapthings[i].args[0] = !!(mapthings[i].options & MTF_AMBUSH);
-			break;
 		case 555: //Diagonal yellow spring
 		case 556: //Diagonal red spring
 		case 557: //Diagonal blue spring
+		case 558: //Diagonal grey spring
 			if (mapthings[i].options & MTF_OBJECTSPECIAL)
 				mapthings[i].args[0] |= TMDS_NOGRAVITY;
 			if (mapthings[i].options & MTF_AMBUSH)
 				mapthings[i].args[0] |= TMDS_ROTATEEXTRA;
 			break;
-		case 558: //Horizontal yellow spring
-		case 559: //Horizontal red spring
-		case 560: //Horizontal blue spring
+		case 559: //Horizontal yellow spring
+		case 560: //Horizontal red spring
+		case 561: //Horizontal blue spring
+		case 562: //Horizontal grey spring
 			mapthings[i].args[0] = !(mapthings[i].options & MTF_AMBUSH);
 			break;
 		case 700: //Water ambience A
