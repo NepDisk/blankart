@@ -3431,6 +3431,13 @@ static void K_drawKartMinimap(void)
 	if (r_splitscreen < 2) // 1/2P right aligned
 	{
 		splitflags = (V_SNAPTORIGHT);
+		const tic_t length = TICRATE/2;
+
+		if (!lt_exitticker)
+			return;
+		if (lt_exitticker < length)
+			minimaptrans = (((INT32)lt_exitticker)*minimaptrans)/((INT32)length);
+		
 	}
 	else if (r_splitscreen == 3) // 4P centered
 	{
