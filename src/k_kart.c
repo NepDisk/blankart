@@ -8000,7 +8000,7 @@ void K_KartLegacyUpdatePosition(player_t *player)
 				player->nextcheck = players[i].nextcheck = 0;
 
 				// This checks every thing on the map, and looks for MT_BOSS3WAYPOINT (the thing we're using for checkpoint wp's, for now)
-				for (mo = waypointcap; mo != NULL; mo = mo->tracer)
+				for (mo = boss3cap; mo != NULL; mo = mo->tracer)
 				{
 					pmo = P_AproxDistance(P_AproxDistance(	mo->x - player->mo->x,
 															mo->y - player->mo->y),
@@ -8068,35 +8068,25 @@ void K_KartLegacyUpdatePosition(player_t *player)
 void K_UpdateAllPlayerPositions(void)
 {
 	INT32 i;
-	if (numbosswaypoints == 0)
+	// First loop: Ensure all players' distance to the finish line are all accurate
+	for (i = 0; i < MAXPLAYERS; i++)
 	{
-		// First loop: Ensure all players' distance to the finish line are all accurate
-		for (i = 0; i < MAXPLAYERS; i++)
+		player_t *player = &players[i];
+		if (!playeringame[i] || player->spectator || !player->mo || P_MobjWasRemoved(player->mo))
 		{
-			player_t *player = &players[i];
-			if (!playeringame[i] || player->spectator || !player->mo || P_MobjWasRemoved(player->mo))
-			{
-				continue;
-			}
-
-			K_UpdatePlayerWaypoints(player);
+			continue;
 		}
 
-		// Second loop: Ensure all player positions reflect everyone's distances
-		for (i = 0; i < MAXPLAYERS; i++)
-		{
-			if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
-			{
-				K_KartUpdatePosition(&players[i]);
-			}
-		}
+		K_UpdatePlayerWaypoints(player);
 	}
-	else
+
+	// Second loop: Ensure all player positions reflect everyone's distances
+	for (i = 0; i < MAXPLAYERS; i++)
 	{
-		// Use legacy postion update code from v1
-		for (i = 0; i < MAXPLAYERS; i++)
+		if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
 		{
 			K_KartLegacyUpdatePosition(&players[i]);
+			K_KartUpdatePosition(&players[i]);
 		}
 	}
 }

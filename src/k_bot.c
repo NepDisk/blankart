@@ -181,7 +181,7 @@ void K_UpdateMatchRaceBots(void)
 			wantedbots = 0;
 		}
 		
-		if (numbosswaypoints > 0)
+		if (numbosswaypoints > 0 && !waypointcap)
 		{
 			CONS_Alert(CONS_ERROR, "Bots do not work on maps using the legacy checkpoint system.\nPlease consider using waypoints instead if bot support is desired!\n");
 		}

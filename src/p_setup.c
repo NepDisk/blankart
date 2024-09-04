@@ -7972,16 +7972,17 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	// The waypoint data that's in PU_LEVEL needs to be reset back to 0/NULL now since PU_LEVEL was cleared
 	K_ClearWaypoints();
 
-	// Load the waypoints please!
+	// Load the ccheckpoints and waypoints please!
 	if (gametyperules & GTR_CIRCUIT && gamestate != GS_TITLESCREEN)
 	{
-		if (numbosswaypoints == 0)
-		{
+
 			if ((K_SetupWaypointList() == false))
 			{
-				CONS_Alert(CONS_ERROR, "Waypoints were not able to be setup and legacy checkpoints do not exist! Player positions will not work correctly.\n");
+				if (numbosswaypoints == 0)
+				{
+					CONS_Alert(CONS_ERROR, "Waypoints were not able to be setup and legacy checkpoints do not exist! Player positions will not work correctly.\n");
+				}
 			}
-		}
 	}
 
 #ifdef HWRENDER // not win32 only 19990829 by Kin

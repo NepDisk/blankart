@@ -1757,7 +1757,7 @@ typedef enum
 	MD2_SPRITEYOFFSET = 1<<21,
 	MD2_FLOORSPRITESLOPE = 1<<22,
 	MD2_DISPOFFSET   = 1<<23,
-	//free       = 1<<24,
+	MD2_BOSS3CAP  = 1<<24,
 	MD2_WAYPOINTCAP  = 1<<25,
 	MD2_KITEMCAP     = 1<<26,
 	MD2_ITNEXT       = 1<<27,
@@ -2003,6 +2003,8 @@ static void SaveMobjThinker(const thinker_t *th, const UINT8 type)
 	}
 	if (mobj->dispoffset)
 		diff2 |= MD2_DISPOFFSET;
+	if (mobj == boss3cap)
+		diff2 |= MD2_WAYPOINTCAP;
 	if (mobj == waypointcap)
 		diff2 |= MD2_WAYPOINTCAP;
 	if (mobj == kitemcap)
@@ -3412,6 +3414,9 @@ static thinker_t* LoadMobjThinker(actionf_p1 thinker)
 		P_InitSkyboxPoint(mobj, mobj->spawnpoint);
 	}
 
+	if (diff2 & MD2_BOSS3CAP)
+		P_SetTarget(&boss3cap, mobj);
+	
 	if (diff2 & MD2_WAYPOINTCAP)
 		P_SetTarget(&waypointcap, mobj);
 
@@ -4060,7 +4065,7 @@ static void P_NetUnArchiveThinkers(void)
 	P_InitThinkers();
 
 	// Oh my god don't blast random memory with our reference counts.
-	waypointcap = kitemcap = NULL;
+	boss3cap = waypointcap = kitemcap = NULL;
 	for (i = 0; i <= 15; i++)
 	{
 		skyboxcenterpnts[i] = skyboxviewpnts[i] = NULL;

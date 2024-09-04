@@ -197,6 +197,7 @@ void Command_CountMobjs_f(void)
 void P_InitThinkers(void)
 {
 	UINT8 i;
+	boss3cap = NULL;
 	waypointcap = NULL;
 	kitemcap = NULL;
 	for (i = 0; i < NUM_THINKERLISTS; i++)
