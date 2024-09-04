@@ -1953,7 +1953,6 @@ static void ParseTextmapThingParameter(UINT32 i, const char *param, const char *
 	// Flags
 	else if (fastcmp(param, "flip") && fastcmp("true", val))
 		mapthings[i].options |= MTF_OBJECTFLIP;
-
 	//else if (fastcmp(param, "special"))
 		//mapthings[i].special = atol(val);
 	else if (fastcmp(param, "foflayer"))

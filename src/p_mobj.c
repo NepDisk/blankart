@@ -38,6 +38,7 @@
 #include "p_slopes.h"
 #include "f_finale.h"
 #include "m_cond.h"
+#include "m_aatree.h"
 
 // SRB2kart
 #include "k_kart.h"
@@ -11202,19 +11203,96 @@ void P_MovePlayerToStarpost(INT32 playernum)
 	//	leveltime = p->starposttime;
 }
 
-fixed_t P_GetMobjSpawnHeight(const mobjtype_t mobjtype, const fixed_t x, const fixed_t y, const fixed_t dz, const fixed_t offset, const boolean flip, const fixed_t scale)
+fixed_t P_GetMobjSpawnHeight(
+    const mobjtype_t mobjtype,
+    const fixed_t x,
+    const fixed_t y,
+    const fixed_t dz,
+    const fixed_t offset,
+    const size_t layer,
+    const boolean flip,
+    const fixed_t scale
+)
 {
-	const subsector_t *ss = R_PointInSubsector(x, y);
+    const fixed_t finalScale = FixedMul(scale, mapobjectscale);
 
-	// Axis objects snap to the floor.
-	if (mobjtype == MT_AXIS || mobjtype == MT_AXISTRANSFER || mobjtype == MT_AXISTRANSFERLINE)
-		return ONFLOORZ;
+    const fixed_t finalZOffset = flip
+        ? -(dz) - FixedMul(finalScale, offset + mobjinfo[mobjtype].height)
+        : +(dz) + FixedMul(finalScale, offset);
 
-	// Establish height.
-	if (flip)
-		return P_GetSectorCeilingZAt(ss->sector, x, y) - dz - FixedMul(scale, offset + mobjinfo[mobjtype].height);
-	else
-		return P_GetSectorFloorZAt(ss->sector, x, y) + dz + FixedMul(scale, offset);
+    const sector_t* sector = R_PointInSubsector(x, y)->sector;
+
+    // Axis objects snap to the floor.
+    if (mobjtype == MT_AXIS || mobjtype == MT_AXISTRANSFER || mobjtype == MT_AXISTRANSFERLINE)
+        return ONFLOORZ;
+
+    if (layer != 0)
+    {
+        size_t heights_count[MAXFFLOORS] = {0};
+        size_t heights_i = 0;
+        size_t heights_size = 0;
+
+        // multiset is a container that automatically sorts
+        // each insertion. It only contains unique values, so
+        // two FOFs at the exact same height only count as one
+        // layer.
+        aatree_t *heights = M_AATreeAlloc(AATREE_ZUSER);
+
+        fixed_t (*get_height)(const ffloor_t*, fixed_t, fixed_t) = flip ? P_GetFFloorBottomZAt : P_GetFFloorTopZAt;
+
+        for (ffloor_t* rover = sector->ffloors; rover; rover = rover->next)
+        {
+            fixed_t height = get_height(rover, x, y);
+
+            size_t *count = M_AATreeGet(heights, height);
+
+            if (!count)
+            {
+                count = &heights_count[heights_i++];
+
+                M_AATreeSet(heights, height, count);
+            }
+
+            ++heights_size;
+
+            ++(*count);
+        }
+
+        if (heights_size)
+        {
+            aatree_iterator_t *it;
+
+            if (flip)
+                it = M_AATreeBegin(heights);
+            else
+                it = M_AATreeRBegin(heights);
+
+            size_t advance = min(layer, heights_size - 1);
+
+            while (advance--)
+            {
+                size_t *count = M_AATreeIteratorValue(it);
+
+                --(*count);
+
+                if (*count == 0)
+                    M_AATreeIteratorNext(it);
+            }
+
+            fixed_t result = M_AATreeIteratorKey(it) + finalZOffset;
+
+            M_AATreeIteratorClose(it);
+            M_AATreeFree(heights);
+        }
+
+        M_AATreeFree(heights);
+    }
+
+    // Establish height.
+    if (flip)
+        return P_GetSectorCeilingZAt(sector, x, y) + finalZOffset;
+    else
+        return P_GetSectorFloorZAt(sector, x, y) + finalZOffset;
 }
 
 fixed_t P_GetMapThingSpawnHeight(const mobjtype_t mobjtype, const mapthing_t* mthing, const fixed_t x, const fixed_t y)
@@ -11248,7 +11326,7 @@ fixed_t P_GetMapThingSpawnHeight(const mobjtype_t mobjtype, const mapthing_t* mt
 		break;
 	}
 
-	if (!(dz + offset)) // Snap to the surfaces when there's no offset set.
+	if (!(dz + offset) && mthing->layer == 0) // Snap to the surfaces when there's no offset set.
 	{
 		if (flip)
 			return ONCEILINGZ;
@@ -11256,7 +11334,7 @@ fixed_t P_GetMapThingSpawnHeight(const mobjtype_t mobjtype, const mapthing_t* mt
 			return ONFLOORZ;
 	}
 
-	return P_GetMobjSpawnHeight(mobjtype, x, y, dz, offset, flip, mthing->scale);
+	return P_GetMobjSpawnHeight(mobjtype, x, y, dz, offset, mthing->layer, flip, mthing->scale);
 }
 
 static boolean P_SpawnNonMobjMapThing(mapthing_t *mthing)
@@ -12601,7 +12679,7 @@ void P_SpawnHoop(mapthing_t *mthing)
 	TVector v, *res;
 	fixed_t x = mthing->x << FRACBITS;
 	fixed_t y = mthing->y << FRACBITS;
-	fixed_t z = P_GetMobjSpawnHeight(MT_HOOP, x, y, mthing->z << FRACBITS, 0, false, mthing->scale);
+	fixed_t z = P_GetMobjSpawnHeight(MT_HOOP, x, y, mthing->z << FRACBITS, 0, mthing->layer, false, mthing->scale);
 
 	hoopcenter = P_SpawnMobj(x, y, z, MT_HOOPCENTER);
 	hoopcenter->spawnpoint = mthing;
@@ -12718,7 +12796,7 @@ static void P_SpawnItemRow(mapthing_t *mthing, mobjtype_t *itemtypes, UINT8 numi
 			itemtypes[r] = P_GetMobjtypeSubstitute(&dummything, itemtypes[r]);
 		}
 	}
-	z = P_GetMobjSpawnHeight(itemtypes[0], x, y, z, 0, mthing->options & MTF_OBJECTFLIP, mthing->scale);
+	z = P_GetMobjSpawnHeight(itemtypes[0], x, y, z, 0, mthing->layer, mthing->options & MTF_OBJECTFLIP, mthing->scale);
 
 	for (r = 0; r < numitems; r++)
 	{
@@ -12774,7 +12852,7 @@ static void P_SpawnItemCircle(mapthing_t *mthing, mobjtype_t *itemtypes, UINT8 n
 			itemtypes[i] = P_GetMobjtypeSubstitute(&dummything, itemtypes[i]);
 		}
 	}
-	z = P_GetMobjSpawnHeight(itemtypes[0], x, y, z, 0, false, mthing->scale);
+	z = P_GetMobjSpawnHeight(itemtypes[0], x, y, z, 0, mthing->layer, false, mthing->scale);
 
 	for (i = 0; i < numitems; i++)
 	{
