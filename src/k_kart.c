@@ -3789,7 +3789,6 @@ UINT16 K_DriftSparkColor(player_t *player, INT32 charge)
 
 static void K_SpawnDriftSparks(player_t *player)
 {
-	INT32 ds = K_GetKartDriftSparkValue(player);
 	fixed_t newx;
 	fixed_t newy;
 	mobj_t *spark;
@@ -3803,23 +3802,20 @@ static void K_SpawnDriftSparks(player_t *player)
 	if (leveltime % 2 == 1)
 		return;
 
-	if (!player->drift
-		|| (player->driftcharge < ds && !(player->driftcharge < 0)))
+	if (!player->drift || player->driftcharge < K_GetKartDriftSparkValue(player))
 		return;
 
 	travelangle = player->mo->angle-(ANGLE_45/5)*player->drift;
 
 	for (i = 0; i < 2; i++)
 	{
-		SINT8 size = 1;
-		UINT8 trail = 0;
-
 		newx = player->mo->x + P_ReturnThrustX(player->mo, travelangle + ((i&1) ? -1 : 1)*ANGLE_135, FixedMul(32*FRACUNIT, player->mo->scale));
 		newy = player->mo->y + P_ReturnThrustY(player->mo, travelangle + ((i&1) ? -1 : 1)*ANGLE_135, FixedMul(32*FRACUNIT, player->mo->scale));
 		spark = P_SpawnMobj(newx, newy, player->mo->z, MT_DRIFTSPARK);
 
 		P_SetTarget(&spark->target, player->mo);
-		spark->angle = travelangle-((ANGLE_45/5)*player->drift);
+		spark->angle = travelangle-(ANGLE_45/5)*player->drift;
+
 		spark->destscale = player->mo->scale;
 		P_SetScale(spark, player->mo->scale);
 
@@ -3827,47 +3823,38 @@ static void K_SpawnDriftSparks(player_t *player)
 		spark->momy = player->mo->momy/2;
 		//spark->momz = player->mo->momz/2;
 
-		spark->color = K_DriftSparkColor(player, player->driftcharge);
-
-		if (player->driftcharge < 0)
+		if (player->driftcharge >= K_GetKartDriftSparkValue(player)*4)
 		{
-			// Stage 0: Grey
-			size = 0;
-		}
-		else if (player->driftcharge >= ds*4)
-		{
-			// Stage 3: Rainbow
-			size = 2;
-			trail = 2;
-
-			if (player->driftcharge <= (ds*4)+(32*3))
+			spark->color = (UINT8)(1 + (leveltime % (MAXSKINCOLORS-1)));
+			
+			
+			if (player->driftcharge <= K_GetKartDriftSparkValue(player)*4+(32*3))
 			{
 				// transition
 				P_SetScale(spark, (spark->destscale = spark->scale*3/2));
 			}
+			
+		}
+		else if (player->driftcharge >= K_GetKartDriftSparkValue(player)*2)
+		{
+			if (player->driftcharge <= (K_GetKartDriftSparkValue(player)*2)+(24*3))
+				spark->color = SKINCOLOR_RASPBERRY; // transition
 			else
-			{
-				spark->colorized = true;
-			}
-		}
-		else if (player->driftcharge >= ds*2)
-		{
-			// Stage 2: Blue
-			size = 2;
-			trail = 1;
-
-			if (player->driftcharge <= (ds*2)+(32*3))
+				spark->color = SKINCOLOR_KETCHUP;
+			
+			if (player->driftcharge <= K_GetKartDriftSparkValue(player)*2+(32*3))
 			{
 				// transition
 				P_SetScale(spark, (spark->destscale = spark->scale*3/2));
 			}
+			
 		}
 		else
 		{
-			// Stage 1: Red
-			size = 1;
-
-			if (player->driftcharge <= (ds)+(32*3))
+			spark->color = SKINCOLOR_SAPPHIRE;
+			
+			
+			if (player->driftcharge <= K_GetKartDriftSparkValue(player)+(32*3))
 			{
 				// transition
 				P_SetScale(spark, (spark->destscale = spark->scale*2));
@@ -3879,39 +3866,21 @@ static void K_SpawnDriftSparks(player_t *player)
 		{
 			if ((player->drift < 0 && (i & 1))
 				|| (player->drift > 0 && !(i & 1)))
-			{
-				size++;
-			}
+				P_SetMobjState(spark, S_DRIFTSPARK_A1);
 			else if ((player->drift < 0 && !(i & 1))
 				|| (player->drift > 0 && (i & 1)))
-			{
-				size--;
-			}
+				P_SetMobjState(spark, S_DRIFTSPARK_C1);
 		}
 		else if ((player->drift > 0 && player->cmd.turning < 0) // Outward drifts
 			|| (player->drift < 0 && player->cmd.turning > 0))
 		{
 			if ((player->drift < 0 && (i & 1))
 				|| (player->drift > 0 && !(i & 1)))
-			{
-				size--;
-			}
+				P_SetMobjState(spark, S_DRIFTSPARK_C1);
 			else if ((player->drift < 0 && !(i & 1))
 				|| (player->drift > 0 && (i & 1)))
-			{
-				size++;
-			}
+				P_SetMobjState(spark, S_DRIFTSPARK_A1);
 		}
-
-		if (size == 2)
-			P_SetMobjState(spark, S_DRIFTSPARK_A1);
-		else if (size < 1)
-			P_SetMobjState(spark, S_DRIFTSPARK_C1);
-		else if (size > 2)
-			P_SetMobjState(spark, S_DRIFTSPARK_D1);
-
-		if (trail > 0)
-			spark->tics += trail;
 
 		K_MatchGenericExtraFlags(spark, player->mo);
 	}
