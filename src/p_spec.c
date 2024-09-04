@@ -2190,6 +2190,13 @@ void P_PushSpecialLine(line_t *line, mobj_t *thing)
 		// Invalid mobj.
 		return;
 	}
+	
+	
+	if (line == NULL)
+	{
+		// Invalid line.
+		return;
+	}
 
 	player = thing->player;
 
