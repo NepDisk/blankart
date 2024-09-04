@@ -2243,7 +2243,7 @@ void F_StartWaitingPlayers(void)
 	for (i = 0; i < 2; i++)
 	{
 		sprframe = &sprdef->spriteframes[i];
-		driver[i] = W_CachePatchNum(sprframe->lumppat[0], PU_CACHE);
+		driver[i] = W_CachePatchNum(sprframe->lumppat[1], PU_CACHE);
 	}
 #endif
 }
