@@ -274,13 +274,13 @@ typedef struct mobj_s
 	// List: thinker links.
 	thinker_t thinker;
 
-	mobjtype_t type;
-	const mobjinfo_t *info; // &mobjinfo[mobj->type]
-
 	// Info for drawing: position.
 	fixed_t x, y, z;
 	fixed_t old_x, old_y, old_z; // position interpolation
 	fixed_t old_x2, old_y2, old_z2;
+	
+	mobjtype_t type;
+	const mobjinfo_t *info; // &mobjinfo[mobj->type]
 
 	// Interaction info, by BLOCKMAP.
 	// Links in blocks (if needed).
@@ -428,13 +428,16 @@ typedef struct precipmobj_s
 	// List: thinker links.
 	thinker_t thinker;
 
-	mobjtype_t type;
-	const mobjinfo_t *info; // &mobjinfo[mobj->type]
-
 	// Info for drawing: position.
 	fixed_t x, y, z;
+	// --- Please make sure you keep the fields up to this
+	// --- point in sync with degenmobj_t.\
+
 	fixed_t old_x, old_y, old_z; // position interpolation
 	fixed_t old_x2, old_y2, old_z2;
+	
+	mobjtype_t type;
+	const mobjinfo_t *info; // &mobjinfo[mobj->type]
 
 	// Links in blocks (if needed).
 	// The blockmap is only used by precip to render.
