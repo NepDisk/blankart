@@ -21,11 +21,21 @@
 
 typedef struct aatree_s aatree_t;
 typedef void (*aatree_iter_t)(INT32 key, void *value);
+typedef struct aatree_iterator_s aatree_iterator_t;
 
 aatree_t *M_AATreeAlloc(UINT32 flags);
 void M_AATreeFree(aatree_t *aatree);
 void M_AATreeSet(aatree_t *aatree, INT32 key, void* value);
 void *M_AATreeGet(aatree_t *aatree, INT32 key);
+boolean M_AATreeEmpty(aatree_t *aatree);
+size_t M_AATreeSize(aatree_t *aatree);
 void M_AATreeIterate(aatree_t *aatree, aatree_iter_t callback);
+
+aatree_iterator_t *M_AATreeBegin(aatree_t *aatree);
+aatree_iterator_t *M_AATreeRBegin(aatree_t *aatree);
+void *M_AATreeIteratorNext(aatree_iterator_t *iterator);
+INT32 M_AATreeIteratorKey(aatree_iterator_t *iterator);
+void *M_AATreeIteratorValue(aatree_iterator_t *iterator);
+void M_AATreeIteratorClose(aatree_iterator_t *iterator);
 
 #endif
