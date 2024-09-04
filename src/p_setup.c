@@ -3093,7 +3093,7 @@ static void P_ProcessLinedefsAfterSidedefs(void)
 		if (ld->tripwire)
 		{
 			ld->blendmode = AST_ADD;
-			ld->alpha = 0xff;
+			ld->alpha = FRACUNIT;
 		}
 
 		if (udmf)
