@@ -272,6 +272,42 @@ static boolean P_SpecialIsLinedefCrossType(line_t *ld)
 	return linedefcrossspecial;
 }
 
+void
+P_DoSpringEx
+(		mobj_t * object,
+		fixed_t scaleVal,
+		fixed_t vertispeed,
+		fixed_t horizspeed,
+		angle_t finalAngle)
+{
+	const fixed_t hscale = mapobjectscale + (mapobjectscale - object->scale);
+	const fixed_t vscale = mapobjectscale + (object->scale - mapobjectscale);
+	
+	object->standingslope = NULL; // Okay, now we know it's not going to be relevant - no launching off at silly angles for you.
+	object->terrain = NULL;
+
+	object->eflags |= MFE_SPRUNG; // apply this flag asap!
+
+	if (vertispeed)
+		object->momz = FixedMul(vertispeed,FixedSqrt(FixedMul(vscale, scaleVal)));
+
+	if (horizspeed)
+	{
+		if (!object->player)
+			P_InstaThrust(object, finalAngle, FixedMul(horizspeed,FixedSqrt(FixedMul(hscale, scaleVal))));
+		else
+		{
+			fixed_t finalSpeed = FixedDiv(horizspeed, hscale);
+			fixed_t pSpeed = object->player->speed;
+
+			if (pSpeed > finalSpeed)
+				finalSpeed = pSpeed;
+
+			P_InstaThrust(object, finalAngle, FixedMul(finalSpeed,FixedSqrt(FixedMul(hscale, scaleVal))));
+		}
+	}
+}
+
 //
 // P_DoSpring
 //
@@ -298,6 +334,7 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 	object->standingslope = NULL; // Okay, now we can't return - no launching off at silly angles for you.
 
 	object->eflags |= MFE_SPRUNG; // apply this flag asap!
+
 	spring->flags &= ~(MF_SOLID|MF_SPECIAL); // De-solidify
 
 	if (horizspeed && vertispeed) // Mimic SA
@@ -337,25 +374,7 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 		P_TryMove(object, spring->x + offx, spring->y + offy, true);
 	}
 
-	if (vertispeed)
-		object->momz = FixedMul(vertispeed,FixedSqrt(FixedMul(vscale, spring->scale)));
-
-	if (horizspeed)
-	{
-		if (!object->player)
-			P_InstaThrust(object, spring->angle, FixedMul(horizspeed,FixedSqrt(FixedMul(hscale, spring->scale))));
-		else
-		{
-			fixed_t finalSpeed = FixedDiv(horizspeed, hscale);
-			fixed_t pSpeed = object->player->speed;
-
-			if (pSpeed > finalSpeed)
-				finalSpeed = pSpeed;
-
-			P_InstaThrust(object, spring->angle, FixedMul(finalSpeed,FixedSqrt(FixedMul(hscale, spring->scale))));
-		}
-	}
-
+	P_DoSpringEx(object, mapobjectscale, vertispeed, horizspeed, spring->angle);
 	// Re-solidify
 	spring->flags |= (spring->info->flags & (MF_SPECIAL|MF_SOLID));
 
@@ -365,7 +384,6 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 	{
 		if (spring->flags & MF_ENEMY) // Spring shells
 			P_SetTarget(&spring->target, object);
-
 		if (horizspeed && object->player->cmd.forwardmove == 0 && object->player->cmd.sidemove == 0)
 		{
 			object->angle = spring->angle;

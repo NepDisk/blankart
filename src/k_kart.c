@@ -2877,24 +2877,41 @@ fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed)
 
 fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberband)
 {
+	fixed_t k_speed = 150;
+	fixed_t g_cc = FRACUNIT;
+	fixed_t xspd = 3072;		// 4.6875 aka 3/64
 	UINT8 kartspeed = player->kartspeed;
-	fixed_t finalspeed = 0;
-	const boolean mobjValid = (player->mo != NULL && P_MobjWasRemoved(player->mo) == false);
+	fixed_t finalspeed;
 
 	if (doboostpower && !player->pogospring && !P_IsObjectOnGround(player->mo))
 		return (75*mapobjectscale); // air speed cap
-		
+
+	switch (gamespeed)
+	{
+		case 0:
+			g_cc = 53248 + xspd; //  50cc =  81.25 + 4.69 =  85.94%
+			break;
+		case 2:
+			g_cc = 77824 + xspd; // 150cc = 118.75 + 4.69 = 123.44%
+			break;
+		default:
+			g_cc = 65536 + xspd; // 100cc = 100.00 + 4.69 = 104.69%
+			break;
+	}
+
 	if ((gametyperules & GTR_KARMA) && (player->bumpers <= 0))
 		kartspeed = 1;
 
-	finalspeed = K_GetKartSpeedFromStat(kartspeed);
+	k_speed += kartspeed*3; // 153 - 177
 
+	finalspeed = FixedMul(FixedMul(k_speed<<14, g_cc), player->mo->scale);
+	
 	if (player->spheres > 0)
 	{
 		fixed_t sphereAdd = (FRACUNIT/60); // 66% at max
 		finalspeed = FixedMul(finalspeed, FRACUNIT + (sphereAdd * player->spheres));
 	}
-
+	
 	if (K_PlayerUsesBotMovement(player))
 	{
 		// Increase bot speed by 1-10% depending on difficulty
@@ -2908,22 +2925,14 @@ fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberb
 		}
 	}
 	
-	if (doboostpower == true)
-	{
-		if (mobjValid == true)
-		{
-			// Scale with the player.
-			finalspeed = FixedMul(finalspeed, player->mo->scale);
-		}
-
-		finalspeed = FixedMul(finalspeed, player->boostpower + player->speedboost);
-	}
-	
 	if (dorubberband == true && player->botvars.rubberband < FRACUNIT && K_PlayerUsesBotMovement(player) == true)
 	{
 		finalspeed = FixedMul(finalspeed, player->botvars.rubberband);
 	}
 
+	if (doboostpower)
+		finalspeed = FixedMul(finalspeed, player->boostpower+player->speedboost);
+	
 	return finalspeed;
 }
 
