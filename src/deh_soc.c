@@ -1040,13 +1040,13 @@ static mapheader_lighting_t *usemaplighting(INT32 mapnum, const char *word)
 {
 	if (fastncmp(word, "ENCORE", 6))
 	{
-		mapheaderinfo[mapnum]->use_encore_lighting = true;
+		mapheaderinfo[mapnum-1]->use_encore_lighting = true;
 
-		return &mapheaderinfo[mapnum]->lighting_encore;
+		return &mapheaderinfo[mapnum-1]->lighting_encore;
 	}
 	else
 	{
-		return &mapheaderinfo[mapnum]->lighting;
+		return &mapheaderinfo[mapnum-1]->lighting;
 	}
 }
 
