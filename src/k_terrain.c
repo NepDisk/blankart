@@ -647,11 +647,12 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 
 		sector->soundorg.z = player->mo->z;
 		
-		if (terrain->pogoSpring > 0) // Hack to allow spring strength to work with pogospring
-			player->mo->eflags &= ~MFE_SPRUNG;
-		else
+		if (terrain->pogoSpring == 0)
 			S_StartSound(&sector->soundorg, sfx_s3kb1); // Don't play two spring sounds at once thx!
 	}
+	
+	if ((terrain->pogoSpring > 0) && terrain->springStrength) // Hack to allow spring strength to work with pogospring
+		mo->eflags &= ~MFE_SPRUNG;
 	
 	// Pogospring panel
 	if (terrain->pogoSpring > 0 && !(mo->eflags & MFE_SPRUNG))
@@ -660,7 +661,8 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		const fixed_t minspeed = 24*hscale;
 		const fixed_t maxspeed = 28*hscale;
 		angle_t pushangle = FixedHypot(player->mo->momx, player->mo->momy) ? R_PointToAngle2(0, 0, player->mo->momx, player->mo->momy) : player->mo->angle;
-		// if we have no speed for SOME REASON, use the player's angle, otherwise we'd be forcefully thrusted to what I can only assume is angle 0
+		sector_t *sector = player->mo->subsector->sector;
+		
 
 		if ((player->speed > maxspeed) && terrain->pogoSpring == 2) // Prevent overshooting jumps
 			P_InstaThrust(player->mo, pushangle, maxspeed);
@@ -672,7 +674,10 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		else
 			player->pogospring = 1;
 		
-		K_DoPogoSpring(player->mo, 0, 1);
+		if (!terrain->springStrength)
+			K_DoPogoSpring(player->mo, 0, 1);
+		else
+			S_StartSound(mo, sfx_kc2f);
 	}
 
 	// (Offroad is handled elsewhere!)
@@ -1604,7 +1609,7 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	}
 	else if (stricmp(param, "pogoSpring") == 0)
 	{
-		terrain->pogoSpring = FLOAT_TO_FIXED(atof(val));
+		terrain->pogoSpring = atof(val);
 	}
 	else if (stricmp(param, "speedPad") == 0)
 	{
