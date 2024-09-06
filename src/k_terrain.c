@@ -646,7 +646,11 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 				angle);
 
 		sector->soundorg.z = player->mo->z;
-		S_StartSound(&sector->soundorg, sfx_s3kb1);
+		
+		if (terrain->pogoSpring > 0) // Hack to allow spring strength to work with pogospring
+			player->mo->eflags &= ~MFE_SPRUNG;
+		else
+			S_StartSound(&sector->soundorg, sfx_s3kb1); // Don't play two spring sounds at once thx!
 	}
 	
 	// Pogospring panel
