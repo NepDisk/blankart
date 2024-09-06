@@ -198,13 +198,68 @@ boolean HWR_OverrideObjectLightLevel(mobj_t *thing, INT32 *lightlevel)
 		*lightlevel = 255;
 	else if (R_ThingIsFullDark(thing))
 		*lightlevel = 0;
+	else if (thing->renderflags & RF_ABSOLUTELIGHTLEVEL)
+		*lightlevel = R_ThingLightLevel(thing);
 	else
 		return false;
 
 	return true;
 }
 
-void HWR_Lighting(FSurfaceInfo *Surface, INT32 light_level, extracolormap_t *colormap)
+void HWR_ObjectLightLevelPost(gl_vissprite_t *spr, const sector_t *sector, INT32 *lightlevel, boolean model)
+{
+	const boolean semibright = R_ThingIsSemiBright(spr->mobj);
+	const boolean papersprite = R_ThingIsPaperSprite(spr->mobj);
+
+	*lightlevel += R_ThingLightLevel(spr->mobj);
+
+	if (maplighting.directional == true && P_SectorUsesDirectionalLighting(sector))
+	{
+		if (model == false) // this is implemented by shader
+		{
+			fixed_t extralight = R_GetSpriteDirectionalLighting(
+				papersprite
+				? spr->angle + (spr->flip ? -ANGLE_90 : ANGLE_90)
+				: R_PointToAngle(spr->mobj->x, spr->mobj->y) // fixme
+			);
+
+			// Less change in contrast in dark sectors
+			extralight = FixedMul(extralight, min(max(0, *lightlevel), 255) * FRACUNIT / 255);
+
+			if (papersprite)
+			{
+				// Papersprite contrast should match walls
+				*lightlevel += FixedFloor(extralight + (FRACUNIT / 2)) / FRACUNIT;
+			}
+			else
+			{
+				// simple OGL approximation
+				fixed_t tr = R_PointToDist(spr->mobj->x, spr->mobj->y);
+				fixed_t xscale = FixedDiv((vid.width / 2) << FRACBITS, tr);
+
+				// Less change in contrast at further distances, to counteract DOOM diminished light
+				fixed_t n = FixedDiv(FixedMul(xscale, LIGHTRESOLUTIONFIX), ((MAXLIGHTSCALE-1) << LIGHTSCALESHIFT));
+				extralight = FixedMul(extralight, min(n, FRACUNIT));
+
+				// Contrast is stronger for normal sprites, stronger than wall lighting is at the same distance
+				*lightlevel += FixedFloor((extralight * 2) + (FRACUNIT / 2)) / FRACUNIT;
+			}
+		}
+
+		// Semibright objects will be made slightly brighter to compensate contrast
+		if (semibright)
+		{
+			*lightlevel += 16;
+		}
+	}
+
+	if (semibright)
+	{
+		*lightlevel = 192 + (*lightlevel >> 1);
+	}
+}
+
+void HWR_Lighting(FSurfaceInfo *Surface, INT32 light_level, extracolormap_t *colormap, const boolean directional)
 {
 	RGBA_t poly_color, tint_color, fade_color;
 
@@ -257,9 +312,12 @@ void HWR_Lighting(FSurfaceInfo *Surface, INT32 light_level, extracolormap_t *col
 	Surface->PolyColor.rgba = poly_color.rgba;
 	Surface->TintColor.rgba = tint_color.rgba;
 	Surface->FadeColor.rgba = fade_color.rgba;
+
 	Surface->LightInfo.light_level = light_level;
 	Surface->LightInfo.fade_start = (colormap != NULL) ? colormap->fadestart : 0;
 	Surface->LightInfo.fade_end = (colormap != NULL) ? colormap->fadeend : 31;
+
+	Surface->LightInfo.directional = (maplighting.directional == true && directional == true);
 }
 
 UINT8 HWR_FogBlockAlpha(INT32 light, extracolormap_t *colormap) // Let's see if this can work
@@ -307,13 +365,13 @@ static FUINT HWR_CalcWallLight(FUINT lightnum, seg_t *seg)
 	return (FUINT)finallight;
 }
 
-static FUINT HWR_CalcSlopeLight(FUINT lightnum, pslope_t *slope, const sector_t *sector)
+static FUINT HWR_CalcSlopeLight(FUINT lightnum, pslope_t *slope, const sector_t *sector, const boolean fof)
 {
 	INT16 finallight = lightnum;
 
 	if (slope != NULL && P_ApplyLightOffsetFine(lightnum, sector))
 	{
-		finallight += slope->hwLightOffset;
+		finallight += (fof ? -slope->hwLightOffset : slope->hwLightOffset);
 
 		if (finallight > 255) finallight = 255;
 		if (finallight < 0) finallight = 0;
@@ -505,8 +563,8 @@ static void HWR_RenderPlane(subsector_t *subsector, extrasubsector_t *xsub, bool
 	for (i = 0, v3d = planeVerts; i < nrPlaneVerts; i++,v3d++,pv++)
 		SETUP3DVERT(v3d, pv->x, pv->y);
 
-	lightlevel = HWR_CalcSlopeLight(lightlevel, slope, gl_frontsector);
-	HWR_Lighting(&Surf, lightlevel, planecolormap);
+	lightlevel = HWR_CalcSlopeLight(lightlevel, slope, gl_frontsector, (FOFsector != NULL));
+	HWR_Lighting(&Surf, lightlevel, planecolormap, P_SectorUsesDirectionalLighting(gl_frontsector));
 
 	if (PolyFlags & PF_EnvironmentTrans)
 	{
@@ -761,7 +819,7 @@ static void HWR_ProjectWall(FOutVector *wallVerts, FSurfaceInfo *pSurf, FBITFIEL
 {
 	INT32 shader = SHADER_DEFAULT;
 
-	HWR_Lighting(pSurf, lightlevel, wallcolormap);
+	HWR_Lighting(pSurf, lightlevel, wallcolormap, P_SectorUsesDirectionalLighting(gl_frontsector));
 
 	if (HWR_UseShader())
 	{
@@ -2894,7 +2952,7 @@ static void HWR_RenderPolyObjectPlane(polyobj_t *polysector, boolean isceiling, 
 		v3d->z = FIXED_TO_FLOAT(polysector->vertices[i]->y);
 	}
 
-	HWR_Lighting(&Surf, lightlevel, planecolormap);
+	HWR_Lighting(&Surf, lightlevel, planecolormap, P_SectorUsesDirectionalLighting((FOFsector != NULL) ? FOFsector : gl_frontsector));
 
 	if (blendmode & PF_Translucent)
 	{
@@ -3763,7 +3821,7 @@ static void HWR_DrawDropShadow(mobj_t *thing, fixed_t scale)
 			colormap = thing->subsector->sector->extra_colormap;
 	}
 
-	HWR_Lighting(&sSurf, 255, colormap);
+	HWR_Lighting(&sSurf, 255, colormap, P_SectorUsesDirectionalLighting(thing->subsector->sector));
 	sSurf.PolyColor.s.alpha = 255;
 
 	if (thing->whiteshadow == true)
@@ -4008,8 +4066,8 @@ static void HWR_SplitSprite(gl_vissprite_t *spr)
 		}
 	}
 
-	if (R_ThingIsSemiBright(spr->mobj))
-		lightlevel = 128 + (lightlevel>>1);
+	if (!lightset)
+		HWR_ObjectLightLevelPost(spr, sector, &lightlevel, false);
 
 	for (i = 0; i < sector->numlights; i++)
 	{
@@ -4022,9 +4080,7 @@ static void HWR_SplitSprite(gl_vissprite_t *spr)
 			if (!lightset)
 			{
 				lightlevel = *list[i].lightlevel > 255 ? 255 : *list[i].lightlevel;
-
-				if (R_ThingIsSemiBright(spr->mobj))
-					lightlevel = 128 + (lightlevel>>1);
+				HWR_ObjectLightLevelPost(spr, sector, &lightlevel, false);
 			}
 
 			if (!R_ThingIsFullBright(spr->mobj) && !(spr->mobj->renderflags & RF_NOCOLORMAPS))
@@ -4091,7 +4147,7 @@ static void HWR_SplitSprite(gl_vissprite_t *spr)
 			wallVerts[1].z = baseWallVerts[2].z + (baseWallVerts[2].z - baseWallVerts[1].z) * heightmult;
 		}
 
-		HWR_Lighting(&Surf, lightlevel, colormap);
+		HWR_Lighting(&Surf, lightlevel, colormap, P_SectorUsesDirectionalLighting(sector) && !R_ThingIsFullBright(spr->mobj));
 
 		Surf.PolyColor.s.alpha = alpha;
 
@@ -4120,7 +4176,7 @@ static void HWR_SplitSprite(gl_vissprite_t *spr)
 	wallVerts[0].y = bot;
 	wallVerts[1].y = endbot;
 
-	HWR_Lighting(&Surf, lightlevel, colormap);
+	HWR_Lighting(&Surf, lightlevel, colormap, P_SectorUsesDirectionalLighting(sector));
 
 	Surf.PolyColor.s.alpha = alpha;
 
@@ -4196,7 +4252,9 @@ static void HWR_DrawSprite(gl_vissprite_t *spr)
 	if (!spr->mobj->subsector)
 		return;
 
-	if (spr->mobj->subsector->sector->numlights && !splat)
+	if (spr->mobj->subsector->sector->numlights
+		&& (spr->mobj->renderflags & RF_ABSOLUTELIGHTLEVEL) == 0
+		&& !splat)
 	{
 		HWR_SplitSprite(spr);
 		return;
@@ -4413,10 +4471,10 @@ static void HWR_DrawSprite(gl_vissprite_t *spr)
 		else if (!lightset)
 			lightlevel = sector->lightlevel > 255 ? 255 : sector->lightlevel;
 
-		if (R_ThingIsSemiBright(spr->mobj))
-			lightlevel = 128 + (lightlevel>>1);
+		if (!lightset)
+			HWR_ObjectLightLevelPost(spr, sector, &lightlevel, false);
 
-		HWR_Lighting(&Surf, lightlevel, colormap);
+		HWR_Lighting(&Surf, lightlevel, colormap, P_SectorUsesDirectionalLighting(sector) && !R_ThingIsFullBright(spr->mobj));
 	}
 
 	{
@@ -4563,7 +4621,7 @@ static inline void HWR_DrawPrecipitationSprite(gl_vissprite_t *spr)
 
 		//lightlevel = 128 + (lightlevel>>1);
 
-		HWR_Lighting(&Surf, lightlevel, colormap);
+		HWR_Lighting(&Surf, lightlevel, colormap, P_SectorUsesDirectionalLighting(sector));
 	}
 
 	// Determine the blendmode and translucency value
@@ -5027,7 +5085,7 @@ static void HWR_DrawSprites(void)
 #ifdef BAD_MODEL_OPTIONS
 	HWD.pfnSetSpecialState(HWD_SET_MODEL_LIGHTING, cv_glmodellighting.value);
 #else
-	HWD.pfnSetSpecialState(HWD_SET_MODEL_LIGHTING, false);
+	HWD.pfnSetSpecialState(HWD_SET_MODEL_LIGHTING, 1);
 #endif
 
 	for (i = 0; i < gl_visspritecount; i++)
@@ -6901,7 +6959,7 @@ void HWR_RenderWall(FOutVector *wallVerts, FSurfaceInfo *pSurf, FBITFIELD blend,
 	INT32 shader = SHADER_DEFAULT;
 
 	// Lighting is done here instead so that fog isn't drawn incorrectly on transparent walls after sorting
-	HWR_Lighting(pSurf, lightlevel, wallcolormap);
+	HWR_Lighting(pSurf, lightlevel, wallcolormap, P_SectorUsesDirectionalLighting(gl_frontsector));
 
 	pSurf->PolyColor.s.alpha = alpha; // put the alpha back after lighting
 
