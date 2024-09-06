@@ -2720,7 +2720,7 @@ boolean K_WaterRun(player_t *player)
 
 boolean K_WaterSkip(player_t *player)
 {
-	if (player->waterskip >= 2)
+	if (player->waterskip > 2)
 	{
 		// Already finished waterskipping.
 		return false;
@@ -4741,7 +4741,7 @@ void K_DoWaterRunPanel(player_t *player)
 		K_FlipFromObject(overlay, player->mo);
 	}
 	
-	player->sneakertimer = sneakertime;
+	player->sneakertimer = TICRATE*2;
 	player->waterrun = true;
 
 	// set angle for spun out players:

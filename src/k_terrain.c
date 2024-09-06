@@ -531,7 +531,7 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		else
 			player->floorboost = 2;
 
-		K_DoSneaker(player, 0);
+		K_DoWaterRunPanel(player);
 	}
 	
 	// Speed pad
@@ -1652,7 +1652,7 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	{
 		K_FlagBoolean(&terrain->flags, TRF_SNEAKERPANEL, val);
 	}
-	else if (stricmp(param, "waterRunPanel") == 0)
+	else if (stricmp(param, "waterRunPanel") == 0 || stricmp(param, "waterPanel") == 0)
 	{
 		K_FlagBoolean(&terrain->flags, TRF_WATERRUNPANEL, val);
 	}
