@@ -8085,8 +8085,10 @@ void K_UpdateAllPlayerPositions(void)
 	{
 		if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
 		{
-			K_KartLegacyUpdatePosition(&players[i]);
-			K_KartUpdatePosition(&players[i]);
+			if (numbosswaypoints > 0)
+				K_KartLegacyUpdatePosition(&players[i]);
+			else
+				K_KartUpdatePosition(&players[i]);
 		}
 	}
 }
