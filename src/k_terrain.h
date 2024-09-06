@@ -118,7 +118,6 @@ typedef struct terrain_s
 	fixed_t speedPad;		// Speed pad strength
 	angle_t speedPadAngle;	// Speed pad angle
 	fixed_t springStrength;	// Spring strength
-	UINT16 springStarColor;	// Spring star color
 	fixed_t floorClip;		// Offset for sprites on this ground
 	UINT32 flags;			// Flag values (see: terrain_flags_t)
 } terrain_t;

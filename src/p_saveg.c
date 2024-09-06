@@ -282,9 +282,7 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT8(save_p, players[i].pogospring);
 		WRITEUINT8(save_p, players[i].brakestop);
 		WRITEUINT8(save_p, players[i].waterskip);
-
-		WRITEUINT16(save_p, players[i].springstars);
-		WRITEUINT16(save_p, players[i].springcolor);
+		
 		WRITEUINT8(save_p, players[i].dashpadcooldown);
 
 		WRITEFIXED(save_p, players[i].boostpower);
@@ -552,8 +550,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].brakestop = READUINT8(save_p);
 		players[i].waterskip = READUINT8(save_p);
 
-		players[i].springstars = READUINT16(save_p);
-		players[i].springcolor = READUINT16(save_p);
 		players[i].dashpadcooldown = READUINT8(save_p);
 
 		players[i].boostpower = READFIXED(save_p);

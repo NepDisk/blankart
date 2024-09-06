@@ -404,8 +404,6 @@ typedef struct player_s
 	UINT8 brakestop;		// Wait until you've made a complete stop for a few tics before letting brake go in reverse.
 	UINT8 waterskip;		// Water skipping counter
 
-	UINT16 springstars;		// Spawn stars around a player when they hit a spring
-	UINT16 springcolor;		// Color of spring stars
 	UINT8 dashpadcooldown;	// Separate the vanilla SA-style dash pads from using flashing
 	
 	fixed_t boostpower;		// Base boost value, for offroad

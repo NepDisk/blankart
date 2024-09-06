@@ -260,10 +260,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->offroad);
 	else if (fastcmp(field,"waterskip"))
 		lua_pushinteger(L, plr->waterskip);
-	else if (fastcmp(field,"springstars"))
-		lua_pushinteger(L, plr->springstars);
-	else if (fastcmp(field,"springcolor"))
-		lua_pushinteger(L, plr->springcolor);
 	else if (fastcmp(field,"dashpadcooldown"))
 		lua_pushinteger(L, plr->dashpadcooldown);
 	else if (fastcmp(field,"boostpower"))
@@ -614,10 +610,6 @@ static int player_set(lua_State *L)
 		plr->offroad = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"waterskip"))
 		plr->waterskip = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"springstars"))
-		plr->springstars = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"springcolor"))
-		plr->springcolor = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"dashpadcooldown"))
 		plr->dashpadcooldown = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"boostpower"))
