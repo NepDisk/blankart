@@ -699,13 +699,13 @@ void SCR_ClosedCaptions(void)
 			flags |= (((CAPTIONFADETICS-closedcaptions[i].t)/2)*V_10TRANS);
 
 		if (music)
-			dot = '\x19';
+			dot = 'M';
 		else if (closedcaptions[i].c && closedcaptions[i].c->origin)
-			dot = '\x1E';
+			dot = '>';
 		else
 			dot = ' ';
 
-		V_DrawRightAlignedStringAtFixed((BASEVIDWIDTH-20) * FRACUNIT, y, flags,
+		V_DrawRightAlignedThinStringAtFixed((BASEVIDWIDTH-20) * FRACUNIT, y, flags,
 			va("%c [%s]", dot, (closedcaptions[i].s->caption[0] ? closedcaptions[i].s->caption : closedcaptions[i].s->name)));
 	}
 }
