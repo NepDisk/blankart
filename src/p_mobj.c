@@ -1149,11 +1149,6 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 			P_PlayerFlip(mo);
 		}
 
-		if (mo->player->waterskip)
-		{
-			gravityadd = (4*gravityadd)/3;
-		}
-
 		if (mo->player->pogospring)
 		{
 			gravityadd = (5*gravityadd)/2;
@@ -3321,13 +3316,21 @@ void P_MobjCheckWater(mobj_t *mobj)
 				P_SetScale(splish, mobj->scale);
 
 				// skipping stone!
-				if (K_WaterSkip(p) == true)
+				if (K_WaterSkip(p) == true && ((!(mobj->eflags & MFE_VERTICALFLIP) && thingtop - mobj->momz > mobj->watertop)
+				|| ((mobj->eflags & MFE_VERTICALFLIP) && mobj->z - mobj->momz < mobj->waterbottom)))
 				{
-					const fixed_t hop = 5 * mapobjectscale;
 
-					mobj->momx = (4*mobj->momx)/5;
-					mobj->momy = (4*mobj->momy)/5;
-					mobj->momz = hop * P_MobjFlip(mobj);
+					const fixed_t min = 6<<FRACBITS;
+					//const fixed_t max = 8<<FRACBITS;
+
+					mobj->momx = mobj->momx/2;
+					mobj->momy = mobj->momy/2;
+					mobj->momz = -mobj->momz/2;
+					
+					if (!(mobj->eflags & MFE_VERTICALFLIP) && mobj->momz < FixedMul(min, mobj->scale))
+						mobj->momz = FixedMul(min, mobj->scale);
+					else if (mobj->eflags & MFE_VERTICALFLIP && mobj->momz > FixedMul(-min, mobj->scale))
+						mobj->momz = FixedMul(-min, mobj->scale);
 
 					p->waterskip++;
 				}

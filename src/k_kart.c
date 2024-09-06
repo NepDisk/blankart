@@ -2706,9 +2706,9 @@ boolean K_TripwirePass(player_t *player)
 	return (player->tripwirePass != TRIPWIRE_NONE);
 }
 
-boolean K_MovingHorizontally(mobj_t *mobj)
+boolean K_MovingHorizontally(player_t *player)
 {
-	return (P_AproxDistance(mobj->momx, mobj->momy) / 5 > abs(mobj->momz));
+	return (player->speed/3 > abs(player->mo->momz));
 }
 
 boolean K_WaterRun(player_t *player)
@@ -2730,10 +2730,10 @@ boolean K_WaterSkip(player_t *player)
 	{
 		// Already waterskipping.
 		// Simply make sure you haven't slowed down drastically.
-		return (player->speed > 20 * mapobjectscale);
+		return (K_GetKartSpeed(player,false,true)/3);
 	}
 
-	return K_MovingHorizontally(player->mo);
+	return K_MovingHorizontally(player);
 }
 
 static fixed_t K_FlameShieldDashVar(INT32 val)
