@@ -935,7 +935,7 @@ void K_HandleFootstepParticles(mobj_t *mo)
 	if (!(mo->flags & MF_APPLYTERRAIN) || mo->terrain == NULL)
 	{
 		// No TERRAIN effects for this object.
-		goto offroadhandle;
+		return;
 	}
 
 	fs = K_GetFootstepByIndex(mo->terrain->footstepID);
