@@ -6702,7 +6702,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->floorboost--;
 	
 	if (player->sneakertimer == 0)
-		player->waterrun = 0;
+		player->waterrun = false;
 
 	if (player->driftboost)
 		player->driftboost--;
