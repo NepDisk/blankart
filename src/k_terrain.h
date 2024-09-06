@@ -115,6 +115,8 @@ typedef struct terrain_s
 	fixed_t offroad;		// The default offroad level of this texture.
 	INT16 damageType;		// The default damage type of this texture. (Negative means no damage).
 	UINT8 pogoSpring;		// Is this panel a pogo spring?
+	UINT8 pogoSpringMin;	// Minimum Speed of a pogo spring
+	UINT8 pogoSpringMax;	// Maximum Speed of a pogo spring value of 2
 	fixed_t speedPad;		// Speed pad strength
 	angle_t speedPadAngle;	// Speed pad angle
 	fixed_t springStrength;	// Spring strength

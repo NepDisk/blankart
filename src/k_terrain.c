@@ -658,8 +658,8 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 	if (terrain->pogoSpring > 0 && !(mo->eflags & MFE_SPRUNG))
 	{
 		const fixed_t hscale = mapobjectscale + (mapobjectscale - player->mo->scale);
-		const fixed_t minspeed = 24*hscale;
-		const fixed_t maxspeed = 28*hscale;
+		fixed_t minspeed = terrain->pogoSpringMin*hscale;
+		fixed_t maxspeed = terrain->pogoSpringMax*hscale;
 		angle_t pushangle = FixedHypot(player->mo->momx, player->mo->momy) ? R_PointToAngle2(0, 0, player->mo->momx, player->mo->momy) : player->mo->angle;
 		sector_t *sector = player->mo->subsector->sector;
 		
@@ -1538,6 +1538,8 @@ static void K_TerrainDefaults(terrain_t *terrain)
 	terrain->offroad = 0;
 	terrain->damageType = -1;
 	terrain->pogoSpring = 0;
+	terrain->pogoSpringMin = 24;
+	terrain->pogoSpringMax = 28;
 	terrain->speedPad = 0;
 	terrain->speedPadAngle = 0;
 	terrain->springStrength = 0;
@@ -1609,7 +1611,15 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	}
 	else if (stricmp(param, "pogoSpring") == 0)
 	{
-		terrain->pogoSpring = atof(val);
+		terrain->pogoSpring = (UINT8)get_number(val);
+	}
+	else if (stricmp(param, "pogoMinSpeed") == 0 || stricmp(param, "pogoSpringMinSpeed") == 0)
+	{
+		terrain->pogoSpringMin = (UINT8)get_number(val);
+	}
+	else if (stricmp(param, "pogoMaxSpeed") == 0 || stricmp(param, "pogoSpringMaxSpeed") == 0)
+	{
+		terrain->pogoSpringMax = (UINT8)get_number(val);
 	}
 	else if (stricmp(param, "speedPad") == 0)
 	{
