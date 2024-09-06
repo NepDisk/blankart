@@ -1960,26 +1960,29 @@ static void P_3dMovement(player_t *player)
 	// If "no" to 1, we're not reaching any limits yet, so ignore this entirely!
 	// -Shadow Hog
 	newMagnitude = R_PointToDist2(player->mo->momx - player->cmomx, player->mo->momy - player->cmomy, 0, 0);
-	if (newMagnitude > K_GetKartSpeed(player, true, true)) //topspeed)
+	if ((player->outruntime == 0) || (player->offroad > 0))
 	{
-		fixed_t tempmomx, tempmomy;
-		if (oldMagnitude > K_GetKartSpeed(player, true, true) && onground) // SRB2Kart: onground check for air speed cap
+		if (newMagnitude > K_GetKartSpeed(player, true, true)) //topspeed)
 		{
-			if (newMagnitude > oldMagnitude)
+			fixed_t tempmomx, tempmomy;
+			if (oldMagnitude > K_GetKartSpeed(player, true, true) && onground) // SRB2Kart: onground check for air speed cap
 			{
-				tempmomx = FixedMul(FixedDiv(player->mo->momx - player->cmomx, newMagnitude), oldMagnitude);
-				tempmomy = FixedMul(FixedDiv(player->mo->momy - player->cmomy, newMagnitude), oldMagnitude);
+				if (newMagnitude > oldMagnitude)
+				{
+					tempmomx = FixedMul(FixedDiv(player->mo->momx - player->cmomx, newMagnitude), oldMagnitude);
+					tempmomy = FixedMul(FixedDiv(player->mo->momy - player->cmomy, newMagnitude), oldMagnitude);
+					player->mo->momx = tempmomx + player->cmomx;
+					player->mo->momy = tempmomy + player->cmomy;
+				}
+				// else do nothing
+			}
+			else
+			{
+				tempmomx = FixedMul(FixedDiv(player->mo->momx - player->cmomx, newMagnitude), K_GetKartSpeed(player, true, true)); //topspeed)
+				tempmomy = FixedMul(FixedDiv(player->mo->momy - player->cmomy, newMagnitude), K_GetKartSpeed(player, true, true)); //topspeed)
 				player->mo->momx = tempmomx + player->cmomx;
 				player->mo->momy = tempmomy + player->cmomy;
 			}
-			// else do nothing
-		}
-		else
-		{
-			tempmomx = FixedMul(FixedDiv(player->mo->momx - player->cmomx, newMagnitude), K_GetKartSpeed(player, true, true)); //topspeed)
-			tempmomy = FixedMul(FixedDiv(player->mo->momy - player->cmomy, newMagnitude), K_GetKartSpeed(player, true, true)); //topspeed)
-			player->mo->momx = tempmomx + player->cmomx;
-			player->mo->momy = tempmomy + player->cmomy;
 		}
 	}
 }
@@ -4531,6 +4534,11 @@ void P_PlayerAfterThink(player_t *player)
 		I_Error("P_PlayerAfterThink: players[%s].mo == NULL", sizeu1(playeri));
 	}
 #endif
+
+	if (P_IsObjectOnGround(player->mo) == true)
+	{
+		player->outrun = 0;
+	}
 
 #ifdef SECTORSPECIALSAFTERTHINK
 	if (player->onconveyor != 1 || !P_IsObjectOnGround(player->mo))

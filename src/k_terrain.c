@@ -17,6 +17,7 @@
 #include "deh_soc.h" // get_mobjtype
 #include "doomdata.h"
 #include "doomdef.h"
+#include "doomstat.h"
 #include "doomtype.h"
 #include "fastcmp.h"
 #include "m_fixed.h"
@@ -492,6 +493,16 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 	{
 		// maybe can support regualar mobjs later? :)
 		return;
+	}
+	
+	// Milky Way road effect
+	player->outrun = terrain->outrun;
+	
+	if (terrain->outrun)
+	{
+		// This is a hack to make speedloss after outrun feel more natural
+		CONS_Printf("Adding outruntime!\n");
+		player->outruntime = sneakertime;
 	}
 
 	// Damage effects
@@ -1591,10 +1602,6 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	{
 		terrain->pogoSpring = FLOAT_TO_FIXED(atof(val));
 	}
-	else if (stricmp(param, "floorClip") == 0)
-	{
-		terrain->floorClip = FLOAT_TO_FIXED(atof(val));
-	}
 	else if (stricmp(param, "speedPad") == 0)
 	{
 		terrain->speedPad = FLOAT_TO_FIXED(atof(val));
@@ -1619,6 +1626,10 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 			terrain->springStrength =
 				FLOAT_TO_FIXED(15.625 * pow(1.6, fval));
 		}
+	}
+	else if (stricmp(param, "outrun") == 0 || stricmp(param, "speedIncrease") == 0)
+	{
+		terrain->outrun = FLOAT_TO_FIXED(atof(val));
 	}
 	else if (stricmp(param, "floorClip") == 0)
 	{

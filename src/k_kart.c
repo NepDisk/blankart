@@ -2933,6 +2933,13 @@ fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberb
 	if (doboostpower)
 		finalspeed = FixedMul(finalspeed, player->boostpower+player->speedboost);
 	
+	if (player->outrun != 0)
+	{
+		// Milky Way's roads
+		finalspeed += FixedMul(player->outrun, player->mo->scale);
+	}
+
+	
 	return finalspeed;
 }
 
@@ -6770,6 +6777,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (player->justbumped > 0)
 		player->justbumped--;
+	
+	if (player->outruntime > 0)
+		player->outruntime--;
 
 	K_UpdateTripwire(player);
 

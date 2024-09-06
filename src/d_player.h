@@ -548,6 +548,9 @@ typedef struct player_s
 	UINT8 typing_duration; // How long since resumed timer
 
 	UINT8 kickstartaccel;
+	
+	fixed_t outrun; // Milky Way road effect
+	UINT8 outruntime; // Used to bypass the speed cap for fall off
 
 #ifdef HWRENDER
 	fixed_t fovadd; // adjust FOV for hw rendering
