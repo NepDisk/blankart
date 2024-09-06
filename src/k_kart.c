@@ -4724,9 +4724,9 @@ void K_DoWaterRunPanel(player_t *player)
 	if (player->floorboost == 0 || player->floorboost == 3)
 	{
 		S_StopSoundByID(player->mo, sfx_cdfm01);
-		S_StopSoundByID(player->mo, sfx_wdjump);
+		S_StopSoundByID(player->mo, sfx_kc3c);
 		S_StartSound(player->mo, sfx_cdfm01);
-		S_StartSound(player->mo, sfx_wdjump);
+		S_StartSound(player->mo, sfx_kc3c);
 
 		K_SpawnDashDustRelease(player);
 		if (intendedboost > player->speedboost)
