@@ -105,7 +105,7 @@ enum
 	ML_IMPASSABLE    = 0x00000001,
 
 	// Blocks enemies only
-	ML_BLOCKMONSTERS  = 0x00000002,
+	ML_BLOCKMONSTERS = 0x00000002,
 
 	// Backside will not be present at all if not two sided.
 	ML_TWOSIDED      = 0x00000004,
@@ -142,7 +142,7 @@ enum
 	ML_NONET			= 0x00001000,
 
 	// SRB2Kart: Blocks players only; items can be thrown through these.
-	ML_BLOCKPLAYERS = 0x00002000,
+	ML_BLOCKPLAYERS		= 0x00002000,
 
 	// Don't bounce off this wall!
 	ML_NOTBOUNCY		= 0x00004000,
