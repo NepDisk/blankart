@@ -6123,7 +6123,7 @@ static void P_ConvertBinaryLinedefTypes(void)
 
 			lines[i].args[1] = tag;
 
-			if (lines[i].flags & ML_BLOCKMONSTERS)
+			if (lines[i].flags & ML_BLOCKPLAYERS)
 			{
 				UINT8 side = lines[i].special >= 714;
 
