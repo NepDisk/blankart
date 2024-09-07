@@ -501,7 +501,7 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 	if (terrain->outrun)
 	{
 		// This is a hack to make speedloss after outrun feel more natural
-		CONS_Printf("Adding outruntime!\n");
+		//CONS_Printf("Adding outruntime!\n");
 		player->outruntime = sneakertime;
 	}
 

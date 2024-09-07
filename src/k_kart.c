@@ -2848,6 +2848,22 @@ static void K_GetKartBoostPower(player_t *player)
 	player->accelboost = accelboost;
 }
 
+// Returns value based on being Grown or Shrunk otherwise returns FRACUNIT
+static fixed_t K_GrowShrinkOrNormal(const player_t *player)
+{
+	fixed_t scaleDiff = player->mo->scale - mapobjectscale;
+	fixed_t playerScale = FixedDiv(player->mo->scale, mapobjectscale);
+	fixed_t speedMul = FRACUNIT;
+
+	if (scaleDiff > 0 || scaleDiff < 0)
+	{
+		// Grown or Shrunk
+		speedMul = playerScale;
+	}
+
+	return speedMul;
+}
+
 // Returns kart speed from a stat. Boost power and scale are NOT taken into account, no player or object is necessary.
 fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed)
 {
@@ -2936,7 +2952,7 @@ fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberb
 	if (player->outrun != 0)
 	{
 		// Milky Way's roads
-		finalspeed += FixedMul(player->outrun, player->mo->scale);
+		finalspeed += FixedMul(player->outrun, K_GrowShrinkOrNormal(player));
 	}
 
 	
