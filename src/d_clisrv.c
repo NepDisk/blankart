@@ -2494,24 +2494,34 @@ void CL_ClearPlayer(INT32 playernum)
 {
 	int i;
 
-	if (players[playernum].mo)
+	if (gamestate == GS_LEVEL)
 	{
-		P_RemoveMobj(players[playernum].mo);
+		if (players[playernum].mo)
+		{
+			P_RemoveMobj(players[playernum].mo);
+			P_SetTarget(&players[playernum].mo, NULL);
+		}
+
+		P_SetTarget(&players[playernum].skybox.viewpoint, NULL);
+		P_SetTarget(&players[playernum].skybox.centerpoint, NULL);
+		P_SetTarget(&players[playernum].awayviewmobj, NULL);
+		P_SetTarget(&players[playernum].followmobj, NULL);
 	}
+		// Handle parties.
+		for (i = 0; i < MAXPLAYERS; ++i)
+		{
+			if (splitscreen_invitations[i] == playernum)
+				splitscreen_invitations[i] = -1;
+		}
 
-	for (i = 0; i < MAXPLAYERS; ++i)
-	{
-		if (splitscreen_invitations[i] == playernum)
-			splitscreen_invitations[i] = -1;
-	}
+		splitscreen_party_size[playernum] = 0;
+		splitscreen_original_party_size[playernum] = 0;
 
-	splitscreen_invitations[playernum] = -1;
-	splitscreen_party_size[playernum] = 0;
-	splitscreen_original_party_size[playernum] = 0;
+		// Wipe the struct.
+		memset(&players[playernum], 0, sizeof (player_t));
 
-	memset(&players[playernum], 0, sizeof (player_t));
-
-	RemoveAdminPlayer(playernum); // don't stay admin after you're gone
+		// Handle post-cleanup.
+		RemoveAdminPlayer(playernum); // don't stay admin after you're gone
 }
 
 //
