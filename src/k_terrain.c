@@ -17,6 +17,7 @@
 #include "deh_soc.h" // get_mobjtype
 #include "doomdata.h"
 #include "doomdef.h"
+#include "doomstat.h"
 #include "doomtype.h"
 #include "fastcmp.h"
 #include "m_fixed.h"
@@ -493,6 +494,16 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		// maybe can support regualar mobjs later? :)
 		return;
 	}
+	
+	// Milky Way road effect
+	player->outrun = terrain->outrun;
+	
+	if (terrain->outrun)
+	{
+		// This is a hack to make speedloss after outrun feel more natural
+		//CONS_Printf("Adding outruntime!\n");
+		player->outruntime = sneakertime;
+	}
 
 	// Damage effects
 	if (terrain->damageType > 0)
@@ -520,17 +531,138 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		else
 			player->floorboost = 2;
 
-		K_DoSneaker(player, 0);
+		K_DoWaterRunPanel(player);
+	}
+	
+	// Speed pad
+	if (terrain->speedPad > 0)
+	{
+		if (player->floorboost != 0)
+		{
+			player->floorboost = 2;
+		}
+		else
+		{
+			fixed_t thrustSpeed = terrain->speedPad;
+			angle_t thrustAngle = terrain->speedPadAngle;
+			fixed_t playerSpeed = P_AproxDistance(player->mo->momx, player->mo->momy);
+
+			// FIXME: come up with a better way to get the touched
+			// texture's rotation to this function. At least this
+			// will work for 90% of scenarios...
+
+			if (player->mo->eflags & MFE_VERTICALFLIP)
+			{
+				if (player->mo->ceilingrover != NULL)
+				{
+					thrustAngle -= *player->mo->ceilingrover->bottomangle;
+				}
+				else
+				{
+					thrustAngle -= player->mo->subsector->sector->ceilingpic_angle;
+				}
+			}
+			else
+			{
+				if (player->mo->floorrover != NULL)
+				{
+					thrustAngle -= *player->mo->floorrover->topangle;
+				}
+				else
+				{
+					thrustAngle -= player->mo->subsector->sector->floorpic_angle;
+				}
+			}
+
+			// Map scale for Shrink, object scale for Grow.
+			thrustSpeed = FixedMul(thrustSpeed, max(mapobjectscale, player->mo->scale));
+
+			thrustAngle = K_ReflectAngle(
+				K_MomentumAngle(player->mo), thrustAngle,
+				playerSpeed, thrustSpeed
+			);
+
+			P_InstaThrust(player->mo, thrustAngle, max(thrustSpeed, 2*playerSpeed));
+
+			player->dashpadcooldown = TICRATE/3;
+			player->pogospring = 0;
+			player->floorboost = 2;
+
+			S_StartSound(player->mo, sfx_cdfm62);
+		}
 	}
 
+	// Spring
+	if (terrain->springStrength)
+	{
+		sector_t *sector = player->mo->subsector->sector;
+
+		const pslope_t *slope;
+		angle_t angle = 0;
+
+		fixed_t co = FRACUNIT;
+		fixed_t si = 0;
+
+		// FIXME: come up with a better way to get the touched
+		// texture's slope to this function. At least this
+		// will work for 90% of scenarios...
+
+		if (player->mo->eflags & MFE_VERTICALFLIP)
+		{
+			if (player->mo->ceilingrover != NULL)
+			{
+				slope = *player->mo->ceilingrover->b_slope;
+			}
+			else
+			{
+				slope = sector->c_slope;
+			}
+		}
+		else
+		{
+			if (player->mo->floorrover != NULL)
+			{
+				slope = *player->mo->floorrover->t_slope;
+			}
+			else
+			{
+				slope = sector->f_slope;
+			}
+		}
+
+		if (slope)
+		{
+			const angle_t fa = (slope->zangle >> ANGLETOFINESHIFT);
+
+			co = FINECOSINE(fa) * P_MobjFlip(player->mo);
+			si = -(FINESINE(fa));
+
+			angle = slope->xydirection;
+		}
+
+		P_DoSpringEx(player->mo, mapobjectscale,
+				FixedMul(terrain->springStrength, co),
+				FixedMul(terrain->springStrength, si),
+				angle);
+
+		sector->soundorg.z = player->mo->z;
+		
+		if (terrain->pogoSpring == 0)
+			S_StartSound(&sector->soundorg, sfx_s3kb1); // Don't play two spring sounds at once thx!
+	}
+	
+	if ((terrain->pogoSpring > 0) && terrain->springStrength) // Hack to allow spring strength to work with pogospring
+		mo->eflags &= ~MFE_SPRUNG;
+	
 	// Pogospring panel
 	if (terrain->pogoSpring > 0 && !(mo->eflags & MFE_SPRUNG))
 	{
 		const fixed_t hscale = mapobjectscale + (mapobjectscale - player->mo->scale);
-		const fixed_t minspeed = 24*hscale;
-		const fixed_t maxspeed = 28*hscale;
+		fixed_t minspeed = terrain->pogoSpringMin*hscale;
+		fixed_t maxspeed = terrain->pogoSpringMax*hscale;
 		angle_t pushangle = FixedHypot(player->mo->momx, player->mo->momy) ? R_PointToAngle2(0, 0, player->mo->momx, player->mo->momy) : player->mo->angle;
-		// if we have no speed for SOME REASON, use the player's angle, otherwise we'd be forcefully thrusted to what I can only assume is angle 0
+		sector_t *sector = player->mo->subsector->sector;
+		
 
 		if ((player->speed > maxspeed) && terrain->pogoSpring == 2) // Prevent overshooting jumps
 			P_InstaThrust(player->mo, pushangle, maxspeed);
@@ -542,7 +674,10 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		else
 			player->pogospring = 1;
 		
-		K_DoPogoSpring(player->mo, 0, 1);
+		if (!terrain->springStrength)
+			K_DoPogoSpring(player->mo, 0, 1);
+		else
+			S_StartSound(mo, sfx_kc2f);
 	}
 
 	// (Offroad is handled elsewhere!)
@@ -820,7 +955,7 @@ void K_HandleFootstepParticles(mobj_t *mo)
 	if (!(mo->flags & MF_APPLYTERRAIN) || mo->terrain == NULL)
 	{
 		// No TERRAIN effects for this object.
-		goto offroadhandle;
+		return;
 	}
 
 	fs = K_GetFootstepByIndex(mo->terrain->footstepID);
@@ -1403,7 +1538,12 @@ static void K_TerrainDefaults(terrain_t *terrain)
 	terrain->offroad = 0;
 	terrain->damageType = -1;
 	terrain->pogoSpring = 0;
-	terrain->flags = 0;
+	terrain->pogoSpringMin = 24;
+	terrain->pogoSpringMax = 28;
+	terrain->speedPad = 0;
+	terrain->speedPadAngle = 0;
+	terrain->springStrength = 0;
+	terrain->flags = TRF_REMAP;
 }
 
 /*--------------------------------------------------
@@ -1471,7 +1611,44 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	}
 	else if (stricmp(param, "pogoSpring") == 0)
 	{
-		terrain->pogoSpring = FLOAT_TO_FIXED(atof(val));
+		terrain->pogoSpring = (UINT8)get_number(val);
+	}
+	else if (stricmp(param, "pogoMinSpeed") == 0 || stricmp(param, "pogoSpringMinSpeed") == 0)
+	{
+		terrain->pogoSpringMin = (UINT8)get_number(val);
+	}
+	else if (stricmp(param, "pogoMaxSpeed") == 0 || stricmp(param, "pogoSpringMaxSpeed") == 0)
+	{
+		terrain->pogoSpringMax = (UINT8)get_number(val);
+	}
+	else if (stricmp(param, "speedPad") == 0)
+	{
+		terrain->speedPad = FLOAT_TO_FIXED(atof(val));
+	}
+	else if (stricmp(param, "speedPadAngle") == 0)
+	{
+		terrain->speedPadAngle = FixedAngle(FLOAT_TO_FIXED(atof(val)));
+	}
+	else if (stricmp(param, "springStrength") == 0)
+	{
+		const double fval = atof(val);
+
+		if (fpclassify(fval) == FP_ZERO)
+		{
+			terrain->springStrength = 0;
+		}
+		else
+		{
+			// Springs increase in stength by 1.6 times the
+			// previous strength. Grey spring is 25 and
+			// 25/1.6 = 15.625
+			terrain->springStrength =
+				FLOAT_TO_FIXED(15.625 * pow(1.6, fval));
+		}
+	}
+	else if (stricmp(param, "outrun") == 0 || stricmp(param, "speedIncrease") == 0)
+	{
+		terrain->outrun = FLOAT_TO_FIXED(atof(val));
 	}
 	else if (stricmp(param, "floorClip") == 0)
 	{
@@ -1485,13 +1662,17 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	{
 		K_FlagBoolean(&terrain->flags, TRF_SNEAKERPANEL, val);
 	}
-	else if (stricmp(param, "waterRunPanel") == 0)
+	else if (stricmp(param, "waterRunPanel") == 0 || stricmp(param, "waterPanel") == 0)
 	{
 		K_FlagBoolean(&terrain->flags, TRF_WATERRUNPANEL, val);
 	}
 	else if (stricmp(param, "tripwire") == 0)
 	{
 		K_FlagBoolean(&terrain->flags, TRF_TRIPWIRE, val);
+	}
+	else if (stricmp(param, "remap") == 0)
+	{
+		K_FlagBoolean(&terrain->flags, TRF_REMAP, val);
 	}
 }
 
@@ -1562,7 +1743,7 @@ static boolean K_DoTERRAINLumpParse(size_t num, void (*parser)(size_t, char *, c
 }
 
 /*--------------------------------------------------
-	static boolean K_TERRAINLumpParser(UINT8 *data, size_t size)
+	static boolean K_TERRAINLumpParser(char *data, size_t size)
 
 		Parses inputted lump data as a TERRAIN lump.
 

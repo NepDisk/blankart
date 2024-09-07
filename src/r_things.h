@@ -60,6 +60,7 @@ extern INT16 negonearray[MAXVIDWIDTH];
 extern INT16 screenheightarray[MAXVIDWIDTH];
 
 fixed_t R_GetShadowZ(mobj_t *thing, pslope_t **shadowslope);
+fixed_t R_GetSpriteDirectionalLighting(angle_t angle);
 
 //SoM: 6/5/2000: Light sprites correctly!
 void R_AddSprites(sector_t *sec, INT32 lightlevel);
@@ -88,6 +89,8 @@ boolean R_ThingIsSemiBright (mobj_t *thing);
 boolean R_ThingIsFullDark (mobj_t *thing);
 
 boolean R_ThingIsFlashing(mobj_t *thing);
+
+INT32 R_ThingLightLevel(mobj_t *thing);
 
 // --------------
 // MASKED DRAWING
@@ -173,7 +176,7 @@ typedef struct vissprite_s
 	fixed_t paperoffset, paperdistance; // for paper sprites, offset/dist relative to the angle
 	fixed_t xiscale; // negative if flipped
 
-	angle_t centerangle; // for paper sprites
+	angle_t centerangle; // for paper sprites / splats
 
 	// for floor sprites
 	struct {
@@ -188,6 +191,7 @@ typedef struct vissprite_s
 
 	fixed_t texturemid;
 	patch_t *patch;
+	patch_t *bright;
 
 	lighttable_t *colormap; // for color translation and shadow draw
 	                        // maxbright frames as well

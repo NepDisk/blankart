@@ -48,6 +48,7 @@ extern consvar_t cv_playsoundifunfocused;
 
 extern consvar_t cv_music_resync_threshold;
 extern consvar_t cv_music_resync_powerups_only;
+extern consvar_t cv_streamersafemusic;
 
 #ifdef HAVE_OPENMPT
 extern consvar_t cv_modfilter;
@@ -117,7 +118,7 @@ void S_InitSfxChannels(INT32 sfxVolume);
 //
 void S_StopSounds(void);
 void S_ClearSfx(void);
-void S_StartEx(boolean reset);
+void S_InitLevelMusic(boolean fromnetsave);
 
 //
 // Basically a W_GetNumForName that adds "ds" at the beginning of the string. Returns a lumpnum.
@@ -164,19 +165,27 @@ boolean S_MusicInfo(char *mname, UINT16 *mflags, boolean *looping);
 // Set Speed of Music
 boolean S_SpeedMusic(float speed);
 
+#define MAXDEFTRACKS 3
+
 // Music credits
 typedef struct musicdef_s
 {
-	char name[7];
-	//char usage[256];
-	char source[256];
+	char name[MAXDEFTRACKS][7];
+	UINT32 hash[MAXDEFTRACKS];
+	UINT8 numtracks;
+	char *title;
+	char *author;
+	char *source;
+	char *composers;
 	int volume;
+	boolean contentidunsafe;
 	struct musicdef_s *next;
 } musicdef_t;
 
 extern struct cursongcredit
 {
 	musicdef_t *def;
+	char *text;
 	UINT16 anim;
 	UINT8 trans;
 	fixed_t x;
@@ -188,6 +197,7 @@ extern int musicdef_volume;
 
 void S_LoadMusicDefs(UINT16 wadnum);
 void S_InitMusicDefs(void);
+musicdef_t *S_FindMusicDef(const char *name, UINT8 *i);
 void S_ShowMusicCredit(void);
 
 //

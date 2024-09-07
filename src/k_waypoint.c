@@ -30,11 +30,15 @@ static const UINT32 SPARKLES_PER_CONNECTION = 16U;
 #define CLOSEDSET_BASE_SIZE  (256U)
 #define NODESARRAY_BASE_SIZE (256U)
 
-static waypoint_t *waypointheap = NULL;
+static waypoint_t *waypointheap  = NULL;
 static waypoint_t *firstwaypoint = NULL;
 static waypoint_t *finishline    = NULL;
+static waypoint_t *startingwaypoint = NULL;
 
 static UINT32 circuitlength = 0U;
+
+#define BASE_TRACK_COMPLEXITY (-5000) // Arbritrary, vibes-based value
+static INT32 trackcomplexity = 0;
 
 static size_t numwaypoints       = 0U;
 static size_t numwaypointmobjs   = 0U;
@@ -51,6 +55,16 @@ static size_t basenodesarraysize = NODESARRAY_BASE_SIZE;
 waypoint_t *K_GetFinishLineWaypoint(void)
 {
 	return finishline;
+}
+
+/*--------------------------------------------------
+	waypoint_t *K_GetStartingWaypoint(void)
+
+		See header file for description.
+--------------------------------------------------*/
+waypoint_t *K_GetStartingWaypoint(void)
+{
+	return startingwaypoint;
 }
 
 /*--------------------------------------------------
@@ -236,6 +250,29 @@ INT32 K_GetWaypointID(waypoint_t *waypoint)
 }
 
 /*--------------------------------------------------
+	waypoint_t *K_GetWaypointFromID(INT32 waypointID)
+
+		See header file for description.
+--------------------------------------------------*/
+waypoint_t *K_GetWaypointFromID(INT32 waypointID)
+{
+	waypoint_t *waypoint = NULL;
+	size_t i = SIZE_MAX;
+
+	for (i = 0; i < numwaypoints; i++)
+	{
+		waypoint = &waypointheap[i];
+
+		if (K_GetWaypointID(waypoint) == waypointID)
+		{
+			return waypoint;
+		}
+	}
+
+	return NULL;
+}
+
+/*--------------------------------------------------
 	UINT32 K_GetCircuitLength(void)
 
 		See header file for description.
@@ -243,6 +280,16 @@ INT32 K_GetWaypointID(waypoint_t *waypoint)
 UINT32 K_GetCircuitLength(void)
 {
 	return circuitlength;
+}
+
+/*--------------------------------------------------
+	INT32 K_GetTrackComplexity(void)
+
+		See header file for description.
+--------------------------------------------------*/
+INT32 K_GetTrackComplexity(void)
+{
+	return trackcomplexity;
 }
 
 /*--------------------------------------------------
@@ -303,6 +350,14 @@ static void K_CompareOverlappingWaypoint
 	const boolean huntbackwards = false;
 	boolean pathfindsuccess = false;
 	path_t pathtofinish = {0};
+	Z_Free(pathtofinish.array);
+
+	if (K_GetWaypointIsShortcut(*bestwaypoint) == false
+		&& K_GetWaypointIsShortcut(checkwaypoint) == true)
+	{
+		// If it's a shortcut, don't use it.
+		return;
+	}
 
 	pathfindsuccess =
 		K_PathfindToWaypoint(checkwaypoint, finishline, &pathtofinish, useshortcuts, huntbackwards);
@@ -314,17 +369,15 @@ static void K_CompareOverlappingWaypoint
 			*bestwaypoint = checkwaypoint;
 			*bestfindist = pathtofinish.totaldist;
 		}
-
-		Z_Free(pathtofinish.array);
 	}
 }
 
 /*--------------------------------------------------
-	waypoint_t *K_GetBestWaypointForMobj(mobj_t *const mobj)
+	waypoint_t *K_GetBestWaypointForMobj(mobj_t *const mobj, waypoint_t *const hint)
 
 		See header file for description.
 --------------------------------------------------*/
-waypoint_t *K_GetBestWaypointForMobj(mobj_t *const mobj)
+waypoint_t *K_GetBestWaypointForMobj(mobj_t *const mobj, waypoint_t *const hint)
 {
 	waypoint_t *bestwaypoint = NULL;
 
@@ -334,37 +387,73 @@ waypoint_t *K_GetBestWaypointForMobj(mobj_t *const mobj)
 	}
 	else
 	{
-		size_t     i              = 0U;
-		waypoint_t *checkwaypoint = NULL;
 		fixed_t    closestdist    = INT32_MAX;
 		fixed_t    checkdist      = INT32_MAX;
 		fixed_t    bestfindist    = INT32_MAX;
 
-		for (i = 0; i < numwaypoints; i++)
+		void sort_waypoint (waypoint_t *const checkwaypoint)
 		{
-			fixed_t rad;
-
-			checkwaypoint = &waypointheap[i];
-
 			if (!K_GetWaypointIsEnabled(checkwaypoint))
 			{
-				continue;
+				return;
 			}
 
 			checkdist = P_AproxDistance(
 				(mobj->x / FRACUNIT) - (checkwaypoint->mobj->x / FRACUNIT),
 				(mobj->y / FRACUNIT) - (checkwaypoint->mobj->y / FRACUNIT));
-			checkdist = P_AproxDistance(checkdist, ((mobj->z / FRACUNIT) - (checkwaypoint->mobj->z / FRACUNIT)) * 4);
 
-			rad = (checkwaypoint->mobj->radius / FRACUNIT);
+			UINT8 zMultiplier = 4; // Heavily weight z distance, for the sake of overlapping paths
+
+			if (hint != NULL)
+			{
+				boolean connectedToHint = (checkwaypoint == hint);
+
+				if (connectedToHint == false && hint->numnextwaypoints > 0)
+				{
+					for (size_t i = 0U; i < hint->numnextwaypoints; i++)
+					{
+						if (hint->nextwaypoints[i] == checkwaypoint)
+						{
+							connectedToHint = true;
+							break;
+						}
+					}
+				}
+
+				if (connectedToHint == false && hint->numprevwaypoints > 0)
+				{
+					for (size_t i = 0U; i < hint->numprevwaypoints; i++)
+					{
+						if (hint->prevwaypoints[i] == checkwaypoint)
+						{
+							connectedToHint = true;
+							break;
+						}
+					}
+				}
+
+				// Do not consider z height for next/prev waypoints of current waypoint.
+				// This helps the current waypoint not be behind you when you're taking a jump.
+				if (connectedToHint == true)
+				{
+					zMultiplier = 0;
+				}
+			}
+
+			if (zMultiplier > 0)
+			{
+				checkdist = P_AproxDistance(checkdist, ((mobj->z / FRACUNIT) - (checkwaypoint->mobj->z / FRACUNIT)) * zMultiplier);
+			}
+
+			fixed_t rad = (checkwaypoint->mobj->radius / FRACUNIT);
 
 			// remember: huge radius
 			if (closestdist <= rad && checkdist <= rad && finishline != NULL)
 			{
-				if (!P_TraceBlockingLines(mobj, checkwaypoint->mobj))
+				if (!P_TraceWaypointTraversal(mobj, checkwaypoint->mobj))
 				{
 					// Save sight checks when all of the other checks pass, so we only do it if we have to
-					continue;
+					return;
 				}
 
 				// If the mobj is touching multiple waypoints at once,
@@ -379,15 +468,27 @@ waypoint_t *K_GetBestWaypointForMobj(mobj_t *const mobj)
 			}
 			else if (checkdist < closestdist && bestfindist == INT32_MAX)
 			{
-				if (!P_TraceBlockingLines(mobj, checkwaypoint->mobj))
+				if (!P_TraceWaypointTraversal(mobj, checkwaypoint->mobj))
 				{
 					// Save sight checks when all of the other checks pass, so we only do it if we have to
-					continue;
+					return;
 				}
 
 				bestwaypoint = checkwaypoint;
 				closestdist = checkdist;
 			}
+		};
+
+		if (hint != NULL)
+		{
+			// The hint is a waypoint that is already known to be close to the player. It is used to exclude
+			// most of the other waypoints by distance so fewer expensive sight checks are performed.
+			sort_waypoint(hint);
+		}
+
+		for (size_t i = 0U; i < numwaypoints; i++)
+		{
+			sort_waypoint(&waypointheap[i]);
 		}
 	}
 
@@ -578,7 +679,7 @@ static void K_DebugWaypointDrawRadius(waypoint_t *const waypoint)
 
 	spawnX = waypointmobj->x;
 	spawnY = waypointmobj->y;
-	spawnZ = waypointmobj->z + 16*mapobjectscale;
+	spawnZ = waypointmobj->z;
 
 	radiusOrb = P_SpawnMobj(spawnX, spawnY, spawnZ, MT_SPARK);
 
@@ -586,7 +687,7 @@ static void K_DebugWaypointDrawRadius(waypoint_t *const waypoint)
 	radiusOrb->tics = 1;
 
 	radiusOrb->frame &= ~FF_TRANSMASK;
-	radiusOrb->frame |= FF_FULLBRIGHT;
+	radiusOrb->frame |= FF_FULLBRIGHT|FF_REVERSESUBTRACT;
 	radiusOrb->color = SKINCOLOR_PURPLE;
 
 	radiusOrb->destscale = FixedDiv(waypointmobj->radius, spriteRadius);
@@ -1078,6 +1179,45 @@ static boolean K_WaypointPathfindReachedEnd(void *data, void *setupData)
 }
 
 /*--------------------------------------------------
+	static boolean K_WaypointPathfindNextValid(void *data, void *setupData)
+
+		Returns if the current waypoint data has a next waypoint.
+
+	Input Arguments:-
+		data - Should point to a pathfindnode_t to compare
+		setupData - Should point to the pathfindsetup_t to compare
+
+	Return:-
+		True if the waypoint has a next waypoint, false otherwise.
+--------------------------------------------------*/
+static boolean K_WaypointPathfindNextValid(void *data, void *setupData)
+{
+	boolean nextValid = false;
+
+	if (data == NULL || setupData == NULL)
+	{
+		CONS_Debug(DBG_GAMELOGIC, "K_WaypointPathfindNextValid received NULL data.\n");
+	}
+	else
+	{
+		pathfindnode_t *node = (pathfindnode_t *)data;
+		pathfindsetup_t *setup = (pathfindsetup_t *)setupData;
+		waypoint_t *wp = (waypoint_t *)node->nodedata;
+
+		if (setup->getconnectednodes == K_WaypointPathfindGetPrev)
+		{
+			nextValid = (wp->numprevwaypoints > 0U);
+		}
+		else
+		{
+			nextValid = (wp->numnextwaypoints > 0U);
+		}
+	}
+
+	return nextValid;
+}
+
+/*--------------------------------------------------
 	static boolean K_WaypointPathfindReachedGScore(void *data, void *setupData)
 
 		Returns if the current waypoint data reaches our end G score.
@@ -1101,11 +1241,47 @@ static boolean K_WaypointPathfindReachedGScore(void *data, void *setupData)
 	{
 		pathfindnode_t *node = (pathfindnode_t *)data;
 		pathfindsetup_t *setup = (pathfindsetup_t *)setupData;
+		boolean nextValid = K_WaypointPathfindNextValid(data, setupData);
 
-		scoreReached = (node->gscore >= setup->endgscore);
+		scoreReached = (node->gscore >= setup->endgscore) || (nextValid == false);
 	}
 
 	return scoreReached;
+}
+
+/*--------------------------------------------------
+	static boolean K_WaypointPathfindReachedGScoreSpawnable(void *data, void *setupData)
+
+		Returns if the current waypoint data reaches our end G score.
+
+	Input Arguments:-
+		data - Should point to a pathfindnode_t to compare
+		setupData - Should point to the pathfindsetup_t to compare
+
+	Return:-
+		True if the waypoint reached the G score, false otherwise.
+--------------------------------------------------*/
+static boolean K_WaypointPathfindReachedGScoreSpawnable(void *data, void *setupData)
+{
+	boolean scoreReached = false;
+	boolean spawnable = false;
+
+	if (data == NULL || setupData == NULL)
+	{
+		CONS_Debug(DBG_GAMELOGIC, "K_WaypointPathfindReachedGScoreSpawnable received NULL data.\n");
+	}
+	else
+	{
+		pathfindnode_t *node = (pathfindnode_t *)data;
+		pathfindsetup_t *setup = (pathfindsetup_t *)setupData;
+		waypoint_t *wp = (waypoint_t *)node->nodedata;
+		boolean nextValid = K_WaypointPathfindNextValid(data, setupData);
+
+		scoreReached = (node->gscore >= setup->endgscore) || (nextValid == false);
+		spawnable = K_GetWaypointIsSpawnpoint(wp);
+	}
+
+	return (scoreReached && spawnable);
 }
 
 /*--------------------------------------------------
@@ -1224,13 +1400,6 @@ boolean K_PathfindThruCircuit(
 			"K_PathfindThruCircuit: sourcewaypoint with ID %d has no next waypoint\n",
 			K_GetWaypointID(sourcewaypoint));
 	}
-	else if (((huntbackwards == false) && (finishline->numprevwaypoints == 0))
-		|| ((huntbackwards == true) && (finishline->numnextwaypoints == 0)))
-	{
-		CONS_Debug(DBG_GAMELOGIC,
-			"K_PathfindThruCircuit: finishline with ID %d has no previous waypoint\n",
-			K_GetWaypointID(finishline));
-	}
 	else
 	{
 		pathfindsetup_t            pathfindsetup   = {0};
@@ -1239,6 +1408,82 @@ boolean K_PathfindThruCircuit(
 		getnodeheuristicfunc       heuristicfunc   = K_WaypointPathfindGetHeuristic;
 		getnodetraversablefunc     traversablefunc = K_WaypointPathfindTraversableNoShortcuts;
 		getpathfindfinishedfunc    finishedfunc    = K_WaypointPathfindReachedGScore;
+
+		if (huntbackwards)
+		{
+			nextnodesfunc = K_WaypointPathfindGetPrev;
+			nodecostsfunc = K_WaypointPathfindGetPrevCosts;
+		}
+
+		if (useshortcuts)
+		{
+			traversablefunc = K_WaypointPathfindTraversableAllEnabled;
+		}
+
+		pathfindsetup.opensetcapacity    = K_GetOpensetBaseSize();
+		pathfindsetup.closedsetcapacity  = K_GetClosedsetBaseSize();
+		pathfindsetup.nodesarraycapacity = K_GetNodesArrayBaseSize();
+		pathfindsetup.startnodedata      = sourcewaypoint;
+		pathfindsetup.endnodedata        = finishline;
+		pathfindsetup.endgscore          = traveldistance;
+		pathfindsetup.getconnectednodes  = nextnodesfunc;
+		pathfindsetup.getconnectioncosts = nodecostsfunc;
+		pathfindsetup.getheuristic       = heuristicfunc;
+		pathfindsetup.gettraversable     = traversablefunc;
+		pathfindsetup.getfinished        = finishedfunc;
+
+		pathfound = K_PathfindAStar(returnpath, &pathfindsetup);
+
+		K_UpdateOpensetBaseSize(pathfindsetup.opensetcapacity);
+		K_UpdateClosedsetBaseSize(pathfindsetup.closedsetcapacity);
+		K_UpdateNodesArrayBaseSize(pathfindsetup.nodesarraycapacity);
+	}
+
+	return pathfound;
+}
+
+/*--------------------------------------------------
+	boolean K_PathfindThruCircuitSpawnable(
+		waypoint_t *const sourcewaypoint,
+		const UINT32      traveldistance,
+		path_t *const     returnpath,
+		const boolean     useshortcuts,
+		const boolean     huntbackwards)
+
+		See header file for description.
+--------------------------------------------------*/
+boolean K_PathfindThruCircuitSpawnable(
+	waypoint_t *const sourcewaypoint,
+	const UINT32      traveldistance,
+	path_t *const     returnpath,
+	const boolean     useshortcuts,
+	const boolean     huntbackwards)
+{
+	boolean pathfound = false;
+
+	if (sourcewaypoint == NULL)
+	{
+		CONS_Debug(DBG_GAMELOGIC, "NULL sourcewaypoint in K_PathfindThruCircuitSpawnable.\n");
+	}
+	else if (finishline == NULL)
+	{
+		CONS_Debug(DBG_GAMELOGIC, "NULL finishline in K_PathfindThruCircuitSpawnable.\n");
+	}
+	else if (((huntbackwards == false) && (sourcewaypoint->numnextwaypoints == 0))
+		|| ((huntbackwards == true) && (sourcewaypoint->numprevwaypoints == 0)))
+	{
+		CONS_Debug(DBG_GAMELOGIC,
+			"K_PathfindThruCircuitSpawnable: sourcewaypoint with ID %d has no next waypoint\n",
+			K_GetWaypointID(sourcewaypoint));
+	}
+	else
+	{
+		pathfindsetup_t            pathfindsetup   = {0};
+		getconnectednodesfunc      nextnodesfunc   = K_WaypointPathfindGetNext;
+		getnodeconnectioncostsfunc nodecostsfunc   = K_WaypointPathfindGetNextCosts;
+		getnodeheuristicfunc       heuristicfunc   = K_WaypointPathfindGetHeuristic;
+		getnodetraversablefunc     traversablefunc = K_WaypointPathfindTraversableNoShortcuts;
+		getpathfindfinishedfunc    finishedfunc    = K_WaypointPathfindReachedGScoreSpawnable;
 
 		if (huntbackwards)
 		{
@@ -1727,12 +1972,31 @@ static UINT32 K_SetupCircuitLength(void)
 	// line places people correctly relative to each other
 	if ((mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE) == LF_SECTIONRACE)
 	{
-		circuitlength = 0U;
+		path_t bestsprintpath = {0};
+		const boolean useshortcuts = false;
+		const boolean huntbackwards = true;
+		const UINT32 traveldist = UINT32_MAX - UINT16_MAX; // Go as far back as possible. Not exactly UINT32_MAX to avoid possible overflow.
+
+		boolean pathfindsuccess = K_PathfindThruCircuit(
+			finishline, traveldist,
+			&bestsprintpath,
+			useshortcuts, huntbackwards
+		);
+
+		circuitlength = bestsprintpath.totaldist;
+
+		if (pathfindsuccess == true)
+		{
+			startingwaypoint = (waypoint_t *)bestsprintpath.array[ bestsprintpath.numnodes - 1 ].nodedata;
+		}
+		Z_Free(bestsprintpath.array);
+		
 	}
 	else
 	{
 		// Create a fake finishline waypoint, then try and pathfind to the finishline from it
 		waypoint_t    fakefinishline  = *finishline;
+
 		path_t        bestcircuitpath = {0};
 		const boolean useshortcuts    = false;
 		const boolean huntbackwards   = false;
@@ -1741,6 +2005,12 @@ static UINT32 K_SetupCircuitLength(void)
 
 		circuitlength = bestcircuitpath.totaldist;
 
+		if (finishline->numnextwaypoints > 0)
+		{
+			// TODO: Implementing a version of the fakefinishline hack for
+			// this instead would be the most ideal
+			startingwaypoint = finishline->nextwaypoints[0];
+		}
 		Z_Free(bestcircuitpath.array);
 	}
 
@@ -1812,6 +2082,7 @@ static waypoint_t *K_MakeWaypoint(mobj_t *const mobj)
 	madewaypoint = &waypointheap[numwaypoints];
 	numwaypoints++;
 
+	madewaypoint->mobj = NULL;
 	P_SetTarget(&madewaypoint->mobj, mobj);
 
 	// Don't allow a waypoint that has its next ID set to itself to work
@@ -1940,8 +2211,7 @@ static waypoint_t *K_SetupWaypoint(mobj_t *const mobj)
 			}
 			else
 			{
-				CONS_Alert(
-					CONS_WARNING, "Waypoint with ID %d has no next waypoint.\n", K_GetWaypointID(thiswaypoint));
+				CONS_Debug(DBG_SETUP, "Waypoint with ID %d has no next waypoint.\n", K_GetWaypointID(thiswaypoint));
 			}
 		}
 		else
@@ -2040,7 +2310,10 @@ boolean K_SetupWaypointList(void)
 
 	if (!waypointcap)
 	{
-		CONS_Alert(CONS_ERROR, "No waypoints in map.\n");
+		if (numbosswaypoints == 0)
+		{
+			CONS_Alert(CONS_ERROR, "No waypoints or checkpoints in map.\n");
+		}
 	}
 	else
 	{
@@ -2051,12 +2324,16 @@ boolean K_SetupWaypointList(void)
 			// Loop through the waypointcap here so that all waypoints are added to the heap, and allow easier debugging
 			for (waypointmobj = waypointcap; waypointmobj; waypointmobj = waypointmobj->tracer)
 			{
+				waypointmobj->cusval = (INT32)numwaypoints;
 				K_SetupWaypoint(waypointmobj);
 			}
 
 			if (firstwaypoint == NULL)
 			{
-				CONS_Alert(CONS_ERROR, "No waypoints in map.\n");
+				if (numbosswaypoints == 0)
+				{
+					CONS_Alert(CONS_ERROR, "No waypoints or checkpoints in map.\n");
+				}
 			}
 			else
 			{
@@ -2069,11 +2346,15 @@ boolean K_SetupWaypointList(void)
 					finishline = firstwaypoint;
 				}
 
-				if (K_SetupCircuitLength() == 0
-					&& ((mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE) != LF_SECTIONRACE))
+				if (K_SetupCircuitLength() == 0)
 				{
 					CONS_Alert(CONS_ERROR, "Circuit track waypoints do not form a circuit.\n");
 				}
+
+				/*if (startingwaypoint != NULL)
+				{
+					K_CalculateTrackComplexity();
+				}*/
 
 				setupsuccessful = true;
 			}
@@ -2093,9 +2374,11 @@ void K_ClearWaypoints(void)
 	waypointheap     = NULL;
 	firstwaypoint    = NULL;
 	finishline       = NULL;
+	startingwaypoint = NULL;
 	numwaypoints     = 0U;
 	numwaypointmobjs = 0U;
 	circuitlength    = 0U;
+	trackcomplexity  = 0U;
 }
 
 /*--------------------------------------------------
@@ -2174,6 +2457,11 @@ static boolean K_RaiseWaypoint(
 			waypointmobj->z = sort;
 		}
 
+		// Keep changes for -writetextmap
+		waypointmobj->spawnpoint->z = ((waypointmobj->spawnpoint->options & MTF_OBJECTFLIP)
+			? waypointmobj->ceilingz - waypointmobj->z
+			: waypointmobj->z - waypointmobj->floorz) / FRACUNIT;
+
 		return true;
 	}
 	else
@@ -2205,6 +2493,8 @@ static boolean K_AnchorWaypointRadius(
 				waypointmobj->x, waypointmobj->y,
 				anchor->x, anchor->y);
 
+		// Keep changes for -writetextmap
+		waypointmobj->spawnpoint->args[1] = waypointmobj->radius >> FRACBITS;
 		return true;
 	}
 	else

@@ -51,6 +51,7 @@
 // SRB2Kart
 #include "filesrch.h" // refreshdirmenu
 #include "k_follower.h"
+#include "doomstat.h" // MAXMUSNAMES
 
 // Loops through every constant and operation in word and performs its calculations, returning the final value.
 fixed_t get_number(const char *word)
@@ -1036,6 +1037,20 @@ void readgametype(MYFILE *f, char *gtname)
 	CONS_Printf("Added gametype %s\n", Gametype_Names[newgtidx]);
 }
 
+static mapheader_lighting_t *usemaplighting(INT32 mapnum, const char *word)
+{
+	if (fastncmp(word, "ENCORE", 6))
+	{
+		mapheaderinfo[mapnum-1]->use_encore_lighting = true;
+
+		return &mapheaderinfo[mapnum-1]->lighting_encore;
+	}
+	else
+	{
+		return &mapheaderinfo[mapnum-1]->lighting;
+	}
+}
+
 void readlevelheader(MYFILE *f, INT32 num)
 {
 	char *s = Z_Malloc(MAXLINELEN, PU_STATIC, NULL);
@@ -1297,11 +1312,25 @@ void readlevelheader(MYFILE *f, INT32 num)
 			else if (fastcmp(word, "MUSIC"))
 			{
 				if (fastcmp(word2, "NONE"))
-					mapheaderinfo[num-1]->musname[0] = 0; // becomes empty string
+				{
+					mapheaderinfo[num-1]->musname[0][0] = 0; // becomes empty string
+					mapheaderinfo[num-1]->musname_size = 0;
+				}
 				else
 				{
-					deh_strlcpy(mapheaderinfo[num-1]->musname, word2,
-						sizeof(mapheaderinfo[num-1]->musname), va("Level header %d: music", num));
+					UINT8 j = 0; // i was declared elsewhere
+					tmp = strtok(word2, ",");
+					do {
+						if (j >= MAXMUSNAMES)
+							break;
+						deh_strlcpy(mapheaderinfo[num-1]->musname[j], tmp,
+							sizeof(mapheaderinfo[num-1]->musname[j]), va("Level header %d: music", num));
+						j++;
+					} while ((tmp = strtok(NULL,",")) != NULL);
+					
+					if (tmp != NULL)
+						deh_warning("Level header %d: additional music slots past %d discarded", num, MAXMUSNAMES);
+					mapheaderinfo[num-1]->musname_size = j;
 				}
 			}
 			else if (fastcmp(word, "MUSICSLOT"))
@@ -1361,19 +1390,25 @@ void readlevelheader(MYFILE *f, INT32 num)
 				mapheaderinfo[num-1]->default_waypoint_radius = get_number(word2);
 			else if (fastcmp(word, "LIGHTCONTRAST"))
 			{
-				mapheaderinfo[num-1]->light_contrast = (UINT8)i;
+				usemaplighting(num, word)->light_contrast = (UINT8)i;
 			}
-			else if (fastcmp(word, "LIGHTANGLE"))
+			else if (fastcmp(word, "SPRITEBACKLIGHT") || fastcmp(word, "ENCORESPRITEBACKLIGHT"))
 			{
+				usemaplighting(num, word)->sprite_backlight = (SINT8)i;
+			}
+			else if (fastcmp(word, "LIGHTANGLE") || fastcmp(word, "ENCORELIGHTANGLE"))
+			{
+				mapheader_lighting_t *lighting = usemaplighting(num, word);
+
 				if (fastcmp(word2, "EVEN"))
 				{
-					mapheaderinfo[num-1]->use_light_angle = false;
-					mapheaderinfo[num-1]->light_angle = 0;
+					lighting->use_light_angle = false;
+					lighting->light_angle = 0;
 				}
 				else
 				{
-					mapheaderinfo[num-1]->use_light_angle = true;
-					mapheaderinfo[num-1]->light_angle = FixedAngle(FloatToFixed(atof(word2)));
+					lighting->use_light_angle = true;
+					lighting->light_angle = FixedAngle(FloatToFixed(atof(word2)));
 				}
 			}
 			// Individual triggers for level flags, for ease of use (and 2.0 compatibility)

@@ -32,6 +32,8 @@
 #include "stun.h"
 #include "byteptr.h"
 
+#include "qs22j.h"
+
 //
 // NETWORKING
 //
@@ -1471,7 +1473,7 @@ void Command_Ping_f(void)
 	else if (ms_width < 100) ms_width = 2;
 	else                     ms_width = 3;
 
-	qsort(pingv, pingc, sizeof (struct pingcell), &pingcellcmp);
+	qs22j(pingv, pingc, sizeof (struct pingcell), &pingcellcmp);
 
 	for (i = 0; i < pingc; ++i)
 	{

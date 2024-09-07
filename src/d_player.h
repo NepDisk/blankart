@@ -91,7 +91,7 @@ typedef enum
 	PF_BRAKEDRIFT		= 1<<21, // Helper for brake-drift spark spawning
 
 	PF_AIRFAILSAFE		= 1<<22, // Whenever or not try the air boost
-	//free		= 1<<23, 
+	PF_UPDATEMYRESPAWN	= 1<<23, 
 
 	PF_FLIPCAM	= 1<<24,
 	//free		= 1<<25,
@@ -254,7 +254,7 @@ typedef enum
 // QUICKLY GET RING TOTAL, INCLUDING RINGS CURRENTLY IN THE PICKUP ANIMATION
 #define RINGTOTAL(p) (p->rings + p->pickuprings)
 
-#define TRIPWIRETIME (TICRATE)
+#define TRIPWIRETIME (7)
 
 //}
 
@@ -372,6 +372,8 @@ typedef struct player_s
 	UINT8 oldposition;		// Used for taunting when you pass someone
 	UINT8 positiondelay;	// Used for position number, so it can grow when passing/being passed
 	UINT32 distancetofinish;
+	UINT32 distancetofinishprev;
+	waypoint_t *currentwaypoint;
 	waypoint_t *nextwaypoint;
 	tic_t airtime; 			// Keep track of how long you've been in the air
 	UINT8 startboost;		// (0 to 125) - Boost you get from start of race or respawn drop dash
@@ -402,8 +404,6 @@ typedef struct player_s
 	UINT8 brakestop;		// Wait until you've made a complete stop for a few tics before letting brake go in reverse.
 	UINT8 waterskip;		// Water skipping counter
 
-	UINT16 springstars;		// Spawn stars around a player when they hit a spring
-	UINT16 springcolor;		// Color of spring stars
 	UINT8 dashpadcooldown;	// Separate the vanilla SA-style dash pads from using flashing
 	
 	fixed_t boostpower;		// Base boost value, for offroad
@@ -415,6 +415,7 @@ typedef struct player_s
 	UINT8 tripwireState; // see tripwirestate_t
 	UINT8 tripwirePass; // see tripwirepass_t
 	UINT16 tripwireLeniency;	// When reaching a state that lets you go thru tripwire, you get an extra second leniency after it ends to still go through it.
+	UINT8 tripwireReboundDelay; // When failing Tripwire, brieftly lock out speed-based tripwire pass (anti-cheese)
 
 	UINT16 itemroulette;	// Used for the roulette when deciding what item to give you (was "pw_kartitem")
 	UINT8 roulettetype;		// Used for the roulette, for deciding type (0 = normal, 1 = better, 2 = eggman mark)
@@ -547,6 +548,9 @@ typedef struct player_s
 	UINT8 typing_duration; // How long since resumed timer
 
 	UINT8 kickstartaccel;
+	
+	fixed_t outrun; // Milky Way road effect
+	UINT8 outruntime; // Used to bypass the speed cap for fall off
 
 #ifdef HWRENDER
 	fixed_t fovadd; // adjust FOV for hw rendering

@@ -42,6 +42,7 @@ enum mobj_e {
 	mobj_spritexoffset,
 	mobj_spriteyoffset,
 	mobj_floorspriteslope,
+	mobj_lightlevel,
 	mobj_touching_sectorlist,
 	mobj_subsector,
 	mobj_floorz,
@@ -122,6 +123,7 @@ static const char *const mobj_opt[] = {
 	"spritexoffset",
 	"spriteyoffset",
 	"floorspriteslope",
+	"lightlevel",
 	"touching_sectorlist",
 	"subsector",
 	"floorz",
@@ -261,6 +263,9 @@ static int mobj_get(lua_State *L)
 		break;
 	case mobj_floorspriteslope:
 		LUA_PushUserdata(L, mo->floorspriteslope, META_SLOPE);
+		break;
+	case mobj_lightlevel:
+		lua_pushinteger(L, mo->lightlevel);
 		break;
 	case mobj_touching_sectorlist:
 		return UNIMPLEMENTED;
@@ -559,6 +564,9 @@ static int mobj_set(lua_State *L)
 		break;
 	case mobj_floorspriteslope:
 		return NOSET;
+	case mobj_lightlevel:
+		mo->lightlevel = (INT16)luaL_checkinteger(L, 3);
+		break;
 	case mobj_touching_sectorlist:
 		return UNIMPLEMENTED;
 	case mobj_subsector:
@@ -929,6 +937,10 @@ static int mapthing_get(lua_State *L)
 		number = mt->options;
 	else if(fastcmp(field,"scale"))
 		number = mt->scale;
+	else if(fastcmp(field,"spritexscale"))
+		number = mt->spritexscale;
+	else if(fastcmp(field,"spriteyscale"))
+		number = mt->spriteyscale;
 	else if(fastcmp(field,"z"))
 		number = mt->z;
 	else if(fastcmp(field,"extrainfo"))

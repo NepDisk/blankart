@@ -17,6 +17,7 @@
 #include "r_state.h"
 #include "s_sound.h"
 #include "r_main.h"
+#include "r_fps.h"
 
 /**	\brief	The P_MixUp function
 
@@ -97,7 +98,8 @@ void P_MixUp(mobj_t *thing, fixed_t x, fixed_t y, fixed_t z, angle_t angle,
 		P_FlashPal(thing->player, PAL_MIXUP, 10);
 	}
 
-	P_InitAngle(thing, angle);
+	thing->old_angle += (angle-thing->angle);
+	thing->angle = angle;
 
 	thing->momx = thing->momy = thing->momz = 0;
 
@@ -162,6 +164,8 @@ boolean P_Teleport(mobj_t *thing, fixed_t x, fixed_t y, fixed_t z, angle_t angle
 					// move chasecam at new player location
 					P_ResetCamera(thing->player, &camera[i]);
 				}
+
+				R_ResetViewInterpolation(1 + i);
 
 				break;
 			}

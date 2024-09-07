@@ -24,7 +24,9 @@
 #include "lua_hook.h"
 #include "m_perfstats.h"
 #include "i_system.h" // I_GetPreciseTime
+#include "i_video.h"
 #include "r_fps.h"
+#include "r_main.h"
 
 // Object place
 #include "m_cheat.h"
@@ -195,6 +197,7 @@ void Command_CountMobjs_f(void)
 void P_InitThinkers(void)
 {
 	UINT8 i;
+	boss3cap = NULL;
 	waypointcap = NULL;
 	kitemcap = NULL;
 	for (i = 0; i < NUM_THINKERLISTS; i++)
@@ -555,6 +558,13 @@ void P_Ticker(boolean run)
 			players[i].jointime++;
 		}
 
+	if (run)
+	{
+		// Update old view state BEFORE ticking so resetting
+		// the old interpolation state from game logic works.
+		R_UpdateViewInterpolation();
+	}
+
 	if (objectplacing)
 	{
 		if (OP_FreezeObjectplace())
@@ -620,28 +630,7 @@ void P_Ticker(boolean run)
 
 		ps_playerthink_time = I_GetPreciseTime();
 
-		
-		if (numbosswaypoints == 0)
-		{
-			// First loop: Ensure all players' distance to the finish line are all accurate
-			for (i = 0; i < MAXPLAYERS; i++)
-				if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
-					K_UpdateDistanceFromFinishLine(&players[i]);
-
-			// Second loop: Ensure all player positions reflect everyone's distances
-			for (i = 0; i < MAXPLAYERS; i++)
-				if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
-					K_KartUpdatePosition(&players[i]);
-		}
-		else
-		{
-			// Use postion update code from v1
-			for (i = 0; i < MAXPLAYERS; i++)
-			{
-				K_KartLegacyUpdatePosition(&players[i]);
-			}
-			
-		}
+		K_UpdateAllPlayerPositions();
 
 		// OK! Now that we got all of that sorted, players can think!
 		for (i = 0; i < MAXPLAYERS; i++)
@@ -802,7 +791,25 @@ void P_Ticker(boolean run)
 	if (run)
 	{
 		R_UpdateLevelInterpolators();
-		R_UpdateViewInterpolation();
+
+		// Hack: ensure newview is assigned every tic.
+		// Ensures view interpolation is T-1 to T in poor network conditions
+		// We need a better way to assign view state decoupled from game logic
+		if (rendermode != render_none)
+		{
+			for (i = 0; i <= r_splitscreen; i++)
+			{
+				player_t *player = &players[displayplayers[i]];
+				if (!player->mo)
+					continue;
+				const boolean skybox = (player->skybox.viewpoint && cv_skybox.value); // True if there's a skybox object and skyboxes are on
+				if (skybox)
+				{
+					R_SkyboxFrame(i);
+				}
+				R_SetupFrame(i);
+			}
+		}
 	}
 
 	P_MapEnd();

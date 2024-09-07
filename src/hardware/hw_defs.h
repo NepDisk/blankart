@@ -223,6 +223,7 @@ enum EPolyFlags
 	PF_Fog              = 0x20000000,   // Fog blocks
 	PF_NoAlphaTest      = 0x40000000,   // Disables alpha testing
 	PF_Blending         = (PF_Masked|PF_Translucent|PF_Environment|PF_Additive|PF_Subtractive|PF_ReverseSubtract|PF_Multiplicative|PF_Invert|PF_Fog) & ~PF_NoAlphaTest,
+	PF_EnvironmentTrans = (PF_Translucent|PF_Additive|PF_Subtractive|PF_ReverseSubtract|PF_Multiplicative|PF_Environment),
 
 	// other flag bits
 	PF_Occlude          = 0x00000100,   // Updates the depth buffer
@@ -254,6 +255,7 @@ enum ETextureFlags
 	TF_WRAPXY      = TF_WRAPY|TF_WRAPX, // very common so use alias is more easy
 	TF_CHROMAKEYED = 0x00000010,
 	TF_TRANSPARENT = 0x00000040,        // texture with some alpha == 0
+	TF_BRIGHTMAP   = 0x00000080,
 };
 
 struct FTextureInfo
@@ -272,6 +274,7 @@ struct FLightInfo
 	FUINT			light_level;
 	FUINT			fade_start;
 	FUINT			fade_end;
+	boolean			directional;
 };
 typedef struct FLightInfo FLightInfo;
 
@@ -316,6 +319,11 @@ typedef enum hwdshaderoption hwdshaderoption_t;
 enum hwdshaderinfo
 {
 	HWD_SHADERINFO_LEVELTIME = 1,
+	HWD_SHADERINFO_LIGHT_X,
+	HWD_SHADERINFO_LIGHT_Y,
+	HWD_SHADERINFO_LIGHT_Z,
+	HWD_SHADERINFO_LIGHT_CONTRAST,
+	HWD_SHADERINFO_LIGHT_BACKLIGHT,
 };
 
 typedef enum hwdshaderinfo hwdshaderinfo_t;

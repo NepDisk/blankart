@@ -118,7 +118,7 @@ typedef enum
 	// Don't apply gravity (every tic); object will float, keeping current height
 	//  or changing it actively.
 	MF_NOGRAVITY        = 1<<9,
-	// This object is an ambient sound.
+	// This object is an ambient sound. Obsolete, but keep this around for backwards compatibility.
 	MF_AMBIENT          = 1<<10,
 	// Slide this object when it hits a wall.
 	MF_SLIDEME          = 1<<11,
@@ -274,13 +274,13 @@ typedef struct mobj_s
 	// List: thinker links.
 	thinker_t thinker;
 
-	mobjtype_t type;
-	const mobjinfo_t *info; // &mobjinfo[mobj->type]
-
 	// Info for drawing: position.
 	fixed_t x, y, z;
 	fixed_t old_x, old_y, old_z; // position interpolation
 	fixed_t old_x2, old_y2, old_z2;
+	
+	mobjtype_t type;
+	const mobjinfo_t *info; // &mobjinfo[mobj->type]
 
 	// Interaction info, by BLOCKMAP.
 	// Links in blocks (if needed).
@@ -303,6 +303,7 @@ typedef struct mobj_s
 	fixed_t old_spritexscale, old_spriteyscale;
 	fixed_t old_spritexoffset, old_spriteyoffset;
 	struct pslope_s *floorspriteslope; // The slope that the floorsprite is rotated by
+	INT16 lightlevel; // Add to sector lightlevel, -255 - 255
 
 	struct msecnode_s *touching_sectorlist; // a linked list of sectors where this object appears
 
@@ -329,6 +330,10 @@ typedef struct mobj_s
 	UINT32 flags; // flags from mobjinfo tables
 	UINT32 flags2; // MF2_ flags
 	UINT16 eflags; // extra flags
+
+	mtag_t tid;
+	struct mobj_s *tid_next;
+	struct mobj_s **tid_prev; // killough 8/11/98: change to ptr-to-ptr
 
 	void *skin; // overrides 'sprite' when non-NULL (for player bodies to 'remember' the skin)
 	// Player and mobj sprites in multiplayer modes are modified
@@ -424,13 +429,16 @@ typedef struct precipmobj_s
 	// List: thinker links.
 	thinker_t thinker;
 
-	mobjtype_t type;
-	const mobjinfo_t *info; // &mobjinfo[mobj->type]
-
 	// Info for drawing: position.
 	fixed_t x, y, z;
+	// --- Please make sure you keep the fields up to this
+	// --- point in sync with degenmobj_t.\
+
 	fixed_t old_x, old_y, old_z; // position interpolation
 	fixed_t old_x2, old_y2, old_z2;
+	
+	mobjtype_t type;
+	const mobjinfo_t *info; // &mobjinfo[mobj->type]
 
 	// Links in blocks (if needed).
 	// The blockmap is only used by precip to render.
@@ -453,6 +461,7 @@ typedef struct precipmobj_s
 	fixed_t old_spritexscale, old_spriteyscale;
 	fixed_t old_spritexoffset, old_spriteyoffset;
 	struct pslope_s *floorspriteslope; // The slope that the floorsprite is rotated by
+	INT16 lightlevel; // Add to sector lightlevel, -255 - 255
 
 	struct mprecipsecnode_s *touching_sectorlist; // a linked list of sectors where this object appears
 
@@ -493,6 +502,7 @@ extern actioncache_t actioncachehead;
 
 extern mobj_t *kitemcap;
 extern mobj_t *waypointcap;
+extern mobj_t *boss3cap;
 
 void P_InitCachedActions(void);
 void P_RunCachedActions(void);
@@ -501,6 +511,7 @@ void P_AddCachedAction(mobj_t *mobj, INT32 statenum);
 // kartitem stuff: Returns true if the specified 'type' is one of the kart item constants we want in the kitemcap list
 boolean P_IsKartFieldItem(INT32 type);
 boolean P_IsKartItem(INT32 type);
+boolean K_IsMissileOrKartItem(mobj_t *mo);
 boolean P_CanDeleteKartItem(INT32 type);
 void P_AddKartItem(mobj_t *thing);	// needs to be called in k_kart.c
 void P_RunKartItems(void);
@@ -514,7 +525,7 @@ void P_MovePlayerToSpawn(INT32 playernum, mapthing_t *mthing);
 void P_MovePlayerToStarpost(INT32 playernum);
 void P_AfterPlayerSpawn(INT32 playernum);
 
-fixed_t P_GetMobjSpawnHeight(const mobjtype_t mobjtype, const fixed_t x, const fixed_t y, const fixed_t dz, const fixed_t offset, const boolean flip, const fixed_t scale);
+fixed_t P_GetMobjSpawnHeight(const mobjtype_t mobjtype, const fixed_t x, const fixed_t y, const fixed_t dz, const fixed_t offset, const size_t layer, const boolean flip, const fixed_t scale);
 fixed_t P_GetMapThingSpawnHeight(const mobjtype_t mobjtype, const mapthing_t* mthing, const fixed_t x, const fixed_t y);
 
 mobj_t *P_SpawnMapThing(mapthing_t *mthing);

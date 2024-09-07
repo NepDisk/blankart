@@ -356,23 +356,34 @@ static visplane_t *new_visplane(unsigned hash)
 visplane_t *R_FindPlane(fixed_t height, INT32 picnum, INT32 lightlevel,
 	fixed_t xoff, fixed_t yoff, angle_t plangle, extracolormap_t *planecolormap,
 	ffloor_t *pfloor, polyobj_t *polyobj, pslope_t *slope, boolean noencore,
-	boolean ripple, boolean reverseLight)
+	boolean ripple, boolean reverseLight, const sector_t *lighting_sector)
 {
 	visplane_t *check;
 	unsigned hash;
 
 	if (!slope) // Don't mess with this right now if a slope is involved
 	{
-		xoff += viewx;
-		yoff -= viewy;
 		if (plangle != 0)
 		{
+			// Must use 64-bit math to avoid an overflow!
+			INT64 vx = xoff + viewx;
+			INT64 vy = yoff - viewy;
+
 			// Add the view offset, rotated by the plane angle.
 			float ang = ANG2RAD(plangle);
-			float x = FixedToFloat(xoff);
-			float y = FixedToFloat(yoff);
-			xoff = FloatToFixed(x * cos(ang) + y * sin(ang));
-			yoff = FloatToFixed(-x * sin(ang) + y * cos(ang));
+			float x = vx / (float)FRACUNIT;
+			float y = vy / (float)FRACUNIT;
+
+			vx = (x * cos(ang) + y * sin(ang)) * FRACUNIT;
+			vy = (-x * sin(ang) + y * cos(ang)) * FRACUNIT;
+
+			xoff = vx;
+			yoff = vy;
+		}
+		else
+		{
+			xoff += viewx;
+			yoff -= viewy;
 		}
 	}
 
@@ -393,7 +404,7 @@ visplane_t *R_FindPlane(fixed_t height, INT32 picnum, INT32 lightlevel,
 		}
 	}
 
-	if (slope != NULL && P_ApplyLightOffset(lightlevel >> LIGHTSEGSHIFT))
+	if (slope != NULL && P_ApplyLightOffset(lightlevel >> LIGHTSEGSHIFT, lighting_sector))
 	{
 		if (reverseLight && maplighting.directional == true)
 		{
@@ -879,13 +890,13 @@ void R_DrawSinglePlane(visplane_t *pl)
 			// Don't draw planes that shouldn't be drawn.
 			for (rover = pl->ffloor->target->ffloors; rover; rover = rover->next)
 			{
-				if ((pl->ffloor->flags & FF_CUTEXTRA) && (rover->flags & FF_EXTRA))
+				if ((pl->ffloor->fofflags & FOF_CUTEXTRA) && (rover->fofflags & FOF_EXTRA))
 				{
-					if (pl->ffloor->flags & FF_EXTRA)
+					if (pl->ffloor->fofflags & FOF_EXTRA)
 					{
 						// The plane is from an extra 3D floor... Check the flags so
 						// there are no undesired cuts.
-						if (((pl->ffloor->flags & (FF_FOG|FF_SWIMMABLE)) == (rover->flags & (FF_FOG|FF_SWIMMABLE)))
+						if (((pl->ffloor->fofflags & (FOF_FOG|FOF_SWIMMABLE)) == (rover->fofflags & (FOF_FOG|FOF_SWIMMABLE)))
 							&& pl->height < *rover->topheight
 							&& pl->height > *rover->bottomheight)
 							return;
@@ -893,9 +904,9 @@ void R_DrawSinglePlane(visplane_t *pl)
 				}
 			}
 
-			if (pl->ffloor->flags & FF_TRANSLUCENT)
+			if (pl->ffloor->fofflags & FOF_TRANSLUCENT)
 			{
-				spanfunctype = (pl->ffloor->master->flags & ML_EFFECT6) ? SPANDRAWFUNC_TRANSSPLAT : SPANDRAWFUNC_TRANS;
+				spanfunctype = (pl->ffloor->fofflags & FOF_SPLAT) ? SPANDRAWFUNC_TRANSSPLAT : SPANDRAWFUNC_TRANS;
 
 				// Hacked up support for alpha value in software mode Tails 09-24-2002
 				// ...unhacked by toaster 04-01-2021
@@ -912,7 +923,7 @@ void R_DrawSinglePlane(visplane_t *pl)
 				else
 					light = LIGHTLEVELS-1;
 			}
-			else if (pl->ffloor->flags & FF_FOG)
+			else if (pl->ffloor->fofflags & FOF_FOG)
 			{
 				spanfunctype = SPANDRAWFUNC_FOG;
 				light = (pl->lightlevel >> LIGHTSEGSHIFT);
@@ -1017,6 +1028,9 @@ void R_DrawSinglePlane(visplane_t *pl)
 		INT32 bmNum = R_GetTextureBrightmap(levelflat->u.texture.num);
 		if (bmNum != 0)
 		{
+			// FIXME: This has the potential to read out of
+			// bounds if the brightmap texture is not as
+			// large as the flat.
 			ds_brightmap = (UINT8 *)R_GenerateTextureAsFlat(bmNum);
 		}
 	}

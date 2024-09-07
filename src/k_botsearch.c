@@ -142,24 +142,33 @@ UINT8 K_EggboxStealth(fixed_t x, fixed_t y)
 	Return:-
 		true if avoiding this sector special, false otherwise.
 --------------------------------------------------*/
-static boolean K_BotHatesThisSectorsSpecial(player_t *player, sector_t *sec)
+static boolean K_BotHatesThisSectorsSpecial(player_t *player, sector_t *sec, const boolean flip)
 {
-	switch (GETSECSPECIAL(sec->special, 1))
+	terrain_t *terrain = K_GetTerrainForFlatNum(flip ? sec->ceilingpic : sec->floorpic);
+
+	if (terrain != NULL)
 	{
-		case 1: // Damage
-		case 5: // Spikes
-		case 6: case 7: // Death Pit
-		case 8: // Instant Kill
+		if (terrain->damageType != SD_NONE)
+		{
 			return true;
-		//case 2: case 3: // Offroad (let's let them lawnmower)
-		case 4: // Offroad (Strong)
-			if (!K_BotCanTakeCut(player))
-			{
-				return true;
-			}
-			break;
-		default:
-			break;
+		}
+
+		if (terrain->offroad > 0)
+		{
+			return !K_BotCanTakeCut(player);
+		}
+	}
+	else
+	{
+		if (sec->damagetype != SD_NONE)
+		{
+			return true;
+		}
+
+		if (sec->offroad > 0)
+		{
+			return !K_BotCanTakeCut(player);
+		}
 	}
 
 	return false;
@@ -177,7 +186,7 @@ boolean K_BotHatesThisSector(player_t *player, sector_t *sec, fixed_t x, fixed_t
 	sector_t *bestsector = NULL;
 	ffloor_t *rover;
 
-	// TODO: Properly support SF_FLIPSPECIAL_FLOOR / SF_FLIPSPECIAL_CEILING.
+	// TODO: Properly support MSF_FLIPSPECIAL_FLOOR / MSF_FLIPSPECIAL_CEILING.
 	// An earlier attempt at it caused lots of false positives and other weird
 	// quirks with intangible FOFs.
 
@@ -197,7 +206,7 @@ boolean K_BotHatesThisSector(player_t *player, sector_t *sec, fixed_t x, fixed_t
 		fixed_t top = INT32_MAX;
 		fixed_t bottom = INT32_MAX;
 
-		if (!(rover->flags & FF_EXISTS))
+		if (!(rover->fofflags & FOF_EXISTS))
 		{
 			continue;
 		}
@@ -205,10 +214,10 @@ boolean K_BotHatesThisSector(player_t *player, sector_t *sec, fixed_t x, fixed_t
 		top = P_GetZAt(*rover->t_slope, x, y, *rover->topheight);
 		bottom = P_GetZAt(*rover->b_slope, x, y, *rover->bottomheight);
 
-		if (!(rover->flags & FF_BLOCKPLAYER))
+		if (!(rover->fofflags & FOF_BLOCKPLAYER))
 		{
 			if ((top >= player->mo->z) && (bottom <= player->mo->z + player->mo->height)
-				&& K_BotHatesThisSectorsSpecial(player, rover->master->frontsector))
+				&& K_BotHatesThisSectorsSpecial(player, rover->master->frontsector, flip))
 			{
 				// Bad intangible sector at our height, so we DEFINITELY want to avoid
 				return true;
@@ -244,7 +253,7 @@ boolean K_BotHatesThisSector(player_t *player, sector_t *sec, fixed_t x, fixed_t
 		return false;
 	}
 
-	return K_BotHatesThisSectorsSpecial(player, bestsector);
+	return K_BotHatesThisSectorsSpecial(player, bestsector, flip);
 }
 
 /*--------------------------------------------------

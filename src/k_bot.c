@@ -181,7 +181,7 @@ void K_UpdateMatchRaceBots(void)
 			wantedbots = 0;
 		}
 		
-		if (numbosswaypoints > 0)
+		if (numbosswaypoints > 0 && !waypointcap)
 		{
 			CONS_Alert(CONS_ERROR, "Bots do not work on maps using the legacy checkpoint system.\nPlease consider using waypoints instead if bot support is desired!\n");
 		}
@@ -403,7 +403,7 @@ static line_t *K_FindBotController(mobj_t *mo)
 		{
 			sector_t *rs = NULL;
 
-			if (!(rover->flags & FF_EXISTS))
+			if (!(rover->fofflags & FOF_EXISTS))
 			{
 				continue;
 			}
@@ -512,8 +512,8 @@ fixed_t K_BotRubberband(player_t *player)
 
 		if (botController != NULL)
 		{
-			// No Climb Flag: Disable rubberbanding
-			if (botController->flags & ML_NOCLIMB)
+			// Disable rubberbanding
+			if (botController->args[1] & TMBOT_NORUBBERBAND)
 			{
 				return FRACUNIT;
 			}
@@ -641,7 +641,7 @@ fixed_t K_DistanceOfLineFromPoint(fixed_t v1x, fixed_t v1y, fixed_t v2x, fixed_t
 static fixed_t K_GetBotWaypointRadius(waypoint_t *const waypoint)
 {
 	static const fixed_t maxReduce = FRACUNIT/32;
-	static const angle_t maxDelta = ANGLE_22h;
+	static const angle_t maxDelta = ANGLE_45;
 
 	fixed_t radius = waypoint->mobj->radius;
 	fixed_t reduce = FRACUNIT;
@@ -769,7 +769,7 @@ static botprediction_t *K_CreateBotPrediction(player_t *player)
 	distscaled = K_ScaleWPDistWithSlope(disttonext, angletonext, nextslope, P_MobjFlip(wp->mobj)) / FRACUNIT;
 
 	pathfindsuccess = K_PathfindThruCircuit(
-		wp, (unsigned)distanceleft,
+		player->nextwaypoint, (unsigned)distanceleft,
 		&pathtofinish,
 		useshortcuts, huntbackwards
 	);
@@ -1175,7 +1175,19 @@ void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
 		return;
 	}
 
-	if (botController != NULL && (botController->flags & ML_EFFECT2))
+	botController = K_FindBotController(player->mo);
+	if (botController == NULL)
+	{
+		player->botvars.controller = UINT16_MAX;
+	}
+	else
+	{
+		player->botvars.controller = botController - lines;
+	}
+
+	player->botvars.rubberband = K_UpdateRubberband(player);
+
+	if (botController != NULL && (botController->args[1] & TMBOT_NOCONTROL))
 	{
 		// Disable bot controls entirely.
 		return;
@@ -1183,12 +1195,12 @@ void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
 
 	destangle = player->mo->angle;
 
-	if (botController != NULL && (botController->flags & ML_EFFECT1))
+	if (botController != NULL && (botController->args[1] & TMBOT_FORCEDIR))
 	{
 		const fixed_t dist = DEFAULT_WAYPOINT_RADIUS * player->mo->scale;
 
 		// X Offset: Movement direction
-		destangle = FixedAngle(sides[botController->sidenum[0]].textureoffset);
+		destangle = FixedAngle(botController->args[2] * FRACUNIT);
 
 		// Overwritten prediction
 		predict = Z_Calloc(sizeof(botprediction_t), PU_STATIC, NULL);

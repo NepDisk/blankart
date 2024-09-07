@@ -15,6 +15,7 @@
 
 #include "doomdef.h"
 #include "g_game.h"
+#include "i_sound.h"
 #include "r_local.h"
 #include "p_local.h"
 #include "f_finale.h"
@@ -364,6 +365,61 @@ static INT32 SCR(INT32 r)
 // =========================================================================
 
 // Devmode information
+
+static void ST_pushDebugString(INT32 *height, const char *string)
+{
+	V_DrawRightAlignedString(320, *height, V_MONOSPACE, string);
+	*height -= 8;
+}
+
+static void ST_pushDebugTimeMS(INT32 *height, const char *label, UINT32 ms)
+{
+	ST_pushDebugString(height, va("%s%02d:%05.2f", label,
+				ms / 60000, ms % 60000 / 1000.f));
+}
+
+static void ST_drawMusicDebug(INT32 *height)
+{
+	char mname[7];
+	UINT16 mflags; // unused
+	boolean looping;
+	UINT8 i = 0;
+
+	const musicdef_t *def;
+	musictype_t format;
+
+	if (!S_MusicInfo(mname, &mflags, &looping))
+	{
+		ST_pushDebugString(height, "Song: <NOTHING>");
+		return;
+	}
+
+	def = S_FindMusicDef(mname, &i);
+	format = S_MusicType();
+
+	ST_pushDebugTimeMS(height, " Elapsed: ", S_GetMusicPosition());
+	ST_pushDebugTimeMS(height, looping
+			? "  Loop B: "
+			: "Duration: ", S_GetMusicLength());
+
+	if (looping)
+	{
+		ST_pushDebugTimeMS(height, "  Loop A: ", S_GetMusicLoopPoint());
+	}
+
+	if (def)
+	{
+		ST_pushDebugString(height, va("  Volume: %4d/100", def->volume));
+	}
+
+	if (format)
+	{
+		ST_pushDebugString(height, va("  Format: %d", S_MusicType()));
+	}
+
+	ST_pushDebugString(height, va("    Song: %8s", mname));
+}
+
 static void ST_drawDebugInfo(void)
 {
 	INT32 height = 192;

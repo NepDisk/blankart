@@ -17,6 +17,8 @@
 #include "s_sound.h"
 #include "m_random.h"
 #include "r_sky.h" // skyflatnum
+#include "k_grandprix.h" // K_CanChangeRules
+#include "p_spec.h"
 
 // Battle overtime info
 struct battleovertime battleovertime;
@@ -272,7 +274,7 @@ mobj_t *K_SpawnSphereBox(fixed_t x, fixed_t y, fixed_t z, angle_t angle, SINT8 f
 {
 	mobj_t *drop = P_SpawnMobj(x, y, z, MT_SPHEREBOX);
 
-	P_InitAngle(drop, angle);
+	drop->angle = angle;
 	P_Thrust(drop,
 		FixedAngle(P_RandomFixed() * 180) + angle,
 		P_RandomRange(4, 12) * mapobjectscale);
@@ -610,7 +612,7 @@ static void K_SpawnOvertimeLaser(fixed_t x, fixed_t y, fixed_t scale)
 				mo->eflags |= MFE_VERTICALFLIP;
 			}
 
-			P_InitAngle(mo, R_PointToAngle2(mo->x, mo->y, battleovertime.x, battleovertime.y) + ANGLE_90);
+			mo->angle = R_PointToAngle2(mo->x, mo->y, battleovertime.x, battleovertime.y) + ANGLE_90;
 			mo->renderflags |= (RF_DONTDRAW & ~(K_GetPlayerDontDrawFlag(player)));
 
 			P_SetScale(mo, scale);
@@ -706,44 +708,18 @@ void K_SetupMovingCapsule(mapthing_t *mt, mobj_t *mobj)
 {
 	UINT8 sequence = mt->args[0] - 1;
 	fixed_t speed = (FRACUNIT >> 3) * mt->args[1];
-	boolean backandforth = (mt->options & MTF_AMBUSH);
-	boolean reverse = (mt->options & MTF_OBJECTSPECIAL);
-	mobj_t *mo2;
+	boolean backandforth = (mt->args[2] & TMBCF_BACKANDFORTH);
+	boolean reverse = (mt->args[2] & TMBCF_REVERSE);
 	mobj_t *target = NULL;
-	thinker_t *th;
-
-	// TODO: This and the movement stuff in the thinker should both be using
-	// 2.2's new optimized functions for doing things with tube waypoints
 
 	// Find the inital target
-	for (th = thlist[THINK_MOBJ].next; th != &thlist[THINK_MOBJ]; th = th->next)
+	if (reverse)
 	{
-		if (th->function.acp1 == (actionf_p1)P_RemoveThinkerDelayed)
-			continue;
-
-		mo2 = (mobj_t *)th;
-
-		if (mo2->type != MT_TUBEWAYPOINT)
-			continue;
-
-		if (mo2->threshold == sequence)
-		{
-			if (reverse) // Use the highest waypoint number as first
-			{
-				if (mo2->health != 0)
-				{
-					if (target == NULL)
-						target = mo2;
-					else if (mo2->health > target->health)
-						target = mo2;
-				}
-			}
-			else // Use the lowest waypoint number as first
-			{
-				if (mo2->health == 0)
-					target = mo2;
-			}
-		}
+		target = P_GetLastTubeWaypoint(sequence);
+	}
+	else
+	{
+		target = P_GetFirstTubeWaypoint(sequence);
 	}
 
 	if (!target)

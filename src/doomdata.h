@@ -99,48 +99,81 @@ typedef struct
 // LineDef attributes.
 //
 
-// Solid, is an obstacle.
-#define ML_IMPASSABLE           1
+enum
+{
+	// Solid, is an obstacle.
+	ML_IMPASSABLE    = 0x00000001,
 
-// Blocks monsters only.
-#define ML_BLOCKMONSTERS        2
+	// Blocks enemies only
+	ML_BLOCKMONSTERS  = 0x00000002,
 
-// Backside will not be present at all if not two sided.
-#define ML_TWOSIDED             4
+	// Backside will not be present at all if not two sided.
+	ML_TWOSIDED      = 0x00000004,
 
-// If a texture is pegged, the texture will have
-// the end exposed to air held constant at the
-// top or bottom of the texture (stairs or pulled
-// down things) and will move with a height change
-// of one of the neighbor sectors.
-// Unpegged textures allways have the first row of
-// the texture at the top pixel of the line for both
-// top and bottom textures (use next to windows).
+	// If a texture is pegged, the texture will have
+	// the end exposed to air held constant at the
+	// top or bottom of the texture (stairs or pulled
+	// down things) and will move with a height change
+	// of one of the neighbor sectors.
+	// Unpegged textures allways have the first row of
+	// the texture at the top pixel of the line for both
+	// top and bottom textures (use next to windows).
 
-// upper texture unpegged
-#define ML_DONTPEGTOP           8
+	// upper texture unpegged
+	ML_DONTPEGTOP		= 0x00000008,
 
-// lower texture unpegged
-#define ML_DONTPEGBOTTOM       16
+	// lower texture unpegged
+	ML_DONTPEGBOTTOM	= 0x00000010,
 
-#define ML_EFFECT1             32
+	ML_SKEWTD			= 0x00000020,
 
-// Don't let Knuckles climb on this line
-#define ML_NOCLIMB             64
+	// Don't let Knuckles climb on this line
+	ML_NOCLIMB			= 0x00000040,
 
-#define ML_EFFECT2             128
-#define ML_EFFECT3             256
-#define ML_EFFECT4             512
-#define ML_EFFECT5            1024
+	ML_NOSKEW			= 0x00000080,
+	ML_MIDPEG			= 0x00000100,
+	ML_MIDSOLID			= 0x00000200,
+	ML_WRAPMIDTEX		= 0x00000400,
 
-#define ML_NETONLY           2048 // Apply effect only in netgames
-#define ML_NONET             4096 // Apply  effect only in single player games
-#define ML_EFFECT6           8192
+	// Apply effect only in netgames
+	ML_NETONLY			= 0x00000800,
 
-// Don't bounce off this wall!
-#define ML_NOTBOUNCY        16384
+	// Apply effect only in single player games
+	ML_NONET			= 0x00001000,
 
-#define ML_TFERLINE         32768
+	// SRB2Kart: Blocks players only; items can be thrown through these.
+	ML_BLOCKPLAYERS = 0x00002000,
+
+	// Don't bounce off this wall!
+	ML_NOTBOUNCY		= 0x00004000,
+
+	// Transfers FOF properties.
+	ML_TFERLINE			= 0x00008000,
+};
+
+enum
+{
+	// Special action is repeatable.
+	SPAC_REPEATSPECIAL		= 0x00000001,
+
+	// Activates when crossed by a player.
+	SPAC_CROSS				= 0x00000002,
+
+	// Activates when crossed by an enemy.
+	SPAC_CROSSMONSTER		= 0x00000004,
+
+	// Activates when crossed by a projectile.
+	SPAC_CROSSMISSILE		= 0x00000008,
+
+	// Activates when bumped by a player.
+	SPAC_PUSH				= 0x00000010,
+
+	// Activates when bumped by an enemy.
+	SPAC_PUSHMONSTER		= 0x00000020,
+
+	// Activates when bumped by a missile.
+	SPAC_IMPACT				= 0x00000040,
+};
 
 // Sector definition, from editing.
 typedef struct
@@ -196,7 +229,7 @@ typedef struct
 #pragma pack()
 #endif
 
-#define NUMMAPTHINGARGS 6
+#define NUMMAPTHINGARGS 10
 #define NUMMAPTHINGSTRINGARGS 2
 
 // Thing definition, position, orientation and type,
@@ -211,8 +244,10 @@ typedef struct
 	UINT8 extrainfo;
 	taglist_t tags;
 	fixed_t scale;
+	fixed_t spritexscale, spriteyscale;
 	INT32 args[NUMMAPTHINGARGS];
 	char *stringargs[NUMMAPTHINGSTRINGARGS];
+	UINT8 layer; // FOF layer to spawn on, see P_GetMobjSpawnHeight
 	struct mobj_s *mobj;
 } mapthing_t;
 

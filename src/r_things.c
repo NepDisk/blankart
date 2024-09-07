@@ -849,12 +849,13 @@ UINT8 *R_GetSpriteTranslation(vissprite_t *vis)
 //
 static void R_DrawVisSprite(vissprite_t *vis)
 {
-	column_t *column;
+	column_t *column, *bmcol = NULL;
 	void (*localcolfunc)(column_t *, column_t *, INT32);
 	INT32 texturecolumn;
 	INT32 pwidth;
 	fixed_t frac;
 	patch_t *patch = vis->patch;
+	patch_t *bmpatch = vis->bright;
 	fixed_t this_scale = vis->thingscale;
 	INT32 x1, x2;
 	INT64 overflow_test;
@@ -873,6 +874,21 @@ static void R_DrawVisSprite(vissprite_t *vis)
 		overflow_test = (INT64)centeryfrac - (((INT64)vis->texturemid*(vis->scale + (vis->scalestep*(vis->x2 - vis->x1))))>>FRACBITS);
 		if (overflow_test < 0) overflow_test = -overflow_test;
 		if ((UINT64)overflow_test&0xFFFFFFFF80000000ULL) return; // ditto
+	}
+
+	// Prevent an out of bounds error
+	//
+	// FIXME: The following check doesn't account for
+	// differences in transparency between the patches.
+	//
+	// Sprite BRIGHTMAPs should be converted on load,
+	// as like textures. I'm too tired to bother with it
+	// right now, though.
+	//
+	if (bmpatch && (bmpatch->width != patch->width ||
+				bmpatch->height != patch->height))
+	{
+		return;
 	}
 
 	R_SetColumnFunc(BASEDRAWFUNC, false); // hack: this isn't resetting properly somewhere.
@@ -1009,7 +1025,10 @@ static void R_DrawVisSprite(vissprite_t *vis)
 
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[texturecolumn]));
 
-			localcolfunc (column, NULL, baseclip);
+			if (bmpatch)
+				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
+
+			localcolfunc (column, bmcol, baseclip);
 		}
 	}
 	else if (vis->cut & SC_SHEAR)
@@ -1026,12 +1045,15 @@ static void R_DrawVisSprite(vissprite_t *vis)
 			if (texturecolumn < 0 || texturecolumn >= pwidth)
 				I_Error("R_DrawSpriteRange: bad texturecolumn at %d from end", vis->x2 - dc_x);
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[texturecolumn]));
+			if (bmpatch)
+				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
 #else
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[frac>>FRACBITS]));
+			if (bmpatch)
+				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
 #endif
-
 			sprtopscreen = (centeryfrac - FixedMul(dc_texturemid, spryscale));
-			localcolfunc (column, NULL, baseclip);
+			localcolfunc (column, bmcol, baseclip);
 		}
 	}
 	else
@@ -1048,10 +1070,14 @@ static void R_DrawVisSprite(vissprite_t *vis)
 			if (texturecolumn < 0 || texturecolumn >= pwidth)
 				I_Error("R_DrawSpriteRange: bad texturecolumn at %d from end", vis->x2 - dc_x);
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[texturecolumn]));
+			if (bmpatch)
+				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
 #else
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[frac>>FRACBITS]));
+			if (bmpatch)
+				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
 #endif
-			localcolfunc (column, NULL, baseclip);
+			localcolfunc (column, bmcol, baseclip);
 		}
 	}
 
@@ -1147,7 +1173,7 @@ static void R_SplitSprite(vissprite_t *sprite)
 	{
 		fixed_t testheight;
 
-		if (!(sector->lightlist[i].caster->flags & FF_CUTSPRITES))
+		if (!(sector->lightlist[i].caster->fofflags & FOF_CUTSPRITES))
 			continue;
 
 		testheight = P_GetLightZAt(&sector->lightlist[i], sprite->gx, sprite->gy);
@@ -1180,7 +1206,7 @@ static void R_SplitSprite(vissprite_t *sprite)
 		newsprite->szt -= 8;
 
 		newsprite->cut |= SC_TOP;
-		if (!(sector->lightlist[i].caster->flags & FF_NOSHADE))
+		if (!(sector->lightlist[i].caster->fofflags & FOF_NOSHADE))
 		{
 			lightnum = (*sector->lightlist[i].lightlevel >> LIGHTSEGSHIFT);
 
@@ -1209,6 +1235,25 @@ static void R_SplitSprite(vissprite_t *sprite)
 		}
 		sprite = newsprite;
 	}
+}
+
+static patch_t *R_CacheSpriteBrightMap(const spriteinfo_t *sprinfo, UINT8 frame)
+{
+	const char *name = sprinfo->bright[frame];
+
+	if (name == NULL)
+	{
+		name = sprinfo->bright[SPRINFO_DEFAULT_PIVOT];
+	}
+
+	const lumpnum_t num = W_CheckNumForLongName(name);
+
+	if (num == LUMPERROR)
+	{
+		return NULL;
+	}
+
+	return W_CachePatchNum(num, PU_SPRITE);
 }
 
 //
@@ -1267,7 +1312,7 @@ fixed_t R_GetShadowZ(
 		if (sector->ffloors)
 			for (rover = sector->ffloors; rover; rover = rover->next)
 			{
-				if (!(rover->flags & FF_EXISTS) || !(rover->flags & FF_RENDERPLANES) || (rover->alpha < 90 && !(rover->flags & FF_SWIMMABLE)))
+				if (!(rover->fofflags & FOF_EXISTS) || !(rover->fofflags & FOF_RENDERPLANES) || (rover->alpha < 90 && !(rover->fofflags & FOF_SWIMMABLE)))
 					continue;
 
 				z = isflipped ? P_GetFFloorBottomZAt(rover, interp.x, interp.y) : P_GetFFloorTopZAt(rover, interp.x, interp.y);
@@ -1387,6 +1432,7 @@ static void R_ProjectDropShadow(
 
 	shadow = R_NewVisSprite();
 	shadow->patch = patch;
+	shadow->bright = NULL;
 	shadow->heightsec = vis->heightsec;
 
 	shadow->mobjflags = 0;
@@ -1555,6 +1601,33 @@ static void R_ProjectBoundingBox(mobj_t *thing, vissprite_t *vis)
 	}
 }
 
+fixed_t R_GetSpriteDirectionalLighting(angle_t angle)
+{
+	// Copied from P_UpdateSegLightOffset
+	const UINT8 contrast = min(max(0, maplighting.contrast - maplighting.backlight), UINT8_MAX);
+	const fixed_t contrastFixed = ((fixed_t)contrast) * FRACUNIT;
+
+	fixed_t light = FRACUNIT;
+	fixed_t extralight = 0;
+
+	light = FixedMul(FINECOSINE(angle >> ANGLETOFINESHIFT), FINECOSINE(maplighting.angle >> ANGLETOFINESHIFT))
+		+ FixedMul(FINESINE(angle >> ANGLETOFINESHIFT), FINESINE(maplighting.angle >> ANGLETOFINESHIFT));
+	light = (light + FRACUNIT) / 2;
+
+	light = FixedMul(light, FRACUNIT - FSIN(abs(AngleDeltaSigned(angle, maplighting.angle)) / 2));
+
+	extralight = -contrastFixed + FixedMul(light, contrastFixed * 2);
+
+	return extralight;
+}
+
+INT32 R_ThingLightLevel(mobj_t* thing)
+{
+	INT32 lightlevel = thing->lightlevel;
+
+	return lightlevel;
+}
+
 //
 // R_ProjectSprite
 // Generates a vissprite for a thing
@@ -1616,6 +1689,7 @@ static void R_ProjectSprite(mobj_t *thing)
 	fixed_t gz = 0, gzt = 0;
 	INT32 heightsec, phs;
 	INT32 light = 0;
+	lighttable_t **lights_array = spritelights;
 	fixed_t this_scale;
 	fixed_t spritexscale, spriteyscale;
 
@@ -2024,6 +2098,7 @@ static void R_ProjectSprite(mobj_t *thing)
 		tr_y = (interp.y - sort_y) - viewy;
 		sort_z = FixedMul(tr_x, viewcos) + FixedMul(tr_y, viewsin);
 		sortsplat = FixedDiv(projectiony[viewssnum], sort_z);
+		centerangle = interp.angle;
 	}
 
 	// PORTAL SPRITE CLIPPING
@@ -2117,29 +2192,78 @@ static void R_ProjectSprite(mobj_t *thing)
 			return;
 	}
 
-	if (thing->subsector->sector->numlights)
+	if (thing->renderflags & RF_ABSOLUTELIGHTLEVEL)
+	{
+		const UINT8 n = R_ThingLightLevel(thing);
+
+		// n = uint8 aka 0 - 255, so the shift will always be 0 - LIGHTLEVELS - 1
+		lights_array = scalelight[n >> LIGHTSEGSHIFT];
+	}
+	else
 	{
 		INT32 lightnum;
-		fixed_t top = (splat) ? gz : gzt;
-		light = thing->subsector->sector->numlights - 1;
 
-		// R_GetPlaneLight won't work on sloped lights!
-		for (lightnum = 1; lightnum < thing->subsector->sector->numlights; lightnum++) {
-			fixed_t h = P_GetLightZAt(&thing->subsector->sector->lightlist[lightnum], interp.x, interp.y);
-			if (h <= top) {
-				light = lightnum - 1;
-				break;
+		if (thing->subsector->sector->numlights)
+		{
+			fixed_t top = (splat) ? gz : gzt;
+			light = thing->subsector->sector->numlights - 1;
+
+			// R_GetPlaneLight won't work on sloped lights!
+			for (lightnum = 1; lightnum < thing->subsector->sector->numlights; lightnum++) {
+				fixed_t h = P_GetLightZAt(&thing->subsector->sector->lightlist[lightnum], interp.x, interp.y);
+				if (h <= top) {
+					light = lightnum - 1;
+					break;
+				}
+			}
+			//light = R_GetPlaneLight(thing->subsector->sector, gzt, false);
+			lightnum = *thing->subsector->sector->lightlist[light].lightlevel;
+		}
+		else
+		{
+			lightnum = thing->subsector->sector->lightlevel;
+		}
+
+		lightnum = (lightnum + R_ThingLightLevel(thing)) >> LIGHTSEGSHIFT;
+
+		if (maplighting.directional == true && P_SectorUsesDirectionalLighting(thing->subsector->sector))
+		{
+			fixed_t extralight = R_GetSpriteDirectionalLighting(papersprite
+					? interp.angle + (ang >= ANGLE_180 ? -ANGLE_90 : ANGLE_90)
+					: R_PointToAngle(interp.x, interp.y));
+
+			// Less change in contrast in dark sectors
+			extralight = FixedMul(extralight, min(max(0, lightnum), LIGHTLEVELS - 1) * FRACUNIT / (LIGHTLEVELS - 1));
+
+			if (papersprite)
+			{
+				// Papersprite contrast should match walls
+				lightnum += FixedFloor((extralight / 8) + (FRACUNIT / 2)) / FRACUNIT;
+			}
+			else
+			{
+				fixed_t n = FixedDiv(FixedMul(xscale, LIGHTRESOLUTIONFIX), ((MAXLIGHTSCALE-1) << LIGHTSCALESHIFT));
+
+				// Less change in contrast at further distances, to counteract DOOM diminished light
+				extralight = FixedMul(extralight, min(n, FRACUNIT));
+
+				// Contrast is stronger for normal sprites, stronger than wall lighting is at the same distance
+				lightnum += FixedFloor((extralight / 4) + (FRACUNIT / 2)) / FRACUNIT;
+			}
+
+			// Semibright objects will be made slightly brighter to compensate contrast
+			if (R_ThingIsSemiBright(oldthing))
+			{
+				lightnum += 2;
 			}
 		}
-		//light = R_GetPlaneLight(thing->subsector->sector, gzt, false);
-		lightnum = (*thing->subsector->sector->lightlist[light].lightlevel >> LIGHTSEGSHIFT);
 
 		if (lightnum < 0)
-			spritelights = scalelight[0];
+			lights_array = scalelight[0];
 		else if (lightnum >= LIGHTLEVELS)
-			spritelights = scalelight[LIGHTLEVELS-1];
+			lights_array = scalelight[LIGHTLEVELS-1];
 		else
-			spritelights = scalelight[lightnum];
+			lights_array = scalelight[lightnum];
 	}
 
 	heightsec = thing->subsector->sector->heightsec;
@@ -2160,9 +2284,8 @@ static void R_ProjectSprite(mobj_t *thing)
 			return;
 	}
 
-	if (thing->terrain != NULL && (thing->flags & MF_APPLYTERRAIN))
+	if (thing->terrain != NULL)
 	{
-		// Clip the bottom of the thing's sprite
 		floorClip = thing->terrain->floorClip;
 	}
 
@@ -2282,7 +2405,7 @@ static void R_ProjectSprite(mobj_t *thing)
 		if (vis->cut & SC_SEMIBRIGHT)
 			lindex = (MAXLIGHTSCALE/2) + (lindex >> 1);
 
-		vis->colormap = spritelights[lindex];
+		vis->colormap = lights_array[lindex];
 	}
 
 	if (vflip)
@@ -2291,8 +2414,9 @@ static void R_ProjectSprite(mobj_t *thing)
 		vis->cut |= SC_SPLAT; // I like ya cut g
 
 	vis->patch = patch;
+	vis->bright = R_CacheSpriteBrightMap(sprinfo, frame);
 
-	if (thing->subsector->sector->numlights && !(shadowdraw || splat))
+	if (thing->subsector->sector->numlights && !(shadowdraw || splat) && !(thing->renderflags & RF_ABSOLUTELIGHTLEVEL))
 		R_SplitSprite(vis);
 
 	if (oldthing->shadowscale && cv_shadow.value)
@@ -2480,6 +2604,8 @@ static void R_ProjectPrecipitationSprite(precipmobj_t *thing)
 	//Fab: lumppat is the lump number of the patch to use, this is different
 	//     than lumpid for sprites-in-pwad : the graphics are patched
 	vis->patch = W_CachePatchNum(sprframe->lumppat[0], PU_SPRITE);
+	vis->bright = R_CacheSpriteBrightMap(&spriteinfo[thing->sprite],
+			thing->frame & FF_FRAMEMASK);
 
 	vis->transmap = R_GetBlendTable(blendmode, trans);
 
@@ -2534,6 +2660,12 @@ void R_AddSprites(sector_t *sec, INT32 lightlevel)
 	limit_dist = (fixed_t)(cv_drawdist.value) * mapobjectscale;
 	for (thing = sec->thinglist; thing; thing = thing->snext)
 	{
+		// do not render in skybox
+		if ((thing->renderflags & RF_HIDEINSKYBOX) /*&& portalskipprecipmobjs*/)
+		{
+			continue;
+		}
+
 		if (R_ThingWithinDist(thing, limit_dist))
 		{
 			const INT32 oldobjectsdrawn = objectsdrawn;

@@ -89,6 +89,7 @@ char   mapmusname[7]; // Music name
 UINT16 mapmusflags; // Track and reset bit
 UINT32 mapmusposition; // Position to jump to
 UINT32 mapmusresume;
+UINT8 mapmusrng; // Random selection result
 
 INT16 gamemap = 1;
 UINT32 maptol;
@@ -1849,6 +1850,8 @@ void G_ResetView(UINT8 viewnum, INT32 playernum, boolean onlyactive)
 	{
 		camerap = &camera[viewnum-1];
 		P_ResetCamera(&players[(*displayplayerp)], camerap);
+
+		R_ResetViewInterpolation(viewnum);
 	}
 
 	if (viewnum > splits)
@@ -1936,6 +1939,7 @@ void G_Ticker(boolean run)
 	// do player reborns if needed
 	if (gamestate == GS_LEVEL)
 	{
+		boolean changed = false;
 		// Or, alternatively, retry.
 		if (G_GetRetryFlag())
 		{
@@ -1953,8 +1957,18 @@ void G_Ticker(boolean run)
 		}
 
 		for (i = 0; i < MAXPLAYERS; i++)
+		{
 			if (playeringame[i] && players[i].playerstate == PST_REBORN)
+			{
 				G_DoReborn(i);
+				changed = true;
+			}
+		}
+		
+		if (changed == true)
+		{
+			K_UpdateAllPlayerPositions();
+		}
 	}
 	P_MapEnd();
 
@@ -2167,8 +2181,12 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	boolean followerready;
 	INT32 followerskin;
 	UINT16 followercolor;
+	
 	mobj_t *follower; // old follower, will probably be removed by the time we're dead but you never know.
+	mobj_t *skyboxviewpoint;
+	mobj_t *skyboxcenterpoint;
 
+	
 	INT32 charflags;
 	UINT32 followitem;
 
@@ -2295,7 +2313,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		nextcheck = 0;
 		xtralife = 0;
 
-		follower = NULL;
 	}
 	else
 	{
@@ -2333,8 +2350,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 
 		exiting = players[player].exiting;
 		khudcardanimation = (exiting > 0) ? players[player].karthud[khud_cardanimation] : 0;
-
-		follower = players[player].follower;
 		
 		starpostx = players[player].starpostx;
 		starposty = players[player].starposty;
@@ -2356,7 +2371,18 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	if (!betweenmaps)
 	{
 		// Obliterate follower from existence (if valid memory)
+		follower = players[player].follower;
 		P_SetTarget(&players[player].follower, NULL);
+		P_SetTarget(&players[player].awayviewmobj, NULL);
+		P_SetTarget(&players[player].followmobj, NULL);
+
+		skyboxviewpoint = players[player].skybox.viewpoint;
+		skyboxcenterpoint = players[player].skybox.centerpoint;
+	}
+	else
+	{
+		follower = NULL;
+		skyboxviewpoint = skyboxcenterpoint = NULL;
 	}
 	
 	spectatorreentry = players[player].spectatorreentry;
@@ -2434,6 +2460,9 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 
 	if (follower)
 		P_RemoveMobj(follower);
+	
+	p->skybox.viewpoint = skyboxviewpoint;
+	p->skybox.centerpoint = skyboxcenterpoint;
 
 	p->followerready = followerready;
 	p->followerskin = followerskin;
@@ -2777,6 +2806,11 @@ mapthing_t *G_FindMapStart(INT32 playernum)
 		else
 			spawnpoint = G_FindRaceStartOrFallback(playernum);
 	}
+
+	// -- Grand Prix / Time Attack --
+	// Order: Race->DM->CTF
+	else if (grandprixinfo.gp || modeattacking)
+		spawnpoint = G_FindRaceStartOrFallback(playernum);
 
 	// -- CTF --
 	// Order: CTF->DM->Race

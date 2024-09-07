@@ -463,7 +463,7 @@ fixed_t R_ScaleFromGlobalAngle(angle_t visangle)
 // R_DoCulling
 // Checks viewz and top/bottom heights of an item against culling planes
 // Returns true if the item is to be culled, i.e it shouldn't be drawn!
-// if ML_NOCLIMB is set, the camera view is required to be in the same area for culling to occur
+// if args[1] is set, the camera view is required to be in the same area for culling to occur
 boolean R_DoCulling(line_t *cullheight, line_t *viewcullheight, fixed_t vz, fixed_t bottomh, fixed_t toph)
 {
 	fixed_t cullplane;
@@ -472,7 +472,7 @@ boolean R_DoCulling(line_t *cullheight, line_t *viewcullheight, fixed_t vz, fixe
 		return false;
 
 	cullplane = cullheight->frontsector->floorheight;
-	if (cullheight->flags & ML_NOCLIMB) // Group culling
+	if (cullheight->args[1]) // Group culling
 	{
 		if (!viewcullheight)
 			return false;
@@ -1364,7 +1364,15 @@ void R_SkyboxFrame(int s)
 
 	newview->x = r_viewmobj->x;
 	newview->y = r_viewmobj->y;
-	newview->z = r_viewmobj->z; // 26/04/17: use actual Z position instead of spawnpoint angle!
+	if (!udmf)
+    {
+        if (r_viewmobj->spawnpoint)
+            newview->z = ((fixed_t)r_viewmobj->spawnpoint->angle)<<FRACBITS;
+        else
+            newview->z = 0;
+    }
+    else
+        newview->z = r_viewmobj->z; // 26/04/17: use actual Z position instead of spawnpoint angle!
 
 	if (mapheaderinfo[gamemap-1])
 	{

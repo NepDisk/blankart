@@ -555,7 +555,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			return;
 
 		case MT_STARPOST:
-			P_TouchStarPost(special, player, special->spawnpoint && (special->spawnpoint->options & MTF_OBJECTSPECIAL));
+			P_TouchStarPost(special, player, special->spawnpoint && special->spawnpoint->args[1]);
 			return;
 
 		case MT_BIGTUMBLEWEED:
@@ -1257,7 +1257,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 					mo->angle = FixedAngle((P_RandomKey(36)*10)<<FRACBITS);
 
 					mo2 = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_BOSSJUNK);
-					P_InitAngle(mo2, mo->angle);
+					mo2->angle = mo->angle;
 					P_SetMobjState(mo2, S_BOSSSEBH2);
 
 					if (++i == 2) // we've already removed 2 of these, let's stop now
@@ -1372,7 +1372,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 						tire = P_SpawnMobjFromMobj(kart, 0, 0, 0, MT_KART_TIRE);
 						tire->fuse = 2*TICRATE;
 
-						P_InitAngle(tire, tireAngle);
+						tire->angle = tireAngle;
 						P_InstaThrust(tire, tireAngle, 3 * tire->scale);
 						P_SetObjectMomZ(tire, 10*FRACUNIT, false);
 
@@ -1428,7 +1428,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			for (i = 0; i < 2; i++)
 			{
 				mobj_t *blast = P_SpawnMobjFromMobj(target, 0, 0, target->info->height >> 1, MT_BATTLEBUMPER_BLAST);
-				P_InitAngle(blast, angle + i*ANGLE_90);
+				blast->angle = angle + i*ANGLE_90;
 				P_SetScale(blast, 2*blast->scale/3);
 				blast->destscale = 2*blast->scale;
 			}
@@ -1706,7 +1706,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			chunk = P_SpawnMobjFromMobj(target, 0, 0, 0, MT_SPIKE);\
 			P_SetMobjState(chunk, target->info->xdeathstate);\
 			chunk->health = 0;\
-			P_InitAngle(chunk, angtweak);\
+			chunk->angle = angtweak;\
 			P_UnsetThingPosition(chunk);\
 			chunk->flags = MF_NOCLIP;\
 			chunk->x += xmov;\
@@ -1728,7 +1728,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 		chunk = P_SpawnMobjFromMobj(target, 0, 0, 0, MT_SPIKE);
 		P_SetMobjState(chunk, target->info->deathstate);
 		chunk->health = 0;
-		P_InitAngle(chunk, ang + ANGLE_180);
+		chunk->angle = ang + ANGLE_180;
 		P_UnsetThingPosition(chunk);
 		chunk->flags = MF_NOCLIP;
 		chunk->x -= xoffs;
@@ -1774,7 +1774,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			chunk = P_SpawnMobjFromMobj(target, 0, 0, 0, MT_WALLSPIKE);\
 			P_SetMobjState(chunk, target->info->xdeathstate);\
 			chunk->health = 0;\
-			P_InitAngle(chunk, target->angle);\
+			chunk->angle = target->angle;\
 			P_UnsetThingPosition(chunk);\
 			chunk->flags = MF_NOCLIP;\
 			chunk->x += xmov - forwardxoffs;\
@@ -1800,7 +1800,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 
 		P_SetMobjState(chunk, target->info->deathstate);
 		chunk->health = 0;
-		P_InitAngle(chunk, target->angle);
+		chunk->angle = target->angle;
 		P_UnsetThingPosition(chunk);
 		chunk->flags = MF_NOCLIP;
 		chunk->x += forwardxoffs - xoffs;
@@ -1925,7 +1925,7 @@ static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source,
 
 			boom = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_FZEROBOOM);
 			boom->scale = player->mo->scale;
-			P_InitAngle(boom, player->mo->angle);
+			boom->angle = player->mo->angle;
 			P_SetTarget(&boom->target, player->mo);
 		}
 

@@ -226,6 +226,8 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->nextcheck);
 	else if (fastcmp(field,"distancetofinish"))
 		lua_pushinteger(L, plr->distancetofinish);
+	else if (fastcmp(field,"distancetofinishprev"))
+		lua_pushinteger(L, plr->distancetofinishprev);
 	else if (fastcmp(field,"airtime"))
 		lua_pushinteger(L, plr->airtime);
 	else if (fastcmp(field,"flashing"))
@@ -258,10 +260,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->offroad);
 	else if (fastcmp(field,"waterskip"))
 		lua_pushinteger(L, plr->waterskip);
-	else if (fastcmp(field,"springstars"))
-		lua_pushinteger(L, plr->springstars);
-	else if (fastcmp(field,"springcolor"))
-		lua_pushinteger(L, plr->springcolor);
 	else if (fastcmp(field,"dashpadcooldown"))
 		lua_pushinteger(L, plr->dashpadcooldown);
 	else if (fastcmp(field,"boostpower"))
@@ -280,6 +278,8 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->tripwirePass);
 	else if (fastcmp(field,"tripwireLeniency"))
 		lua_pushinteger(L, plr->tripwireLeniency);
+	else if (fastcmp(field,"tripwireReboundDelay"))
+		lua_pushinteger(L, plr->tripwireReboundDelay);
 	else if (fastcmp(field,"itemroulette"))
 		lua_pushinteger(L, plr->itemroulette);
 	else if (fastcmp(field,"roulettetype"))
@@ -323,7 +323,9 @@ static int player_get(lua_State *L)
 	else if (fastcmp(field,"sneakertimer"))
 		lua_pushinteger(L, plr->sneakertimer);
 	else if (fastcmp(field,"floorboost"))
-		lua_pushinteger(L, plr->floorboost);
+		lua_pushboolean(L, plr->floorboost);
+	else if (fastcmp(field,"waterrun"))
+		lua_pushinteger(L, plr->waterrun);
 	else if (fastcmp(field,"growshrinktimer"))
 		lua_pushinteger(L, plr->growshrinktimer);
 	else if (fastcmp(field,"rocketsneakertimer"))
@@ -576,6 +578,8 @@ static int player_set(lua_State *L)
 		plr->nextcheck = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"distancetofinish"))
 		return NOSET;
+	else if (fastcmp(field,"distancetofinishprev"))
+		return NOSET;
 	else if (fastcmp(field,"airtime"))
 		plr->airtime = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"flashing"))
@@ -608,10 +612,6 @@ static int player_set(lua_State *L)
 		plr->offroad = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"waterskip"))
 		plr->waterskip = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"springstars"))
-		plr->springstars = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"springcolor"))
-		plr->springcolor = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"dashpadcooldown"))
 		plr->dashpadcooldown = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"boostpower"))
@@ -630,6 +630,8 @@ static int player_set(lua_State *L)
 		plr->tripwirePass = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"tripwireLeniency"))
 		plr->tripwireLeniency = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"tripwireReboundDelay"))
+		plr->tripwireReboundDelay = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"itemroulette"))
 		plr->itemroulette = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"roulettetype"))
@@ -674,6 +676,8 @@ static int player_set(lua_State *L)
 		plr->sneakertimer = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"floorboost"))
 		plr->floorboost = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"waterrun"))
+		plr->waterrun = luaL_checkboolean(L, 3);
 	else if (fastcmp(field,"growshrinktimer"))
 		plr->growshrinktimer = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"rocketsneakertimer"))

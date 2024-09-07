@@ -16,6 +16,7 @@
 #include "command.h"
 #include "g_game.h"
 #include "m_argv.h"
+#include "m_random.h"
 #include "r_main.h" // R_PointToAngle2() used to calc stereo sep.
 #include "r_skins.h" // for skins
 #include "i_system.h"
@@ -111,7 +112,9 @@ consvar_t cv_music_resync_powerups_only = CVAR_INIT ("music_resync_powerups_only
 
 // Window focus sound sytem toggles
 consvar_t cv_playmusicifunfocused = CVAR_INIT ("playmusicifunfocused",  "No", CV_SAVE|CV_CALL|CV_NOINIT, CV_YesNo, PlayMusicIfUnfocused_OnChange);
-consvar_t cv_playsoundifunfocused = CVAR_INIT ("playsoundsifunfocused", "No", CV_SAVE|CV_CALL|CV_NOINIT, CV_YesNo, PlaySoundIfUnfocused_OnChange);
+consvar_t cv_streamersafemusic = CVAR_INIT ("playsoundsifunfocused", "No", CV_SAVE|CV_CALL|CV_NOINIT, CV_YesNo, PlaySoundIfUnfocused_OnChange);
+
+consvar_t cv_playsoundifunfocused = CVAR_INIT ("streamersafemusic", "No", CV_SAVE, CV_YesNo, PlaySoundIfUnfocused_OnChange);
 
 #ifdef HAVE_OPENMPT
 openmpt_module *openmpt_mhandle = NULL;
@@ -493,7 +496,7 @@ void S_StartCaption(sfxenum_t sfx_id, INT32 cnum, UINT16 lifespan)
 	closedcaptions[set].c = ((cnum == -1) ? NULL : &channels[cnum]);
 	closedcaptions[set].s = sfx;
 	closedcaptions[set].t = lifespan;
-	closedcaptions[set].b = 2; // bob
+	closedcaptions[set].b = 3; // bob
 }
 
 static INT32 S_ScaleVolumeWithSplitscreen(INT32 volume)
@@ -980,7 +983,7 @@ void S_UpdateClosedCaptions(void)
 
 void S_SetSfxVolume(INT32 volume)
 {
-	CV_SetValue(&cv_soundvolume, volume);
+	//CV_SetValue(&cv_soundvolume, volume);
 	actualsfxvolume = cv_soundvolume.value * USER_VOLUME_SCALE;
 
 #ifdef HW3SOUND
@@ -1355,6 +1358,39 @@ musicdef_t *musicdefstart = NULL;
 struct cursongcredit cursongcredit; // Currently displayed song credit info
 int musicdef_volume;
 
+//
+// S_FindMusicDef
+//
+// Find music def by 6 char name
+//
+musicdef_t *S_FindMusicDef(const char *name, UINT8 *i)
+{
+	UINT32 hash;
+	musicdef_t *def;
+
+	if (!name || !name[0])
+		return NULL;
+
+	hash = quickncasehash (name, 6);
+
+	for (def = musicdefstart; def; def = def->next)
+	{
+		for (*i = 0; *i < def->numtracks; (*i)++)
+		{
+			if (hash != def->hash[*i])
+				continue;
+
+			if (stricmp(def->name[*i], name))
+				continue;
+
+			return def;
+		}
+	}
+
+	*i = 0;
+	return NULL;
+}
+
 static boolean
 MusicDefError
 (
@@ -1393,7 +1429,7 @@ ReadMusicDefFields
 
 	if (!stricmp(stoken, "lump"))
 	{
-		value = strtok(NULL, " ");
+		value = strtok(NULL, " ,");
 		if (!value)
 		{
 			return MusicDefError(CONS_WARNING,
@@ -1402,32 +1438,39 @@ ReadMusicDefFields
 		}
 		else
 		{
-			musicdef_t **tail = &musicdefstart;
+			UINT8 i = 0;
 
-			// Search if this is a replacement
-			while (*tail)
-			{
-				if (!stricmp((*tail)->name, value))
-				{
-					break;
-				}
-
-				tail = &(*tail)->next;
-			}
+			def = S_FindMusicDef(value, &i);
 
 			// Nothing found, add to the end.
-			if (!(*tail))
+			if (!def)
 			{
 				def = Z_Calloc(sizeof (musicdef_t), PU_STATIC, NULL);
 
-				STRBUFCPY(def->name, value);
-				strlwr(def->name);
+				do {
+					if (i >= MAXDEFTRACKS)
+						break;
+					STRBUFCPY(def->name[i], value);
+					strlwr(def->name[i]);
+					def->hash[i] = quickncasehash (def->name[i], 6);
+					i++;
+				} while ((value = strtok(NULL," ,")) != NULL);
+
+				if (value != NULL)
+				{
+					return MusicDefError(CONS_ERROR,
+							"Extra tracks for field '%s' beyond 3 discarded.", // MAXDEFTRACKS
+							stoken, lumpnum, line);
+				}
+
+				def->numtracks = i;
 				def->volume = DEFAULT_MUSICDEF_VOLUME;
 
-				(*tail) = def;
+				def->next = musicdefstart;
+				musicdefstart = def;
 			}
 
-			(*defp) = (*tail);
+			(*defp) = def;
 		}
 	}
 	else
@@ -1465,16 +1508,37 @@ ReadMusicDefFields
 
 			textline = value;
 
-			/* based ignored lumps */
-			if (!stricmp(stoken, "usage")) {
-#if 0 // Ignore for now
-				STRBUFCPY(def->usage, textline);
-#endif
-			} else if (!stricmp(stoken, "source")) {
-				STRBUFCPY(def->source, textline);
-			} else if (!stricmp(stoken, "volume")) {
+			if (!stricmp(stoken, "title"))
+			{
+				Z_Free(def->title);
+				def->title = Z_StrDup(textline);
+			}
+			else if (!stricmp(stoken, "author"))
+			{
+				Z_Free(def->author);
+				def->author = Z_StrDup(textline);
+			}
+			else if (!stricmp(stoken, "source"))
+			{
+				Z_Free(def->source);
+				def->source = Z_StrDup(textline);
+			}
+			else if (!stricmp(stoken, "originalcomposers"))
+			{
+				Z_Free(def->composers);
+				def->composers = Z_StrDup(textline);
+			}
+			else if (!stricmp(stoken, "volume"))
+			{
 				def->volume = atoi(textline);
-			} else {
+			}
+			else if (!stricmp(stoken, "contentidunsafe"))
+			{
+				textline[0] = toupper(textline[0]);
+				def->contentidunsafe = (textline[0] == 'Y' || textline[0] == 'T' || textline[0] == '1');
+			}
+			else
+			{
 				MusicDefError(CONS_WARNING,
 						"Unknown field '%s'.",
 						stoken, lumpnum, line);
@@ -1585,7 +1649,12 @@ void S_InitMusicDefs(void)
 //
 void S_ShowMusicCredit(void)
 {
-	musicdef_t *def = musicdefstart;
+	UINT8 i = 0;
+	musicdef_t *def = S_FindMusicDef(music_name, &i);
+
+	char credittext[128] = "";
+	char *work = NULL;
+	size_t len = 128, worklen;
 
 	if (!cv_songcredits.value || demo.rewinding)
 		return;
@@ -1593,19 +1662,56 @@ void S_ShowMusicCredit(void)
 	if (!def) // No definitions
 		return;
 
-	while (def)
+	if (!def->title)
 	{
-		if (!stricmp(def->name, music_name))
-		{
-			cursongcredit.def = def;
-			cursongcredit.anim = 5*TICRATE;
-			cursongcredit.x = cursongcredit.old_x =0;
-			cursongcredit.trans = NUMTRANSMAPS;
-			return;
-		}
-		else
-			def = def->next;
+		return;
 	}
+
+	work = va("\x1F %s", def->title);
+	worklen = strlen(work);
+	if (worklen <= len)
+	{
+		strncat(credittext, work, len);
+		len -= worklen;
+
+		if (def->numtracks > 1)
+		{
+			work = va(" (%c)", i+'A');
+			worklen = strlen(work);
+			if (worklen <= len)
+			{
+				strncat(credittext, work, len);
+				len -= worklen;
+			}
+		}
+
+#define MUSICCREDITAPPEND(field)\
+		if (field)\
+		{\
+			work = va(" - %s", field);\
+			worklen = strlen(work);\
+			if (worklen <= len)\
+			{\
+				strncat(credittext, work, len);\
+				len -= worklen;\
+			}\
+		}
+
+		MUSICCREDITAPPEND(def->author);
+		MUSICCREDITAPPEND(def->source);
+
+#undef MUSICCREDITAPPEND
+	}
+
+	if (credittext[0] == '\0')
+		return;
+
+	cursongcredit.def = def;
+	Z_Free(cursongcredit.text);
+	cursongcredit.text = Z_StrDup(credittext);
+	cursongcredit.anim = 5*TICRATE;
+	cursongcredit.x = cursongcredit.old_x = 0;
+	cursongcredit.trans = NUMTRANSMAPS;
 }
 
 /// ------------------------
@@ -2056,11 +2162,32 @@ static void S_UnloadMusic(void)
 	music_usage = 0;
 }
 
+/* Don't Play content id unsafe music pls */
+static boolean S_CheckMusicIsSafe()
+{
+	if (cv_streamersafemusic.value)
+	{
+		UINT8 i = 0;
+		musicdef_t *def = S_FindMusicDef(music_name, &i);
+
+		if (def)
+		{
+			if (def->contentidunsafe == true)
+			{
+				return false;
+			}
+		}
+	}
+	
+	return true;
+}
+
 static boolean S_PlayMusic(boolean looping, UINT32 fadeinms)
 {
-	//musicdef_t *def;
-
 	if (S_MusicDisabled())
+		return false;
+	
+	if (!S_CheckMusicIsSafe())
 		return false;
 
 	I_UpdateSongLagConditions();
@@ -2177,13 +2304,12 @@ void S_ChangeMusicEx(const char *mmusic, UINT16 mflags, boolean looping, UINT32 
 		musicdef_volume = DEFAULT_MUSICDEF_VOLUME;
 
 		{
-			musicdef_t *def;
-			for (def = musicdefstart; def; def = def->next)
+			UINT8 i = 0;
+			musicdef_t *def = S_FindMusicDef(music_name, &i);
+
+			if (def)
 			{
-				if (strcasecmp(def->name, music_name) == 0)
-				{
-					musicdef_volume = def->volume;
-				}
+				musicdef_volume = def->volume;
 			}
 		}
 
@@ -2216,7 +2342,8 @@ void S_ChangeMusicSpecial (const char *mmusic)
 }
 
 void S_StopMusic(void)
-{
+{	
+	boolean safe = S_CheckMusicIsSafe();
 	if (!I_SongPlaying()
 		|| demo.rewinding // Don't mess with music while rewinding!
 		|| demo.title) // SRB2Kart: Demos don't interrupt title screen music
@@ -2225,7 +2352,7 @@ void S_StopMusic(void)
 	if (strcasecmp(music_name, mapmusname) == 0)
 		mapmusresume = I_GetSongPosition();
 
-	if (I_SongPaused())
+	if (I_SongPaused() && safe == true)
 		I_ResumeSong();
 
 	S_SpeedMusic(1.0f);
@@ -2261,8 +2388,11 @@ void S_PauseAudio(void)
 }
 
 void S_ResumeAudio(void)
-{
+{	
 	if (S_MusicNotInFocus())
+		return;
+	
+	if (!S_CheckMusicIsSafe())
 		return;
 
 	if (I_SongPlaying() && I_SongPaused())
@@ -2294,7 +2424,7 @@ void S_SetMusicVolume(INT32 digvolume)
 	if (digvolume < 0)
 		digvolume = cv_digmusicvolume.value;
 
-	CV_SetValue(&cv_digmusicvolume, digvolume);
+	//CV_SetValue(&cv_digmusicvolume, digvolume);
 	actualdigmusicvolume = cv_digmusicvolume.value * USER_VOLUME_SCALE;
 	I_SetMusicVolume(digvolume);
 }
@@ -2363,13 +2493,19 @@ boolean S_FadeOutStopMusic(UINT32 ms)
 // Kills playing sounds at start of level,
 //  determines music if any, changes music.
 //
-void S_StartEx(boolean reset)
+void S_InitLevelMusic(boolean fromnetsave)
 {
-	(void)reset;
 
 	if (mapmusflags & MUSIC_RELOADRESET)
 	{
-		strncpy(mapmusname, mapheaderinfo[gamemap-1]->musname, 7);
+		if (!fromnetsave)
+		{
+			if (mapheaderinfo[gamemap-1]->musname_size > 1)
+				mapmusrng = P_RandomKey(mapheaderinfo[gamemap-1]->musname_size);
+			else
+				mapmusrng = 0;
+		}
+		strncpy(mapmusname, mapheaderinfo[gamemap-1]->musname[mapmusrng], 7);
 		mapmusname[6] = 0;
 		mapmusflags = (mapheaderinfo[gamemap-1]->mustrack & MUSIC_TRACKMASK);
 		mapmusposition = mapheaderinfo[gamemap-1]->muspos;
@@ -2389,6 +2525,33 @@ void S_StartEx(boolean reset)
 	music_stack_fadein = JINGLEPOSTFADE;
 }
 
+static inline void PrintMusicDefField(const char *label, const char *field)
+{
+	if (field)
+	{
+		CONS_Printf("%s%s\n", label, field);
+	}
+}
+
+static void PrintSongAuthors(const musicdef_t *def, UINT8 i)
+{
+	if (def->numtracks > 1)
+	{
+		PrintMusicDefField("Title:  ", va("%s (%c)", def->title, i+'A'));
+	}
+	else
+	{
+		PrintMusicDefField("Title:  ", def->title);
+	}
+	PrintMusicDefField("Author: ", def->author);
+
+	CONS_Printf("\n");
+
+	PrintMusicDefField("Original Source:    ", def->source);
+	PrintMusicDefField("Original Composers: ", def->composers);
+}
+
+// TODO: fix this function, needs better support for map names
 static void Command_Tunes_f(void)
 {
 	const char *tunearg;
@@ -2412,8 +2575,30 @@ static void Command_Tunes_f(void)
 
 	if (!strcasecmp(tunearg, "-show"))
 	{
+		UINT8 i = 0;
+		const musicdef_t *def = S_FindMusicDef(music_name, &i);
+
+		CONS_Printf(M_GetText("The current tune is: %s [track %d]\n"),
+			music_name, (music_flags & MUSIC_TRACKMASK));
+
+		if (def != NULL)
+		{
+			PrintSongAuthors(def, i);
+		}
+		return;
+	}
+	if (!strcasecmp(tunearg, "-showdefault"))
+	{
+		UINT8 i = 0;
+		const musicdef_t *def = S_FindMusicDef(mapmusname, &i);
+
 		CONS_Printf(M_GetText("The current tune is: %s [track %d]\n"),
 			mapmusname, (mapmusflags & MUSIC_TRACKMASK));
+
+		if (def != NULL)
+		{
+			PrintSongAuthors(def, i);
+		}
 		return;
 	}
 	if (!strcasecmp(tunearg, "-none"))
@@ -2423,7 +2608,7 @@ static void Command_Tunes_f(void)
 	}
 	else if (!strcasecmp(tunearg, "-default"))
 	{
-		tunearg = mapheaderinfo[gamemap-1]->musname;
+		tunearg = mapheaderinfo[gamemap-1]->musname[0];
 		track = mapheaderinfo[gamemap-1]->mustrack;
 	}
 

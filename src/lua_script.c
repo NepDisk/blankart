@@ -332,6 +332,9 @@ int LUA_PushGlobals(lua_State *L, const char *word)
 	} else if (fastcmp(word,"mapmusposition")) {
 		lua_pushinteger(L, mapmusposition);
 		return 1;
+	} else if (fastcmp(word,"mapmusrng")) {
+		lua_pushinteger(L, mapmusrng);
+		return 1;
 	// local player variables, by popular request
 	} else if (fastcmp(word,"consoleplayer")) { // player controlling console (aka local player 1)
 		if (!addedtogame || consoleplayer < 0 || !playeringame[consoleplayer])
@@ -460,6 +463,8 @@ int LUA_WriteGlobals(lua_State *L, const char *word)
 	}
 	else if (fastcmp(word, "mapmusflags"))
 		mapmusflags = (UINT16)luaL_checkinteger(L, 2);
+	else if (fastcmp(word, "mapmusrng"))
+		mapmusrng = (UINT8)luaL_checkinteger(L, 2);
 	// SRB2Kart
 	else if (fastcmp(word,"racecountdown"))
 		racecountdown = (tic_t)luaL_checkinteger(L, 2);
@@ -1416,8 +1421,11 @@ static void ArchiveTables(UINT8 **p)
 		{
 			// Write key
 			e = ArchiveValue(p, TABLESINDEX, -2); // key should be either a number or a string, ArchiveValue can handle this.
-			if (e == 2) // invalid key type (function, thread, lightuserdata, or anything we don't recognise)
+			if (e == 1)
+				n++; // the table contained a new table we'll have to archive. :(
+			else if (e == 2) // invalid key type (function, thread, lightuserdata, or anything we don't recognise)
 				CONS_Alert(CONS_ERROR, "Index '%s' (%s) of table %d could not be archived!\n", lua_tostring(gL, -2), luaL_typename(gL, -2), i);
+
 			// Write value
 			e = ArchiveValue(p, TABLESINDEX, -1);
 			if (e == 1)
@@ -1626,10 +1634,15 @@ static void UnArchiveTables(UINT8 **p)
 		lua_rawgeti(gL, TABLESINDEX, i);
 		while (true)
 		{
-			if (UnArchiveValue(p, TABLESINDEX) == 1) // read key
+			UINT8 e = UnArchiveValue(p,TABLESINDEX); // read key
+			if (e == 1) // End of table
 				break;
-			if (UnArchiveValue(p, TABLESINDEX) == 2) // read value
+			else if (e == 2) // Key contains a new table
 				n++;
+
+			if (UnArchiveValue(p,TABLESINDEX) == 2) // read value
+				n++;
+
 			if (lua_isnil(gL, -2)) // if key is nil (if a function etc was accidentally saved)
 			{
 				CONS_Alert(CONS_ERROR, "A nil key in table %d was found! (Invalid key type or corrupted save?)\n", i);

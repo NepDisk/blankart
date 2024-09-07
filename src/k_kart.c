@@ -1573,10 +1573,9 @@ boolean K_KartSolidBounce(mobj_t *bounceMobj, mobj_t *solidMobj)
 
 	\return	boolean
 */
-static UINT8 K_CheckOffroadCollide(mobj_t *mo)
+static fixed_t K_CheckOffroadCollide(mobj_t *mo)
 {
 	// Check for sectors in touching_sectorlist
-	UINT8 i;			// special type iter
 	msecnode_t *node;	// touching_sectorlist iter
 	sector_t *s;		// main sector shortcut
 	sector_t *s2;		// FOF sector shortcut
@@ -1601,18 +1600,16 @@ static UINT8 K_CheckOffroadCollide(mobj_t *mo)
 		cel = P_MobjCeilingZ(mo, s, s, mo->x, mo->y, NULL, true, true);	// get Z coords of both floors and ceilings for this sector (this accounts for slopes properly.)
 		// NOTE: we don't use P_GetZAt with our x/y directly because the mobj won't have the same height because of its hitbox on the slope. Complex garbage but tldr it doesn't work.
 
-		if ( ((s->flags & SF_FLIPSPECIAL_FLOOR) && mo->z == flr)	// floor check
-			|| ((mo->eflags & MFE_VERTICALFLIP && (s->flags & SF_FLIPSPECIAL_CEILING) && (mo->z + mo->height) == cel)) )	// ceiling check.
-
-			for (i = 2; i < 5; i++)	// check for sector special
-
-				if (GETSECSPECIAL(s->special, 1) == i)
-					return i-1;	// return offroad type
+		if ( ((s->flags & MSF_FLIPSPECIAL_FLOOR) && mo->z == flr)	// floor check
+			|| ((mo->eflags & MFE_VERTICALFLIP && (s->flags & MSF_FLIPSPECIAL_CEILING) && (mo->z + mo->height) == cel)) )	// ceiling check.
+		{
+			return s->offroad;
+		}
 
 		// 2: If we're here, we haven't found anything. So let's try looking for FOFs in the sectors using the same logic.
 		for (rover = s->ffloors; rover; rover = rover->next)
 		{
-			if (!(rover->flags & FF_EXISTS))	// This FOF doesn't exist anymore.
+			if (!(rover->fofflags & FOF_EXISTS))	// This FOF doesn't exist anymore.
 				continue;
 
 			s2 = &sectors[rover->secnum];	// makes things easier for us
@@ -1622,18 +1619,15 @@ static UINT8 K_CheckOffroadCollide(mobj_t *mo)
 
 			// we will do essentially the same checks as above instead of bothering with top/bottom height of the FOF.
 			// Reminder that an FOF's floor is its bottom, silly!
-			if ( ((s2->flags & SF_FLIPSPECIAL_FLOOR) && mo->z == cel)	// "floor" check
-				|| ((s2->flags & SF_FLIPSPECIAL_CEILING) && (mo->z + mo->height) == flr) )	// "ceiling" check.
-
-				for (i = 2; i < 5; i++)	// check for sector special
-
-					if (GETSECSPECIAL(s2->special, 1) == i)
-						return i-1;	// return offroad type
-
+			if ( ((s2->flags & MSF_FLIPSPECIAL_FLOOR) && mo->z == cel)	// "floor" check
+				|| ((s2->flags & MSF_FLIPSPECIAL_CEILING) && (mo->z + mo->height) == flr) )	// "ceiling" check.
+			{
+				return s2->offroad;
+			}
 		}
 	}
 
-	return 0;	// couldn't find any offroad
+	return 0; // couldn't find any offroad
 }
 
 /**	\brief	Updates the Player's offroad value once per frame
@@ -1647,13 +1641,14 @@ static void K_UpdateOffroad(player_t *player)
 	terrain_t *terrain = player->mo->terrain;
 	fixed_t offroadstrength = 0;
 
+	// TODO: Make this use actual special touch code.
 	if (terrain != NULL && terrain->offroad > 0)
 	{
 		offroadstrength = (terrain->offroad << FRACBITS);
 	}
 	else
 	{
-		offroadstrength = (K_CheckOffroadCollide(player->mo) << FRACBITS);
+		offroadstrength = K_CheckOffroadCollide(player->mo);
 	}
 
 	// If you are in offroad, a timer starts.
@@ -1792,7 +1787,7 @@ void K_SpawnDashDustRelease(player_t *player)
 		dust = P_SpawnMobj(newx, newy, player->mo->z, MT_FASTDUST);
 
 		P_SetTarget(&dust->target, player->mo);
-		P_InitAngle(dust, travelangle - ((i&1) ? -1 : 1) * ANGLE_45);
+		dust->angle = travelangle - (((i&1) ? -1 : 1) * ANGLE_45);
 		dust->destscale = player->mo->scale;
 		P_SetScale(dust, player->mo->scale);
 
@@ -1840,7 +1835,7 @@ void K_SpawnNormalSpeedLines(player_t *player)
 		MT_FASTLINE);
 
 	P_SetTarget(&fast->target, player->mo);
-	P_InitAngle(fast, K_MomentumAngle(player->mo));
+	fast->angle = K_MomentumAngle(player->mo);
 	fast->momx = 3*player->mo->momx/4;
 	fast->momy = 3*player->mo->momy/4;
 	fast->momz = 3*P_GetMobjZMovement(player->mo)/4;
@@ -1896,7 +1891,7 @@ void K_SpawnInvincibilitySpeedLines(mobj_t *mo)
 	P_SetMobjState(fast, S_KARTINVLINES1);
 
 	P_SetTarget(&fast->target, mo);
-	P_InitAngle(fast, K_MomentumAngle(mo));
+	fast->angle = K_MomentumAngle(mo);
 
 	fast->momx = 3*mo->momx/4;
 	fast->momy = 3*mo->momy/4;
@@ -2683,6 +2678,30 @@ boolean K_SlopeResistance(player_t *player)
 	return false;
 }
 
+fixed_t K_PlayerTripwireSpeedThreshold(player_t *player)
+{
+	fixed_t required_speed = 2 * K_GetKartSpeed(player, false, false); // 200%
+
+	if (player->offroad && K_ApplyOffroad(player))
+	{
+		// Increase to 300% if you're lawnmowering.
+		required_speed = (required_speed * 3) / 2;
+	}
+
+	if (player->botvars.rubberband > FRACUNIT && K_PlayerUsesBotMovement(player) == true)
+	{
+		// Make it harder for bots to do this when rubberbanding.
+
+		// This is actually biased really hard against the bot,
+		// because the bot rubberbanding speed increase is
+		// decreased with other boosts.
+
+		required_speed = FixedMul(required_speed, player->botvars.rubberband);
+	}
+
+	return required_speed;
+}
+
 tripwirepass_t K_TripwirePassConditions(player_t *player)
 {
 	if (
@@ -2693,7 +2712,7 @@ tripwirepass_t K_TripwirePassConditions(player_t *player)
 
 	if (
 			player->flamedash ||
-			player->speed > 2 * K_GetKartSpeed(player, false, false)
+			((player->speed > K_PlayerTripwireSpeedThreshold(player)) && player->tripwireReboundDelay == 0)
 	)
 		return TRIPWIRE_BOOST;
 
@@ -2711,9 +2730,9 @@ boolean K_TripwirePass(player_t *player)
 	return (player->tripwirePass != TRIPWIRE_NONE);
 }
 
-boolean K_MovingHorizontally(mobj_t *mobj)
+boolean K_MovingHorizontally(player_t *player)
 {
-	return (P_AproxDistance(mobj->momx, mobj->momy) / 5 > abs(mobj->momz));
+	return (player->speed/3 > abs(player->mo->momz));
 }
 
 boolean K_WaterRun(player_t *player)
@@ -2725,7 +2744,7 @@ boolean K_WaterRun(player_t *player)
 
 boolean K_WaterSkip(player_t *player)
 {
-	if (player->waterskip >= 2)
+	if (player->waterskip > 2)
 	{
 		// Already finished waterskipping.
 		return false;
@@ -2735,10 +2754,10 @@ boolean K_WaterSkip(player_t *player)
 	{
 		// Already waterskipping.
 		// Simply make sure you haven't slowed down drastically.
-		return (player->speed > 20 * mapobjectscale);
+		return (K_GetKartSpeed(player,false,true)/3);
 	}
 
-	return K_MovingHorizontally(player->mo);
+	return K_MovingHorizontally(player);
 }
 
 static fixed_t K_FlameShieldDashVar(INT32 val)
@@ -2853,6 +2872,22 @@ static void K_GetKartBoostPower(player_t *player)
 	player->accelboost = accelboost;
 }
 
+// Returns value based on being Grown or Shrunk otherwise returns FRACUNIT
+static fixed_t K_GrowShrinkOrNormal(const player_t *player)
+{
+	fixed_t scaleDiff = player->mo->scale - mapobjectscale;
+	fixed_t playerScale = FixedDiv(player->mo->scale, mapobjectscale);
+	fixed_t speedMul = FRACUNIT;
+
+	if (scaleDiff > 0 || scaleDiff < 0)
+	{
+		// Grown or Shrunk
+		speedMul = playerScale;
+	}
+
+	return speedMul;
+}
+
 // Returns kart speed from a stat. Boost power and scale are NOT taken into account, no player or object is necessary.
 fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed)
 {
@@ -2882,24 +2917,41 @@ fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed)
 
 fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberband)
 {
+	fixed_t k_speed = 150;
+	fixed_t g_cc = FRACUNIT;
+	fixed_t xspd = 3072;		// 4.6875 aka 3/64
 	UINT8 kartspeed = player->kartspeed;
-	fixed_t finalspeed = 0;
-	const boolean mobjValid = (player->mo != NULL && P_MobjWasRemoved(player->mo) == false);
+	fixed_t finalspeed;
 
 	if (doboostpower && !player->pogospring && !P_IsObjectOnGround(player->mo))
 		return (75*mapobjectscale); // air speed cap
-		
+
+	switch (gamespeed)
+	{
+		case 0:
+			g_cc = 53248 + xspd; //  50cc =  81.25 + 4.69 =  85.94%
+			break;
+		case 2:
+			g_cc = 77824 + xspd; // 150cc = 118.75 + 4.69 = 123.44%
+			break;
+		default:
+			g_cc = 65536 + xspd; // 100cc = 100.00 + 4.69 = 104.69%
+			break;
+	}
+
 	if ((gametyperules & GTR_KARMA) && (player->bumpers <= 0))
 		kartspeed = 1;
 
-	finalspeed = K_GetKartSpeedFromStat(kartspeed);
+	k_speed += kartspeed*3; // 153 - 177
 
+	finalspeed = FixedMul(FixedMul(k_speed<<14, g_cc), player->mo->scale);
+	
 	if (player->spheres > 0)
 	{
 		fixed_t sphereAdd = (FRACUNIT/60); // 66% at max
 		finalspeed = FixedMul(finalspeed, FRACUNIT + (sphereAdd * player->spheres));
 	}
-
+	
 	if (K_PlayerUsesBotMovement(player))
 	{
 		// Increase bot speed by 1-10% depending on difficulty
@@ -2913,22 +2965,21 @@ fixed_t K_GetKartSpeed(player_t *player, boolean doboostpower, boolean dorubberb
 		}
 	}
 	
-	if (doboostpower == true)
-	{
-		if (mobjValid == true)
-		{
-			// Scale with the player.
-			finalspeed = FixedMul(finalspeed, player->mo->scale);
-		}
-
-		finalspeed = FixedMul(finalspeed, player->boostpower + player->speedboost);
-	}
-	
 	if (dorubberband == true && player->botvars.rubberband < FRACUNIT && K_PlayerUsesBotMovement(player) == true)
 	{
 		finalspeed = FixedMul(finalspeed, player->botvars.rubberband);
 	}
 
+	if (doboostpower)
+		finalspeed = FixedMul(finalspeed, player->boostpower+player->speedboost);
+	
+	if (player->outrun != 0)
+	{
+		// Milky Way's roads
+		finalspeed += FixedMul(player->outrun, K_GrowShrinkOrNormal(player));
+	}
+
+	
 	return finalspeed;
 }
 
@@ -3293,10 +3344,20 @@ void K_SquishPlayer(player_t *player, mobj_t *inflictor, mobj_t *source)
 
 void K_ApplyTripWire(player_t *player, tripwirestate_t state)
 {
+	// We are either softlocked or wildly misbehaving. Stop that!
+	if (state == TRIPSTATE_BLOCKED && player->tripwireReboundDelay && (player->speed > 5 * K_GetKartSpeed(player, false, false)))
+		P_DamageMobj(player->mo, NULL, NULL, 1, DMG_STING);
+
 	if (state == TRIPSTATE_PASSED)
+	{
 		S_StartSound(player->mo, sfx_ssa015);
+		player->tripwireLeniency += TICRATE/2;
+	}
 	else if (state == TRIPSTATE_BLOCKED)
+	{
 		S_StartSound(player->mo, sfx_kc40);
+		player->tripwireReboundDelay = 60;
+	}
 
 	player->tripwireState = state;
 }
@@ -3462,7 +3523,7 @@ void K_TakeBumpersFromPlayer(player_t *player, player_t *victim, UINT8 amount)
 		P_SetTarget(&newmo->tracer, victim->mo);
 		P_SetTarget(&newmo->target, player->mo);
 
-		P_InitAngle(newmo, (diff * (newbumper-1)));
+		newmo->angle = (diff * (newbumper-1));
 		newmo->color = victim->skincolor;
 
 		if (newbumper+1 < 2)
@@ -3550,7 +3611,7 @@ void K_SpawnMineExplosion(mobj_t *source, UINT8 color)
 	{
 		dust = P_SpawnMobj(source->x, source->y, source->z, MT_SMOKE);
 		P_SetMobjState(dust, S_OPAQUESMOKE1);
-		P_InitAngle(dust, (ANGLE_180/16) * i);
+		dust->angle = (ANGLE_180/16) * i;
 		P_SetScale(dust, source->scale);
 		dust->destscale = source->scale*10;
 		dust->scalespeed = source->scale/12;
@@ -3665,6 +3726,7 @@ static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, I
 	}
 
 	th->angle = an;
+
 	th->momx = FixedMul(finalspeed, FINECOSINE(an>>ANGLETOFINESHIFT));
 	th->momy = FixedMul(finalspeed, FINESINE(an>>ANGLETOFINESHIFT));
 
@@ -3777,7 +3839,6 @@ UINT16 K_DriftSparkColor(player_t *player, INT32 charge)
 
 static void K_SpawnDriftSparks(player_t *player)
 {
-	INT32 ds = K_GetKartDriftSparkValue(player);
 	fixed_t newx;
 	fixed_t newy;
 	mobj_t *spark;
@@ -3791,23 +3852,20 @@ static void K_SpawnDriftSparks(player_t *player)
 	if (leveltime % 2 == 1)
 		return;
 
-	if (!player->drift
-		|| (player->driftcharge < ds && !(player->driftcharge < 0)))
+	if (!player->drift || player->driftcharge < K_GetKartDriftSparkValue(player))
 		return;
 
 	travelangle = player->mo->angle-(ANGLE_45/5)*player->drift;
 
 	for (i = 0; i < 2; i++)
 	{
-		SINT8 size = 1;
-		UINT8 trail = 0;
-
 		newx = player->mo->x + P_ReturnThrustX(player->mo, travelangle + ((i&1) ? -1 : 1)*ANGLE_135, FixedMul(32*FRACUNIT, player->mo->scale));
 		newy = player->mo->y + P_ReturnThrustY(player->mo, travelangle + ((i&1) ? -1 : 1)*ANGLE_135, FixedMul(32*FRACUNIT, player->mo->scale));
 		spark = P_SpawnMobj(newx, newy, player->mo->z, MT_DRIFTSPARK);
 
 		P_SetTarget(&spark->target, player->mo);
 		spark->angle = travelangle-(ANGLE_45/5)*player->drift;
+
 		spark->destscale = player->mo->scale;
 		P_SetScale(spark, player->mo->scale);
 
@@ -3815,47 +3873,38 @@ static void K_SpawnDriftSparks(player_t *player)
 		spark->momy = player->mo->momy/2;
 		//spark->momz = player->mo->momz/2;
 
-		spark->color = K_DriftSparkColor(player, player->driftcharge);
-
-		if (player->driftcharge < 0)
+		if (player->driftcharge >= K_GetKartDriftSparkValue(player)*4)
 		{
-			// Stage 0: Grey
-			size = 0;
-		}
-		else if (player->driftcharge >= ds*4)
-		{
-			// Stage 3: Rainbow
-			size = 2;
-			trail = 2;
-
-			if (player->driftcharge <= (ds*4)+(32*3))
+			spark->color = (UINT8)(1 + (leveltime % (MAXSKINCOLORS-1)));
+			
+			
+			if (player->driftcharge <= K_GetKartDriftSparkValue(player)*4+(32*3))
 			{
 				// transition
 				P_SetScale(spark, (spark->destscale = spark->scale*3/2));
 			}
+			
+		}
+		else if (player->driftcharge >= K_GetKartDriftSparkValue(player)*2)
+		{
+			if (player->driftcharge <= (K_GetKartDriftSparkValue(player)*2)+(24*3))
+				spark->color = SKINCOLOR_RASPBERRY; // transition
 			else
-			{
-				spark->colorized = true;
-			}
-		}
-		else if (player->driftcharge >= ds*2)
-		{
-			// Stage 2: Blue
-			size = 2;
-			trail = 1;
-
-			if (player->driftcharge <= (ds*2)+(32*3))
+				spark->color = SKINCOLOR_KETCHUP;
+			
+			if (player->driftcharge <= K_GetKartDriftSparkValue(player)*2+(32*3))
 			{
 				// transition
 				P_SetScale(spark, (spark->destscale = spark->scale*3/2));
 			}
+			
 		}
 		else
 		{
-			// Stage 1: Red
-			size = 1;
-
-			if (player->driftcharge <= (ds)+(32*3))
+			spark->color = SKINCOLOR_SAPPHIRE;
+			
+			
+			if (player->driftcharge <= K_GetKartDriftSparkValue(player)+(32*3))
 			{
 				// transition
 				P_SetScale(spark, (spark->destscale = spark->scale*2));
@@ -3867,39 +3916,21 @@ static void K_SpawnDriftSparks(player_t *player)
 		{
 			if ((player->drift < 0 && (i & 1))
 				|| (player->drift > 0 && !(i & 1)))
-			{
-				size++;
-			}
+				P_SetMobjState(spark, S_DRIFTSPARK_A1);
 			else if ((player->drift < 0 && !(i & 1))
 				|| (player->drift > 0 && (i & 1)))
-			{
-				size--;
-			}
+				P_SetMobjState(spark, S_DRIFTSPARK_C1);
 		}
 		else if ((player->drift > 0 && player->cmd.turning < 0) // Outward drifts
 			|| (player->drift < 0 && player->cmd.turning > 0))
 		{
 			if ((player->drift < 0 && (i & 1))
 				|| (player->drift > 0 && !(i & 1)))
-			{
-				size--;
-			}
+				P_SetMobjState(spark, S_DRIFTSPARK_C1);
 			else if ((player->drift < 0 && !(i & 1))
 				|| (player->drift > 0 && (i & 1)))
-			{
-				size++;
-			}
+				P_SetMobjState(spark, S_DRIFTSPARK_A1);
 		}
-
-		if (size == 2)
-			P_SetMobjState(spark, S_DRIFTSPARK_A1);
-		else if (size < 1)
-			P_SetMobjState(spark, S_DRIFTSPARK_C1);
-		else if (size > 2)
-			P_SetMobjState(spark, S_DRIFTSPARK_D1);
-
-		if (trail > 0)
-			spark->tics += trail;
 
 		K_MatchGenericExtraFlags(spark, player->mo);
 	}
@@ -3934,7 +3965,7 @@ static void K_SpawnAIZDust(player_t *player)
 		newy = player->mo->y + P_ReturnThrustY(player->mo, travelangle - (player->aizdriftstrat*ANGLE_45), FixedMul(24*FRACUNIT, player->mo->scale));
 		spark = P_SpawnMobj(newx, newy, player->mo->z, MT_AIZDRIFTSTRAT);
 
-		P_InitAngle(spark, travelangle+(player->aizdriftstrat*ANGLE_90));
+		spark->angle = travelangle+(player->aizdriftstrat*ANGLE_90);
 		P_SetScale(spark, (spark->destscale = (3*player->mo->scale)>>2));
 
 		spark->momx = (6*player->mo->momx)/5;
@@ -3986,7 +4017,7 @@ void K_SpawnBoostTrail(player_t *player)
 		flame = P_SpawnMobj(newx, newy, ground, MT_SNEAKERTRAIL);
 
 		P_SetTarget(&flame->target, player->mo);
-		P_InitAngle(flame, travelangle);
+		flame->angle = travelangle;
 		flame->fuse = TICRATE*2;
 		flame->destscale = player->mo->scale;
 		P_SetScale(flame, player->mo->scale);
@@ -4058,7 +4089,7 @@ void K_SpawnWipeoutTrail(mobj_t *mo, boolean translucent)
 		mo->z, MT_WIPEOUTTRAIL);
 
 	P_SetTarget(&dust->target, mo);
-	dust->angle = R_PointToAngle2(0,0,mo->momx,mo->momy);
+	dust->angle = K_MomentumAngle(mo);
 	dust->destscale = mo->scale;
 	P_SetScale(dust, mo->scale);
 	K_FlipFromObject(dust, mo);
@@ -4516,7 +4547,7 @@ static void K_DoLightningShield(player_t *player)
 	for (i=0; i<7; i++)
 	{
 		mo = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_THOK);
-		P_InitAngle(mo, P_RandomRange(0, 359)*ANG1);
+		mo->angle = P_RandomRange(0, 359)*ANG1;
 		mo->fuse = P_RandomRange(20, 50);
 		P_SetTarget(&mo->target, player->mo);
 		P_SetMobjState(mo, S_KLIT1);
@@ -4529,7 +4560,7 @@ static void K_DoLightningShield(player_t *player)
 		sx = player->mo->x + FixedMul((player->mo->scale*THUNDERRADIUS), FINECOSINE((an*i)>>ANGLETOFINESHIFT));
 		sy = player->mo->y + FixedMul((player->mo->scale*THUNDERRADIUS), FINESINE((an*i)>>ANGLETOFINESHIFT));
 		mo = P_SpawnMobj(sx, sy, player->mo->z, MT_THOK);
-		P_InitAngle(mo, an*i);
+		mo->angle = an*i;
 		mo->extravalue1 = THUNDERRADIUS;	// Used to know whether we should teleport by radius or something.
 		mo->scale = player->mo->scale*3;
 		P_SetTarget(&mo->target, player->mo);
@@ -4736,9 +4767,9 @@ void K_DoWaterRunPanel(player_t *player)
 	if (player->floorboost == 0 || player->floorboost == 3)
 	{
 		S_StopSoundByID(player->mo, sfx_cdfm01);
-		S_StopSoundByID(player->mo, sfx_wdjump);
+		S_StopSoundByID(player->mo, sfx_kc3c);
 		S_StartSound(player->mo, sfx_cdfm01);
-		S_StartSound(player->mo, sfx_wdjump);
+		S_StartSound(player->mo, sfx_kc3c);
 
 		K_SpawnDashDustRelease(player);
 		if (intendedboost > player->speedboost)
@@ -4753,7 +4784,7 @@ void K_DoWaterRunPanel(player_t *player)
 		K_FlipFromObject(overlay, player->mo);
 	}
 	
-	player->sneakertimer = sneakertime;
+	player->sneakertimer = TICRATE*2;
 	player->waterrun = true;
 
 	// set angle for spun out players:
@@ -4905,7 +4936,7 @@ static void K_ThrowLandMine(player_t *player)
 	P_SetScale(landMine, player->mo->scale);
 	landMine->destscale = player->mo->destscale;
 
-	P_InitAngle(landMine, player->mo->angle);
+	landMine->angle = player->mo->angle;
 
 	landMine->momz = (30 * mapobjectscale * P_MobjFlip(player->mo)) + player->mo->momz;
 	landMine->color = player->skincolor;
@@ -5199,7 +5230,7 @@ mobj_t *K_CreatePaperItem(fixed_t x, fixed_t y, fixed_t z, angle_t angle, SINT8 
 	P_SetScale(drop, drop->scale>>4);
 	drop->destscale = (3*drop->destscale)/2;
 
-	P_InitAngle(drop, angle);
+	drop->angle = angle;
 	P_Thrust(drop,
 		FixedAngle(P_RandomFixed() * 180) + angle,
 		16*mapobjectscale);
@@ -5493,13 +5524,13 @@ void K_CalculateBananaSlope(mobj_t *mobj, fixed_t x, fixed_t y, fixed_t z, fixed
 			fixed_t top, bottom;
 			fixed_t d1, d2;
 
-			if (!(rover->flags & FF_EXISTS))
+			if (!(rover->fofflags & FOF_EXISTS))
 				continue;
 
-			if ((!(((rover->flags & FF_BLOCKPLAYER && player)
-				|| (rover->flags & FF_BLOCKOTHERS && !player))
-				|| (rover->flags & FF_QUICKSAND))
-				|| (rover->flags & FF_SWIMMABLE)))
+			if ((!(((rover->fofflags & FOF_BLOCKPLAYER && player)
+				|| (rover->fofflags & FOF_BLOCKOTHERS && !player))
+				|| (rover->fofflags & FOF_QUICKSAND))
+				|| (rover->fofflags & FOF_SWIMMABLE)))
 				continue;
 
 			top = K_BananaSlopeZ(*rover->t_slope, x, y, *rover->topheight, radius, false);
@@ -5507,7 +5538,7 @@ void K_CalculateBananaSlope(mobj_t *mobj, fixed_t x, fixed_t y, fixed_t z, fixed
 
 			if (flip)
 			{
-				if (rover->flags & FF_QUICKSAND)
+				if (rover->fofflags & FOF_QUICKSAND)
 				{
 					if (z < top && (z + height) > bottom)
 					{
@@ -5531,7 +5562,7 @@ void K_CalculateBananaSlope(mobj_t *mobj, fixed_t x, fixed_t y, fixed_t z, fixed
 			}
 			else
 			{
-				if (rover->flags & FF_QUICKSAND)
+				if (rover->fofflags & FOF_QUICKSAND)
 				{
 					if (z < top && (z + height) > bottom)
 					{
@@ -6556,29 +6587,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 			debtflag->renderflags = K_GetPlayerDontDrawFlag(player);
 		}
-
-		if (player->springstars && (leveltime & 1))
-		{
-			fixed_t randx = P_RandomRange(-40, 40) * player->mo->scale;
-			fixed_t randy = P_RandomRange(-40, 40) * player->mo->scale;
-			fixed_t randz = P_RandomRange(0, player->mo->height >> FRACBITS) << FRACBITS;
-			mobj_t *star = P_SpawnMobj(
-				player->mo->x + randx,
-				player->mo->y + randy,
-				player->mo->z + randz,
-				MT_KARMAFIREWORK);
-
-			star->color = player->springcolor;
-			star->flags |= MF_NOGRAVITY;
-			star->momx = player->mo->momx / 2;
-			star->momy = player->mo->momy / 2;
-			star->momz = P_GetMobjZMovement(player->mo) / 2;
-			star->fuse = 12;
-			star->scale = player->mo->scale;
-			star->destscale = star->scale / 2;
-
-			player->springstars--;
-		}
 	}
 
 	if (player->itemtype == KITEM_NONE)
@@ -6718,6 +6726,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 			player->pogospring = 0;
 	}
 
+	if (player->tripwireReboundDelay)
+		player->tripwireReboundDelay--;
+
 	if (player->ringdelay)
 		player->ringdelay--;
 
@@ -6741,7 +6752,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->floorboost--;
 	
 	if (player->sneakertimer == 0)
-		player->waterrun = 0;
+		player->waterrun = false;
 
 	if (player->driftboost)
 		player->driftboost--;
@@ -6775,7 +6786,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		{
 			mobj_t *ring = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_RING);
 			ring->extravalue1 = 1; // Ring collect animation timer
-			P_InitAngle(ring, player->mo->angle); // animation angle
+			ring->angle = player->mo->angle; // animation angle
 			P_SetTarget(&ring->target, player->mo); // toucher for thinker
 			player->pickuprings++;
 			if (player->superring <= 3)
@@ -6809,6 +6820,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (player->justbumped > 0)
 		player->justbumped--;
+	
+	if (player->outruntime > 0)
+		player->outruntime--;
 
 	K_UpdateTripwire(player);
 
@@ -7117,28 +7131,30 @@ size_t K_NextRespawnWaypointIndex(waypoint_t *waypoint)
 }
 
 /*--------------------------------------------------
-	static waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
+	static boolean K_SetPlayerNextWaypoint(player_t *player)
 
-		Gets the next waypoint of a player, by finding their closest waypoint, then checking which of itself and next or
+		Sets the next waypoint of a player, by finding their closest waypoint, then checking which of itself and next or
 		previous waypoints are infront of the player.
+		Also sets the current waypoint.
 
 	Input Arguments:-
 		player - The player the next waypoint is being found for
 
 	Return:-
-		The waypoint that is the player's next waypoint
+		Whether it is safe to update the respawn waypoint
 --------------------------------------------------*/
-waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
+static boolean K_SetPlayerNextWaypoint(player_t *player)
 {
+	waypoint_t *finishline = K_GetFinishLineWaypoint();
 	waypoint_t *bestwaypoint = NULL;
+	boolean    updaterespawn = false;
 
 	if ((player != NULL) && (player->mo != NULL) && (P_MobjWasRemoved(player->mo) == false))
 	{
-		waypoint_t *waypoint     = K_GetBestWaypointForMobj(player->mo);
-		boolean    updaterespawn = false;
+		waypoint_t *waypoint     = K_GetBestWaypointForMobj(player->mo, player->currentwaypoint);
 
 		// Our current waypoint.
-		bestwaypoint = waypoint;
+		player->currentwaypoint = bestwaypoint = waypoint;
 
 		// check the waypoint's location in relation to the player
 		// If it's generally in front, it's fine, otherwise, use the best next/previous waypoint.
@@ -7146,13 +7162,15 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 		// Otherwise it breaks the distance calculations.
 		if (waypoint != NULL)
 		{
-			boolean finishlinehack  = false;
 			angle_t playerangle     = player->mo->angle;
 			angle_t momangle        = K_MomentumAngle(player->mo);
 			angle_t angletowaypoint =
 				R_PointToAngle2(player->mo->x, player->mo->y, waypoint->mobj->x, waypoint->mobj->y);
-			angle_t angledelta      = ANGLE_MAX;
-			angle_t momdelta        = ANGLE_MAX;
+			angle_t angledelta      = ANGLE_180;
+			angle_t momdelta        = ANGLE_180;
+
+			// Remove WRONG WAY flag.
+			player->pflags &= ~PF_WRONGWAY;
 
 			angledelta = playerangle - angletowaypoint;
 			if (angledelta > ANGLE_180)
@@ -7166,35 +7184,16 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 				momdelta = InvAngle(momdelta);
 			}
 
-			if (bestwaypoint == K_GetFinishLineWaypoint())
-			{
-				waypoint_t *nextwaypoint = waypoint->nextwaypoints[0];
-				angle_t angletonextwaypoint =
-					R_PointToAngle2(waypoint->mobj->x, waypoint->mobj->y, nextwaypoint->mobj->x, nextwaypoint->mobj->y);
-
-				// facing towards the finishline
-				if (AngleDelta(angletonextwaypoint, angletowaypoint) <= ANGLE_90)
-				{
-					finishlinehack = true;
-				}
-			}
-
 			// We're using a lot of angle calculations here, because only using facing angle or only using momentum angle both have downsides.
 			// nextwaypoints will be picked if you're facing OR moving forward.
 			// prevwaypoints will be picked if you're facing AND moving backward.
-			if ((angledelta > ANGLE_45 || momdelta > ANGLE_45)
-			&& (finishlinehack == false))
+#if 0
+			if (angledelta > ANGLE_45 || momdelta > ANGLE_45)
+#endif
 			{
-				angle_t nextbestdelta = angledelta;
-				angle_t nextbestmomdelta = momdelta;
+				angle_t nextbestdelta = ANGLE_90;
+				angle_t nextbestmomdelta = ANGLE_90;
 				size_t i = 0U;
-
-				if (K_PlayerUsesBotMovement(player))
-				{
-					// Try to force bots to use a next waypoint
-					nextbestdelta = ANGLE_MAX;
-					nextbestmomdelta = ANGLE_MAX;
-				}
 
 				if ((waypoint->nextwaypoints != NULL) && (waypoint->numnextwaypoints > 0U))
 				{
@@ -7212,8 +7211,8 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 							// Bots that aren't able to take a shortcut will ignore shortcut waypoints.
 							// (However, if they're already on a shortcut, then we want them to keep going.)
 
-							if (player->nextwaypoint == NULL
-							|| K_GetWaypointIsShortcut(player->nextwaypoint) == false)
+							if (player->nextwaypoint != NULL
+							&& K_GetWaypointIsShortcut(player->nextwaypoint) == false)
 							{
 								continue;
 							}
@@ -7237,10 +7236,13 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 
 						if (angledelta < nextbestdelta || momdelta < nextbestmomdelta)
 						{
-							if (P_TraceBlockingLines(player->mo, waypoint->nextwaypoints[i]->mobj) == false)
+							if (waypoint->nextwaypoints[i] != finishline) // Allow finish line.
 							{
-								// Save sight checks when all of the other checks pass, so we only do it if we have to
-								continue;
+								if (P_TraceWaypointTraversal(player->mo, waypoint->nextwaypoints[i]->mobj) == false)
+								{
+									// Save sight checks when all of the other checks pass, so we only do it if we have to
+									continue;
+								}
 							}
 
 							bestwaypoint = waypoint->nextwaypoints[i];
@@ -7254,8 +7256,6 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 								nextbestmomdelta = momdelta;
 							}
 
-							// Remove wrong way flag if we're using nextwaypoints
-							player->pflags &= ~PF_WRONGWAY;
 							updaterespawn = true;
 						}
 					}
@@ -7289,7 +7289,12 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 
 						if (angledelta < nextbestdelta && momdelta < nextbestmomdelta)
 						{
-							if (P_TraceBlockingLines(player->mo, waypoint->prevwaypoints[i]->mobj) == false)
+							if (waypoint->prevwaypoints[i] == finishline) // NEVER allow finish line.
+							{
+								continue;
+							}
+
+							if (P_TraceWaypointTraversal(player->mo, waypoint->prevwaypoints[i]->mobj) == false)
 							{
 								// Save sight checks when all of the other checks pass, so we only do it if we have to
 								continue;
@@ -7314,99 +7319,25 @@ waypoint_t *K_GetPlayerNextWaypoint(player_t *player)
 			updaterespawn = false;
 		}
 
-		// Respawn point should only be updated when we're going to a nextwaypoint
-		if ((updaterespawn) &&
-		(bestwaypoint != NULL) &&
-		(bestwaypoint != player->nextwaypoint) &&
-		(K_GetWaypointIsSpawnpoint(bestwaypoint)) &&
-		(K_GetWaypointIsEnabled(bestwaypoint) == true))
+		if (player->pflags & PF_UPDATEMYRESPAWN)
 		{
-			size_t nwp = K_NextRespawnWaypointIndex(bestwaypoint);
-			
-			if (!(player->pflags & PF_WRONGWAY))
-				player->grieftime = 0;
-			
-			// Set time, z, flip and angle first.
-			player->starposttime = player->realtime;
-			player->starpostz = player->mo->z >> FRACBITS;
-			player->starpostflip = (player->mo->eflags & MFE_VERTICALFLIP) ? true : false;
-			player->starpostangle = player->mo->angle;
-			
-			// Then do x and y
-			player->starpostx = player->mo->x >> FRACBITS;
-			player->starposty = player->mo->y >> FRACBITS;
+			updaterespawn = true;
+			player->pflags &= ~PF_UPDATEMYRESPAWN;
+		}
 
+		// If nextwaypoint is NULL, it means we don't want to update the waypoint until we touch another one.
+		// player->nextwaypoint will keep its previous value in this case.
+		if (bestwaypoint != NULL)
+		{
+			player->nextwaypoint = bestwaypoint;
 		}
 	}
 
-	return bestwaypoint;
+	return updaterespawn;
 }
-
-#if 0
-static boolean K_PlayerCloserToNextWaypoints(waypoint_t *const waypoint, player_t *const player)
-{
-	boolean nextiscloser = true;
-
-	if ((waypoint != NULL) && (player != NULL) && (player->mo != NULL))
-	{
-		size_t     i                   = 0U;
-		waypoint_t *currentwpcheck     = NULL;
-		angle_t    angletoplayer       = ANGLE_MAX;
-		angle_t    currentanglecheck   = ANGLE_MAX;
-		angle_t    bestangle           = ANGLE_MAX;
-
-		angletoplayer = R_PointToAngle2(waypoint->mobj->x, waypoint->mobj->y,
-			player->mo->x, player->mo->y);
-
-		for (i = 0U; i < waypoint->numnextwaypoints; i++)
-		{
-			currentwpcheck = waypoint->nextwaypoints[i];
-			currentanglecheck = R_PointToAngle2(
-				waypoint->mobj->x, waypoint->mobj->y, currentwpcheck->mobj->x, currentwpcheck->mobj->y);
-
-			// Get delta angle
-			currentanglecheck = currentanglecheck - angletoplayer;
-
-			if (currentanglecheck > ANGLE_180)
-			{
-				currentanglecheck = InvAngle(currentanglecheck);
-			}
-
-			if (currentanglecheck < bestangle)
-			{
-				bestangle = currentanglecheck;
-			}
-		}
-
-		for (i = 0U; i < waypoint->numprevwaypoints; i++)
-		{
-			currentwpcheck = waypoint->prevwaypoints[i];
-			currentanglecheck = R_PointToAngle2(
-				waypoint->mobj->x, waypoint->mobj->y, currentwpcheck->mobj->x, currentwpcheck->mobj->y);
-
-			// Get delta angle
-			currentanglecheck = currentanglecheck - angletoplayer;
-
-			if (currentanglecheck > ANGLE_180)
-			{
-				currentanglecheck = InvAngle(currentanglecheck);
-			}
-
-			if (currentanglecheck < bestangle)
-			{
-				bestangle = currentanglecheck;
-				nextiscloser = false;
-				break;
-			}
-		}
-	}
-
-	return nextiscloser;
-}
-#endif
 
 /*--------------------------------------------------
-	void K_UpdateDistanceFromFinishLine(player_t *const player)
+	static void K_UpdateDistanceFromFinishLine(player_t *const player)
 
 		Updates the distance a player has to the finish line.
 
@@ -7416,37 +7347,24 @@ static boolean K_PlayerCloserToNextWaypoints(waypoint_t *const waypoint, player_
 	Return:-
 		None
 --------------------------------------------------*/
-void K_UpdateDistanceFromFinishLine(player_t *const player)
+static void K_UpdateDistanceFromFinishLine(player_t *player)
 {
 	if ((player != NULL) && (player->mo != NULL))
 	{
 		waypoint_t *finishline   = K_GetFinishLineWaypoint();
-		waypoint_t *nextwaypoint = NULL;
-
-		if (player->spectator)
-		{
-			// Don't update waypoints while spectating
-			nextwaypoint = finishline;
-		}
-		else
-		{
-			nextwaypoint = K_GetPlayerNextWaypoint(player);
-		}
-
-		if (nextwaypoint != NULL)
-		{
-			// If nextwaypoint is NULL, it means we don't want to update the waypoint until we touch another one.
-			// player->nextwaypoint will keep its previous value in this case.
-			player->nextwaypoint = nextwaypoint;
-		}
 
 		// nextwaypoint is now the waypoint that is in front of us
-		if (player->exiting || player->spectator)
+		if ((player->exiting && !(player->pflags & PF_NOCONTEST)) || player->spectator)
 		{
 			// Player has finished, we don't need to calculate this
 			player->distancetofinish = 0U;
 		}
-		else if ((player->nextwaypoint != NULL) && (finishline != NULL))
+		else if (player->pflags & PF_NOCONTEST)
+		{
+			// We also don't need to calculate this, but there's also no need to destroy the data...
+			;
+		}
+		else if ((player->currentwaypoint != NULL) && (player->nextwaypoint != NULL) && (finishline != NULL))
 		{
 			const boolean useshortcuts = false;
 			const boolean huntbackwards = false;
@@ -7460,44 +7378,218 @@ void K_UpdateDistanceFromFinishLine(player_t *const player)
 			// Using shortcuts won't find a path, so distance won't be updated until the player gets back on track
 			if (pathfindsuccess == true)
 			{
-				// Add euclidean distance to the next waypoint to the distancetofinish
-				UINT32 adddist;
-				fixed_t disttowaypoint =
+				const boolean pathBackwardsReverse = ((player->pflags & PF_WRONGWAY) == 0);
+				boolean pathBackwardsSuccess = false;
+				path_t pathBackwards = {0};
+
+				fixed_t disttonext = 0;
+				UINT32 traveldist = 0;
+				UINT32 adddist = 0;
+
+				disttonext =
 					P_AproxDistance(
 						(player->mo->x >> FRACBITS) - (player->nextwaypoint->mobj->x >> FRACBITS),
 						(player->mo->y >> FRACBITS) - (player->nextwaypoint->mobj->y >> FRACBITS));
-				disttowaypoint = P_AproxDistance(disttowaypoint, (player->mo->z >> FRACBITS) - (player->nextwaypoint->mobj->z >> FRACBITS));
+				disttonext = P_AproxDistance(disttonext, (player->mo->z >> FRACBITS) - (player->nextwaypoint->mobj->z >> FRACBITS));
 
-				adddist = (UINT32)disttowaypoint;
+				traveldist = ((UINT32)disttonext) * 2;
+				pathBackwardsSuccess =
+					K_PathfindThruCircuit(player->nextwaypoint, traveldist, &pathBackwards, false, pathBackwardsReverse);
 
-				player->distancetofinish = pathtofinish.totaldist + adddist;
+				if (pathBackwardsSuccess == true)
+				{
+					if (pathBackwards.numnodes > 1)
+					{
+						// Find the closest segment, and add the distance to reach it.
+						vector3_t point;
+						size_t i;
+
+						vector3_t best;
+						fixed_t bestPoint = INT32_MAX;
+						fixed_t bestDist = INT32_MAX;
+						UINT32 bestGScore = UINT32_MAX;
+
+						point.x = player->mo->x;
+						point.y = player->mo->y;
+						point.z = player->mo->z;
+
+						best.x = point.x;
+						best.y = point.y;
+						best.z = point.z;
+
+						for (i = 1; i < pathBackwards.numnodes; i++)
+						{
+							vector3_t line[2];
+							vector3_t result;
+
+							waypoint_t *pwp = (waypoint_t *)pathBackwards.array[i - 1].nodedata;
+							waypoint_t *wp = (waypoint_t *)pathBackwards.array[i].nodedata;
+
+							fixed_t pDist = 0;
+							UINT32 g = pathBackwards.array[i - 1].gscore;
+
+							line[0].x = pwp->mobj->x;
+							line[0].y = pwp->mobj->y;
+							line[0].z = pwp->mobj->z;
+
+							line[1].x = wp->mobj->x;
+							line[1].y = wp->mobj->y;
+							line[1].z = wp->mobj->z;
+
+							P_ClosestPointOnLine3D(&point, line, &result);
+
+							pDist = P_AproxDistance(point.x - result.x, point.y - result.y);
+							pDist = P_AproxDistance(pDist, point.z - result.z);
+
+							if (pDist < bestPoint)
+							{
+								FV3_Copy(&best, &result);
+
+								bestPoint = pDist;
+
+								bestDist =
+									P_AproxDistance(
+										(result.x >> FRACBITS) - (line[0].x >> FRACBITS),
+										(result.y >> FRACBITS) - (line[0].y >> FRACBITS));
+								bestDist = P_AproxDistance(bestDist, (result.z >> FRACBITS) - (line[0].z >> FRACBITS));
+
+								bestGScore = g + ((UINT32)bestDist);
+							}
+						}
+
+#if 0
+						if (cv_kartdebugwaypoints.value)
+						{
+							mobj_t *debugmobj = P_SpawnMobj(best.x, best.y, best.z, MT_SPARK);
+							P_SetMobjState(debugmobj, S_WAYPOINTORB);
+
+							debugmobj->frame &= ~FF_TRANSMASK;
+							debugmobj->frame |= FF_FULLBRIGHT; //FF_TRANS20
+
+							debugmobj->tics = 1;
+							debugmobj->color = SKINCOLOR_BANANA;
+						}
+#endif
+
+						adddist = bestGScore;
+					}
+					/*
+					else
+					{
+						// Only one point to work with, so just add your euclidean distance to that.
+						waypoint_t *wp = (waypoint_t *)pathBackwards.array[0].nodedata;
+						fixed_t disttowaypoint =
+							P_AproxDistance(
+								(player->mo->x >> FRACBITS) - (wp->mobj->x >> FRACBITS),
+								(player->mo->y >> FRACBITS) - (wp->mobj->y >> FRACBITS));
+						disttowaypoint = P_AproxDistance(disttowaypoint, (player->mo->z >> FRACBITS) - (wp->mobj->z >> FRACBITS));
+
+						adddist = (UINT32)disttowaypoint;
+					}
+					*/
+					Z_Free(pathBackwards.array);
+				}
+				/*
+				else
+				{
+					// Fallback to adding euclidean distance to the next waypoint to the distancetofinish
+					adddist = (UINT32)disttonext;
+				}
+				*/
+
+				if (pathBackwardsReverse == false)
+				{
+					if (pathtofinish.totaldist > adddist)
+					{
+						player->distancetofinish = pathtofinish.totaldist - adddist;
+					}
+					else
+					{
+						player->distancetofinish = 0;
+					}
+				}
+				else
+				{
+					player->distancetofinish = pathtofinish.totaldist + adddist;
+				}
 				Z_Free(pathtofinish.array);
 
 				// distancetofinish is currently a flat distance to the finish line, but in order to be fully
 				// correct we need to add to it the length of the entire circuit multiplied by the number of laps
 				// left after this one. This will give us the total distance to the finish line, and allow item
 				// distance calculation to work easily
+				const mapheader_t *mapheader = mapheaderinfo[gamemap - 1];
 				if ((mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE) == 0U)
 				{
 					const UINT8 numfulllapsleft = ((UINT8)numlaps - player->laps);
-
 					player->distancetofinish += numfulllapsleft * K_GetCircuitLength();
-
-#if 0
-					// An additional HACK, to fix looking backwards towards the finish line
-					// If the player's next waypoint is the finishline and the angle distance from player to
-					// connectin waypoints implies they're closer to a next waypoint, add a full track distance
-					if (player->nextwaypoint == finishline)
-					{
-						if (K_PlayerCloserToNextWaypoints(player->nextwaypoint, player) == true)
-						{
-							player->distancetofinish += K_GetCircuitLength();
-						}
-					}
-#endif
 				}
 			}
 		}
+	}
+}
+
+static UINT32 u32_delta(UINT32 x, UINT32 y)
+{
+	return x > y ? x - y : y - x;
+}
+
+/*--------------------------------------------------
+	static void K_UpdatePlayerWaypoints(player_t *const player)
+
+		Updates the player's waypoints and finish line distance.
+
+	Input Arguments:-
+		player - The player to update
+
+	Return:-
+		None
+--------------------------------------------------*/
+static void K_UpdatePlayerWaypoints(player_t *const player)
+{
+	const UINT32 distance_threshold = FixedMul(32768, mapobjectscale);
+
+	waypoint_t *const old_currentwaypoint = player->currentwaypoint;
+	waypoint_t *const old_nextwaypoint = player->nextwaypoint;
+
+	boolean updaterespawn = K_SetPlayerNextWaypoint(player);
+
+	// Update prev value (used for grief prevention code)
+	K_UpdateDistanceFromFinishLine(player);
+	player->distancetofinishprev = player->distancetofinish;
+
+	// Respawning should be a full reset.
+	UINT32 delta = u32_delta(player->distancetofinish, player->distancetofinishprev);
+	if (!player->respawn && delta > distance_threshold)
+	{
+		CONS_Debug(DBG_GAMELOGIC, "Player %s: waypoint ID %d too far away (%u > %u)\n",
+			sizeu1(player - players), K_GetWaypointID(player->nextwaypoint), delta, distance_threshold);
+
+		// Distance jump is too great, keep the old waypoints and recalculate distance.
+		player->currentwaypoint = old_currentwaypoint;
+		player->nextwaypoint = old_nextwaypoint;
+		player->distancetofinish = player->distancetofinishprev;
+	}
+
+	// Respawn point should only be updated when we're going to a nextwaypoint
+	if ((updaterespawn) &&
+	(!player->respawn) &&
+	(player->nextwaypoint != old_nextwaypoint) &&
+	(K_GetWaypointIsSpawnpoint(player->nextwaypoint)) &&
+	(K_GetWaypointIsEnabled(player->nextwaypoint) == true))
+	{
+		if (!(player->pflags & PF_WRONGWAY))
+			player->grieftime = 0;
+		
+		// Set time, z, flip and angle first.
+		player->starposttime = player->realtime;
+		player->starpostz = player->mo->z >> FRACBITS;
+		player->starpostflip = (player->mo->eflags & MFE_VERTICALFLIP) ? true : false;
+		player->starpostangle = player->mo->angle;
+		
+		// Then do x and y
+		player->starpostx = player->mo->x >> FRACBITS;
+		player->starposty = player->mo->y >> FRACBITS;
 	}
 }
 
@@ -7600,6 +7692,27 @@ INT32 K_GetKartDriftSparkValue(player_t *player)
 		? 1
 		: player->kartspeed;
 	return (26*4 + kartspeed*2 + (9 - player->kartweight))*8;
+}
+
+INT32 K_GetKartDriftSparkValueForStage(player_t *player, UINT8 stage)
+{
+	fixed_t mul = FRACUNIT;
+
+	// This code is function is pretty much useless now that the timing changes are linear but bleh.
+	switch (stage)
+	{
+		case 2:
+			mul = 2*FRACUNIT; // x2
+			break;
+		case 3:
+			mul = 3*FRACUNIT; // x3
+			break;
+		case 4:
+			mul = 4*FRACUNIT; // x4
+			break;
+	}
+
+	return (FixedMul(K_GetKartDriftSparkValue(player) * FRACUNIT, mul) / FRACUNIT);
 }
 
 static void K_KartDrift(player_t *player, boolean onground)
@@ -7917,7 +8030,7 @@ void K_KartLegacyUpdatePosition(player_t *player)
 				player->nextcheck = players[i].nextcheck = 0;
 
 				// This checks every thing on the map, and looks for MT_BOSS3WAYPOINT (the thing we're using for checkpoint wp's, for now)
-				for (mo = waypointcap; mo != NULL; mo = mo->tracer)
+				for (mo = boss3cap; mo != NULL; mo = mo->tracer)
 				{
 					pmo = P_AproxDistance(P_AproxDistance(	mo->x - player->mo->x,
 															mo->y - player->mo->y),
@@ -7980,6 +8093,34 @@ void K_KartLegacyUpdatePosition(player_t *player)
 		player->positiondelay = 10; // Position number growth
 
 	player->position = position;
+}
+
+void K_UpdateAllPlayerPositions(void)
+{
+	INT32 i;
+	// First loop: Ensure all players' distance to the finish line are all accurate
+	for (i = 0; i < MAXPLAYERS; i++)
+	{
+		player_t *player = &players[i];
+		if (!playeringame[i] || player->spectator || !player->mo || P_MobjWasRemoved(player->mo))
+		{
+			continue;
+		}
+
+		K_UpdatePlayerWaypoints(player);
+	}
+
+	// Second loop: Ensure all player positions reflect everyone's distances
+	for (i = 0; i < MAXPLAYERS; i++)
+	{
+		if (playeringame[i] && players[i].mo && !P_MobjWasRemoved(players[i].mo))
+		{
+			if (numbosswaypoints > 0)
+				K_KartLegacyUpdatePosition(&players[i]);
+			else
+				K_KartUpdatePosition(&players[i]);
+		}
+	}
 }
 
 //
@@ -8315,7 +8456,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 									mo = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_ROCKETSNEAKER);
 									K_MatchGenericExtraFlags(mo, player->mo);
 									mo->flags |= MF_NOCLIPTHING;
-									P_InitAngle(mo, player->mo->angle);
+									mo->angle = player->mo->angle;
 									mo->threshold = 10;
 									mo->movecount = moloop%2;
 									mo->movedir = mo->lastlook = moloop+1;
@@ -8413,7 +8554,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 										break;
 									}
 									mo->flags |= MF_NOCLIPTHING;
-									P_InitAngle(mo, newangle);
+									mo->angle = newangle;
 									mo->threshold = 10;
 									mo->movecount = player->itemamount;
 									mo->movedir = mo->lastlook = moloop+1;
@@ -8454,7 +8595,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 										break;
 									}
 									mo->flags |= MF_NOCLIPTHING;
-									P_InitAngle(mo, newangle);
+									mo->angle = newangle;
 									mo->threshold = 10;
 									mo->movecount = player->itemamount;
 									mo->movedir = mo->lastlook = moloop+1;
