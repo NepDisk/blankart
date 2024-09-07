@@ -378,9 +378,6 @@ static void P_ClearMapHeaderLighting(mapheader_lighting_t *lighting)
 static void P_ClearSingleMapHeaderInfo(INT16 i)
 {
 	const INT16 num = (INT16)(i-1);
-	
-	UINT8 j;
-
 	boolean exists = (mapheaderinfo[gamemap-1]->alreadyExists == true);
 	
 	mapheaderinfo[num]->lvlttl[0] = '\0';
@@ -399,10 +396,18 @@ static void P_ClearSingleMapHeaderInfo(INT16 i)
 	mapheaderinfo[num]->ssspheres = 1;
 	mapheaderinfo[num]->gravity = DEFAULT_GRAVITY;
 	mapheaderinfo[num]->keywords[0] = '\0';
-	for (j = 0; j < MAXMUSNAMES; j++)
+	for (i = 0; i < MAXMUSNAMES; i++)
 		mapheaderinfo[num]->musname[i][0] = 0;
 	mapheaderinfo[num]->mustrack = 0;
 	mapheaderinfo[num]->muspos = 0;
+	mapheaderinfo[num]->musinterfadeout = 0;
+	mapheaderinfo[num]->musintername[0] = 0;
+	mapheaderinfo[num]->muspostbossname[0] = 0;
+	mapheaderinfo[num]->muspostbosstrack = 0;
+	mapheaderinfo[num]->muspostbosspos = 0;
+	mapheaderinfo[num]->muspostbossfadein = 0;
+	mapheaderinfo[num]->musforcereset = -1;
+	mapheaderinfo[num]->forcecharacter[0] = '\0';
 	mapheaderinfo[num]->musname_size = 0;
 	mapheaderinfo[num]->weather = PRECIP_NONE;
 	snprintf(mapheaderinfo[num]->skytexture, 5, "SKY1");

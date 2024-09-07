@@ -118,7 +118,7 @@ void S_InitSfxChannels(INT32 sfxVolume);
 //
 void S_StopSounds(void);
 void S_ClearSfx(void);
-void S_InitLevelMusic(boolean reset);
+void S_InitLevelMusic(boolean fromnetsave);
 
 //
 // Basically a W_GetNumForName that adds "ds" at the beginning of the string. Returns a lumpnum.
