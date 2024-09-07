@@ -1427,12 +1427,12 @@ void D_SRB2Main(void)
 #ifndef DEVELOP
 	// Check MD5s of autoloaded files
 	// Note: Do not add any files that ignore MD5!
-	W_VerifyFileMD5(mainwads, ASSET_HASH_MAIN_KART);					// main.pk3
+	W_VerifyFileMD5(mainwads, ASSET_HASH_MAIN_PK3);					// main.pk3
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_GFX_PK3);			// gfx.pk3
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_TEXTURES_PK3);		// textures.pk3
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_CHARS_PK3);		// chars.pk3
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_MAPS_PK3);			// maps.pk3 -- 4 - If you touch this, make sure to touch up the majormods stuff below.
-	mainwads++; W_VerifyFileMd5(mainwads, ASSET_HASH_FOLLOWERS_PK3);  // followers.pk3
+	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_FOLLOWERS_PK3);  // followers.pk3
 #ifdef USE_PATCH_FILE
 	mainwads++; W_VerifyFileMD5(mainwads, ASSET_HASH_PATCH_PK3);		// patch.pk3
 #endif

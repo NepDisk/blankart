@@ -118,9 +118,11 @@ set(SRB2_SDL2_EXE_NAME srb2kart-v2 CACHE STRING "Executable binary output name")
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 
 add_subdirectory(src)
-if(NOT ${SRB2_CONFIG_DEV_BUILD})
-	add_subdirectory(assets)
-endif()
+
+# Shut Up please lmao
+#if(NOT ${SRB2_CONFIG_DEV_BUILD})
+#	add_subdirectory(assets)
+#endif()
 
 ##### PACKAGE CONFIGURATION #####
 
