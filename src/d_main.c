@@ -1482,11 +1482,6 @@ void D_SRB2Main(void)
 
 	CON_SetLoadingProgress(LOADED_IWAD);
 
-	CONS_Printf("W_InitMultipleFiles(): Adding external PWADs.\n");
-	W_InitMultipleFiles(startuppwads, true);
-	D_CleanFile(startuppwads);
-
-
 	cht_Init();
 
 	//---------------------------------------------------- READY SCREEN
@@ -1516,8 +1511,6 @@ void D_SRB2Main(void)
 
 	CON_Init();
 
-	CON_SetLoadingProgress(LOADED_HUINIT);
-
 	memset(timelimits, 0, sizeof(timelimits));
 	memset(pointlimits, 0, sizeof(pointlimits));
 
@@ -1530,38 +1523,58 @@ void D_SRB2Main(void)
 
 	I_RegisterSysCommands();
 	
-	//
-	// search for maps... again.
-	//
-	for (wadnum = mainwads+1; wadnum < numwadfiles; wadnum++)
+	CON_SetLoadingProgress(LOADED_HUINIT);
+	
+	CONS_Printf("W_InitMultipleFiles(): Adding external PWADs.\n");
+	
+	// HACK: Refer to https://git.do.srb2.org/KartKrew/RingRacers/-/merge_requests/29#note_61574
+	partadd_earliestfile = numwadfiles;
+	W_InitMultipleFiles(startuppwads, true);
+	
+	// Only search for pwad maps and reload graphics if we actually have a pwad added
+	if (startuppwads[0] != NULL)
 	{
-		lumpinfo = wadfiles[wadnum]->lumpinfo;
-		for (i = 0; i < wadfiles[wadnum]->numlumps; i++, lumpinfo++)
+		//
+		// search for pwad maps
+		//
+		
+		//
+		// search for maps... again.
+		//
+		for (wadnum = mainwads+1; wadnum < numwadfiles; wadnum++)
 		{
-			name = lumpinfo->name;
-
-			if (name[0] == 'M' && name[1] == 'A' && name[2] == 'P') // Ignore the headers
+			lumpinfo = wadfiles[wadnum]->lumpinfo;
+			for (i = 0; i < wadfiles[wadnum]->numlumps; i++, lumpinfo++)
 			{
-				INT16 num;
-				if (name[5] != '\0')
-					continue;
-				num = (INT16)M_MapNumber(name[3], name[4]);
+				name = lumpinfo->name;
 
-				// we want to record whether this map exists. if it doesn't have a header, we can assume it's not relephant
-				if (num <= NUMMAPS && mapheaderinfo[num - 1])
+				if (name[0] == 'M' && name[1] == 'A' && name[2] == 'P') // Ignore the headers
 				{
-					if (mapheaderinfo[num - 1]->alreadyExists != false)
+					INT16 num;
+					if (name[5] != '\0')
+						continue;
+					num = (INT16)M_MapNumber(name[3], name[4]);
+
+					// we want to record whether this map exists. if it doesn't have a header, we can assume it's not relephant
+					if (num <= NUMMAPS && mapheaderinfo[num - 1])
 					{
-						G_SetGameModified(multiplayer, true); // oops, double-defined - no record attack privileges for you
+						if (mapheaderinfo[num - 1]->alreadyExists != false)
+						{
+							G_SetGameModified(multiplayer, true); // oops, double-defined - no record attack privileges for you
+						}
+
+						mapheaderinfo[num - 1]->alreadyExists = true;
 					}
 
-					mapheaderinfo[num - 1]->alreadyExists = true;
+					CONS_Printf("%s\n", name);
 				}
-
-				CONS_Printf("%s\n", name);
 			}
 		}
+		HU_LoadGraphics();
 	}
+
+	D_CleanFile(startuppwads);
+	partadd_earliestfile = UINT16_MAX;
 
 	CON_SetLoadingProgress(LOADED_PWAD);
 
