@@ -111,7 +111,9 @@ consvar_t cv_music_resync_powerups_only = CVAR_INIT ("music_resync_powerups_only
 
 // Window focus sound sytem toggles
 consvar_t cv_playmusicifunfocused = CVAR_INIT ("playmusicifunfocused",  "No", CV_SAVE|CV_CALL|CV_NOINIT, CV_YesNo, PlayMusicIfUnfocused_OnChange);
-consvar_t cv_playsoundifunfocused = CVAR_INIT ("playsoundsifunfocused", "No", CV_SAVE|CV_CALL|CV_NOINIT, CV_YesNo, PlaySoundIfUnfocused_OnChange);
+consvar_t cv_streamersafemusic = CVAR_INIT ("playsoundsifunfocused", "No", CV_SAVE|CV_CALL|CV_NOINIT, CV_YesNo, PlaySoundIfUnfocused_OnChange);
+
+consvar_t cv_playsoundifunfocused = CVAR_INIT ("streamersafemusic", "No", CV_SAVE, CV_YesNo, PlaySoundIfUnfocused_OnChange);
 
 #ifdef HAVE_OPENMPT
 openmpt_module *openmpt_mhandle = NULL;
@@ -2159,11 +2161,32 @@ static void S_UnloadMusic(void)
 	music_usage = 0;
 }
 
+/* Don't Play content id unsafe music pls */
+static boolean S_CheckMusicIsSafe()
+{
+	if (cv_streamersafemusic.value)
+	{
+		UINT8 i = 0;
+		musicdef_t *def = S_FindMusicDef(music_name, &i);
+
+		if (def)
+		{
+			if (def->contentidunsafe == true)
+			{
+				return false;
+			}
+		}
+	}
+	
+	return true;
+}
+
 static boolean S_PlayMusic(boolean looping, UINT32 fadeinms)
 {
-	//musicdef_t *def;
-
 	if (S_MusicDisabled())
+		return false;
+	
+	if (!S_CheckMusicIsSafe())
 		return false;
 
 	I_UpdateSongLagConditions();
@@ -2318,7 +2341,8 @@ void S_ChangeMusicSpecial (const char *mmusic)
 }
 
 void S_StopMusic(void)
-{
+{	
+	boolean safe = S_CheckMusicIsSafe();
 	if (!I_SongPlaying()
 		|| demo.rewinding // Don't mess with music while rewinding!
 		|| demo.title) // SRB2Kart: Demos don't interrupt title screen music
@@ -2327,7 +2351,7 @@ void S_StopMusic(void)
 	if (strcasecmp(music_name, mapmusname) == 0)
 		mapmusresume = I_GetSongPosition();
 
-	if (I_SongPaused())
+	if (I_SongPaused() && safe == true)
 		I_ResumeSong();
 
 	S_SpeedMusic(1.0f);
@@ -2363,8 +2387,11 @@ void S_PauseAudio(void)
 }
 
 void S_ResumeAudio(void)
-{
+{	
 	if (S_MusicNotInFocus())
+		return;
+	
+	if (!S_CheckMusicIsSafe())
 		return;
 
 	if (I_SongPlaying() && I_SongPaused())
