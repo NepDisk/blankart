@@ -1124,17 +1124,8 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 	}
 
 	// Less gravity underwater.
-	if ((mo->eflags & MFE_UNDERWATER) && !goopgravity)
-	{
-		if (mo->momz * P_MobjFlip(mo) <= 0)
-		{
-			gravityadd = 4*gravityadd/3;
-		}
-		else
-		{
-			gravityadd = gravityadd/3;
-		}
-	}
+	if (mo->eflags & MFE_UNDERWATER && !goopgravity)
+		gravityadd = gravityadd/3;
 
 	if (mo->player)
 	{
@@ -1240,9 +1231,7 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 
 	// Goop has slower, reversed gravity
 	if (goopgravity)
-	{
-		gravityadd = -((gravityadd/5) + (gravityadd/8));
-	}
+		gravityadd = -gravityadd/5;
 
 	gravityadd = FixedMul(gravityadd, mo->scale);
 
@@ -2681,7 +2670,6 @@ void P_PlayerZMovement(mobj_t *mo)
 	if (mo->eflags & MFE_APPLYPMOMZ && !P_IsObjectOnGround(mo))
 	{
 		mo->momz += mo->pmomz;
-		mo->pmomz = 0;
 		mo->eflags &= ~MFE_APPLYPMOMZ;
 	}
 
@@ -2787,14 +2775,6 @@ void P_PlayerZMovement(mobj_t *mo)
 
 			mo->momz = 0;
 			P_CheckGravity(mo, true);
-
-			if (abs(mo->momz) < 15 * mapobjectscale)
-			{
-				mo->momz = 15 * mapobjectscale
-					* -(P_MobjFlip(mo));
-			}
-
-			K_SpawnBumpEffect(mo);
 		}
 	}
 }
