@@ -1028,7 +1028,7 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 	if (analogjoystickmove && joystickvector.xaxis != 0)
 	{
 		cmd->turning -= (joystickvector.xaxis * KART_FULLTURN) >> 10;
-		side += ((axis * 2) >> 10);
+		side += ((joystickvector.xaxis * 2) >> 10);
 	}
 
 	// Specator mouse turning
