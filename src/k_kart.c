@@ -3108,8 +3108,14 @@ fixed_t K_GetNewSpeed(player_t *player)
 	if (player->pogospring) // Pogo Spring minimum/maximum thrust
 	{
 		const fixed_t hscale = mapobjectscale;
-		const fixed_t minspeed = 24*hscale;
-		const fixed_t maxspeed = 28*hscale;
+		fixed_t minspeed = 24*hscale;
+		fixed_t maxspeed = 28*hscale;
+		
+		if (player->mo->terrain)
+		{
+			minspeed = player->mo->terrain->pogoSpringMin*hscale;
+			maxspeed = player->mo->terrain->pogoSpringMax*hscale;
+		}
 
 		if (newspeed > maxspeed && player->pogospring == 2)
 			newspeed = maxspeed;

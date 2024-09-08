@@ -630,7 +630,7 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 			}
 		}
 
-		if (slope)
+		if (slope && (terrain->pogoSpring == 0))
 		{
 			const angle_t fa = (slope->zangle >> ANGLETOFINESHIFT);
 
@@ -662,17 +662,16 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		fixed_t maxspeed = terrain->pogoSpringMax*hscale;
 		angle_t pushangle = FixedHypot(player->mo->momx, player->mo->momy) ? R_PointToAngle2(0, 0, player->mo->momx, player->mo->momy) : player->mo->angle;
 		sector_t *sector = player->mo->subsector->sector;
-		
-
-		if ((player->speed > maxspeed) && terrain->pogoSpring == 2) // Prevent overshooting jumps
-			P_InstaThrust(player->mo, pushangle, maxspeed);
-		else if (player->speed < minspeed) // Push forward to prevent getting stuck
-			P_InstaThrust(player->mo, pushangle, minspeed);
 
 		if (terrain->pogoSpring == 2)
 			player->pogospring = 2;
 		else
 			player->pogospring = 1;
+		
+		if ((player->speed > maxspeed) && terrain->pogoSpring == 2) // Prevent overshooting jumps
+			P_InstaThrust(player->mo, pushangle, maxspeed);
+		else if (player->speed < minspeed) // Push forward to prevent getting stuck
+			P_InstaThrust(player->mo, pushangle, minspeed);
 		
 		if (!terrain->springStrength)
 			K_DoPogoSpring(player->mo, 0, 1);
