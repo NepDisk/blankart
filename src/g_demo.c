@@ -2046,6 +2046,9 @@ void G_BeginRecording(void)
 
 	// Save netvar data
 	CV_SaveDemoVars(&demo_p);
+	
+	// Save "mapmusrng" used for altmusic selection
+	WRITEUINT8(demo_p, mapmusrng);
 
 	// Now store some info for each in-game player
 
@@ -2935,6 +2938,9 @@ void G_DoPlayDemo(char *defdemoname)
 
 	// net var data
 	CV_LoadDemoVars(&demo_p);
+	
+	// Load "mapmusrng" used for altmusic selection
+	mapmusrng = READUINT8(demo_p);
 
 	// Sigh ... it's an empty demo.
 	if (*demo_p == DEMOMARKER)

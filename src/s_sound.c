@@ -2500,10 +2500,27 @@ void S_InitLevelMusic(boolean fromnetsave)
 	{
 		if (!fromnetsave)
 		{
-			if (mapheaderinfo[gamemap-1]->musname_size > 1)
-				mapmusrng = P_RandomKey(mapheaderinfo[gamemap-1]->musname_size);
+			
+			if (demo.playback)
+			{
+				if (mapheaderinfo[gamemap-1]->musname_size > 1)
+				{
+					UINT32 random = P_RandomFixed();
+				}
+				// mapmusrng has already been set by the demo; just make sure it's valid
+				if (mapmusrng >= mapheaderinfo[gamemap-1]->musname_size)
+				{
+					mapmusrng = 0;
+				}
+			}
 			else
-				mapmusrng = 0;
+			{
+				
+				if (mapheaderinfo[gamemap-1]->musname_size > 1)
+					mapmusrng = P_RandomKey(mapheaderinfo[gamemap-1]->musname_size);
+				else
+					mapmusrng = 0;
+			}
 		}
 		strncpy(mapmusname, mapheaderinfo[gamemap-1]->musname[mapmusrng], 7);
 		mapmusname[6] = 0;
