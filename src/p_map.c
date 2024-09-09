@@ -2396,7 +2396,7 @@ increment_move
 	fixed_t tryx = thing->x;
 	fixed_t tryy = thing->y;
 	fixed_t radius = thing->radius;
-	fixed_t thingtop = thing->z + thing->height;
+	fixed_t thingtop;
 	floatok = false;
 
 	// reset this to 0 at the start of each trymove call as it's only used here
@@ -2454,10 +2454,15 @@ increment_move
 
 			if (maxstep > 0)
 			{
+				const boolean flipped =
+					(thing->eflags & MFE_VERTICALFLIP) != 0;
+
+				thingtop = thing->z + thing->height;
+
 				// Step up
 				if (thing->z < tmfloorz)
 				{
-					if (tmfloorz - thing->z <= maxstep)
+					if (tmfloorstep <= maxstep)
 					{
 						thing->z = thing->floorz = tmfloorz;
 						thing->floorrover = tmfloorrover;
@@ -2470,7 +2475,7 @@ increment_move
 				}
 				else if (tmceilingz < thingtop)
 				{
-					if (thingtop - tmceilingz <= maxstep)
+					if (tmceilingstep <= maxstep)
 					{
 						thing->z = ( thing->ceilingz = tmceilingz ) - thing->height;
 						thing->ceilingrover = tmceilingrover;
@@ -2548,6 +2553,8 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 	fixed_t oldx = thing->x;
 	fixed_t oldy = thing->y;
 	fixed_t startingonground = P_IsObjectOnGround(thing);
+	fixed_t stairjank = 0;
+	pslope_t *oldslope = thing->standingslope;
 
 	// The move is ok!
 	if (!increment_move(thing, x, y, allowdropoff))
