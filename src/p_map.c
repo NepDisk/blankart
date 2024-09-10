@@ -1276,8 +1276,8 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			return BMIT_CONTINUE;
 		}
 	}
-
-	if ((tmthing->flags & MF_SPRING || tmthing->type == MT_STEAM || tmthing->type == MT_SPIKE || tmthing->type == MT_WALLSPIKE) && (thing->player))
+#if 0
+	if ((tmthing->flags & MF_SPRING || tmthing->type == MT_STEAM || tmthing->type == MT_SPIKE || tmthing->type == MT_WALLSPIKE) && (thing->player || thing->flags & MF_PUSHABLE))
 		; // springs, gas jets and springs should never be able to step up onto a player
 	// z checking at last
 	// Treat noclip things as non-solid!
@@ -1375,7 +1375,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			}
 		}
 	}
-
+#endif
 	// not solid not blocked
 	return BMIT_CONTINUE;
 }
@@ -2457,8 +2457,7 @@ increment_move
 				// Step up
 				if (thing->z < tmfloorz)
 				{
-					if ((!tmhitthing && tmfloorstep <= maxstep)
-					 || (tmhitthing && tmfloorz - thing->z <= maxstep))
+					if (tmfloorstep <= maxstep)
 					{
 						thing->z = thing->floorz = tmfloorz;
 						thing->floorrover = tmfloorrover;
@@ -2471,8 +2470,7 @@ increment_move
 				}
 				else if (tmceilingz < thingtop)
 				{
-					if ((!tmhitthing && tmceilingstep <= maxstep)
-					 || (tmhitthing && thingtop - tmceilingz <= maxstep))
+					if (tmceilingstep <= maxstep)
 					{
 						thing->z = (thing->ceilingz = tmceilingz) - thing->height;
 						thing->ceilingrover = tmceilingrover;
@@ -2672,6 +2670,9 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 boolean P_SceneryTryMove(mobj_t *thing, fixed_t x, fixed_t y)
 {
 	fixed_t tryx, tryy;
+	
+	if (!P_CheckMove(thing, x, y, false))
+		return false;
 
 	tryx = thing->x;
 	tryy = thing->y;
