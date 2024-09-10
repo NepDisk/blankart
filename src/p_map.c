@@ -2670,9 +2670,6 @@ boolean P_TryMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff)
 boolean P_SceneryTryMove(mobj_t *thing, fixed_t x, fixed_t y)
 {
 	fixed_t tryx, tryy;
-	
-	if (!P_CheckMove(thing, x, y, false))
-		return false;
 
 	tryx = thing->x;
 	tryy = thing->y;
