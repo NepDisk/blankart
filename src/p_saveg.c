@@ -62,9 +62,6 @@ typedef enum
 	AWAYVIEW   = 0x01,
 	FOLLOWITEM = 0x02,
 	FOLLOWER   = 0x04,
-	SKYBOXVIEW = 0x08,
-	SKYBOXCENTER = 0x10,
-	//free = 0x20,
 } player_saveflags;
 
 static inline void P_ArchivePlayer(void)
@@ -206,19 +203,7 @@ static void P_NetArchivePlayers(void)
 		if (players[i].follower)
 			flags |= FOLLOWER;
 
-		if (players[i].skybox.viewpoint)
-			flags |= SKYBOXVIEW;
-
-		if (players[i].skybox.centerpoint)
-			flags |= SKYBOXCENTER;
-
 		WRITEUINT16(save_p, flags);
-
-		if (flags & SKYBOXVIEW)
-			WRITEUINT32(save_p, players[i].skybox.viewpoint->mobjnum);
-
-		if (flags & SKYBOXCENTER)
-			WRITEUINT32(save_p, players[i].skybox.centerpoint->mobjnum);
 
 		if (flags & AWAYVIEW)
 			WRITEUINT32(save_p, players[i].awayviewmobj->mobjnum);
@@ -482,12 +467,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].splitscreenindex = READUINT8(save_p);
 
 		flags = READUINT16(save_p);
-
-		if (flags & SKYBOXVIEW)
-			players[i].skybox.viewpoint = (mobj_t *)(size_t)READUINT32(save_p);
-
-		if (flags & SKYBOXCENTER)
-			players[i].skybox.centerpoint = (mobj_t *)(size_t)READUINT32(save_p);
 
 		if (flags & AWAYVIEW)
 			players[i].awayviewmobj = (mobj_t *)(size_t)READUINT32(save_p);
@@ -4278,6 +4257,10 @@ static void P_NetUnArchiveThinkers(void)
 
 		CONS_Debug(DBG_NETPLAY, "%u thinkers loaded in list %d\n", numloaded, i);
 	}
+	
+	// Set each skyboxmo to the first skybox (or NULL)
+	skyboxmo[0] = skyboxviewpnts[0];
+	skyboxmo[1] = skyboxcenterpnts[0];
 
 	if (restoreNum)
 	{
@@ -4480,21 +4463,6 @@ static void P_RelinkPointers(void)
 		{
 			if (!playeringame[i])
 				continue;
-
-			if ( players[i].skybox.viewpoint)
-			{
-				temp = (UINT32)(size_t)players[i].skybox.viewpoint;
-				players[i].skybox.viewpoint = NULL;
-				if (!P_SetTarget(&players[i].skybox.viewpoint, P_FindNewPosition(temp)))
-					CONS_Debug(DBG_GAMELOGIC, "skybox.viewpoint not found on player %d\n", i);
-			}
-			if ( players[i].skybox.centerpoint)
-			{
-				temp = (UINT32)(size_t)players[i].skybox.centerpoint;
-				players[i].skybox.centerpoint = NULL;
-				if (!P_SetTarget(&players[i].skybox.centerpoint, P_FindNewPosition(temp)))
-					CONS_Debug(DBG_GAMELOGIC, "skybox.centerpoint not found on plyer %d\n", i);
-			}
 			if ( players[i].awayviewmobj)
 			{
 				temp = (UINT32)(size_t)players[i].awayviewmobj;

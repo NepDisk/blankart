@@ -28,7 +28,7 @@
 #include "am_map.h"
 #include "d_main.h"
 #include "v_video.h"
-//#include "p_spec.h"
+#include "p_spec.h" // skyboxmo
 #include "p_setup.h"
 #include "z_zone.h"
 #include "m_random.h" // quake camera shake
@@ -1349,7 +1349,7 @@ void R_SkyboxFrame(int s)
 
 	// cut-away view stuff
 	newview->sky = true;
-	r_viewmobj = player->skybox.viewpoint;
+	r_viewmobj = skyboxmo[0];
 #ifdef PARANOIA
 	if (!r_viewmobj)
 	{
@@ -1378,7 +1378,6 @@ void R_SkyboxFrame(int s)
 	{
 		mapheader_t *mh = mapheaderinfo[gamemap-1];
 		vector3_t campos = {0,0,0}; // Position of player's actual view point
-		mobj_t *center = player->skybox.centerpoint;
 
 		if (player->awayviewtics) {
 			campos.x = player->awayviewmobj->x;
@@ -1400,18 +1399,18 @@ void R_SkyboxFrame(int s)
 		campos.y += quake.y;
 		campos.z += quake.z;
 
-		if (center) // Is there a viewpoint?
+		if (skyboxmo[1]) // Is there a viewpoint?
 		{
 			fixed_t x = 0, y = 0;
 			if (mh->skybox_scalex > 0)
-				x = (campos.x - center->x) / mh->skybox_scalex;
+				x = (campos.x - skyboxmo[1]->x) / mh->skybox_scalex;
 			else if (mh->skybox_scalex < 0)
-				x = (campos.x - center->x) * -mh->skybox_scalex;
+				x = (campos.x - skyboxmo[1]->x) * -mh->skybox_scalex;
 
 			if (mh->skybox_scaley > 0)
-				y = (campos.y - center->y) / mh->skybox_scaley;
+				y = (campos.y - skyboxmo[1]->y) / mh->skybox_scaley;
 			else if (mh->skybox_scaley < 0)
-				y = (campos.y - center->y) * -mh->skybox_scaley;
+				y = (campos.y - skyboxmo[1]->y) * -mh->skybox_scaley;
 
 			if (r_viewmobj->angle == 0)
 			{
@@ -1613,8 +1612,8 @@ void R_RenderPlayerView(void)
 
 
 	// Add skybox portals caused by sky visplanes.
-	if (cv_skybox.value && player->skybox.viewpoint)
-		Portal_AddSkyboxPortals(player);
+	if (cv_skybox.value && skyboxmo[0])
+		Portal_AddSkyboxPortals();
 
 	// Portal rendering. Hijacks the BSP traversal.
 	ps_sw_portaltime = I_GetPreciseTime();

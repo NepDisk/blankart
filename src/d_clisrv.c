@@ -2501,9 +2501,7 @@ void CL_ClearPlayer(INT32 playernum)
 			P_RemoveMobj(players[playernum].mo);
 			P_SetTarget(&players[playernum].mo, NULL);
 		}
-
-		P_SetTarget(&players[playernum].skybox.viewpoint, NULL);
-		P_SetTarget(&players[playernum].skybox.centerpoint, NULL);
+		
 		P_SetTarget(&players[playernum].awayviewmobj, NULL);
 		P_SetTarget(&players[playernum].followmobj, NULL);
 	}

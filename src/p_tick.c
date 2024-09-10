@@ -802,7 +802,7 @@ void P_Ticker(boolean run)
 				player_t *player = &players[displayplayers[i]];
 				if (!player->mo)
 					continue;
-				const boolean skybox = (player->skybox.viewpoint && cv_skybox.value); // True if there's a skybox object and skyboxes are on
+				const boolean skybox = (skyboxmo[0] && cv_skybox.value); // True if there's a skybox object and skyboxes are on
 				if (skybox)
 				{
 					R_SkyboxFrame(i);

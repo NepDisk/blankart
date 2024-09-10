@@ -257,16 +257,11 @@ static boolean TrimVisplaneBounds (const visplane_t* plane, INT16* start, INT16*
  * Applies the necessary offsets and rotation to give
  * a depth illusion to the skybox.
  */
-void Portal_AddSkybox
-(		const player_t * player,
-		const visplane_t * plane)
+void Portal_AddSkybox (const visplane_t* plane)
 {
 	INT16 start, end;
 	mapheader_t *mh;
 	portal_t* portal;
-
-	mobj_t *viewpoint = player->skybox.viewpoint;
-	mobj_t *center = player->skybox.centerpoint;
 
 	if (TrimVisplaneBounds(plane, &start, &end))
 		return;
@@ -275,38 +270,38 @@ void Portal_AddSkybox
 
 	Portal_ClipVisplane(plane, portal);
 
-	portal->viewx = viewpoint->x;
-	portal->viewy = viewpoint->y;
-	portal->viewz = viewpoint->z;
-	portal->viewangle = viewangle + viewpoint->angle;
+	portal->viewx = skyboxmo[0]->x;
+	portal->viewy = skyboxmo[0]->y;
+	portal->viewz = skyboxmo[0]->z;
+	portal->viewangle = viewangle + skyboxmo[0]->angle;
 
     if (!udmf)
     {
-        if (viewpoint->spawnpoint)
-            portal->viewz = ((fixed_t)viewpoint->spawnpoint->angle)<<FRACBITS;
+        if (skyboxmo[0]->spawnpoint)
+            portal->viewz = ((fixed_t)skyboxmo[0]->spawnpoint->angle)<<FRACBITS;
         else
             portal->viewz = 0;
     }
     else
-        portal->viewz = viewpoint->z; // 26/04/17: use actual Z position instead of spawnpoint angle!
+        portal->viewz = skyboxmo[0]->z; // 26/04/17: use actual Z position instead of spawnpoint angle!
 
 	mh = mapheaderinfo[gamemap-1];
 
 	// If a relative viewpoint exists, offset the viewpoint.
-	if (center)
+	if (skyboxmo[1])
 	{
 		fixed_t x = 0, y = 0;
-		angle_t ang = viewpoint->angle>>ANGLETOFINESHIFT;
+		angle_t ang = skyboxmo[0]->angle>>ANGLETOFINESHIFT;
 
 		if (mh->skybox_scalex > 0)
-			x = (viewx - center->x) / mh->skybox_scalex;
+			x = (viewx - skyboxmo[1]->x) / mh->skybox_scalex;
 		else if (mh->skybox_scalex < 0)
-			x = (viewx - center->x) * -mh->skybox_scalex;
+			x = (viewx - skyboxmo[1]->x) * -mh->skybox_scalex;
 
 		if (mh->skybox_scaley > 0)
-			y = (viewy - center->y) / mh->skybox_scaley;
+			y = (viewy - skyboxmo[1]->y) / mh->skybox_scaley;
 		else if (mh->skybox_scaley < 0)
-			y = (viewy - center->y) * -mh->skybox_scaley;
+			y = (viewy - skyboxmo[1]->y) * -mh->skybox_scaley;
 
 		// Apply transform to account for the skybox viewport angle.
 		portal->viewx += FixedMul(x,FINECOSINE(ang)) - FixedMul(y,  FINESINE(ang));
@@ -324,7 +319,7 @@ void Portal_AddSkybox
 /** Creates portals for the currently existing sky visplanes.
  * The visplanes are also removed and cleared from the list.
  */
-void Portal_AddSkyboxPortals (const player_t *player)
+void Portal_AddSkyboxPortals (void)
 {
 	visplane_t *pl;
 	INT32 i;
@@ -336,7 +331,7 @@ void Portal_AddSkyboxPortals (const player_t *player)
 		{
 			if (pl->picnum == skyflatnum)
 			{
-				Portal_AddSkybox(player, pl);
+				Portal_AddSkybox(pl);
 
 				pl->minx = 0;
 				pl->maxx = -1;

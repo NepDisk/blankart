@@ -10973,12 +10973,6 @@ void P_SpawnPlayer(INT32 playernum)
 	}
 
 	p->followitem = skins[p->skin].followitem;
-	
-	if (p->jointime <= 1 || leveltime <= 1)
-	{
-		P_SetTarget(&p->skybox.viewpoint, skyboxviewpnts[0]);
-		P_SetTarget(&p->skybox.centerpoint, skyboxcenterpnts[0]);
-	}
 
 	if (K_PlayerShrinkCheat(p) == true)
 	{

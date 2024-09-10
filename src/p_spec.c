@@ -54,6 +54,7 @@
 // Not sure if this is necessary, but it was in w_wad.c, so I'm putting it here too -Shadow Hog
 #include <errno.h>
 
+mobj_t *skyboxmo[2]; // current skybox mobjs: 0 = viewpoint, 1 = centerpoint
 mobj_t *skyboxviewpnts[16]; // array of MT_SKYBOX viewpoint mobjs
 mobj_t *skyboxcenterpnts[16]; // array of MT_SKYBOX centerpoint mobjs
 
@@ -2279,29 +2280,6 @@ static mobj_t *P_GetObjectTypeInSectorNum(mobjtype_t type, size_t s)
 	return NULL;
 }
 
-static void P_SwitchSkybox(INT32 args, player_t *player, skybox_t *skybox)
-{
-	// After a player finishes, their camera is locked at the
-	// finish line. If bot behavior drives them through the
-	// circuit and changes the skybox, that can look very
-	// strange if the skybox change is intended to be
-	// localized to a certain section of the level.
-	if (player->exiting)
-	{
-		return;
-	}
-
-	if (args != TMS_CENTERPOINT) // Only viewpoint, or both.
-	{
-		P_SetTarget(&player->skybox.viewpoint, skybox->viewpoint);
-	}
-
-	if (args != TMS_VIEWPOINT) // Only centerpoint, or both.
-	{
-		P_SetTarget(&player->skybox.centerpoint, skybox->centerpoint);
-	}
-}
-
 static mobj_t* P_FindObjectTypeFromTag(mobjtype_t type, mtag_t tag)
 {
 	if (udmf)
@@ -3441,49 +3419,27 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			break;
 		}
 		case 448: // Change skybox viewpoint/centerpoint
+			if ((mo && mo->player && P_IsLocalPlayer(mo->player)) || line->args[3])
 			{
-				skybox_t skybox = {0};
-
 				INT32 viewid = args[0];
 				INT32 centerid = args[1];
-				
-				mobj_t *set;
 
 				// set viewpoint mobj
 				if (args[2] != TMS_CENTERPOINT)
 				{
 					if (viewid >= 0 && viewid < 16)
-						set = skyboxviewpnts[viewid];
+						skyboxmo[0] = skyboxviewpnts[viewid];
 					else
-						set = NULL;
-
-					skybox.viewpoint = set;
+						skyboxmo[0] = NULL;
 				}
 
 				// set centerpoint mobj
 				if (args[2] != TMS_VIEWPOINT)
 				{
 					if (centerid >= 0 && centerid < 16)
-						set = skyboxcenterpnts[centerid];
+						skyboxmo[1] = skyboxcenterpnts[centerid];
 					else
-						set = NULL;
-
-					skybox.centerpoint = set;
-				}
-
-				if (args[3]) // Applies to all players
-				{
-					INT32 i;
-
-					for (i = 0; i < MAXPLAYERS; ++i)
-					{
-						if (playeringame[i])
-							P_SwitchSkybox(args[2], &players[i], &skybox);
-					}
-				}
-				else if (mo && mo->player)
-				{
-					P_SwitchSkybox(args[2], mo->player, &skybox);
+						skyboxmo[1] = NULL;
 				}
 
 				CONS_Debug(DBG_GAMELOGIC, "Line type 448 Executor: viewid = %d, centerid = %d, viewpoint? = %s, centerpoint? = %s\n",

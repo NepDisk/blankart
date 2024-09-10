@@ -2368,9 +2368,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		P_SetTarget(&players[player].follower, NULL);
 		P_SetTarget(&players[player].awayviewmobj, NULL);
 		P_SetTarget(&players[player].followmobj, NULL);
-
-		skyboxviewpoint = players[player].skybox.viewpoint;
-		skyboxcenterpoint = players[player].skybox.centerpoint;
 	}
 	else
 	{
@@ -2453,9 +2450,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 
 	if (follower)
 		P_RemoveMobj(follower);
-	
-	p->skybox.viewpoint = skyboxviewpoint;
-	p->skybox.centerpoint = skyboxcenterpoint;
 
 	p->followerready = followerready;
 	p->followerskin = followerskin;

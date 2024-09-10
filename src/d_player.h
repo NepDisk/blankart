@@ -278,12 +278,6 @@ typedef struct botvars_s
 
 } botvars_t;
 
-// player_t struct for all skybox variables
-typedef struct {
-	mobj_t * viewpoint;
-	mobj_t * centerpoint;
-} skybox_t;
-
 // ========================================================================
 //                          PLAYER STRUCTURE
 // ========================================================================
@@ -305,8 +299,6 @@ typedef struct player_s
 	fixed_t deltaviewheight;
 	// bounded/scaled total momentum.
 	fixed_t bob;
-
-	skybox_t skybox;
 
 	angle_t viewrollangle;
 	// camera tilt
