@@ -5178,6 +5178,29 @@ void P_ProcessSpecialSector(player_t *player, sector_t *sector, sector_t *rovers
 		P_EvaluateOldSectorSpecial(player, sector, roversector, isTouching);
 }
 
+// Deprecated in favor of P_MobjTouchingSectorSpecial
+// Kept for Lua backwards compatibility only
+sector_t *P_ThingOnSpecial3DFloor(mobj_t *mo)
+{
+	ffloor_t *rover;
+
+	for (rover = mo->subsector->sector->ffloors; rover; rover = rover->next)
+	{
+		if (!rover->master->frontsector->special)
+			continue;
+
+		if (!(rover->fofflags & FOF_EXISTS))
+			continue;
+
+		if (!P_IsMobjTouching3DFloor(mo, rover, mo->subsector->sector))
+			continue;
+
+		return rover->master->frontsector;
+	}
+
+	return NULL;
+}
+
 #define TELEPORTED(mo) (mo->subsector->sector != originalsector)
 
 /** Checks if a player is standing on or is inside a 3D floor (e.g. water) and

@@ -2028,6 +2028,16 @@ static int lib_pFadeLight(lua_State *L)
 	return 0;
 }
 
+static int lib_pThingOnSpecial3DFloor(lua_State *L)
+{
+	mobj_t *mo = *((mobj_t **)luaL_checkudata(L, 1, META_MOBJ));
+	NOHUD
+	if (!mo)
+		return LUA_ErrInvalid(L, "mobj_t");
+	LUA_PushUserdata(L, P_ThingOnSpecial3DFloor(mo), META_SECTOR);
+	return 1;
+}
+
 static int lib_pSetupLevelSky(lua_State *L)
 {
 	const char *skytexname = luaL_checkstring(L, 1);
@@ -3995,6 +4005,7 @@ static luaL_Reg lib[] = {
 	{"P_ExplodeMissile",lib_pExplodeMissile},
 	{"P_MobjTouchingSectorSpecial",lib_pMobjTouchingSectorSpecial},
 	{"P_MobjTouchingSectorSpecialFlag",lib_pMobjTouchingSectorSpecialFlag},
+	{"P_ThingOnSpecial3DFloor",lib_pThingOnSpecial3DFloor},
 	{"P_FindLowestFloorSurrounding",lib_pFindLowestFloorSurrounding},
 	{"P_FindHighestFloorSurrounding",lib_pFindHighestFloorSurrounding},
 	{"P_FindNextHighestFloor",lib_pFindNextHighestFloor},

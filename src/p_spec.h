@@ -549,6 +549,7 @@ sector_t *P_FindPlayerTrigger(player_t *player, line_t *sourceline);
 boolean P_IsPlayerValid(size_t playernum);
 boolean P_CanPlayerTrigger(size_t playernum);
 void P_ProcessSpecialSector(player_t *player, sector_t *sector, sector_t *roversector);
+sector_t *P_ThingOnSpecial3DFloor(mobj_t *mo);
 
 fixed_t P_FindLowestFloorSurrounding(sector_t *sec);
 fixed_t P_FindHighestFloorSurrounding(sector_t *sec);
