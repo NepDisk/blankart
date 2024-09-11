@@ -14,6 +14,7 @@ versiongit() {
 //
 const char* compbranch = "$gitbranch";
 const char* comprevision = "${gitversion:0:8}";
+const char* complast = "deez nuts";
 EOF
 exit 0
 }
@@ -27,6 +28,7 @@ versionsvn() {
 //
 const char* compbranch = "Subversion";
 const char* comprevision = "r$svnrevision";
+const char* complast = "deez nuts";
 EOF
 exit 0
 }
