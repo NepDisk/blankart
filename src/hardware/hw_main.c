@@ -17,6 +17,7 @@
 #include "../qs22j.h"
 
 #ifdef HWRENDER
+#include "hw_clip.h"
 #include "hw_glob.h"
 #include "hw_light.h"
 #include "hw_drv.h"
@@ -49,10 +50,6 @@
 #include "../k_kart.h"
 #include "../r_fps.h"
 #include "../r_plane.h" // R_FlatDimensionsFromLumpSize
-
-#ifdef NEWCLIP
-#include "hw_clip.h"
-#endif
 
 #define R_FAKEFLOORS
 #define HWPRECIP
@@ -834,41 +831,6 @@ static void HWR_ProjectWall(FOutVector *wallVerts, FSurfaceInfo *pSurf, FBITFIEL
 //                                                          BSP, CULL, ETC..
 // ==========================================================================
 
-// return the frac from the interception of the clipping line
-// (in fact a clipping plane that has a constant, so can clip with simple 2d)
-// with the wall segment
-//
-#ifndef NEWCLIP
-static float HWR_ClipViewSegment(INT32 x, polyvertex_t *v1, polyvertex_t *v2)
-{
-	float num, den;
-	float v1x, v1y, v1dx, v1dy, v2dx, v2dy;
-	angle_t pclipangle = gl_xtoviewangle[x];
-
-	// a segment of a polygon
-	v1x  = v1->x;
-	v1y  = v1->y;
-	v1dx = (v2->x - v1->x);
-	v1dy = (v2->y - v1->y);
-
-	// the clipping line
-	pclipangle = pclipangle + dup_viewangle; //back to normal angle (non-relative)
-	v2dx = FIXED_TO_FLOAT(FINECOSINE(pclipangle>>ANGLETOFINESHIFT));
-	v2dy = FIXED_TO_FLOAT(FINESINE(pclipangle>>ANGLETOFINESHIFT));
-
-	den = v2dy*v1dx - v2dx*v1dy;
-	if (den == 0)
-		return -1; // parallel
-
-	// calc the frac along the polygon segment,
-	//num = (v2x - v1x)*v2dy + (v1y - v2y)*v2dx;
-	//num = -v1x * v2dy + v1y * v2dx;
-	num = (gl_viewx - v1x)*v2dy + (v1y - gl_viewy)*v2dx;
-
-	return num / den;
-}
-#endif
-
 //
 // HWR_SplitWall
 //
@@ -1170,25 +1132,112 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 		SLOPEPARAMS(gl_backsector->c_slope, worldhigh, worldhighslope, gl_backsector->ceilingheight)
 		SLOPEPARAMS(gl_backsector->f_slope, worldlow,  worldlowslope,  gl_backsector->floorheight)
 
-		// hack to allow height changes in outdoor areas
-		// This is what gets rid of the upper textures if there should be sky
-		if (gl_frontsector->ceilingpic == skyflatnum
-			&& gl_backsector->ceilingpic  == skyflatnum)
+		if (udmf)
 		{
-			bothceilingssky = true;
-		}
+			// hack to allow height changes in outdoor areas
+			// This is what gets rid of the upper textures if there should be sky
+			if (gl_frontsector->ceilingpic == skyflatnum
+				&& gl_backsector->ceilingpic  == skyflatnum)
+			{
+				bothceilingssky = true;
+			}
 
-		// likewise, but for floors and upper textures
-		if (gl_frontsector->floorpic == skyflatnum
-			&& gl_backsector->floorpic == skyflatnum)
+			// likewise, but for floors and upper textures
+			if (gl_frontsector->floorpic == skyflatnum
+				&& gl_backsector->floorpic == skyflatnum)
+			{
+				bothfloorssky = true;
+			}
+
+			if (!bothceilingssky)
+				gl_toptexture = R_GetTextureNum(gl_sidedef->toptexture);
+			if (!bothfloorssky)
+				gl_bottomtexture = R_GetTextureNum(gl_sidedef->bottomtexture);
+		}
+		else
 		{
-			bothfloorssky = true;
-		}
+			// Sky Ceilings
+			wallVerts[3].y = wallVerts[2].y = FIXED_TO_FLOAT(INT32_MAX);
 
-		if (!bothceilingssky)
+			if (gl_frontsector->ceilingpic == skyflatnum)
+			{
+				if (gl_backsector->ceilingpic == skyflatnum)
+				{
+					// Both front and back sectors are sky, needs skywall from the frontsector's ceiling, but only if the
+					// backsector is lower
+					if ((worldhigh <= worldtop && worldhighslope <= worldtopslope)// Assuming ESLOPE is always on with my changes
+						&& (worldhigh != worldtop || worldhighslope != worldtopslope))
+						// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
+					{
+						wallVerts[0].y = FIXED_TO_FLOAT(worldhigh);
+						wallVerts[1].y = FIXED_TO_FLOAT(worldhighslope);
+						HWR_DrawSkyWall(wallVerts, &Surf);
+					}
+				}
+				else
+				{
+					// Only the frontsector is sky, just draw a skywall from the front ceiling
+					wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
+					wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
+					HWR_DrawSkyWall(wallVerts, &Surf);
+				}
+			}
+			else if (gl_backsector->ceilingpic == skyflatnum)
+			{
+				// Only the backsector is sky, just draw a skywall from the front ceiling
+				wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
+				wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
+				HWR_DrawSkyWall(wallVerts, &Surf);
+			}
+
+			// Sky Floors
+			wallVerts[0].y = wallVerts[1].y = FIXED_TO_FLOAT(INT32_MIN);
+
+			if (gl_frontsector->floorpic == skyflatnum)
+			{
+				if (gl_backsector->floorpic == skyflatnum)
+				{
+					// Both front and back sectors are sky, needs skywall from the backsector's floor, but only if the
+					// it's higher, also needs to check for bottomtexture as the floors don't usually move down
+					// when both sides are sky floors
+					if ((worldlow >= worldbottom && worldlowslope >= worldbottomslope)
+						&& (worldlow != worldbottom || worldlowslope != worldbottomslope)
+						// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
+						&& !(gl_sidedef->bottomtexture))
+					{
+						wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
+						wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
+						HWR_DrawSkyWall(wallVerts, &Surf);
+					}
+				}
+				else
+				{
+					// Only the backsector has sky, just draw a skywall from the back floor
+					wallVerts[3].y = FIXED_TO_FLOAT(worldbottom);
+					wallVerts[2].y = FIXED_TO_FLOAT(worldbottomslope);
+					HWR_DrawSkyWall(wallVerts, &Surf);
+				}
+			}
+			else if ((gl_backsector->floorpic == skyflatnum) && !(gl_sidedef->bottomtexture))
+			{
+				// Only the backsector has sky, just draw a skywall from the back floor if there's no bottomtexture
+				wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
+				wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
+				HWR_DrawSkyWall(wallVerts, &Surf);
+			}
+
+			// hack to allow height changes in outdoor areas
+			// This is what gets rid of the upper textures if there should be sky
+			if (gl_frontsector->ceilingpic == skyflatnum
+				&& gl_backsector->ceilingpic  == skyflatnum)
+			{
+				worldtop = worldhigh;
+				worldtopslope = worldhighslope;
+			}
+
 			gl_toptexture = R_GetTextureNum(gl_sidedef->toptexture);
-		if (!bothfloorssky)
 			gl_bottomtexture = R_GetTextureNum(gl_sidedef->bottomtexture);
+		}
 
 		// check TOP TEXTURE
 		if ((worldhighslope < worldtopslope || worldhigh < worldtop) && gl_toptexture)
@@ -1333,7 +1382,9 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 					HWR_ProjectWall(wallVerts, &Surf, polyflags, lightnum, colormap);
 			}
 		}
+
 		gl_midtexture = R_GetTextureNum(gl_sidedef->midtexture);
+
 		if (gl_midtexture)
 		{
 			FBITFIELD blendmode;
@@ -1547,27 +1598,32 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 
 		// Sky culling
 		// No longer so much a mess as before!
-		if (!gl_curline->polyseg) // Don't do it for polyobjects
+		// It now is a mess again, thx kart!
+		// see above!
+		if (udmf)
 		{
-			if (gl_frontsector->ceilingpic == skyflatnum)
+			if (!gl_curline->polyseg) // Don't do it for polyobjects
 			{
-				if (gl_backsector->ceilingpic != skyflatnum) // don't cull if back sector is also sky
+				if (gl_frontsector->ceilingpic == skyflatnum)
 				{
-					wallVerts[2].y = wallVerts[3].y = FIXED_TO_FLOAT(INT32_MAX); // draw to top of map space
-					wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
-					wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
-					HWR_DrawSkyWall(wallVerts, &Surf);
+					if (gl_backsector->ceilingpic != skyflatnum) // don't cull if back sector is also sky
+					{
+						wallVerts[2].y = wallVerts[3].y = FIXED_TO_FLOAT(INT32_MAX); // draw to top of map space
+						wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
+						wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
+						HWR_DrawSkyWall(wallVerts, &Surf);
+					}
 				}
-			}
 
-			if (gl_frontsector->floorpic == skyflatnum)
-			{
-				if (gl_backsector->floorpic != skyflatnum) // don't cull if back sector is also sky
+				if (gl_frontsector->floorpic == skyflatnum)
 				{
-					wallVerts[3].y = FIXED_TO_FLOAT(worldbottom);
-					wallVerts[2].y = FIXED_TO_FLOAT(worldbottomslope);
-					wallVerts[0].y = wallVerts[1].y = FIXED_TO_FLOAT(INT32_MIN); // draw to bottom of map space
-					HWR_DrawSkyWall(wallVerts, &Surf);
+					if (gl_backsector->floorpic != skyflatnum) // don't cull if back sector is also sky
+					{
+						wallVerts[3].y = FIXED_TO_FLOAT(worldbottom);
+						wallVerts[2].y = FIXED_TO_FLOAT(worldbottomslope);
+						wallVerts[0].y = wallVerts[1].y = FIXED_TO_FLOAT(INT32_MIN); // draw to bottom of map space
+						HWR_DrawSkyWall(wallVerts, &Surf);
+					}
 				}
 			}
 		}
@@ -1637,6 +1693,17 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 						HWR_ProjectWall(wallVerts, &Surf, blendmode, lightnum, colormap);
 				}
 			}
+		}
+		else if (!udmf)
+		{
+			//Set textures properly on single sided walls that are sloped
+			wallVerts[3].y = FIXED_TO_FLOAT(worldtop);
+			wallVerts[0].y = FIXED_TO_FLOAT(worldbottom);
+			wallVerts[2].y = FIXED_TO_FLOAT(worldtopslope);
+			wallVerts[1].y = FIXED_TO_FLOAT(worldbottomslope);
+
+			// When there's no midtexture, draw a skywall to prevent rendering behind it
+			HWR_DrawSkyWall(wallVerts, &Surf);
 		}
 
 		if (!gl_curline->polyseg)
@@ -1971,20 +2038,24 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 //
 // e6y: Check whether the player can look beyond this line
 //
-#ifdef NEWCLIP
 boolean checkforemptylines = true;
+
 // Don't modify anything here, just check
 // Kalaron: Modified for sloped linedefs
 static boolean CheckClip(seg_t * seg, sector_t * afrontsector, sector_t * abacksector)
 {
 	fixed_t frontf1,frontf2, frontc1, frontc2; // front floor/ceiling ends
 	fixed_t backf1, backf2, backc1, backc2; // back floor ceiling ends
+
 	boolean bothceilingssky = false, bothfloorssky = false;
 
-	if (abacksector->ceilingpic == skyflatnum && afrontsector->ceilingpic == skyflatnum)
-		bothceilingssky = true;
-	if (abacksector->floorpic == skyflatnum && afrontsector->floorpic == skyflatnum)
-		bothfloorssky = true;
+	if (udmf)
+	{
+		if (abacksector->ceilingpic == skyflatnum && afrontsector->ceilingpic == skyflatnum)
+			bothceilingssky = true;
+		if (abacksector->floorpic == skyflatnum && afrontsector->floorpic == skyflatnum)
+			bothfloorssky = true;
+	}
 
 	// GZDoom method of sloped line clipping
 
@@ -2028,40 +2099,124 @@ static boolean CheckClip(seg_t * seg, sector_t * afrontsector, sector_t * abacks
 		backf1  =  backf2 =  abacksector->  floorheight;
 		backc1  =  backc2 =  abacksector->ceilingheight;
 	}
+
 	// properly render skies (consider door "open" if both ceilings are sky)
 	// same for floors
-	if (!bothceilingssky && !bothfloorssky)
+	// lug: but only on udmf maps :chaosleep:
+	// kart does some funky crap on its binary maps and thus using this code breaks many maps visually and generally makes performance really bad
+	if (udmf)
 	{
+		if (!bothceilingssky && !bothfloorssky)
+		{
+			// now check for closed sectors!
+			if ((backc1 <= frontf1 && backc2 <= frontf2)
+				|| (backf1 >= frontc1 && backf2 >= frontc2))
+			{
+				checkforemptylines = false;
+				return true;
+			}
+
+			if (backc1 <= backf1 && backc2 <= backf2)
+			{
+				// preserve a kind of transparent door/lift special effect:
+				if (((backc1 >= frontc1 && backc2 >= frontc2) || seg->sidedef->toptexture)
+				&& ((backf1 <= frontf1 && backf2 <= frontf2) || seg->sidedef->bottomtexture))
+				{
+					checkforemptylines = false;
+					return true;
+				}
+			}
+		}
+
+		if (!bothceilingssky)
+		{
+			if (backc1 != frontc1 || backc2 != frontc2)
+			{
+				checkforemptylines = false;
+				return false;
+			}
+		}
+
+		if (!bothfloorssky)
+		{
+			if (backf1 != frontf1 || backf2 != frontf2)
+			{
+				checkforemptylines = false;
+				return false;
+			}
+		}
+	}
+	else
+	{
+		// not in vanilla kart, but this makes noclipcam alot more bearable when its stuck in walls
+		// otherwise it may cull half your view which is not really desirable
+		if (afrontsector == viewsector || abacksector == viewsector)
+		{
+			fixed_t viewf1, viewf2, viewc1, viewc2;
+			if (afrontsector == viewsector)
+			{
+				viewf1 = frontf1;
+				viewf2 = frontf2;
+				viewc1 = frontc1;
+				viewc2 = frontc2;
+			}
+			else
+			{
+				viewf1 = backf1;
+				viewf2 = backf2;
+				viewc1 = backc1;
+				viewc2 = backc2;
+			}
+
+			// check if camera is outside the bounds of the floor and the ceiling (noclipping)
+			// either above the ceiling or below the floor
+			if ((viewz > viewc1 && viewz > viewc2) || (viewz < viewf1 && viewz < viewf2))
+				return false;
+		}
+
 		// now check for closed sectors!
-		if ((backc1 <= frontf1 && backc2 <= frontf2)
-			|| (backf1 >= frontc1 && backf2 >= frontc2))
+
+		// here we're talking about a CEILING lower than a floor. ...yeah we don't even need to bother.
+		if (backc1 <= frontf1 && backc2 <= frontf2)
 		{
 			checkforemptylines = false;
 			return true;
 		}
 
-		if (backc1 <= backf1 && backc2 <= backf2)
-		{
-			// preserve a kind of transparent door/lift special effect:
-			if (((backc1 >= frontc1 && backc2 >= frontc2) || seg->sidedef->toptexture)
-			&& ((backf1 <= frontf1 && backf2 <= frontf2) || seg->sidedef->bottomtexture))
-			{
-				checkforemptylines = false;
-				return true;
-			}
-		}
-	}
-
-	if (!bothceilingssky) {
-		if (backc1 != frontc1 || backc2 != frontc2)
+		// here we're talking about floors higher than ceilings, don't even bother either.
+		if (backf1 >= frontc1 && backf2 >= frontc2)
 		{
 			checkforemptylines = false;
-			return false;
+			return true;
 		}
-	}
 
-	if (!bothfloorssky) {
-		if (backf1 != frontf1 || backf2 != frontf2)
+		// Lat: Ok, here's what we need to do, we want to draw thok barriers. Let's define what a thok barrier is;
+		// -Must have ceilheight <= floorheight
+		// -ceilpic must be skyflatnum
+		// -an adjacant sector needs to have a ceilingheight or a floor height different than the one we have, otherwise, it's just a huge ass wall, we shouldn't render past it.
+		// -said adjacant sector cannot also be a thok barrier, because that's also dumb and we could render far more than we need to as a result :V
+
+		if (backc1 <= backf1 && backc2 <= backf2)
+		{
+			checkforemptylines = false;
+
+			// before we do anything, if both sectors are thok barriers, GET ME OUT OF HERE!
+			if (frontc1 <= backc1 && frontc2 <= backc2)
+				return true;	// STOP RENDERING.
+
+			// draw floors at the top of thok barriers:
+			if (backc1 < frontc1 || backc2 < frontc2)
+				return false;
+
+			if (backf1 > frontf1 || backf2 > frontf2)
+				return false;
+
+			return true;
+		}
+
+		// Window.
+		// We know it's a window when the above isn't true and the back and front sectors don't match
+		if (backc1 != frontc1 || backc2 != frontc2 || backf1 != frontf1 || backf2 != frontf2)
 		{
 			checkforemptylines = false;
 			return false;
@@ -2070,295 +2225,6 @@ static boolean CheckClip(seg_t * seg, sector_t * afrontsector, sector_t * abacks
 
 	return false;
 }
-#else
-//Hurdler: just like in r_bsp.c
-#if 1
-#define MAXSEGS         MAXVIDWIDTH/2+1
-#else
-//Alam_GBC: Or not (may cause overflow)
-#define MAXSEGS         128
-#endif
-
-// hw_newend is one past the last valid seg
-static cliprange_t *   hw_newend;
-static cliprange_t     gl_solidsegs[MAXSEGS];
-
-// needs fix: walls are incorrectly clipped one column less
-static consvar_t cv_glclipwalls = CVAR_INIT ("gr_clipwalls", "Off", 0, CV_OnOff, NULL);
-
-static void printsolidsegs(void)
-{
-	cliprange_t *       start;
-	if (!hw_newend)
-		return;
-	for (start = gl_solidsegs;start != hw_newend;start++)
-	{
-		CONS_Debug(DBG_RENDER, "%d-%d|",start->first,start->last);
-	}
-	CONS_Debug(DBG_RENDER, "\n\n");
-}
-
-//
-//
-//
-static void HWR_ClipSolidWallSegment(INT32 first, INT32 last)
-{
-	cliprange_t *next, *start;
-	float lowfrac, highfrac;
-	boolean poorhack = false;
-
-	// Find the first range that touches the range
-	//  (adjacent pixels are touching).
-	start = gl_solidsegs;
-	while (start->last < first-1)
-		start++;
-
-	if (first < start->first)
-	{
-		if (last < start->first-1)
-		{
-			// Post is entirely visible (above start),
-			//  so insert a new clippost.
-			HWR_StoreWallRange(first, last);
-
-			next = hw_newend;
-			hw_newend++;
-
-			while (next != start)
-			{
-				*next = *(next-1);
-				next--;
-			}
-
-			next->first = first;
-			next->last = last;
-			printsolidsegs();
-			return;
-		}
-
-		// There is a fragment above *start.
-		if (!cv_glclipwalls.value)
-		{
-			if (!poorhack) HWR_StoreWallRange(first, last);
-			poorhack = true;
-		}
-		else
-		{
-			highfrac = HWR_ClipViewSegment(start->first+1, (polyvertex_t *)gl_curline->pv1, (polyvertex_t *)gl_curline->pv2);
-			HWR_StoreWallRange(0, highfrac);
-		}
-		// Now adjust the clip size.
-		start->first = first;
-	}
-
-	// Bottom contained in start?
-	if (last <= start->last)
-	{
-		printsolidsegs();
-		return;
-	}
-	next = start;
-	while (last >= (next+1)->first-1)
-	{
-		// There is a fragment between two posts.
-		if (!cv_glclipwalls.value)
-		{
-			if (!poorhack) HWR_StoreWallRange(first,last);
-			poorhack = true;
-		}
-		else
-		{
-			lowfrac  = HWR_ClipViewSegment(next->last-1, (polyvertex_t *)gl_curline->pv1, (polyvertex_t *)gl_curline->pv2);
-			highfrac = HWR_ClipViewSegment((next+1)->first+1, (polyvertex_t *)gl_curline->pv1, (polyvertex_t *)gl_curline->pv2);
-			HWR_StoreWallRange(lowfrac, highfrac);
-		}
-		next++;
-
-		if (last <= next->last)
-		{
-			// Bottom is contained in next.
-			// Adjust the clip size.
-			start->last = next->last;
-			goto crunch;
-		}
-	}
-
-	if (first == next->first+1) // 1 line texture
-	{
-		if (!cv_glclipwalls.value)
-		{
-			if (!poorhack) HWR_StoreWallRange(first,last);
-			poorhack = true;
-		}
-		else
-			HWR_StoreWallRange(0, 1);
-	}
-	else
-	{
-	// There is a fragment after *next.
-		if (!cv_glclipwalls.value)
-		{
-			if (!poorhack) HWR_StoreWallRange(first,last);
-			poorhack = true;
-		}
-		else
-		{
-			lowfrac  = HWR_ClipViewSegment(next->last-1, (polyvertex_t *)gl_curline->pv1, (polyvertex_t *)gl_curline->pv2);
-			HWR_StoreWallRange(lowfrac, 1);
-		}
-	}
-
-	// Adjust the clip size.
-	start->last = last;
-
-	// Remove start+1 to next from the clip list,
-	// because start now covers their area.
-crunch:
-	if (next == start)
-	{
-		printsolidsegs();
-		// Post just extended past the bottom of one post.
-		return;
-	}
-
-
-	while (next++ != hw_newend)
-	{
-		// Remove a post.
-		*++start = *next;
-	}
-
-	hw_newend = start;
-	printsolidsegs();
-}
-
-//
-//  handle LineDefs with upper and lower texture (windows)
-//
-static void HWR_ClipPassWallSegment(INT32 first, INT32 last)
-{
-	cliprange_t *start;
-	float lowfrac, highfrac;
-	//to allow noclipwalls but still solidseg reject of non-visible walls
-	boolean poorhack = false;
-
-	// Find the first range that touches the range
-	//  (adjacent pixels are touching).
-	start = gl_solidsegs;
-	while (start->last < first - 1)
-		start++;
-
-	if (first < start->first)
-	{
-		if (last < start->first-1)
-		{
-			// Post is entirely visible (above start).
-			HWR_StoreWallRange(0, 1);
-			return;
-		}
-
-		// There is a fragment above *start.
-		if (!cv_glclipwalls.value)
-		{	//20/08/99: Changed by Hurdler (taken from faB's code)
-			if (!poorhack) HWR_StoreWallRange(0, 1);
-			poorhack = true;
-		}
-		else
-		{
-			highfrac = HWR_ClipViewSegment(min(start->first + 1,
-				start->last), (polyvertex_t *)gl_curline->pv1,
-				(polyvertex_t *)gl_curline->pv2);
-			HWR_StoreWallRange(0, highfrac);
-		}
-	}
-
-	// Bottom contained in start?
-	if (last <= start->last)
-		return;
-
-	while (last >= (start+1)->first-1)
-	{
-		// There is a fragment between two posts.
-		if (!cv_glclipwalls.value)
-		{
-			if (!poorhack) HWR_StoreWallRange(0, 1);
-			poorhack = true;
-		}
-		else
-		{
-			lowfrac  = HWR_ClipViewSegment(max(start->last-1,start->first), (polyvertex_t *)gl_curline->pv1, (polyvertex_t *)gl_curline->pv2);
-			highfrac = HWR_ClipViewSegment(min((start+1)->first+1,(start+1)->last), (polyvertex_t *)gl_curline->pv1, (polyvertex_t *)gl_curline->pv2);
-			HWR_StoreWallRange(lowfrac, highfrac);
-		}
-		start++;
-
-		if (last <= start->last)
-			return;
-	}
-
-	if (first == start->first+1) // 1 line texture
-	{
-		if (!cv_glclipwalls.value)
-		{
-			if (!poorhack) HWR_StoreWallRange(0, 1);
-			poorhack = true;
-		}
-		else
-			HWR_StoreWallRange(0, 1);
-	}
-	else
-	{
-		// There is a fragment after *next.
-		if (!cv_glclipwalls.value)
-		{
-			if (!poorhack) HWR_StoreWallRange(0,1);
-			poorhack = true;
-		}
-		else
-		{
-			lowfrac = HWR_ClipViewSegment(max(start->last - 1,
-				start->first), (polyvertex_t *)gl_curline->pv1,
-				(polyvertex_t *)gl_curline->pv2);
-			HWR_StoreWallRange(lowfrac, 1);
-		}
-	}
-}
-
-// --------------------------------------------------------------------------
-//  HWR_ClipToSolidSegs check if it is hide by wall (solidsegs)
-// --------------------------------------------------------------------------
-static boolean HWR_ClipToSolidSegs(INT32 first, INT32 last)
-{
-	cliprange_t * start;
-
-	// Find the first range that touches the range
-	//  (adjacent pixels are touching).
-	start = gl_solidsegs;
-	while (start->last < first-1)
-		start++;
-
-	if (first < start->first)
-		return true;
-
-	// Bottom contained in start?
-	if (last <= start->last)
-		return false;
-
-	return true;
-}
-
-//
-// HWR_ClearClipSegs
-//
-static void HWR_ClearClipSegs(void)
-{
-	gl_solidsegs[0].first = -0x7fffffff;
-	gl_solidsegs[0].last = -1;
-	gl_solidsegs[1].first = vid.width; //viewwidth;
-	gl_solidsegs[1].last = 0x7fffffff;
-	hw_newend = gl_solidsegs+2;
-}
-#endif // NEWCLIP
 
 // -----------------+
 // HWR_AddLine      : Clips the given segment and adds any visible pieces to the line list.
@@ -2368,11 +2234,6 @@ static void HWR_ClearClipSegs(void)
 static void HWR_AddLine(seg_t * line)
 {
 	angle_t angle1, angle2;
-#ifndef NEWCLIP
-	INT32 x1, x2;
-	angle_t span, tspan;
-	boolean bothceilingssky = false, bothfloorssky = false;
-#endif
 
 	// SoM: Backsector needs to be run through R_FakeFlat
 	static sector_t tempsec;
@@ -2408,9 +2269,8 @@ static void HWR_AddLine(seg_t * line)
 	angle1 = R_PointToAngle64(v1x, v1y);
 	angle2 = R_PointToAngle64(v2x, v2y);
 
-#ifdef NEWCLIP
 	 // PrBoom: Back side, i.e. backface culling - read: endAngle >= startAngle!
-	if (angle2 - angle1 < ANGLE_180)
+	if (angle2 - angle1 < ANGLE_180 || !gl_curline->linedef)
 		return;
 
 	// PrBoom: use REAL clipping math YAYYYYYYY!!!
@@ -2421,90 +2281,8 @@ static void HWR_AddLine(seg_t * line)
 	}
 
 	checkforemptylines = true;
-#else
-	// Clip to view edges.
-	span = angle1 - angle2;
-
-	// backface culling : span is < ANGLE_180 if ang1 > ang2 : the seg is facing
-	if (span >= ANGLE_180)
-		return;
-
-	// Global angle needed by segcalc.
-	//rw_angle1 = angle1;
-	angle1 -= dup_viewangle;
-	angle2 -= dup_viewangle;
-
-	tspan = angle1 + gl_clipangle;
-	if (tspan > 2*gl_clipangle)
-	{
-		tspan -= 2*gl_clipangle;
-
-		// Totally off the left edge?
-		if (tspan >= span)
-			return;
-
-		angle1 = gl_clipangle;
-	}
-	tspan = gl_clipangle - angle2;
-	if (tspan > 2*gl_clipangle)
-	{
-		tspan -= 2*gl_clipangle;
-
-		// Totally off the left edge?
-		if (tspan >= span)
-			return;
-
-		angle2 = (angle_t)-(signed)gl_clipangle;
-	}
-
-#if 0
-	{
-		float fx1,fx2,fy1,fy2;
-		//BP: test with a better projection than viewangletox[R_PointToAngle(angle)]
-		// do not enable this at release 4 mul and 2 div
-		fx1 = ((polyvertex_t *)(line->pv1))->x-gl_viewx;
-		fy1 = ((polyvertex_t *)(line->pv1))->y-gl_viewy;
-		fy2 = (fx1 * gl_viewcos + fy1 * gl_viewsin);
-		if (fy2 < 0)
-			// the point is back
-			fx1 = 0;
-		else
-			fx1 = gl_windowcenterx + (fx1 * gl_viewsin - fy1 * gl_viewcos) * gl_centerx / fy2;
-
-		fx2 = ((polyvertex_t *)(line->pv2))->x-gl_viewx;
-		fy2 = ((polyvertex_t *)(line->pv2))->y-gl_viewy;
-		fy1 = (fx2 * gl_viewcos + fy2 * gl_viewsin);
-		if (fy1 < 0)
-			// the point is back
-			fx2 = vid.width;
-		else
-			fx2 = gl_windowcenterx + (fx2 * gl_viewsin - fy2 * gl_viewcos) * gl_centerx / fy1;
-
-		x1 = fx1+0.5f;
-		x2 = fx2+0.5f;
-	}
-#else
-	// The seg is in the view range,
-	// but not necessarily visible.
-	angle1 = (angle1+ANGLE_90)>>ANGLETOFINESHIFT;
-	angle2 = (angle2+ANGLE_90)>>ANGLETOFINESHIFT;
-
-	x1 = gl_viewangletox[angle1];
-	x2 = gl_viewangletox[angle2];
-#endif
-	// Does not cross a pixel?
-//	if (x1 == x2)
-/*	{
-		// BP: HERE IS THE MAIN PROBLEM !
-		//CONS_Debug(DBG_RENDER, "tineline\n");
-		return;
-	}
-*/
-#endif
-
 	gl_backsector = line->backsector;
 
-#ifdef NEWCLIP
 	if (!line->backsector)
 	{
 		gld_clipper_SafeAddClipRange(angle2, angle1);
@@ -2515,21 +2293,24 @@ static void HWR_AddLine(seg_t * line)
 
 		gl_backsector = R_FakeFlat(gl_backsector, &tempsec, NULL, NULL, true);
 
-		if (gl_backsector->ceilingpic == skyflatnum && gl_frontsector->ceilingpic == skyflatnum)
-			bothceilingssky = true;
-		if (gl_backsector->floorpic == skyflatnum && gl_frontsector->floorpic == skyflatnum)
-			bothfloorssky = true;
-
-		if (bothceilingssky && bothfloorssky) // everything's sky? let's save us a bit of time then
+		if (udmf) // same here, thisll most likely break kart maps
 		{
-			if (!line->polyseg &&
-				!line->sidedef->midtexture
-				&& ((!gl_frontsector->ffloors && !gl_backsector->ffloors)
-					|| Tag_Compare(&gl_frontsector->tags, &gl_backsector->tags)))
-				return; // line is empty, don't even bother
-			// treat like wide open window instead
-			HWR_ProcessSeg(); // Doesn't need arguments because they're defined globally :D
-			return;
+			if (gl_backsector->ceilingpic == skyflatnum && gl_frontsector->ceilingpic == skyflatnum)
+				bothceilingssky = true;
+			if (gl_backsector->floorpic == skyflatnum && gl_frontsector->floorpic == skyflatnum)
+				bothfloorssky = true;
+
+			if (bothceilingssky && bothfloorssky) // everything's sky? let's save us a bit of time then
+			{
+				if (!line->polyseg &&
+					!line->sidedef->midtexture
+					&& ((!gl_frontsector->ffloors && !gl_backsector->ffloors)
+						|| Tag_Compare(&gl_frontsector->tags, &gl_backsector->tags)))
+					return; // line is empty, don't even bother
+				// treat like wide open window instead
+				HWR_ProcessSeg(); // Doesn't need arguments because they're defined globally :D
+				return;
+			}
 		}
 
 		if (CheckClip(line, gl_frontsector, gl_backsector))
@@ -2547,114 +2328,6 @@ static void HWR_AddLine(seg_t * line)
 
 	HWR_ProcessSeg(); // Doesn't need arguments because they're defined globally :D
 	return;
-#else
-	// Single sided line?
-	if (!gl_backsector)
-		goto clipsolid;
-
-	gl_backsector = R_FakeFlat(gl_backsector, &tempsec, NULL, NULL, true);
-
-	if (gl_backsector->ceilingpic == skyflatnum && gl_frontsector->ceilingpic == skyflatnum)
-		bothceilingssky = true;
-	if (gl_backsector->floorpic == skyflatnum && gl_frontsector->floorpic == skyflatnum)
-		bothfloorssky = true;
-
-	if (bothceilingssky && bothfloorssky) // everything's sky? let's save us a bit of time then
-	{
-		if (!line->polyseg &&
-			!line->sidedef->midtexture
-			&& ((!gl_frontsector->ffloors && !gl_backsector->ffloors)
-				|| Tag_Compare(&gl_frontsector->tags, &gl_backsector->tags)))
-			return; // line is empty, don't even bother
-
-		goto clippass; // treat like wide open window instead
-	}
-
-	if (gl_frontsector->f_slope || gl_frontsector->c_slope || gl_backsector->f_slope || gl_backsector->c_slope)
-	{
-		fixed_t frontf1,frontf2, frontc1, frontc2; // front floor/ceiling ends
-		fixed_t backf1, backf2, backc1, backc2; // back floor ceiling ends
-
-#define SLOPEPARAMS(slope, end1, end2, normalheight) \
-		end1 = P_GetZAt(slope, v1x, v1y, normalheight); \
-		end2 = P_GetZAt(slope, v2x, v2y, normalheight);
-
-		SLOPEPARAMS(gl_frontsector->f_slope, frontf1, frontf2, gl_frontsector->  floorheight)
-		SLOPEPARAMS(gl_frontsector->c_slope, frontc1, frontc2, gl_frontsector->ceilingheight)
-		SLOPEPARAMS( gl_backsector->f_slope,  backf1,  backf2,  gl_backsector->  floorheight)
-		SLOPEPARAMS( gl_backsector->c_slope,  backc1,  backc2,  gl_backsector->ceilingheight)
-#undef SLOPEPARAMS
-		// if both ceilings are skies, consider it always "open"
-		// same for floors
-		if (!bothceilingssky && !bothfloorssky)
-		{
-			// Closed door.
-			if ((backc1 <= frontf1 && backc2 <= frontf2)
-				|| (backf1 >= frontc1 && backf2 >= frontc2))
-			{
-				goto clipsolid;
-			}
-
-			// Check for automap fix.
-			if (backc1 <= backf1 && backc2 <= backf2
-			&& ((backc1 >= frontc1 && backc2 >= frontc2) || gl_curline->sidedef->toptexture)
-			&& ((backf1 <= frontf1 && backf2 >= frontf2) || gl_curline->sidedef->bottomtexture))
-				goto clipsolid;
-		}
-
-		// Window.
-		if (!bothceilingssky) // ceilings are always the "same" when sky
-			if (backc1 != frontc1 || backc2 != frontc2)
-				goto clippass;
-		if (!bothfloorssky)	// floors are always the "same" when sky
-			if (backf1 != frontf1 || backf2 != frontf2)
-				goto clippass;
-	}
-	else
-	{
-		// if both ceilings are skies, consider it always "open"
-		// same for floors
-		if (!bothceilingssky && !bothfloorssky)
-		{
-			// Closed door.
-			if (gl_backsector->ceilingheight <= gl_frontsector->floorheight ||
-				gl_backsector->floorheight >= gl_frontsector->ceilingheight)
-				goto clipsolid;
-
-			// Check for automap fix.
-			if (gl_backsector->ceilingheight <= gl_backsector->floorheight
-			&& ((gl_backsector->ceilingheight >= gl_frontsector->ceilingheight) || gl_curline->sidedef->toptexture)
-			&& ((gl_backsector->floorheight <= gl_backsector->floorheight) || gl_curline->sidedef->bottomtexture))
-				goto clipsolid;
-		}
-
-		// Window.
-		if (!bothceilingssky) // ceilings are always the "same" when sky
-			if (gl_backsector->ceilingheight != gl_frontsector->ceilingheight)
-				goto clippass;
-		if (!bothfloorssky)	// floors are always the "same" when sky
-			if (gl_backsector->floorheight != gl_frontsector->floorheight)
-				goto clippass;
-	}
-
-	// Reject empty lines used for triggers and special events.
-	// Identical floor and ceiling on both sides,
-	//  identical light levels on both sides,
-	//  and no middle texture.
-	if (R_IsEmptyLine(gl_curline, gl_frontsector, gl_backsector))
-		return;
-
-clippass:
-	if (x1 == x2)
-		{  x2++;x1 -= 2; }
-	HWR_ClipPassWallSegment(x1, x2-1);
-	return;
-
-clipsolid:
-	if (x1 == x2)
-		goto clippass;
-	HWR_ClipSolidWallSegment(x1, x2-1);
-#endif
 }
 
 // HWR_CheckBBox
@@ -2669,10 +2342,6 @@ static boolean HWR_CheckBBox(fixed_t *bspcoord)
 	INT32 boxpos;
 	fixed_t px1, py1, px2, py2;
 	angle_t angle1, angle2;
-#ifndef NEWCLIP
-	INT32 sx1, sx2;
-	angle_t span, tspan;
-#endif
 
 	// Find the corners of the box
 	// that define the edges from current viewpoint.
@@ -2698,59 +2367,10 @@ static boolean HWR_CheckBBox(fixed_t *bspcoord)
 	px2 = bspcoord[checkcoord[boxpos][2]];
 	py2 = bspcoord[checkcoord[boxpos][3]];
 
-#ifdef NEWCLIP
 	angle1 = R_PointToAngle64(px1, py1);
 	angle2 = R_PointToAngle64(px2, py2);
+
 	return gld_clipper_SafeCheckRange(angle2, angle1);
-#else
-	// check clip list for an open space
-	angle1 = R_PointToAngle2(dup_viewx>>1, dup_viewy>>1, px1>>1, py1>>1) - dup_viewangle;
-	angle2 = R_PointToAngle2(dup_viewx>>1, dup_viewy>>1, px2>>1, py2>>1) - dup_viewangle;
-
-	span = angle1 - angle2;
-
-	// Sitting on a line?
-	if (span >= ANGLE_180)
-		return true;
-
-	tspan = angle1 + gl_clipangle;
-
-	if (tspan > 2*gl_clipangle)
-	{
-		tspan -= 2*gl_clipangle;
-
-		// Totally off the left edge?
-		if (tspan >= span)
-			return false;
-
-		angle1 = gl_clipangle;
-	}
-	tspan = gl_clipangle - angle2;
-	if (tspan > 2*gl_clipangle)
-	{
-		tspan -= 2*gl_clipangle;
-
-		// Totally off the left edge?
-		if (tspan >= span)
-			return false;
-
-		angle2 = (angle_t)-(signed)gl_clipangle;
-	}
-
-	// Find the first clippost
-	//  that touches the source post
-	//  (adjacent pixels are touching).
-	angle1 = (angle1+ANGLE_90)>>ANGLETOFINESHIFT;
-	angle2 = (angle2+ANGLE_90)>>ANGLETOFINESHIFT;
-	sx1 = gl_viewangletox[angle1];
-	sx2 = gl_viewangletox[angle2];
-
-	// Does not cross a pixel.
-	if (sx1 == sx2)
-		return false;
-
-	return HWR_ClipToSolidSegs(sx1, sx2 - 1);
-#endif
 }
 
 //
@@ -6401,18 +6021,14 @@ void HWR_RenderSkyboxView(player_t *player)
 
 	drawcount = 0;
 
-#ifdef NEWCLIP
 	{
-		angle_t a1 = gld_FrustumAngle(gl_aimingangle);
+		angle_t a1 = gld_FrustumAngle(fpov, gl_aimingangle);
 		gld_clipper_Clear();
 		gld_clipper_SafeAddClipRange(viewangle + a1, viewangle - a1);
 #ifdef HAVE_SPHEREFRUSTRUM
 		gld_FrustrumSetup();
 #endif
 	}
-#else
-	HWR_ClearClipSegs();
-#endif
 
 	//04/01/2000: Hurdler: added for T&L
 	//                     Actually it only works on Walls and Planes
@@ -6431,32 +6047,6 @@ void HWR_RenderSkyboxView(player_t *player)
 #endif
 
 	HWR_RenderBSPNode((INT32)numnodes-1);
-
-#ifndef NEWCLIP
-	// Make a viewangle int so we can render things based on mouselook
-	viewangle = localaiming[viewssnum];
-
-	// Handle stuff when you are looking farther up or down.
-	if ((gl_aimingangle || fpov > 90.0f))
-	{
-		dup_viewangle += ANGLE_90;
-		HWR_ClearClipSegs();
-		HWR_RenderBSPNode((INT32)numnodes-1); //left
-
-		dup_viewangle += ANGLE_90;
-		if (((INT32)gl_aimingangle > ANGLE_45 || (INT32)gl_aimingangle<-ANGLE_45))
-		{
-			HWR_ClearClipSegs();
-			HWR_RenderBSPNode((INT32)numnodes-1); //back
-		}
-
-		dup_viewangle += ANGLE_90;
-		HWR_ClearClipSegs();
-		HWR_RenderBSPNode((INT32)numnodes-1); //right
-
-		dup_viewangle += ANGLE_90;
-	}
-#endif
 
 	if (cv_glbatching.value)
 		HWR_RenderBatches();
@@ -6613,19 +6203,14 @@ void HWR_RenderPlayerView(void)
 
 	drawcount = 0;
 
-#ifdef NEWCLIP
 	{
-		angle_t a1 = gld_FrustumAngle(gl_aimingangle);
+		angle_t a1 = gld_FrustumAngle(fpov, gl_aimingangle);
 		gld_clipper_Clear();
 		gld_clipper_SafeAddClipRange(viewangle + a1, viewangle - a1);
 #ifdef HAVE_SPHEREFRUSTRUM
 		gld_FrustrumSetup();
 #endif
 	}
-#else
-	HWR_ClearClipSegs();
-#endif
-
 	//04/01/2000: Hurdler: added for T&L
 	//                     Actually it only works on Walls and Planes
 	HWD.pfnSetTransform(&atransform);
@@ -6647,32 +6232,6 @@ void HWR_RenderPlayerView(void)
 #endif
 
 	HWR_RenderBSPNode((INT32)numnodes-1);
-
-#ifndef NEWCLIP
-	// Make a viewangle int so we can render things based on mouselook
-	viewangle = localaiming[viewssnum];
-
-	// Handle stuff when you are looking farther up or down.
-	if ((gl_aimingangle || fpov > 90.0f))
-	{
-		dup_viewangle += ANGLE_90;
-		HWR_ClearClipSegs();
-		HWR_RenderBSPNode((INT32)numnodes-1); //left
-
-		dup_viewangle += ANGLE_90;
-		if (((INT32)gl_aimingangle > ANGLE_45 || (INT32)gl_aimingangle<-ANGLE_45))
-		{
-			HWR_ClearClipSegs();
-			HWR_RenderBSPNode((INT32)numnodes-1); //back
-		}
-
-		dup_viewangle += ANGLE_90;
-		HWR_ClearClipSegs();
-		HWR_RenderBSPNode((INT32)numnodes-1); //right
-
-		dup_viewangle += ANGLE_90;
-	}
-#endif
 
 	ps_bsptime = I_GetPreciseTime() - ps_bsptime;
 
@@ -6824,10 +6383,6 @@ void HWR_AddCommands(void)
 	CV_RegisterVar(&cv_glsolvetjoin);
 
 	CV_RegisterVar(&cv_glbatching);
-
-#ifndef NEWCLIP
-	CV_RegisterVar(&cv_glclipwalls);
-#endif
 }
 
 void HWR_AddSessionCommands(void)

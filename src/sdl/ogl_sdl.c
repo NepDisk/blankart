@@ -25,7 +25,7 @@
 #ifdef HAVE_SDL
 #define _MATH_DEFINES_DEFINED
 
-#include "SDL.h"
+#include <SDL.h>
 
 #include "sdlmain.h"
 

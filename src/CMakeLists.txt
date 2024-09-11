@@ -77,7 +77,7 @@ add_dependencies(SRB2SDL2 _SRB2_reconf)
 	
 ### use internal libraries?
 if(${CMAKE_SYSTEM} MATCHES "Windows") ###set on Windows only
-	set(SRB2_CONFIG_USE_INTERNAL_LIBRARIES OFF CACHE BOOL
+	set(SRB2_CONFIG_USE_INTERNAL_LIBRARIES ON CACHE BOOL
 	"Use SRB2Kart's internal copies of required dependencies (SDL2, PNG, zlib, GME, OpenMPT, cURL).")
 endif()
 

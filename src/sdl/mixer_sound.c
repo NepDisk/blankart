@@ -50,15 +50,15 @@ write netcode into the sound code, OKAY?
 #ifdef _MSC_VER
 #pragma warning(disable : 4214 4244)
 #endif
-#include "SDL.h"
+#include <SDL.h>
 #ifdef _MSC_VER
 #pragma warning(default : 4214 4244)
 #endif
 
 #ifdef HAVE_MIXERX
-#include "SDL_mixer_ext.h"
+#include <SDL_mixer_ext.h>
 #else
-#include "SDL_mixer.h"
+#include <SDL_mixer.h>
 #endif
 
 /* This is the version number macro for the current SDL_mixer version: */
