@@ -30,3 +30,4 @@ echo // by the %0 batch file >> %1\comptime.h
 echo // >> %1\comptime.h
 echo const char* compbranch = "%BRA%"; >> %1\comptime.h
 echo const char* comprevision = "%REV%"; >> %1\comptime.h
+echo const char* complast = "deez nuts"; >> %1\comptime.h

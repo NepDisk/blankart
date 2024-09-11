@@ -39,6 +39,7 @@ versionfake() {
 //
 const char* compbranch = "Unknown";
 const char* comprevision = "illegal";
+const char* complast = "deez nuts";
 EOF
 }
 
