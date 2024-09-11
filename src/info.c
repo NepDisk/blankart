@@ -11110,7 +11110,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_SPRINGTREE
-		1600,           // doomednum
+		-1,           // doomednum was 1600 relocate
 		S_SPRINGTREE,   // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
@@ -15376,7 +15376,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_HHZGRASS
-		3001,           // doomednum
+		-1,           // doomednum was 3001 relocate
 		S_HHZGRASS,     // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
@@ -15403,7 +15403,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_HHZTENTACLE1
-		3002,           // doomednum
+		-1,           // doomednum was 3002 relocate
 		S_HHZTENT1,     // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
@@ -15430,7 +15430,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_HHZTENTACLE2
-		3003,           // doomednum
+		-1,           // doomednum was 3003 relocate
 		S_HHZTENT2,     // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
@@ -17216,7 +17216,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_FLICKY_01_CENTER
-		2200,             // doomednum
+		-1,             // doomednum was 2200 relocate
 		S_FLICKY_01_CENTER, // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
@@ -17270,7 +17270,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_FLICKY_02_CENTER
-		2201,             // doomednum
+		-1,             // doomednum was 2201 relocate
 		S_FLICKY_02_CENTER, // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
@@ -17324,7 +17324,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_FLICKY_03_CENTER
-		2202,             // doomednum
+		-1,             // doomednum was 2202 relocate
 		S_FLICKY_03_CENTER, // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
@@ -20593,7 +20593,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_SHLEEP
-		1601,           // doomednum
+		-1,           // doomednum was 1601 relocate
 		S_SHLEEP1,      // spawnstate
 		1,              // spawnhealth
 		S_NULL,         // seestate
@@ -20809,7 +20809,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_SMASHINGSPIKEBALL
-		3000,           // doomednum
+		-1,           // doomednum was 3000 relocate
 		S_SMASHSPIKE_FLOAT, // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
@@ -25591,7 +25591,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_PGBUSH
-		715,            // doomednum
+		-1,            // doomednum was 715 relocate
 		S_PGBUSH,       // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
