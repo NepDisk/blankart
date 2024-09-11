@@ -64,7 +64,7 @@ typedef LPVOID (WINAPI *p_MapViewOfFile) (HANDLE, DWORD, DWORD, DWORD, SIZE_T);
 
 #ifdef HAVE_SDL
 #define _MATH_DEFINES_DEFINED
-#include "SDL.h"
+#include <SDL.h>
 
 #ifdef HAVE_TTF
 #include "i_ttf.h"

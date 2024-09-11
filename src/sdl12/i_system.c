@@ -75,7 +75,7 @@ void __set_fpscr(long); // in libgcc / kernel's startup.s?
 
 #ifdef HAVE_SDL
 
-#include "SDL.h"
+#include <SDL.h>
 
 #ifdef HAVE_TTF
 #include "i_ttf.h"
