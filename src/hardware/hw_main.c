@@ -1194,6 +1194,76 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 		}
 		else
 		{
+			// Sky Ceilings
+			wallVerts[3].y = wallVerts[2].y = FIXED_TO_FLOAT(INT32_MAX);
+
+			if (gl_frontsector->ceilingpic == skyflatnum)
+			{
+				if (gl_backsector->ceilingpic == skyflatnum)
+				{
+					// Both front and back sectors are sky, needs skywall from the frontsector's ceiling, but only if the
+					// backsector is lower
+					if ((worldhigh <= worldtop && worldhighslope <= worldtopslope)// Assuming ESLOPE is always on with my changes
+						&& (worldhigh != worldtop || worldhighslope != worldtopslope))
+						// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
+					{
+						wallVerts[0].y = FIXED_TO_FLOAT(worldhigh);
+						wallVerts[1].y = FIXED_TO_FLOAT(worldhighslope);
+						HWR_DrawSkyWall(wallVerts, &Surf);
+					}
+				}
+				else
+				{
+					// Only the frontsector is sky, just draw a skywall from the front ceiling
+					wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
+					wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
+					HWR_DrawSkyWall(wallVerts, &Surf);
+				}
+			}
+			else if (gl_backsector->ceilingpic == skyflatnum)
+			{
+				// Only the backsector is sky, just draw a skywall from the front ceiling
+				wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
+				wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
+				HWR_DrawSkyWall(wallVerts, &Surf);
+			}
+
+			// Sky Floors
+			wallVerts[0].y = wallVerts[1].y = FIXED_TO_FLOAT(INT32_MIN);
+
+			if (gl_frontsector->floorpic == skyflatnum)
+			{
+				if (gl_backsector->floorpic == skyflatnum)
+				{
+					// Both front and back sectors are sky, needs skywall from the backsector's floor, but only if the
+					// it's higher, also needs to check for bottomtexture as the floors don't usually move down
+					// when both sides are sky floors
+					if ((worldlow >= worldbottom && worldlowslope >= worldbottomslope)
+						&& (worldlow != worldbottom || worldlowslope != worldbottomslope)
+						// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
+						&& !(gl_sidedef->bottomtexture))
+					{
+						wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
+						wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
+						HWR_DrawSkyWall(wallVerts, &Surf);
+					}
+				}
+				else
+				{
+					// Only the backsector has sky, just draw a skywall from the back floor
+					wallVerts[3].y = FIXED_TO_FLOAT(worldbottom);
+					wallVerts[2].y = FIXED_TO_FLOAT(worldbottomslope);
+					HWR_DrawSkyWall(wallVerts, &Surf);
+				}
+			}
+			else if ((gl_backsector->floorpic == skyflatnum) && !(gl_sidedef->bottomtexture))
+			{
+				// Only the backsector has sky, just draw a skywall from the back floor if there's no bottomtexture
+				wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
+				wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
+				HWR_DrawSkyWall(wallVerts, &Surf);
+			}
+
 			// hack to allow height changes in outdoor areas
 			// This is what gets rid of the upper textures if there should be sky
 			if (gl_frontsector->ceilingpic == skyflatnum
@@ -1567,9 +1637,10 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 		// Sky culling
 		// No longer so much a mess as before!
 		// It now is a mess again, thx kart!
-		if (!gl_curline->polyseg) // Don't do it for polyobjects
+		// see above!
+		if (udmf)
 		{
-			if (udmf)
+			if (!gl_curline->polyseg) // Don't do it for polyobjects
 			{
 				if (gl_frontsector->ceilingpic == skyflatnum)
 				{
@@ -1591,79 +1662,6 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 						wallVerts[0].y = wallVerts[1].y = FIXED_TO_FLOAT(INT32_MIN); // draw to bottom of map space
 						HWR_DrawSkyWall(wallVerts, &Surf);
 					}
-				}
-			}
-			else
-			{
-				// Sky Ceilings
-				wallVerts[3].y = wallVerts[2].y = FIXED_TO_FLOAT(INT32_MAX);
-
-				if (gl_frontsector->ceilingpic == skyflatnum)
-				{
-					if (gl_backsector->ceilingpic == skyflatnum)
-					{
-						// Both front and back sectors are sky, needs skywall from the frontsector's ceiling, but only if the
-						// backsector is lower
-						if ((worldhigh <= worldtop && worldhighslope <= worldtopslope)// Assuming ESLOPE is always on with my changes
-							&& (worldhigh != worldtop || worldhighslope != worldtopslope))
-							// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
-						{
-							wallVerts[0].y = FIXED_TO_FLOAT(worldhigh);
-							wallVerts[1].y = FIXED_TO_FLOAT(worldhighslope);
-							HWR_DrawSkyWall(wallVerts, &Surf);
-						}
-					}
-					else
-					{
-						// Only the frontsector is sky, just draw a skywall from the front ceiling
-						wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
-						wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
-						HWR_DrawSkyWall(wallVerts, &Surf);
-					}
-				}
-				else if (gl_backsector->ceilingpic == skyflatnum)
-				{
-					// Only the backsector is sky, just draw a skywall from the front ceiling
-					wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
-					wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
-					HWR_DrawSkyWall(wallVerts, &Surf);
-				}
-
-
-				// Sky Floors
-				wallVerts[0].y = wallVerts[1].y = FIXED_TO_FLOAT(INT32_MIN);
-
-				if (gl_frontsector->floorpic == skyflatnum)
-				{
-					if (gl_backsector->floorpic == skyflatnum)
-					{
-						// Both front and back sectors are sky, needs skywall from the backsector's floor, but only if the
-						// it's higher, also needs to check for bottomtexture as the floors don't usually move down
-						// when both sides are sky floors
-						if ((worldlow >= worldbottom && worldlowslope >= worldbottomslope)
-							&& (worldlow != worldbottom || worldlowslope != worldbottomslope)
-							// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
-							&& !(gl_sidedef->bottomtexture))
-						{
-							wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
-							wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
-							HWR_DrawSkyWall(wallVerts, &Surf);
-						}
-					}
-					else
-					{
-						// Only the backsector has sky, just draw a skywall from the back floor
-						wallVerts[3].y = FIXED_TO_FLOAT(worldbottom);
-						wallVerts[2].y = FIXED_TO_FLOAT(worldbottomslope);
-						HWR_DrawSkyWall(wallVerts, &Surf);
-					}
-				}
-				else if ((gl_backsector->floorpic == skyflatnum) && !(gl_sidedef->bottomtexture))
-				{
-					// Only the backsector has sky, just draw a skywall from the back floor if there's no bottomtexture
-					wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
-					wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
-					HWR_DrawSkyWall(wallVerts, &Surf);
 				}
 			}
 		}
@@ -2086,12 +2084,16 @@ static boolean CheckClip(seg_t * seg, sector_t * afrontsector, sector_t * abacks
 {
 	fixed_t frontf1,frontf2, frontc1, frontc2; // front floor/ceiling ends
 	fixed_t backf1, backf2, backc1, backc2; // back floor ceiling ends
+
 	boolean bothceilingssky = false, bothfloorssky = false;
 
-	if (abacksector->ceilingpic == skyflatnum && afrontsector->ceilingpic == skyflatnum)
-		bothceilingssky = true;
-	if (abacksector->floorpic == skyflatnum && afrontsector->floorpic == skyflatnum)
-		bothfloorssky = true;
+	if (udmf)
+	{
+		if (abacksector->ceilingpic == skyflatnum && afrontsector->ceilingpic == skyflatnum)
+			bothceilingssky = true;
+		if (abacksector->floorpic == skyflatnum && afrontsector->floorpic == skyflatnum)
+			bothfloorssky = true;
+	}
 
 	// GZDoom method of sloped line clipping
 
@@ -2252,8 +2254,7 @@ static boolean CheckClip(seg_t * seg, sector_t * afrontsector, sector_t * abacks
 
 		// Window.
 		// We know it's a window when the above isn't true and the back and front sectors don't match
-		if (backc1 != frontc1 || backc2 != frontc2
-			|| backf1 != frontf1 || backf2 != frontf2)
+		if (backc1 != frontc1 || backc2 != frontc2 || backf1 != frontf1 || backf2 != frontf2)
 		{
 			checkforemptylines = false;
 			return false;
@@ -2602,7 +2603,7 @@ static void HWR_AddLine(seg_t * line)
 
 #ifdef NEWCLIP
 	 // PrBoom: Back side, i.e. backface culling - read: endAngle >= startAngle!
-	if (angle2 - angle1 < ANGLE_180)
+	if (angle2 - angle1 < ANGLE_180 || !gl_curline->linedef)
 		return;
 
 	// PrBoom: use REAL clipping math YAYYYYYYY!!!
