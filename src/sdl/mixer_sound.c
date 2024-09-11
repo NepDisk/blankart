@@ -50,7 +50,7 @@ write netcode into the sound code, OKAY?
 #ifdef _MSC_VER
 #pragma warning(disable : 4214 4244)
 #endif
-#include "SDL.h"
+#include <SDL.h>
 #ifdef _MSC_VER
 #pragma warning(default : 4214 4244)
 #endif

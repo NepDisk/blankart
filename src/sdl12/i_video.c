@@ -29,7 +29,7 @@
 
 #ifdef HAVE_SDL
 
-#include "SDL.h"
+#include <SDL.h>
 
 #ifdef _MSC_VER
 #pragma warning(default : 4214 4244)
