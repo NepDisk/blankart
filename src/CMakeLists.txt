@@ -82,6 +82,7 @@ if(${CMAKE_SYSTEM} MATCHES "Windows") ###set on Windows only
 endif()
 
 add_subdirectory(blua)
+add_subdirectory(blan)
 
 if(${SRB2_CONFIG_HAVE_GME})
 	if(${SRB2_CONFIG_USE_INTERNAL_LIBRARIES})

@@ -1479,6 +1479,13 @@ void readlevelheader(MYFILE *f, INT32 num)
 			}
 			else if (fastcmp(word, "GRAVITY"))
 				mapheaderinfo[num-1]->gravity = FLOAT_TO_FIXED(atof(word2));
+			else if (fastcmp(word, "WALLTRANSFER") || fastcmp(word, "WALLRUNNING"))
+			{
+				if (i || word2[0] == 'T' || word2[0] == 'Y')
+					mapheaderinfo[num-1]->use_walltransfer = true;
+				else
+					mapheaderinfo[num-1]->use_walltransfer = false;
+			}
 			else
 				deh_warning("Level header %d: unknown word '%s'", num, word);
 		}

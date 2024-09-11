@@ -409,6 +409,8 @@ typedef struct
 	mapheader_lighting_t lighting;			///< Wall and sprite lighting
 	mapheader_lighting_t lighting_encore;	///< Alternative lighting for Encore mode
 	boolean use_encore_lighting;			///< Whether to use separate Encore lighting
+	
+	boolean use_walltransfer;				///< Whether to use DRRR style wall transfering or not
 
 	// Music stuff.
 	UINT32 musinterfadeout;  ///< Fade out level music on intermission screen in milliseconds

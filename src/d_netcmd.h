@@ -84,6 +84,7 @@ extern consvar_t cv_kartbot;
 extern consvar_t cv_karteliminatelast;
 extern consvar_t cv_kartusepwrlv;
 extern consvar_t cv_kartrings;
+extern consvar_t cv_kartwalltransfer;
 
 extern consvar_t cv_votetime;
 

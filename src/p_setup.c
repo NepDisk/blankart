@@ -395,6 +395,7 @@ static void P_ClearSingleMapHeaderInfo(INT16 i)
 	mapheaderinfo[num]->sstimer = 90;
 	mapheaderinfo[num]->ssspheres = 1;
 	mapheaderinfo[num]->gravity = DEFAULT_GRAVITY;
+	mapheaderinfo[num]->use_walltransfer = false;
 	mapheaderinfo[num]->keywords[0] = '\0';
 	for (i = 0; i < MAXMUSNAMES; i++)
 		mapheaderinfo[num]->musname[i][0] = 0;

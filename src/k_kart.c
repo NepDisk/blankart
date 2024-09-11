@@ -5,6 +5,7 @@
 ///        All of the SRB2kart-unique stuff.
 
 #include "k_kart.h"
+#include "d_netcmd.h"
 #include "d_player.h"
 #include "doomstat.h"
 #include "info.h"
@@ -278,6 +279,8 @@ void K_RegisterKartStuff(void)
 	CV_RegisterVar(&cv_kartrings);
 	
 	CV_RegisterVar(&cv_newspeedometer);
+	
+	CV_RegisterVar(&cv_kartwalltransfer);
 }
 
 //}

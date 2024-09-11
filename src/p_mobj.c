@@ -49,6 +49,9 @@
 #include "k_terrain.h"
 #include "k_collide.h"
 
+// BlanKart
+#include "blan/b_soc.h"
+
 static CV_PossibleValue_t CV_BobSpeed[] = {{0, "MIN"}, {4*FRACUNIT, "MAX"}, {0, NULL}};
 consvar_t cv_movebob = CVAR_INIT ("movebob", "1.0", CV_FLOAT|CV_SAVE, CV_BobSpeed, NULL);
 
@@ -1616,65 +1619,6 @@ void P_XYMovement(mobj_t *mo)
 			}
 		}
 		//}
-		else if (mo->flags & MF_BOUNCE)
-		{
-			P_BounceMove(mo);
-			if (P_MobjWasRemoved(mo))
-				return;
-			xmove = ymove = 0;
-			S_StartSound(mo, mo->info->activesound);
-
-			//{ SRB2kart - Orbinaut, Ballhog
-			if (mo->type == MT_ORBINAUT || mo->type == MT_BALLHOG)
-			{
-				mobj_t *fx;
-				fx = P_SpawnMobj(mo->x, mo->y, mo->z, MT_BUMP);
-				if (mo->eflags & MFE_VERTICALFLIP)
-					fx->eflags |= MFE_VERTICALFLIP;
-				else
-					fx->eflags &= ~MFE_VERTICALFLIP;
-				fx->scale = mo->scale;
-			}
-
-			switch (mo->type)
-			{
-				case MT_ORBINAUT: // Orbinaut speed decreasing
-					if (mo->health > 1)
-					{
-						S_StartSound(mo, mo->info->attacksound);
-						mo->health--;
-						// This prevents an item thrown at a wall from
-						// phasing through you on its return.
-						mo->threshold = 0;
-					}
-					/*FALLTHRU*/
-
-				case MT_JAWZ:
-					if (mo->health == 1)
-					{
-						// This Item Damage
-						S_StartSound(mo, mo->info->deathsound);
-						P_KillMobj(mo, NULL, NULL, DMG_NORMAL);
-
-						P_SetObjectMomZ(mo, 8*FRACUNIT, false);
-						P_InstaThrust(mo, R_PointToAngle2(mo->x, mo->y, mo->x + xmove, mo->y + ymove)+ANGLE_90, 16*FRACUNIT);
-					}
-					break;
-
-				case MT_BUBBLESHIELDTRAP:
-					S_StartSound(mo, sfx_s3k44); // Bubble bounce
-					break;
-
-				case MT_DROPTARGET:
-					// This prevents an item thrown at a wall from
-					// phasing through you on its return.
-					mo->threshold = 0;
-					break;
-
-				default:
-					break;
-			}
-		}
 		else if (mo->flags & MF_MISSILE)
 		{
 			// explode a missile
@@ -1734,44 +1678,129 @@ void P_XYMovement(mobj_t *mo)
 				return;
 			}
 		}
-		if (player || mo->flags & MF_SLIDEME|MF_PUSHABLE)
-		{ // try to slide along it
-#ifdef WALLTRANSFER
-			// Wall transfer part 1.
-			pslope_t *transferslope = NULL;
-			fixed_t transfermomz = 0;
-			if (oldslope && (P_MobjFlip(mo)*(predictedz - mo->z) > 0)) // Only for moving up (relative to gravity), otherwise there's a failed launch when going down slopes and hitting walls
-			{
-				transferslope = ((mo->standingslope) ? mo->standingslope : oldslope);
-				if (((transferslope->zangle < ANGLE_180) ? transferslope->zangle : InvAngle(transferslope->zangle)) >= ANGLE_45) // Prevent some weird stuff going on on shallow slopes.
-					transfermomz = P_GetWallTransferMomZ(mo, transferslope);
-			}
-#endif
-
-
-			P_SlideMove(mo);
-			if (P_MobjWasRemoved(mo))
-				return;
-			xmove = ymove = 0;
-
-#ifdef WALLTRANSFER
-			// Wall transfer part 2.
-			if (transfermomz && transferslope) // Are we "transferring onto the wall" (really just a disguised vertical launch)?
-			{
-				angle_t relation; // Scale transfer momentum based on how head-on it is to the slope.
-				if (mo->momx || mo->momy) // "Guess" the angle of the wall you hit using new momentum
-					relation = transferslope->xydirection - R_PointToAngle2(0, 0, mo->momx, mo->momy);
-				else // Give it for free, I guess.
-					relation = ANGLE_90;
-				transfermomz = FixedMul(transfermomz,
-					abs(FINESINE((relation >> ANGLETOFINESHIFT) & FINEMASK)));
-				if (P_MobjFlip(mo)*(transfermomz - mo->momz) > 2*FRACUNIT) // Do the actual launch!
+		else
+		{
+			boolean walltransfered = false;
+			boolean walltransferok = B_UseWallTransfer();
+			//if (player || mo->flags & MF_SLIDEME|MF_PUSHABLE)
+			if (walltransferok)
+			{ // try to slide along it
+				
+				pslope_t *transferslope = NULL;
+				fixed_t transfermomz = 0;
+				// Wall transfer part 1.
+				if (oldslope && (P_MobjFlip(mo)*(predictedz - mo->z) > 0)) // Only for moving up (relative to gravity), otherwise there's a failed launch when going down slopes and hitting walls
 				{
-					mo->momz = transfermomz;
-					mo->standingslope = NULL;
+					transferslope = ((mo->standingslope) ? mo->standingslope : oldslope);
+					if (((transferslope->zangle < ANGLE_180) ? transferslope->zangle : InvAngle(transferslope->zangle)) >= ANGLE_45) // Prevent some weird stuff going on on shallow slopes.
+						transfermomz = P_GetWallTransferMomZ(mo, transferslope);
+				}
+
+				// Wall transfer part 2.
+				if (transfermomz && transferslope) // Are we "transferring onto the wall" (really just a disguised vertical launch)?
+				{
+					angle_t relation; // Scale transfer momentum based on how head-on it is to the slope.
+
+					P_SlideMove(mo);
+					xmove = ymove = 0;
+					walltransfered = true;
+					if (mo->momx || mo->momy) // "Guess" the angle of the wall you hit using new momentum
+						relation = transferslope->xydirection - R_PointToAngle2(0, 0, mo->momx, mo->momy);
+					else // Give it for free, I guess.
+						relation = ANGLE_90;
+
+					transfermomz = FixedMul(transfermomz,
+						abs(FINESINE((relation >> ANGLETOFINESHIFT) & FINEMASK)));
+
+					if (P_MobjFlip(mo)*(transfermomz - mo->momz) > 2*FRACUNIT) // Do the actual launch!
+					{
+						mo->momz = transfermomz;
+						mo->standingslope = NULL;
+						mo->terrain = NULL;
+						P_SetPitchRoll(mo, ANGLE_90,
+								transferslope->xydirection
+								+ (transferslope->zangle
+									& ANGLE_180));
+					}
 				}
 			}
-#endif
+				
+			if (walltransfered == false)
+			{
+				if (player)
+				{
+					P_BounceMove(mo);
+					if (P_MobjWasRemoved(mo))
+						return;
+					xmove = ymove = 0;
+				}
+				else if (mo->flags & MF_SLIDEME)
+				{
+					P_SlideMove(mo);
+					if (P_MobjWasRemoved(mo))
+						return;
+					xmove = ymove = 0;
+				}
+				else if (mo->flags & MF_BOUNCE)
+				{
+					P_BounceMove(mo);
+					if (P_MobjWasRemoved(mo))
+						return;
+					xmove = ymove = 0;
+					S_StartSound(mo, mo->info->activesound);
+
+					//{ SRB2kart - Orbinaut, Ballhog
+					if (mo->type == MT_ORBINAUT || mo->type == MT_BALLHOG)
+					{
+						mobj_t *fx;
+						fx = P_SpawnMobj(mo->x, mo->y, mo->z, MT_BUMP);
+						if (mo->eflags & MFE_VERTICALFLIP)
+							fx->eflags |= MFE_VERTICALFLIP;
+						else
+							fx->eflags &= ~MFE_VERTICALFLIP;
+						fx->scale = mo->scale;
+					}
+
+					switch (mo->type)
+					{
+						case MT_ORBINAUT: // Orbinaut speed decreasing
+							if (mo->health > 1)
+							{
+								S_StartSound(mo, mo->info->attacksound);
+								mo->health--;
+								// This prevents an item thrown at a wall from
+								// phasing through you on its return.
+								mo->threshold = 0;
+							}
+							/*FALLTHRU*/
+
+						case MT_JAWZ:
+							if (mo->health == 1)
+							{
+								// This Item Damage
+								S_StartSound(mo, mo->info->deathsound);
+								P_KillMobj(mo, NULL, NULL, DMG_NORMAL);
+
+								P_SetObjectMomZ(mo, 8*FRACUNIT, false);
+								P_InstaThrust(mo, R_PointToAngle2(mo->x, mo->y, mo->x + xmove, mo->y + ymove)+ANGLE_90, 16*FRACUNIT);
+							}
+							break;
+
+						case MT_BUBBLESHIELDTRAP:
+							S_StartSound(mo, sfx_s3k44); // Bubble bounce
+							break;
+
+						case MT_DROPTARGET:
+							// This prevents an item thrown at a wall from
+							// phasing through you on its return.
+							mo->threshold = 0;
+							break;
+
+						default:
+							break;
+					}
+				}
+			}
 		}
 		//
 	}
