@@ -56,9 +56,9 @@ write netcode into the sound code, OKAY?
 #endif
 
 #ifdef HAVE_MIXERX
-#include "SDL_mixer_ext.h"
+#include <SDL_mixer_ext.h>
 #else
-#include "SDL_mixer.h"
+#include <SDL_mixer.h>
 #endif
 
 /* This is the version number macro for the current SDL_mixer version: */
