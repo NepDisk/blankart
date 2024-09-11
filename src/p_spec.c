@@ -2762,7 +2762,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			// console player only unless TMM_ALLPLAYERS is set
 			if ((args[0] & TMM_ALLPLAYERS) || (mo && mo->player && P_IsLocalPlayer(mo->player)) || titlemapinaction)
 			{
-				boolean musicsame = (!line->stringargs[0] || !line->stringargs[0][0] || !strnicmp(line->stringargs[0], S_MusicName(), 7));
+				boolean musicsame = (!stringargs[0] || !stringargs[0][0] || !strnicmp(stringargs[0], S_MusicName(), 7));
 				UINT16 tracknum = (UINT16)max(args[6], 0);
 				INT32 position = (INT32)max(args[1], 0);
 				UINT32 prefadems = (UINT32)max(args[2], 0);
@@ -2801,10 +2801,10 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 				// Change the music and apply position/fade operations
 				else
 				{
-					if (!line->stringargs[0])
+					if (!stringargs[0])
 						break;
 
-					strncpy(mapmusname, line->stringargs[0], 7);
+					strncpy(mapmusname, stringargs[0], 7);
 					mapmusname[6] = 0;
 
 					mapmusflags = tracknum & MUSIC_TRACKMASK;
@@ -2839,16 +2839,16 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			break;
 
 		case 414: // Play SFX
-			P_PlaySFX(line->stringargs[0] ? get_number(line->stringargs[0]) : sfx_None, mo, callsec, args[2], args[0], args[1]);
+			P_PlaySFX(stringargs[0] ? get_number(stringargs[0]) : sfx_None, mo, callsec, args[2], args[0], args[1]);
 			break;
 
 		case 415: // Run a script
 			if (cv_runscripts.value)
 			{
-				lumpnum_t lumpnum = W_CheckNumForName(line->stringargs[0]);
+				lumpnum_t lumpnum = W_CheckNumForName(stringargs[0]);
 
 				if (lumpnum == LUMPERROR || W_LumpLength(lumpnum) == 0)
-					CONS_Debug(DBG_SETUP, "Line type 415 Executor: script lump %s not found/not valid.\n", line->stringargs[0]);
+					CONS_Debug(DBG_SETUP, "Line type 415 Executor: script lump %s not found/not valid.\n", stringargs[0]);
 				else
 					COM_BufInsertText(W_CacheLumpNum(lumpnum, PU_CACHE));
 			}
@@ -2922,7 +2922,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 
 		case 423: // Change Sky
 			if ((mo && mo->player && P_IsLocalPlayer(mo->player)) || args[1])
-				P_SetupLevelSky(line->stringargs[0], args[1]);
+				P_SetupLevelSky(stringargs[0], args[1]);
 			break;
 
 		case 424: // Change Weather
@@ -2938,7 +2938,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 		case 425: // Calls P_SetMobjState on calling mobj
 			if (mo && !mo->player)
 			{
-				statenum_t state = line->stringargs[0] ? get_number(line->stringargs[0]) : S_NULL;
+				statenum_t state = stringargs[0] ? get_number(stringargs[0]) : S_NULL;
 				if (state >= 0 && state < NUMSTATES)
 					P_SetMobjState(mo, state);
 			}
@@ -3187,7 +3187,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 
 		case 442: // Calls P_SetMobjState on mobjs of a given type in the tagged sectors
 		{
-			const mobjtype_t type = line->stringargs[0] ? get_number(line->stringargs[0]) : MT_NULL;
+			const mobjtype_t type = stringargs[0] ? get_number(stringargs[0]) : MT_NULL;
 			statenum_t state = NUMSTATES;
 			mobj_t *thing;
 
@@ -3196,7 +3196,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 
 			if (!args[1])
 			{
-				state = line->stringargs[1] ? get_number(line->stringargs[1]) : S_NULL;
+				state = stringargs[1] ? get_number(stringargs[1]) : S_NULL;
 
 				if (state < 0 || state >= NUMSTATES)
 					break;
@@ -3224,7 +3224,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 		}
 
 		case 443: // Calls a named Lua function
-			if (line->stringargs[0])
+			if (stringargs[0])
 				LUA_HookLinedefExecute(line, mo, callsec);
 			else
 				CONS_Alert(CONS_WARNING, "Linedef %s is missing the hook name of the Lua function to call! (This should be given in stringarg0)\n", sizeu1(line-lines));
@@ -3841,8 +3841,8 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 					F_EndTextPrompt(false, false);
 				else
 				{
-					if (callbynamedtag && line->stringargs[0] && line->stringargs[0][0])
-						F_GetPromptPageByNamedTag(line->stringargs[0], &promptnum, &pagenum);
+					if (callbynamedtag && stringargs[0] && stringargs[0][0])
+						F_GetPromptPageByNamedTag(stringargs[0], &promptnum, &pagenum);
 					F_StartTextPrompt(promptnum, pagenum, mo, runpostexec ? postexectag : 0, blockcontrols, freezerealtime);
 				}
 			}
@@ -3886,7 +3886,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 
 		case 461: // Spawns an object on the map based on texture offsets
 			{
-				const mobjtype_t type = line->stringargs[0] ? get_number(line->stringargs[0]) : MT_NULL;
+				const mobjtype_t type = stringargs[0] ? get_number(stringargs[0]) : MT_NULL;
 				mobj_t *mobj;
 
 				fixed_t x, y, z;
@@ -3934,7 +3934,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			{
 				if (mo)
 				{
-					INT32 color = line->stringargs[0] ? get_number(line->stringargs[0]) : SKINCOLOR_NONE;
+					INT32 color = stringargs[0] ? get_number(stringargs[0]) : SKINCOLOR_NONE;
 
 					if (color < 0 || color >= numskincolors)
 						return false;
@@ -4081,10 +4081,10 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			if (!udmf)
 				break;
 
-			if (!line->stringargs[0])
+			if (!stringargs[0])
 				break;
 
-			gravityvalue = FloatToFixed(atof(line->stringargs[0]));
+			gravityvalue = FloatToFixed(atof(stringargs[0]));
 
 			TAG_ITER_SECTORS(args[0], secnum)
 			{
