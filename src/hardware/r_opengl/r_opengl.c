@@ -624,7 +624,7 @@ typedef struct gl_shaderstate_s
 static gl_shaderstate_t gl_shaderstate;
 
 // Shader info
-static INT32 shader_leveltime = 0;
+static float shader_leveltime = 0;
 static float shader_light_x = 0.0f;
 static float shader_light_y = 0.0f;
 static float shader_light_z = 0.0f;
@@ -842,8 +842,8 @@ static GLRGBAFloat shader_defaultcolor = {1.0f, 1.0f, 1.0f, 1.0f};
 	GLSL_DOOM_COLORMAP \
 	GLSL_DOOM_LIGHT_EQUATION \
 	"void main(void) {\n" \
-		"float z = (gl_FragCoord.z / gl_FragCoord.w) / 2.0;\n" \
-		"float a = -pi * (z * freq) + (leveltime * speed);\n" \
+		"float water_z = (gl_FragCoord.z / gl_FragCoord.w) / 2.0;\n" \
+		"float a = -pi * (water_z * freq) + (leveltime * speed);\n" \
 		"float sdistort = sin(a) * amp;\n" \
 		"float cdistort = cos(a) * amp;\n" \
 		"vec4 texel = texture2D(tex, vec2(gl_TexCoord[0].s - sdistort, gl_TexCoord[0].t - cdistort));\n" \
@@ -2198,7 +2198,7 @@ static void Shader_SetUniforms(FSurfaceInfo *Surface, GLRGBAFloat *poly, GLRGBAF
 			UNIFORM_1(shader->uniforms[gluniform_light_backlight], 0, pglUniform1f);
 		}
 
-		UNIFORM_1(shader->uniforms[gluniform_leveltime], ((float)shader_leveltime) / TICRATE, pglUniform1f);
+		UNIFORM_1(shader->uniforms[gluniform_leveltime], shader_leveltime, pglUniform1f);
 
 		#undef UNIFORM_1
 		#undef UNIFORM_2
