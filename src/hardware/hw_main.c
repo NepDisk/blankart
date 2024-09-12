@@ -3009,122 +3009,32 @@ static void HWR_Subsector(size_t num)
 // Renders all subsectors below a given node,
 //  traversing subtree recursively.
 // Just call with BSP root.
-
-#ifdef coolhack
-//t;b;l;r
-static fixed_t hackbbox[4];
-//BOXTOP,
-//BOXBOTTOM,
-//BOXLEFT,
-//BOXRIGHT
-static boolean HWR_CheckHackBBox(fixed_t *bb)
-{
-	if (bb[BOXTOP] < hackbbox[BOXBOTTOM]) //y up
-		return false;
-	if (bb[BOXBOTTOM] > hackbbox[BOXTOP])
-		return false;
-	if (bb[BOXLEFT] > hackbbox[BOXRIGHT])
-		return false;
-	if (bb[BOXRIGHT] < hackbbox[BOXLEFT])
-		return false;
-	return true;
-}
-#endif
-
-// BP: big hack for a test in lighning ref : 1249753487AB
-fixed_t *hwbbox;
-
 static void HWR_RenderBSPNode(INT32 bspnum)
 {
-	/*//GZDoom code
-	if(bspnum == -1)
-	{
-		HWR_Subsector(subsectors);
-		return;
-	}
-	while(!((size_t)bspnum&(~NF_SUBSECTOR))) // Keep going until found a subsector
-	{
-		node_t *bsp = &nodes[bspnum];
-
-		// Decide which side the view point is on
-		INT32 side = R_PointOnSide(dup_viewx, dup_viewy, bsp);
-
-		// Recursively divide front space (toward the viewer)
-		HWR_RenderBSPNode(bsp->children[side]);
-
-		// Possibly divide back space (away from viewer)
-		side ^= 1;
-
-		if (!HWR_CheckBBox(bsp->bbox[side]))
-			return;
-
-		bspnum = bsp->children[side];
-	}
-
-	HWR_Subsector(bspnum-1);
-*/
-	node_t *bsp = &nodes[bspnum];
-
-	// Decide which side the view point is on
+	const node_t *bsp;
 	INT32 side;
-
 	ps_numbspcalls++;
 
-	// Found a subsector?
-	if (bspnum & NF_SUBSECTOR)
+	while (!(bspnum & NF_SUBSECTOR))  // Found a subsector?
 	{
-		if (bspnum == -1)
-		{
-			//*(gl_drawsubsector_p++) = 0;
-			HWR_Subsector(0);
-		}
-		else
-		{
-			//*(gl_drawsubsector_p++) = bspnum&(~NF_SUBSECTOR);
-			HWR_Subsector(bspnum&(~NF_SUBSECTOR));
-		}
-		return;
+		bsp = &nodes[bspnum];
+
+		// Decide which side the view point is on.
+		side = R_PointOnSide(viewx, viewy, bsp);
+
+		// Recursively divide front space.
+		HWR_RenderBSPNode(bsp->children[side]);
+
+        // Possibly divide back space
+        if (!(HWR_CheckBBox(bsp->bbox[side^1])))
+            return;
+
+		bspnum = bsp->children[side^1];
 	}
 
-	// Decide which side the view point is on.
-	side = R_PointOnSide(dup_viewx, dup_viewy, bsp);
-
-	// BP: big hack for a test in lighning ref : 1249753487AB
-	hwbbox = bsp->bbox[side];
-
-	// Recursively divide front space.
-	HWR_RenderBSPNode(bsp->children[side]);
-
-	// Possibly divide back space.
-	if (HWR_CheckBBox(bsp->bbox[side^1]))
-	{
-		// BP: big hack for a test in lighning ref : 1249753487AB
-		hwbbox = bsp->bbox[side^1];
-		HWR_RenderBSPNode(bsp->children[side^1]);
-	}
+	// e6y: support for extended nodes
+	HWR_Subsector(bspnum == -1 ? 0 : bspnum & ~NF_SUBSECTOR);
 }
-
-/*
-//
-// Clear 'stack' of subsectors to draw
-//
-static void HWR_ClearDrawSubsectors(void)
-{
-	gl_drawsubsector_p = gl_drawsubsectors;
-}
-
-//
-// Draw subsectors pushed on the drawsubsectors 'stack', back to front
-//
-static void HWR_RenderSubsectors(void)
-{
-	while (gl_drawsubsector_p > gl_drawsubsectors)
-	{
-		HWR_RenderBSPNode(
-		lastsubsec->nextsubsec = bspnum & (~NF_SUBSECTOR);
-	}
-}
-*/
 
 // ==========================================================================
 //                                                              FROM R_MAIN.C
