@@ -9416,6 +9416,7 @@ static consvar_t *setupm_cvskin;
 static consvar_t *setupm_cvcolor;
 static consvar_t *setupm_cvname;
 static consvar_t *setupm_cvfollower;
+static consvar_t *setupm_cvfollowercolor;
 static INT32      setupm_fakeskin;
 static menucolor_t *setupm_fakecolor;
 static INT32	  setupm_fakefollower;	// -1 is for none, our followers start at 0
@@ -9713,19 +9714,17 @@ static void M_DrawSetupMultiPlayerMenu(void)
 		if (sprframe->flip & 2) // Only for first sprite
 			flags |= V_FLIP; // This sprite is left/right flipped!
 
-		// @TODO: Reminder that followers on the menu right now do NOT support the 'followercolor' command, considering this whole menu is getting remade anyway, I see no point in incorporating it in right now.
-
 		// draw follower sprite
 		if (setupm_fakecolor->color) // inverse should never happen
 		{
-
 			// Fake the follower's in game appearance by now also applying some of its variables! coolio, eh?
 			follower_t fl = followers[setupm_fakefollower];	// shortcut for our sanity
 
 			// smooth floating, totally not stolen from rocket sneakers.
 			fixed_t sine = FixedMul(fl.bobamp, FINESINE(((FixedMul(4 * M_TAU_FIXED, fl.bobspeed) * followertimer)>>ANGLETOFINESHIFT) & FINEMASK));
 
-			UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, setupm_fakecolor->color, 0); // why does GTC_MENUCACHE not work here...?
+			UINT16 color = K_GetEffectiveFollowerColor(setupm_cvfollowercolor->value, &fl, setupm_fakecolor->color, &skins[setupm_fakeskin]);
+			UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, color, 0); // why does GTC_MENUCACHE not work here...?
 			V_DrawFixedPatch((mx+65)*FRACUNIT, ((my+131)*FRACUNIT)-fl.zoffs+sine, fl.scale, flags, patch, colormap);
 			Z_Free(colormap);
 		}
@@ -9930,6 +9929,7 @@ static void M_SetupMultiPlayer(INT32 choice)
 	setupm_cvcolor = &cv_playercolor[0];
 	setupm_cvname = &cv_playername[0];
 	setupm_cvfollower = &cv_follower[0];
+	setupm_cvfollowercolor = &cv_followercolor[0];
 
 	setupm_fakefollower = setupm_cvfollower->value;
 
@@ -9973,6 +9973,7 @@ static void M_SetupMultiPlayer2(INT32 choice)
 	setupm_cvcolor = &cv_playercolor[1];
 	setupm_cvname = &cv_playername[1];
 	setupm_cvfollower = &cv_follower[1];
+	setupm_cvfollowercolor = &cv_followercolor[1];
 
 	setupm_fakefollower = setupm_cvfollower->value;
 
@@ -10016,6 +10017,7 @@ static void M_SetupMultiPlayer3(INT32 choice)
 	setupm_cvcolor = &cv_playercolor[2];
 	setupm_cvname = &cv_playername[2];
 	setupm_cvfollower = &cv_follower[2];
+	setupm_cvfollowercolor = &cv_followercolor[2];
 
 	setupm_fakefollower = setupm_cvfollower->value;
 
@@ -10059,6 +10061,7 @@ static void M_SetupMultiPlayer4(INT32 choice)
 	setupm_cvcolor = &cv_playercolor[3];
 	setupm_cvname = &cv_playername[3];
 	setupm_cvfollower = &cv_follower[3];
+	setupm_cvfollowercolor = &cv_followercolor[3];
 
 	setupm_fakefollower = setupm_cvfollower->value;
 
