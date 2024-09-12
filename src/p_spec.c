@@ -3007,11 +3007,11 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			else
 			{
 				if (args[1] == TMP_FLOOR)
-					EV_DoFloorOLD(args[0], line, crushFloorOnce);
+					EV_DoFloor(args[0], line, crushFloorOnce);
 				else if (args[1] == TMP_CEILING)
-					EV_DoCrushOLD(args[0], line, crushCeilOnce);
+					EV_DoCrush(args[0], line, crushCeilOnce);
 				else
-					EV_DoCrushOLD(args[0], line, crushBothOnce);
+					EV_DoCrush(args[0], line, crushBothOnce);
 				break;
 			}
 

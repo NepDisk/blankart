@@ -1596,6 +1596,13 @@ void EV_DoFloor(mtag_t tag, line_t *line, floor_e floortype)
 {
 	// This function is deprecated.
 	// Use any of the following functions directly, instead.
+	
+	if (!udmf)
+	{
+		EV_DoFloorOLD(tag, line, floortype);
+		return;
+	}
+	
 
 	switch (floortype)
 	{

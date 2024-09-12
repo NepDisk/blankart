@@ -243,6 +243,11 @@ INT32 EV_DoCeiling(mtag_t tag, line_t *line, ceiling_e type)
 {
 	// This function is deprecated.
 	// Use any of the following functions directly, instead.
+	
+	if (!udmf)
+	{
+		return EV_DoCeilingOLD(tag,line,type);
+	}
 
 	switch (type)
 	{
@@ -739,6 +744,11 @@ INT32 EV_DoCrush(mtag_t tag, line_t *line, ceiling_e type)
 	// Use any of the following functions directly, instead.
 
 	fixed_t speed = line->args[2] << (FRACBITS - 2);
+	
+	if (!udmf)
+	{
+		return EV_DoCrushOLD(tag,line,type);
+	}
 
 	switch (type)
 	{
