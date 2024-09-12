@@ -3293,48 +3293,25 @@ boolean P_MoveChaseCamera(player_t *player, camera_t *thiscam, boolean resetcall
 	}
 
 	// sets ideal cam pos
+	dist = camdist;
+
+	/* player->speed subtracts conveyors, janks up the camera */
+	if (player->loop.radius)
 	{
-		const fixed_t speedthreshold = 48*mapobjectscale;
-		const fixed_t olddist = P_AproxDistance(mo->x - thiscam->x, mo->y - thiscam->y);
-
-		fixed_t lag, distoffset;
-
-		dist = camdist;
-
-		if (player->karthud[khud_boostcam])
-		{
-			dist -= FixedMul(11*dist/16, player->karthud[khud_boostcam]);
-		}
-
-		if (player->loop.radius)
-		{
-			speed = player->speed;
-		}
-		else
-		{
-			speed = P_AproxDistance(P_AproxDistance(mo->momx, mo->momy), mo->momz / 16);
-		}
-
-		lag = FRACUNIT - ((FixedDiv(speed, speedthreshold) - FRACUNIT) * 2);
-
-		if (lag > FRACUNIT)
-		{
-			lag = FRACUNIT;
-		}
-
-		if (lag < camspeed)
-		{
-			lag = camspeed;
-		}
-
-		distoffset = dist - olddist;
-		dist = olddist + FixedMul(distoffset, lag);
-
-		if (dist < 0)
-		{
-			dist = 0;
-		}
+		speed = player->speed;
 	}
+	else
+	{
+		speed = R_PointToDist2(0, 0, player->mo->momx, player->mo->momy);
+	}
+	
+	
+	if (speed > K_GetKartSpeed(player, false, true))
+		dist += 4*(speed - K_GetKartSpeed(player, false, true));
+	dist += abs(thiscam->momz)/4;
+
+	if (player->karthud[khud_boostcam])
+		dist -= FixedMul(11*dist/16, player->karthud[khud_boostcam]);
 
 	if (mo->standingslope)
 	{
@@ -3625,9 +3602,7 @@ boolean P_MoveChaseCamera(player_t *player, camera_t *thiscam, boolean resetcall
 		thiscam->momz = 0;
 	}
 	else if (player->exiting || timeover == 2)
-	{
 		thiscam->momx = thiscam->momy = thiscam->momz = 0;
-	}
 	else if (leveltime < introtime)
 	{
 		thiscam->momx = FixedMul(x - thiscam->x, camspeed);
