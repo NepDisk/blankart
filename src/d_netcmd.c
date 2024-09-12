@@ -870,8 +870,8 @@ void D_RegisterClientCommands(void)
 	Followercolor_cons_t[0].value = FOLLOWERCOLOR_DEFAULT;
 	Followercolor_cons_t[0].strvalue = "Default"; // Add "Default" option, which will use the default color of the selected follower
 
-	Color_cons_t[MAXSKINCOLORS].value = Followercolor_cons_t[MAXSKINCOLORS+3].value = 0;
-	Color_cons_t[MAXSKINCOLORS].strvalue = Followercolor_cons_t[MAXSKINCOLORS+3].strvalue = NULL;
+	Color_cons_t[MAXSKINCOLORS].value = Followercolor_cons_t[MAXSKINCOLORS+2].value = 0;
+	Color_cons_t[MAXSKINCOLORS].strvalue = Followercolor_cons_t[MAXSKINCOLORS+2].strvalue = NULL;
 
 	// Set default player names
 	// Monster Iestyn (12/08/19): not sure where else I could have actually put this, but oh well
