@@ -1132,112 +1132,111 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 		SLOPEPARAMS(gl_backsector->c_slope, worldhigh, worldhighslope, gl_backsector->ceilingheight)
 		SLOPEPARAMS(gl_backsector->f_slope, worldlow,  worldlowslope,  gl_backsector->floorheight)
 
+		if (!udmf)
+		{
+			if (!gl_curline->polyseg) // Don't do it for polyobjects
+			{
+				// Sky Ceilings
+				wallVerts[3].y = wallVerts[2].y = FIXED_TO_FLOAT(INT32_MAX);
+
+				if (gl_frontsector->ceilingpic == skyflatnum)
+				{
+					if (gl_backsector->ceilingpic == skyflatnum)
+					{
+						// Both front and back sectors are sky, needs skywall from the frontsector's ceiling, but only if the
+						// backsector is lower
+						if ((worldhigh <= worldtop && worldhighslope <= worldtopslope)// Assuming ESLOPE is always on with my changes
+							&& (worldhigh != worldtop || worldhighslope != worldtopslope))
+							// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
+						{
+							wallVerts[0].y = FIXED_TO_FLOAT(worldhigh);
+							wallVerts[1].y = FIXED_TO_FLOAT(worldhighslope);
+							HWR_DrawSkyWall(wallVerts, &Surf);
+						}
+					}
+					else
+					{
+						// Only the frontsector is sky, just draw a skywall from the front ceiling
+						wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
+						wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
+						HWR_DrawSkyWall(wallVerts, &Surf);
+					}
+				}
+				else if (gl_backsector->ceilingpic == skyflatnum)
+				{
+					// Only the backsector is sky, just draw a skywall from the front ceiling
+					wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
+					wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
+					HWR_DrawSkyWall(wallVerts, &Surf);
+				}
+
+				// Sky Floors
+				wallVerts[0].y = wallVerts[1].y = FIXED_TO_FLOAT(INT32_MIN);
+
+				if (gl_frontsector->floorpic == skyflatnum)
+				{
+					if (gl_backsector->floorpic == skyflatnum)
+					{
+						// Both front and back sectors are sky, needs skywall from the backsector's floor, but only if the
+						// it's higher, also needs to check for bottomtexture as the floors don't usually move down
+						// when both sides are sky floors
+						if ((worldlow >= worldbottom && worldlowslope >= worldbottomslope)
+							&& (worldlow != worldbottom || worldlowslope != worldbottomslope)
+							// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
+							&& !(gl_sidedef->bottomtexture))
+						{
+							wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
+							wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
+							HWR_DrawSkyWall(wallVerts, &Surf);
+						}
+					}
+					else
+					{
+						// Only the backsector has sky, just draw a skywall from the back floor
+						wallVerts[3].y = FIXED_TO_FLOAT(worldbottom);
+						wallVerts[2].y = FIXED_TO_FLOAT(worldbottomslope);
+						HWR_DrawSkyWall(wallVerts, &Surf);
+					}
+				}
+				else if ((gl_backsector->floorpic == skyflatnum) && !(gl_sidedef->bottomtexture))
+				{
+					// Only the backsector has sky, just draw a skywall from the back floor if there's no bottomtexture
+					wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
+					wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
+					HWR_DrawSkyWall(wallVerts, &Surf);
+				}
+			}
+		}
+
+		// hack to allow height changes in outdoor areas
+		// This is what gets rid of the upper textures if there should be sky
+		if (gl_frontsector->ceilingpic == skyflatnum
+			&& gl_backsector->ceilingpic  == skyflatnum)
+		{
+			if (udmf)
+				bothceilingssky = true;
+			else
+			{
+				worldtop = worldhigh;
+				worldtopslope = worldhighslope;
+			}
+		}
+
 		if (udmf)
 		{
-			// hack to allow height changes in outdoor areas
-			// This is what gets rid of the upper textures if there should be sky
-			if (gl_frontsector->ceilingpic == skyflatnum
-				&& gl_backsector->ceilingpic  == skyflatnum)
-			{
-				bothceilingssky = true;
-			}
-
 			// likewise, but for floors and upper textures
 			if (gl_frontsector->floorpic == skyflatnum
 				&& gl_backsector->floorpic == skyflatnum)
 			{
 				bothfloorssky = true;
 			}
-
-			if (!bothceilingssky)
-				gl_toptexture = R_GetTextureNum(gl_sidedef->toptexture);
-			if (!bothfloorssky)
-				gl_bottomtexture = R_GetTextureNum(gl_sidedef->bottomtexture);
 		}
-		else
-		{
-			// Sky Ceilings
-			wallVerts[3].y = wallVerts[2].y = FIXED_TO_FLOAT(INT32_MAX);
 
-			if (gl_frontsector->ceilingpic == skyflatnum)
-			{
-				if (gl_backsector->ceilingpic == skyflatnum)
-				{
-					// Both front and back sectors are sky, needs skywall from the frontsector's ceiling, but only if the
-					// backsector is lower
-					if ((worldhigh <= worldtop && worldhighslope <= worldtopslope)// Assuming ESLOPE is always on with my changes
-						&& (worldhigh != worldtop || worldhighslope != worldtopslope))
-						// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
-					{
-						wallVerts[0].y = FIXED_TO_FLOAT(worldhigh);
-						wallVerts[1].y = FIXED_TO_FLOAT(worldhighslope);
-						HWR_DrawSkyWall(wallVerts, &Surf);
-					}
-				}
-				else
-				{
-					// Only the frontsector is sky, just draw a skywall from the front ceiling
-					wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
-					wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
-					HWR_DrawSkyWall(wallVerts, &Surf);
-				}
-			}
-			else if (gl_backsector->ceilingpic == skyflatnum)
-			{
-				// Only the backsector is sky, just draw a skywall from the front ceiling
-				wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
-				wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
-				HWR_DrawSkyWall(wallVerts, &Surf);
-			}
-
-			// Sky Floors
-			wallVerts[0].y = wallVerts[1].y = FIXED_TO_FLOAT(INT32_MIN);
-
-			if (gl_frontsector->floorpic == skyflatnum)
-			{
-				if (gl_backsector->floorpic == skyflatnum)
-				{
-					// Both front and back sectors are sky, needs skywall from the backsector's floor, but only if the
-					// it's higher, also needs to check for bottomtexture as the floors don't usually move down
-					// when both sides are sky floors
-					if ((worldlow >= worldbottom && worldlowslope >= worldbottomslope)
-						&& (worldlow != worldbottom || worldlowslope != worldbottomslope)
-						// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
-						&& !(gl_sidedef->bottomtexture))
-					{
-						wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
-						wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
-						HWR_DrawSkyWall(wallVerts, &Surf);
-					}
-				}
-				else
-				{
-					// Only the backsector has sky, just draw a skywall from the back floor
-					wallVerts[3].y = FIXED_TO_FLOAT(worldbottom);
-					wallVerts[2].y = FIXED_TO_FLOAT(worldbottomslope);
-					HWR_DrawSkyWall(wallVerts, &Surf);
-				}
-			}
-			else if ((gl_backsector->floorpic == skyflatnum) && !(gl_sidedef->bottomtexture))
-			{
-				// Only the backsector has sky, just draw a skywall from the back floor if there's no bottomtexture
-				wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
-				wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
-				HWR_DrawSkyWall(wallVerts, &Surf);
-			}
-
-			// hack to allow height changes in outdoor areas
-			// This is what gets rid of the upper textures if there should be sky
-			if (gl_frontsector->ceilingpic == skyflatnum
-				&& gl_backsector->ceilingpic  == skyflatnum)
-			{
-				worldtop = worldhigh;
-				worldtopslope = worldhighslope;
-			}
-
+		// this is always false in binary anyways
+		if (!bothceilingssky)
 			gl_toptexture = R_GetTextureNum(gl_sidedef->toptexture);
+		if (!bothfloorssky)
 			gl_bottomtexture = R_GetTextureNum(gl_sidedef->bottomtexture);
-		}
 
 		// check TOP TEXTURE
 		if ((worldhighslope < worldtopslope || worldhigh < worldtop) && gl_toptexture)
