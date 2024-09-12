@@ -2979,28 +2979,41 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			break;
 
 		case 429: // Crush planes once
-			if (args[1] == TMP_FLOOR)
+			if (udmf)
 			{
-				EV_DoCrushFloorOnce(
-					args[0],
-					args[2] << (FRACBITS - 2)
-				);
-			}
-			else if (args[1] == TMP_CEILING)
-			{
-				EV_DoCrushCeilingOnce(
-					args[0],
-					args[2] << (FRACBITS - 2)
-				);
+				if (args[1] == TMP_FLOOR)
+				{
+					EV_DoCrushFloorOnce(
+						args[0],
+						args[2] << (FRACBITS - 2)
+					);
+				}
+				else if (args[1] == TMP_CEILING)
+				{
+					EV_DoCrushCeilingOnce(
+						args[0],
+						args[2] << (FRACBITS - 2)
+					);
+				}
+				else
+				{
+					EV_DoCrushBothOnce(
+						args[0],
+						args[2] << (FRACBITS - 2)
+					);
+				}
+				break;
 			}
 			else
 			{
-				EV_DoCrushBothOnce(
-					args[0],
-					args[2] << (FRACBITS - 2)
-				);
+				if (args[1] == TMP_FLOOR)
+					EV_DoFloorOLD(args[0], line, crushFloorOnce);
+				else if (args[1] == TMP_CEILING)
+					EV_DoCrushOLD(args[0], line, crushCeilOnce);
+				else
+					EV_DoCrushOLD(args[0], line, crushBothOnce);
+				break;
 			}
-			break;
 
 		case 433: // Flip/flop gravity. Works on pushables, too!
 			if (!mo)

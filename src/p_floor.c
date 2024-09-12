@@ -180,8 +180,20 @@ void T_MoveFloor(floormove_t *movefloor)
 	if (movefloor->type == bounceFloor)
 	{
 		const fixed_t origspeed = FixedDiv(movefloor->origspeed,(ELEVATORSPEED/2));
-		const fixed_t fs = abs(movefloor->sector->floorheight - movefloor->crushHeight);
-		const fixed_t bs = abs(movefloor->sector->floorheight - movefloor->returnHeight);
+		fixed_t fs;
+		fixed_t bs;
+		
+		if (udmf)
+		{
+			fs = abs(movefloor->sector->floorheight - movefloor->crushHeight);
+			bs = abs(movefloor->sector->floorheight - movefloor->returnHeight);
+		}
+		else
+		{
+			fs = abs(movefloor->sector->floorheight - lines[movefloor->sourceline].frontsector->floorheight);
+			bs = abs(movefloor->sector->floorheight - lines[movefloor->sourceline].backsector->floorheight);
+		}
+		
 		if (fs < bs)
 			movefloor->speed = FixedDiv(fs,25*FRACUNIT) + FRACUNIT/4;
 		else
@@ -205,16 +217,33 @@ void T_MoveFloor(floormove_t *movefloor)
 				break;
 			case bounceFloor: // Graue 03-12-2004
 			case bounceFloorCrush: // Graue 03-27-2004
-				if (movefloor->floordestheight == movefloor->crushHeight)
+				if (udmf)
 				{
-					movefloor->floordestheight = movefloor->returnHeight;
-					movefloor->origspeed = movefloor->returnSpeed; // return trip, use args[3]
+					if (movefloor->floordestheight == movefloor->crushHeight)
+					{
+						movefloor->floordestheight = movefloor->returnHeight;
+						movefloor->origspeed = movefloor->returnSpeed; // return trip, use args[3]
+					}
+					else
+					{
+						movefloor->floordestheight = movefloor->crushHeight;
+						movefloor->origspeed = movefloor->crushSpeed; // forward again, use args[2]
+					}
 				}
 				else
 				{
-					movefloor->floordestheight = movefloor->crushHeight;
-					movefloor->origspeed = movefloor->crushSpeed; // forward again, use args[2]
+					if (movefloor->floordestheight == lines[movefloor->sourceline].frontsector->floorheight)
+					{
+						movefloor->floordestheight = lines[movefloor->sourceline].backsector->floorheight;
+						movefloor->origspeed = lines[movefloor->sourceline].args[3] << (FRACBITS - 2); // return trip, use args[3]
+					}
+					else
+					{
+						movefloor->floordestheight = lines[movefloor->sourceline].frontsector->floorheight;
+						movefloor->origspeed = lines[movefloor->sourceline].args[2] << (FRACBITS - 2); // forward again, use args[2]
+					}
 				}
+				
 				if (movefloor->type == bounceFloorCrush)
 					movefloor->speed = movefloor->origspeed;
 				movefloor->direction = (movefloor->floordestheight < movefloor->sector->floorheight) ? -1 : 1;
@@ -224,9 +253,16 @@ void T_MoveFloor(floormove_t *movefloor)
 			case crushFloorOnce:
 				if (movefloor->direction == 1)
 				{
-					movefloor->floordestheight = movefloor->crushHeight;
+					if (udmf)
+						movefloor->floordestheight = movefloor->crushHeight;
+					else
+						movefloor->floordestheight = lines[movefloor->sourceline].frontsector->floorheight;
+					
 					movefloor->direction = -1;
-					movefloor->speed = movefloor->returnSpeed;
+					if (udmf)
+						movefloor->speed = movefloor->returnSpeed;
+					else
+						movefloor->speed = lines[movefloor->sourceline].args[3] << (FRACBITS - 2);
 					movefloor->sector->soundorg.z = movefloor->sector->floorheight;
 					S_StartSound(&movefloor->sector->soundorg, sfx_pstop);
 					remove = false;
@@ -1621,6 +1657,135 @@ void EV_DoFloor(mtag_t tag, line_t *line, floor_e floortype)
 				line->args[2] << (FRACBITS - 2)
 			);
 			break;
+	}
+}
+
+// This is here for backwards compatibility in Binary kart maps. Do not use for UDMF!
+
+void EV_DoFloorOLD(mtag_t tag, line_t *line, floor_e floortype)
+{
+	INT32 firstone = 1;
+	INT32 secnum = -1;
+	sector_t *sec;
+	floormove_t *dofloor;
+
+	TAG_ITER_SECTORS(tag, secnum)
+	{
+		sec = &sectors[secnum];
+
+		if (sec->floordata) // if there's already a thinker on this floor,
+			continue; // then don't add another one
+
+		// new floor thinker
+		dofloor = Z_Calloc(sizeof (*dofloor), PU_LEVSPEC, NULL);
+		P_AddThinker(THINK_MAIN, &dofloor->thinker);
+
+		// make sure another floor thinker won't get started over this one
+		sec->floordata = dofloor;
+
+		// set up some generic aspects of the floormove_t
+		dofloor->thinker.function.acp1 = (actionf_p1)T_MoveFloor;
+		dofloor->type = floortype;
+		dofloor->crush = false; // default: types that crush will change this
+		dofloor->sector = sec;
+		dofloor->sourceline = (INT32)(line - lines);
+
+		switch (floortype)
+		{
+			// Used to open the top of an Egg Capsule.
+			case raiseFloorToNearestFast:
+				dofloor->direction = -1; // down
+				dofloor->speed = FLOORSPEED*4; // 4 fracunits per tic
+				dofloor->floordestheight = P_FindNextHighestFloor(sec, sec->floorheight);
+				break;
+
+			// Instantly lower floor to surrounding sectors.
+			// Used as a hack in the binary map format to allow thing heights above 4096.
+			case instantLower:
+				dofloor->direction = -1; // down
+				dofloor->speed = INT32_MAX/2; // "instant" means "takes one tic"
+				dofloor->floordestheight = P_FindLowestFloorSurrounding(sec);
+				break;
+
+			case instantMoveFloorByFrontSector:
+				dofloor->speed = INT32_MAX/2; // as above, "instant" is one tic
+				dofloor->floordestheight = line->frontsector->floorheight;
+
+				if (dofloor->floordestheight >= sec->floorheight)
+					dofloor->direction = 1; // up
+				else
+					dofloor->direction = -1; // down
+
+				// If flag is set, change floor texture after moving
+				dofloor->texture = line->args[2] ? line->frontsector->floorpic : -1;
+				break;
+
+			case moveFloorByFrontSector:
+				dofloor->speed = line->args[2] << (FRACBITS - 3);
+				dofloor->floordestheight = line->frontsector->floorheight;
+
+				if (dofloor->floordestheight >= sec->floorheight)
+					dofloor->direction = 1; // up
+				else
+					dofloor->direction = -1; // down
+
+				// chained linedef executing ability
+				// Only set it on one of the moving sectors (the smallest numbered)
+				if (line->args[3])
+					dofloor->tag = firstone ? (INT16)line->args[3] : -1;
+
+				// flat changing ability
+				dofloor->texture = line->args[4] ? line->frontsector->floorpic : -1;
+				break;
+
+			case moveFloorByDistance:
+				if (line->args[4])
+					dofloor->speed = INT32_MAX/2; // as above, "instant" is one tic
+				else
+					dofloor->speed = line->args[3] << (FRACBITS - 3);
+				dofloor->floordestheight = sec->floorheight + (line->args[2] << FRACBITS);
+				if (dofloor->floordestheight > sec->floorheight)
+					dofloor->direction = 1; // up
+				else
+					dofloor->direction = -1; // down
+				break;
+
+			// Move floor up and down indefinitely.
+			// bounceFloor has slowdown at the top and bottom of movement.
+			case bounceFloor:
+			case bounceFloorCrush:
+				dofloor->speed = line->args[2] << (FRACBITS - 2); // same speed as elevateContinuous
+				dofloor->origspeed = dofloor->speed;
+				dofloor->floordestheight = line->frontsector->floorheight;
+
+				if (dofloor->floordestheight >= sec->floorheight)
+					dofloor->direction = 1; // up
+				else
+					dofloor->direction = -1; // down
+
+				// Any delay?
+				dofloor->delay = line->args[5];
+				dofloor->delaytimer = line->args[4]; // Initial delay
+				break;
+
+			case crushFloorOnce:
+				dofloor->speed = dofloor->origspeed = line->args[2] << (FRACBITS - 2);
+				dofloor->floordestheight = line->frontsector->ceilingheight;
+
+				if (dofloor->floordestheight >= sec->floorheight)
+					dofloor->direction = 1; // up
+				else
+					dofloor->direction = -1; // down
+				break;
+
+			default:
+				break;
+		}
+
+		firstone = 0;
+
+		// interpolation
+		R_CreateInterpolator_SectorPlane(&dofloor->thinker, sec, false);
 	}
 }
 
