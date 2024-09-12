@@ -51,6 +51,9 @@ static dynlights_t *dynlights = &view_dynlights[0];
 //#define AMMO_SPR        8
 //#define BONUS_SPR      16
 
+// BP: big hack for a test in lighning ref : 1249753487AB
+static fixed_t *hwbbox;
+
 //Hurdler: now we can change those values via FS :)
 light_t lspr[NUMLIGHTS] =
 {

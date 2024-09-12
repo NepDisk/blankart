@@ -1132,112 +1132,111 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 		SLOPEPARAMS(gl_backsector->c_slope, worldhigh, worldhighslope, gl_backsector->ceilingheight)
 		SLOPEPARAMS(gl_backsector->f_slope, worldlow,  worldlowslope,  gl_backsector->floorheight)
 
+		if (!udmf)
+		{
+			if (!gl_curline->polyseg) // Don't do it for polyobjects
+			{
+				// Sky Ceilings
+				wallVerts[3].y = wallVerts[2].y = FIXED_TO_FLOAT(INT32_MAX);
+
+				if (gl_frontsector->ceilingpic == skyflatnum)
+				{
+					if (gl_backsector->ceilingpic == skyflatnum)
+					{
+						// Both front and back sectors are sky, needs skywall from the frontsector's ceiling, but only if the
+						// backsector is lower
+						if ((worldhigh <= worldtop && worldhighslope <= worldtopslope)// Assuming ESLOPE is always on with my changes
+							&& (worldhigh != worldtop || worldhighslope != worldtopslope))
+							// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
+						{
+							wallVerts[0].y = FIXED_TO_FLOAT(worldhigh);
+							wallVerts[1].y = FIXED_TO_FLOAT(worldhighslope);
+							HWR_DrawSkyWall(wallVerts, &Surf);
+						}
+					}
+					else
+					{
+						// Only the frontsector is sky, just draw a skywall from the front ceiling
+						wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
+						wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
+						HWR_DrawSkyWall(wallVerts, &Surf);
+					}
+				}
+				else if (gl_backsector->ceilingpic == skyflatnum)
+				{
+					// Only the backsector is sky, just draw a skywall from the front ceiling
+					wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
+					wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
+					HWR_DrawSkyWall(wallVerts, &Surf);
+				}
+
+				// Sky Floors
+				wallVerts[0].y = wallVerts[1].y = FIXED_TO_FLOAT(INT32_MIN);
+
+				if (gl_frontsector->floorpic == skyflatnum)
+				{
+					if (gl_backsector->floorpic == skyflatnum)
+					{
+						// Both front and back sectors are sky, needs skywall from the backsector's floor, but only if the
+						// it's higher, also needs to check for bottomtexture as the floors don't usually move down
+						// when both sides are sky floors
+						if ((worldlow >= worldbottom && worldlowslope >= worldbottomslope)
+							&& (worldlow != worldbottom || worldlowslope != worldbottomslope)
+							// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
+							&& !(gl_sidedef->bottomtexture))
+						{
+							wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
+							wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
+							HWR_DrawSkyWall(wallVerts, &Surf);
+						}
+					}
+					else
+					{
+						// Only the backsector has sky, just draw a skywall from the back floor
+						wallVerts[3].y = FIXED_TO_FLOAT(worldbottom);
+						wallVerts[2].y = FIXED_TO_FLOAT(worldbottomslope);
+						HWR_DrawSkyWall(wallVerts, &Surf);
+					}
+				}
+				else if ((gl_backsector->floorpic == skyflatnum) && !(gl_sidedef->bottomtexture))
+				{
+					// Only the backsector has sky, just draw a skywall from the back floor if there's no bottomtexture
+					wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
+					wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
+					HWR_DrawSkyWall(wallVerts, &Surf);
+				}
+			}
+		}
+
+		// hack to allow height changes in outdoor areas
+		// This is what gets rid of the upper textures if there should be sky
+		if (gl_frontsector->ceilingpic == skyflatnum
+			&& gl_backsector->ceilingpic  == skyflatnum)
+		{
+			if (udmf)
+				bothceilingssky = true;
+			else
+			{
+				worldtop = worldhigh;
+				worldtopslope = worldhighslope;
+			}
+		}
+
 		if (udmf)
 		{
-			// hack to allow height changes in outdoor areas
-			// This is what gets rid of the upper textures if there should be sky
-			if (gl_frontsector->ceilingpic == skyflatnum
-				&& gl_backsector->ceilingpic  == skyflatnum)
-			{
-				bothceilingssky = true;
-			}
-
 			// likewise, but for floors and upper textures
 			if (gl_frontsector->floorpic == skyflatnum
 				&& gl_backsector->floorpic == skyflatnum)
 			{
 				bothfloorssky = true;
 			}
-
-			if (!bothceilingssky)
-				gl_toptexture = R_GetTextureNum(gl_sidedef->toptexture);
-			if (!bothfloorssky)
-				gl_bottomtexture = R_GetTextureNum(gl_sidedef->bottomtexture);
 		}
-		else
-		{
-			// Sky Ceilings
-			wallVerts[3].y = wallVerts[2].y = FIXED_TO_FLOAT(INT32_MAX);
 
-			if (gl_frontsector->ceilingpic == skyflatnum)
-			{
-				if (gl_backsector->ceilingpic == skyflatnum)
-				{
-					// Both front and back sectors are sky, needs skywall from the frontsector's ceiling, but only if the
-					// backsector is lower
-					if ((worldhigh <= worldtop && worldhighslope <= worldtopslope)// Assuming ESLOPE is always on with my changes
-						&& (worldhigh != worldtop || worldhighslope != worldtopslope))
-						// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
-					{
-						wallVerts[0].y = FIXED_TO_FLOAT(worldhigh);
-						wallVerts[1].y = FIXED_TO_FLOAT(worldhighslope);
-						HWR_DrawSkyWall(wallVerts, &Surf);
-					}
-				}
-				else
-				{
-					// Only the frontsector is sky, just draw a skywall from the front ceiling
-					wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
-					wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
-					HWR_DrawSkyWall(wallVerts, &Surf);
-				}
-			}
-			else if (gl_backsector->ceilingpic == skyflatnum)
-			{
-				// Only the backsector is sky, just draw a skywall from the front ceiling
-				wallVerts[0].y = FIXED_TO_FLOAT(worldtop);
-				wallVerts[1].y = FIXED_TO_FLOAT(worldtopslope);
-				HWR_DrawSkyWall(wallVerts, &Surf);
-			}
-
-			// Sky Floors
-			wallVerts[0].y = wallVerts[1].y = FIXED_TO_FLOAT(INT32_MIN);
-
-			if (gl_frontsector->floorpic == skyflatnum)
-			{
-				if (gl_backsector->floorpic == skyflatnum)
-				{
-					// Both front and back sectors are sky, needs skywall from the backsector's floor, but only if the
-					// it's higher, also needs to check for bottomtexture as the floors don't usually move down
-					// when both sides are sky floors
-					if ((worldlow >= worldbottom && worldlowslope >= worldbottomslope)
-						&& (worldlow != worldbottom || worldlowslope != worldbottomslope)
-						// Removing the second line above will render more rarely visible skywalls. Example: Cave garden ceiling in Dark race
-						&& !(gl_sidedef->bottomtexture))
-					{
-						wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
-						wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
-						HWR_DrawSkyWall(wallVerts, &Surf);
-					}
-				}
-				else
-				{
-					// Only the backsector has sky, just draw a skywall from the back floor
-					wallVerts[3].y = FIXED_TO_FLOAT(worldbottom);
-					wallVerts[2].y = FIXED_TO_FLOAT(worldbottomslope);
-					HWR_DrawSkyWall(wallVerts, &Surf);
-				}
-			}
-			else if ((gl_backsector->floorpic == skyflatnum) && !(gl_sidedef->bottomtexture))
-			{
-				// Only the backsector has sky, just draw a skywall from the back floor if there's no bottomtexture
-				wallVerts[3].y = FIXED_TO_FLOAT(worldlow);
-				wallVerts[2].y = FIXED_TO_FLOAT(worldlowslope);
-				HWR_DrawSkyWall(wallVerts, &Surf);
-			}
-
-			// hack to allow height changes in outdoor areas
-			// This is what gets rid of the upper textures if there should be sky
-			if (gl_frontsector->ceilingpic == skyflatnum
-				&& gl_backsector->ceilingpic  == skyflatnum)
-			{
-				worldtop = worldhigh;
-				worldtopslope = worldhighslope;
-			}
-
+		// this is always false in binary anyways
+		if (!bothceilingssky)
 			gl_toptexture = R_GetTextureNum(gl_sidedef->toptexture);
+		if (!bothfloorssky)
 			gl_bottomtexture = R_GetTextureNum(gl_sidedef->bottomtexture);
-		}
 
 		// check TOP TEXTURE
 		if ((worldhighslope < worldtopslope || worldhigh < worldtop) && gl_toptexture)
@@ -1762,7 +1761,7 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 
 				if (!(rover->fofflags & FOF_EXISTS) || !(rover->fofflags & FOF_RENDERSIDES))
 					continue;
-				if (!(rover->fofflags & FOF_ALLSIDES) && rover->fofflags & FOF_INVERTSIDES)
+				if (udmf && !(rover->fofflags & FOF_ALLSIDES) && rover->fofflags & FOF_INVERTSIDES || !udmf && rover->fofflags & FOF_INVERTSIDES)
 					continue;
 
 				SLOPEPARAMS(*rover->t_slope, high1, highslope1, *rover->topheight)
@@ -1922,7 +1921,7 @@ static void HWR_ProcessSeg(void) // Sort of like GLWall::Process in GZDoom
 
 				if (!(rover->fofflags & FOF_EXISTS) || !(rover->fofflags & FOF_RENDERSIDES))
 					continue;
-				if (!(rover->fofflags & FOF_ALLSIDES || rover->fofflags & FOF_INVERTSIDES))
+				if (udmf && !(rover->fofflags & FOF_ALLSIDES) && rover->fofflags & FOF_INVERTSIDES || !udmf && rover->fofflags & FOF_INVERTSIDES)
 					continue;
 
 				SLOPEPARAMS(*rover->t_slope, high1, highslope1, *rover->topheight)
@@ -2852,7 +2851,7 @@ static void HWR_Subsector(size_t num)
 
 			if (centerHeight <= locCeilingHeight &&
 			    centerHeight >= locFloorHeight &&
-			    ((dup_viewz < cullHeight && (rover->fofflags & FOF_BOTHPLANES || !(rover->fofflags & FOF_INVERTPLANES))) ||
+			    ((dup_viewz < cullHeight && (udmf && rover->fofflags & FOF_BOTHPLANES || !(rover->fofflags & FOF_INVERTPLANES))) ||
 			     (dup_viewz > cullHeight && (rover->fofflags & FOF_BOTHPLANES || rover->fofflags & FOF_INVERTPLANES))))
 			{
 				if (rover->fofflags & FOF_FOG)
@@ -2900,7 +2899,7 @@ static void HWR_Subsector(size_t num)
 
 			if (centerHeight >= locFloorHeight &&
 			    centerHeight <= locCeilingHeight &&
-			    ((dup_viewz > cullHeight && (rover->fofflags & FOF_BOTHPLANES || !(rover->fofflags & FOF_INVERTPLANES))) ||
+			    ((dup_viewz > cullHeight && (udmf && rover->fofflags & FOF_BOTHPLANES || !(rover->fofflags & FOF_INVERTPLANES))) ||
 			     (dup_viewz < cullHeight && (rover->fofflags & FOF_BOTHPLANES || rover->fofflags & FOF_INVERTPLANES))))
 			{
 				if (rover->fofflags & FOF_FOG)
@@ -3010,122 +3009,32 @@ static void HWR_Subsector(size_t num)
 // Renders all subsectors below a given node,
 //  traversing subtree recursively.
 // Just call with BSP root.
-
-#ifdef coolhack
-//t;b;l;r
-static fixed_t hackbbox[4];
-//BOXTOP,
-//BOXBOTTOM,
-//BOXLEFT,
-//BOXRIGHT
-static boolean HWR_CheckHackBBox(fixed_t *bb)
-{
-	if (bb[BOXTOP] < hackbbox[BOXBOTTOM]) //y up
-		return false;
-	if (bb[BOXBOTTOM] > hackbbox[BOXTOP])
-		return false;
-	if (bb[BOXLEFT] > hackbbox[BOXRIGHT])
-		return false;
-	if (bb[BOXRIGHT] < hackbbox[BOXLEFT])
-		return false;
-	return true;
-}
-#endif
-
-// BP: big hack for a test in lighning ref : 1249753487AB
-fixed_t *hwbbox;
-
 static void HWR_RenderBSPNode(INT32 bspnum)
 {
-	/*//GZDoom code
-	if(bspnum == -1)
-	{
-		HWR_Subsector(subsectors);
-		return;
-	}
-	while(!((size_t)bspnum&(~NF_SUBSECTOR))) // Keep going until found a subsector
-	{
-		node_t *bsp = &nodes[bspnum];
-
-		// Decide which side the view point is on
-		INT32 side = R_PointOnSide(dup_viewx, dup_viewy, bsp);
-
-		// Recursively divide front space (toward the viewer)
-		HWR_RenderBSPNode(bsp->children[side]);
-
-		// Possibly divide back space (away from viewer)
-		side ^= 1;
-
-		if (!HWR_CheckBBox(bsp->bbox[side]))
-			return;
-
-		bspnum = bsp->children[side];
-	}
-
-	HWR_Subsector(bspnum-1);
-*/
-	node_t *bsp = &nodes[bspnum];
-
-	// Decide which side the view point is on
+	const node_t *bsp;
 	INT32 side;
-
 	ps_numbspcalls++;
 
-	// Found a subsector?
-	if (bspnum & NF_SUBSECTOR)
+	while (!(bspnum & NF_SUBSECTOR))  // Found a subsector?
 	{
-		if (bspnum == -1)
-		{
-			//*(gl_drawsubsector_p++) = 0;
-			HWR_Subsector(0);
-		}
-		else
-		{
-			//*(gl_drawsubsector_p++) = bspnum&(~NF_SUBSECTOR);
-			HWR_Subsector(bspnum&(~NF_SUBSECTOR));
-		}
-		return;
+		bsp = &nodes[bspnum];
+
+		// Decide which side the view point is on.
+		side = R_PointOnSide(viewx, viewy, bsp);
+
+		// Recursively divide front space.
+		HWR_RenderBSPNode(bsp->children[side]);
+
+        // Possibly divide back space
+        if (!(HWR_CheckBBox(bsp->bbox[side^1])))
+            return;
+
+		bspnum = bsp->children[side^1];
 	}
 
-	// Decide which side the view point is on.
-	side = R_PointOnSide(dup_viewx, dup_viewy, bsp);
-
-	// BP: big hack for a test in lighning ref : 1249753487AB
-	hwbbox = bsp->bbox[side];
-
-	// Recursively divide front space.
-	HWR_RenderBSPNode(bsp->children[side]);
-
-	// Possibly divide back space.
-	if (HWR_CheckBBox(bsp->bbox[side^1]))
-	{
-		// BP: big hack for a test in lighning ref : 1249753487AB
-		hwbbox = bsp->bbox[side^1];
-		HWR_RenderBSPNode(bsp->children[side^1]);
-	}
+	// e6y: support for extended nodes
+	HWR_Subsector(bspnum == -1 ? 0 : bspnum & ~NF_SUBSECTOR);
 }
-
-/*
-//
-// Clear 'stack' of subsectors to draw
-//
-static void HWR_ClearDrawSubsectors(void)
-{
-	gl_drawsubsector_p = gl_drawsubsectors;
-}
-
-//
-// Draw subsectors pushed on the drawsubsectors 'stack', back to front
-//
-static void HWR_RenderSubsectors(void)
-{
-	while (gl_drawsubsector_p > gl_drawsubsectors)
-	{
-		HWR_RenderBSPNode(
-		lastsubsec->nextsubsec = bspnum & (~NF_SUBSECTOR);
-	}
-}
-*/
 
 // ==========================================================================
 //                                                              FROM R_MAIN.C
