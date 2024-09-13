@@ -3684,7 +3684,7 @@ void readfollower(MYFILE *f)
 	followers[numfollowers].horzlag = 3*FRACUNIT;
 	followers[numfollowers].vertlag = 6*FRACUNIT;
 	followers[numfollowers].anglelag = 8*FRACUNIT;
-	followers[numfollowers].bobspeed = TICRATE*2;
+	followers[numfollowers].bobspeed = (TICRATE*2)*FRACUNIT;
 	followers[numfollowers].bobamp = 4*FRACUNIT;
 	followers[numfollowers].hitconfirmtime = TICRATE;
 	followers[numfollowers].defaultcolor = SKINCOLOR_GREEN;

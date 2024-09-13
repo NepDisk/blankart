@@ -9404,7 +9404,7 @@ static state_t   *multi_state;
 static UINT8      multi_spr2;
 
 // used for follower display on player setup menu
-static INT32 follower_tics;
+static fixed_t follower_tics;
 static UINT32 follower_frame;	// used for FF_ANIMATE garbo
 static state_t *follower_state;
 
@@ -9680,14 +9680,15 @@ static void M_DrawSetupMultiPlayerMenu(void)
 	{
 		// animate the follower
 
-		if (--follower_tics <= 0)
+		follower_tics -= renderdeltatics;
+		if (follower_tics <= 0)
 		{
 
 			// FF_ANIMATE; cycle through FRAMES and get back afterwards. This will be prominent amongst followers hence why it's being supported here.
 			if (follower_state->frame & FF_ANIMATE)
 			{
 				follower_frame++;
-				follower_tics = follower_state->var2;
+				follower_tics = follower_state->var2*FRACUNIT;
 				if (follower_frame > (follower_state->frame & FF_FRAMEMASK) + follower_state->var1)	// that's how it works, right?
 					follower_frame = follower_state->frame & FF_FRAMEMASK;
 			}
@@ -9696,9 +9697,7 @@ static void M_DrawSetupMultiPlayerMenu(void)
 				st = follower_state->nextstate;
 				if (st != S_NULL)
 					follower_state = &states[st];
-				follower_tics = follower_state->tics;
-				if (follower_tics == -1)
-					follower_tics = 15;	// er, what?
+				follower_tics = follower_state->tics*FRACUNIT;
 						// get spritedef:
 				follower_frame = follower_state->frame & FF_FRAMEMASK;
 			}
@@ -9720,12 +9719,24 @@ static void M_DrawSetupMultiPlayerMenu(void)
 			// Fake the follower's in game appearance by now also applying some of its variables! coolio, eh?
 			follower_t fl = followers[setupm_fakefollower];	// shortcut for our sanity
 
+			tic_t bobspeed = fl.bobspeed;
+			if (fl.mode == FOLLOWERMODE_GROUND)
+				bobspeed = FixedDiv(bobspeed, fl.bobamp / 6); // Rough approximation of bounce speed
+
 			// smooth floating, totally not stolen from rocket sneakers.
-			fixed_t sine = FixedMul(fl.bobamp, FINESINE(((FixedMul(4 * M_TAU_FIXED, fl.bobspeed) * followertimer)>>ANGLETOFINESHIFT) & FINEMASK));
+			fixed_t sine = FixedMul(fl.bobamp, FINESINE(((FixedMul(4 * M_TAU_FIXED, bobspeed) * followertimer)>>ANGLETOFINESHIFT) & FINEMASK));
 
 			UINT16 color = K_GetEffectiveFollowerColor(setupm_cvfollowercolor->value, &fl, setupm_fakecolor->color, &skins[setupm_fakeskin]);
 			UINT8 *colormap = R_GetTranslationColormap(TC_DEFAULT, color, 0); // why does GTC_MENUCACHE not work here...?
-			V_DrawFixedPatch((mx+65)*FRACUNIT, ((my+131)*FRACUNIT)-fl.zoffs+sine, fl.scale, flags, patch, colormap);
+
+			INT32 x = (mx+65)*FRACUNIT;
+			INT32 y = ((my+100)*FRACUNIT);
+			if (fl.mode == FOLLOWERMODE_GROUND)
+				y += 40*FRACUNIT - abs(sine) * 2; // Bounce animation
+			else
+				y += sine;
+
+			V_DrawFixedPatch(x, y, fl.scale, flags, patch, colormap);
 			Z_Free(colormap);
 		}
 	}
@@ -9747,9 +9758,9 @@ static void M_GetFollowerState(void)
 	follower_state = &states[followers[setupm_fakefollower].followstate];
 
 	if (follower_state->frame & FF_ANIMATE)
-		follower_tics = follower_state->var2;	// support for FF_ANIMATE
+		follower_tics = follower_state->var2*FRACUNIT;	// support for FF_ANIMATE
 	else
-		follower_tics = follower_state->tics;
+		follower_tics = follower_state->tics*FRACUNIT;
 
 	follower_frame = follower_state->frame & FF_FRAMEMASK;
 }
