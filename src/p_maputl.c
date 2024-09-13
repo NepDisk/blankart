@@ -422,8 +422,7 @@ void P_CameraLineOpening(line_t *linedef, opening_t *open)
 boolean
 P_GetMidtextureTopBottom
 (		line_t * linedef,
-		fixed_t x,
-		fixed_t y,
+		opening_t *open,
 		fixed_t * return_top,
 		fixed_t * return_bottom)
 {
@@ -437,23 +436,6 @@ P_GetMidtextureTopBottom
 
 	if (!texnum)
 		return false;
-
-	textop = P_GetSectorCeilingZAt(front, x, y);
-	texbottom = P_GetSectorFloorZAt(front, x, y);
-
-	if (back)
-	{
-		z = P_GetSectorCeilingZAt(back, x, y);
-
-		if (z < textop)
-			textop = z;
-
-		z = P_GetSectorFloorZAt(back, x, y);
-
-		if (z > texbottom)
-			texbottom = z;
-	}
-
 	// Get the midtexture's height
 	texheight = textures[texnum]->height << FRACBITS;
 
@@ -484,17 +466,17 @@ P_GetMidtextureTopBottom
 	{
 		if ((linedef->flags & ML_WRAPMIDTEX) && !side->repeatcnt) // "infinite" repeat
 		{
-			texbottom += side->rowoffset;
-			textop += side->rowoffset;
+			texbottom = open->floor + side->rowoffset;
+			textop = open->ceiling + side->rowoffset;
 		}
 		else if (linedef->flags & ML_MIDPEG)
 		{
-			texbottom += side->rowoffset;
+			texbottom = open->floor + side->rowoffset;
 			textop = texbottom + texheight*(side->repeatcnt+1);
 		}
 		else
 		{
-			textop += side->rowoffset;
+			textop = open->ceiling + side->rowoffset;
 			texbottom = textop - texheight*(side->repeatcnt+1);
 		}
 	}
@@ -633,7 +615,7 @@ void P_LineOpening(line_t *linedef, mobj_t *mobj, opening_t *open)
 			fixed_t textop, texbottom;
 			fixed_t texmid, delta1, delta2;
 
-			if (P_GetMidtextureTopBottom(linedef, cross.x, cross.y, &textop, &texbottom))
+			if (P_GetMidtextureTopBottom(linedef, open, &textop, &texbottom))
 			{
 				texmid = texbottom+(textop-texbottom)/2;
 

@@ -1614,7 +1614,7 @@ static BlockItReturn_t PIT_CheckLine(line_t *ld)
 	{
 		fixed_t textop, texbottom;
 
-		P_GetMidtextureTopBottom(ld, tm.x, tm.y,
+		P_GetMidtextureTopBottom(ld, &open,
 				&textop, &texbottom);
 
 		/* The effect handling is done later but it won't
