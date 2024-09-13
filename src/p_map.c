@@ -2459,7 +2459,7 @@ increment_move
 		// copy into the spechitint buffer from spechit
 		spechitint_copyinto();
 
-		if (!(thing->flags & MF_NOCLIP))
+		if (P_UsingStepUp(thing))
 		{
 			//All things are affected by their scale.
 			fixed_t maxstep = FixedMul(MAXSTEPMOVE, mapobjectscale);
