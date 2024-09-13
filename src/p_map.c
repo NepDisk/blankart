@@ -2412,34 +2412,39 @@ increment_move
 	fixed_t tryx = thing->x;
 	fixed_t tryy = thing->y;
 	fixed_t radius = thing->radius;
-	fixed_t thingtop = thing->z + thing->height;
+	fixed_t thingtop;
 	floatok = false;
 
 	// reset this to 0 at the start of each trymove call as it's only used here
 	numspechitint = 0U;
-
 	// This makes sure that there are no freezes from computing extremely small movements.
-	// Originally was MAXRADIUS/2, but that causes some inconsistencies for small players.
-	radius = max(radius, mapobjectscale);
+	// Originally was MAXRADIUS/2, but that can cause some bad inconsistencies for small players.
+	radius = max(radius, thing->scale);
 
-	// And Big Large (tm) movements can skip over slopes.
-	radius = min(radius, 16*mapobjectscale);
+	// And we also have to prevent Big Large (tm) movements, as those can skip too far
+	// across slopes and cause us to fail step up checks on them when we otherwise shouldn't.
+	radius = min(radius, 16 * thing->scale);
+
+	// (This whole "step" system is flawed; it was OK before, but the addition of slopes has
+	// exposed the problems with doing it like this. The right thing to do would be to use
+	// raycasting for physics to fix colliding in weird order, double-checking collisions,
+	// randomly colliding with slopes instead of going up them, etc. I don't feel like porting
+	// that from RR, as its both a huge sweeping change and still incomplete at the time of
+	// writing. Clamping radius to make our steps more precise will work just fine as long
+	// as you keep all of your crazy intentions to poke any of the other deep-rooted movement
+	// code to yourself. -- Sal 6/5/2023)
 
 	do {
-		if (thing->flags & MF_NOCLIP)
-		{
+		if (thing->flags & MF_NOCLIP) {
 			tryx = x;
 			tryy = y;
-		}
-		else
-		{
+		} else {
 			if (x-tryx > radius)
 				tryx += radius;
 			else if (x-tryx < -radius)
 				tryx -= radius;
 			else
 				tryx = x;
-
 			if (y-tryy > radius)
 				tryy += radius;
 			else if (y-tryy < -radius)
@@ -2450,14 +2455,40 @@ increment_move
 
 		if (!P_CheckPosition(thing, tryx, tryy))
 			return false; // solid wall or thing
-
+			
 		// copy into the spechitint buffer from spechit
 		spechitint_copyinto();
 
 		if (P_UsingStepUp(thing))
 		{
 			//All things are affected by their scale.
-			fixed_t maxstep = P_GetThingStepUp(thing, tryx, tryy);
+			fixed_t maxstep = FixedMul(MAXSTEPMOVE, thing->scale);
+
+			if (thing->player)
+			{
+				// If using SSF_DOUBLESTEPUP, double the maxstep.
+				if (P_PlayerTouchingSectorSpecialFlag(thing->player, SSF_DOUBLESTEPUP)
+				|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_DOUBLESTEPUP))
+					maxstep <<= 1;
+
+				// If using SSF_NOSTEPDOWN, no maxstep.
+				if (P_PlayerTouchingSectorSpecialFlag(thing->player, SSF_NOSTEPDOWN)
+				|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_NOSTEPDOWN))
+					maxstep = 0;
+			}
+			else if (thing->flags & MF_PUSHABLE)
+			{
+				// If using SSF_DOUBLESTEPUP, double the maxstep.
+				if (R_PointInSubsector(x, y)->sector->specialflags & SSF_DOUBLESTEPUP)
+					maxstep <<= 1;
+
+				// If using SSF_NOSTEPDOWN, no maxstep.
+				if (R_PointInSubsector(x, y)->sector->specialflags & SSF_NOSTEPDOWN)
+					maxstep = 0;
+			}
+
+			if (thing->type == MT_SKIM)
+				maxstep = 0;
 
 			if (tmceilingz - tmfloorz < thing->height)
 			{
@@ -2468,56 +2499,51 @@ increment_move
 
 			floatok = true;
 
-			if (maxstep > 0)
-			{
-				// Step up
-				if (thing->z < tmfloorz)
-				{
-					if (tmfloorstep <= maxstep)
-					{
-						thing->z = thing->floorz = tmfloorz;
-						thing->floorrover = tmfloorrover;
-						thing->eflags |= MFE_JUSTSTEPPEDDOWN;
-					}
-					else
-					{
-						return false; // mobj must raise itself to fit
-					}
-				}
-				else if (tmceilingz < thingtop)
-				{
-					if (tmceilingstep <= maxstep)
-					{
-						thing->z = (thing->ceilingz = tmceilingz) - thing->height;
-						thing->ceilingrover = tmceilingrover;
-						thing->eflags |= MFE_JUSTSTEPPEDDOWN;
-					}
-					else
-					{
-						return false; // mobj must lower itself to fit
-					}
-				}
-				else if (thing->momz * P_MobjFlip(thing) <= 0 // Step down requires moving down.
-					&& !(P_MobjTouchingSectorSpecialFlag(thing, SSF_NOSTEPDOWN)
-					|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_NOSTEPDOWN)))
-				{
-					// If the floor difference is MAXSTEPMOVE or less, and the sector isn't Section1:14, ALWAYS
-					// step down! Formerly required a Section1:13 sector for the full MAXSTEPMOVE, but no more.
+			thingtop = thing->z + thing->height;
 
-					if (thingtop == thing->ceilingz && tmceilingz > thingtop && tmceilingz - thingtop <= maxstep)
-					{
-						thing->z = (thing->ceilingz = tmceilingz) - thing->height;
-						thing->ceilingrover = tmceilingrover;
-						thing->eflags |= MFE_JUSTSTEPPEDDOWN;
-						thing->ceilingdrop = 0;
-					}
-					else if (thing->z == thing->floorz && tmfloorz < thing->z && thing->z - tmfloorz <= maxstep)
-					{
-						thing->z = thing->floorz = tmfloorz;
-						thing->floorrover = tmfloorrover;
-						thing->eflags |= MFE_JUSTSTEPPEDDOWN;
-						thing->floordrop = 0;
-					}
+			// Step up
+			if (thing->z < tmfloorz)
+			{
+				if (maxstep > 0 && tmfloorz - thing->z <= maxstep)
+				{
+					thing->z = thing->floorz = tmfloorz;
+					thing->floorrover = tmfloorrover;
+					thing->eflags |= MFE_JUSTSTEPPEDDOWN;
+				}
+				else
+				{
+					return false; // mobj must raise itself to fit
+				}
+			}
+			else if (tmceilingz < thingtop)
+			{
+				if (maxstep > 0 && thingtop - tmceilingz <= maxstep)
+				{
+					thing->z = ( thing->ceilingz = tmceilingz ) - thing->height;
+					thing->ceilingrover = tmceilingrover;
+					thing->eflags |= MFE_JUSTSTEPPEDDOWN;
+				}
+				else
+				{
+					return false; // mobj must lower itself to fit
+				}
+			}
+			else if (maxstep > 0) // Step down
+			{
+				// If the floor difference is MAXSTEPMOVE or less, and the sector isn't Section1:14, ALWAYS
+				// step down! Formerly required a Section1:13 sector for the full MAXSTEPMOVE, but no more.
+
+				if (thingtop == thing->ceilingz && tmceilingz > thingtop && tmceilingz - thingtop <= maxstep)
+				{
+					thing->z = (thing->ceilingz = tmceilingz) - thing->height;
+					thing->ceilingrover = tmceilingrover;
+					thing->eflags |= MFE_JUSTSTEPPEDDOWN;
+				}
+				else if (thing->z == thing->floorz && tmfloorz < thing->z && thing->z - tmfloorz <= maxstep)
+				{
+					thing->z = thing->floorz = tmfloorz;
+					thing->floorrover = tmfloorrover;
+					thing->eflags |= MFE_JUSTSTEPPEDDOWN;
 				}
 			}
 
