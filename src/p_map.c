@@ -2434,7 +2434,7 @@ increment_move
 	// as you keep all of your crazy intentions to poke any of the other deep-rooted movement
 	// code to yourself. -- Sal 6/5/2023)
 
-	do {
+		do {
 		if (thing->flags & MF_NOCLIP) {
 			tryx = x;
 			tryy = y;
@@ -2459,32 +2459,25 @@ increment_move
 		// copy into the spechitint buffer from spechit
 		spechitint_copyinto();
 
-		if (P_UsingStepUp(thing))
+		if (!(thing->flags & MF_NOCLIP))
 		{
 			//All things are affected by their scale.
-			fixed_t maxstep = FixedMul(MAXSTEPMOVE, thing->scale);
+			fixed_t maxstep = FixedMul(MAXSTEPMOVE, mapobjectscale);
 
 			if (thing->player)
 			{
-				// If using SSF_DOUBLESTEPUP, double the maxstep.
-				if (P_PlayerTouchingSectorSpecialFlag(thing->player, SSF_DOUBLESTEPUP)
-				|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_DOUBLESTEPUP))
+				if (P_MobjTouchingSectorSpecialFlag(thing, SSF_DOUBLESTEPUP)
+					|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_DOUBLESTEPUP))
+				{
+					// If using type Section1:13, double the maxstep.
 					maxstep <<= 1;
-
-				// If using SSF_NOSTEPDOWN, no maxstep.
-				if (P_PlayerTouchingSectorSpecialFlag(thing->player, SSF_NOSTEPDOWN)
-				|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_NOSTEPDOWN))
+				}
+				else if (P_MobjTouchingSectorSpecialFlag(thing, SSF_NOSTEPUP)
+					|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_NOSTEPUP))
+				{
+					// If using type Section1:12, no maxstep. For short walls, like Egg Zeppelin
 					maxstep = 0;
-			}
-			else if (thing->flags & MF_PUSHABLE)
-			{
-				// If using SSF_DOUBLESTEPUP, double the maxstep.
-				if (R_PointInSubsector(x, y)->sector->specialflags & SSF_DOUBLESTEPUP)
-					maxstep <<= 1;
-
-				// If using SSF_NOSTEPDOWN, no maxstep.
-				if (R_PointInSubsector(x, y)->sector->specialflags & SSF_NOSTEPDOWN)
-					maxstep = 0;
+				}
 			}
 
 			if (thing->type == MT_SKIM)
@@ -2504,10 +2497,9 @@ increment_move
 			// Step up
 			if (thing->z < tmfloorz)
 			{
-				if (maxstep > 0 && tmfloorz - thing->z <= maxstep)
+				if (tmfloorz - thing->z <= maxstep)
 				{
 					thing->z = thing->floorz = tmfloorz;
-					thing->floorrover = tmfloorrover;
 					thing->eflags |= MFE_JUSTSTEPPEDDOWN;
 				}
 				else
@@ -2517,10 +2509,9 @@ increment_move
 			}
 			else if (tmceilingz < thingtop)
 			{
-				if (maxstep > 0 && thingtop - tmceilingz <= maxstep)
+				if (thingtop - tmceilingz <= maxstep)
 				{
 					thing->z = ( thing->ceilingz = tmceilingz ) - thing->height;
-					thing->ceilingrover = tmceilingrover;
 					thing->eflags |= MFE_JUSTSTEPPEDDOWN;
 				}
 				else
@@ -2528,7 +2519,11 @@ increment_move
 					return false; // mobj must lower itself to fit
 				}
 			}
-			else if (maxstep > 0) // Step down
+			else if (maxstep > 0 && !(
+				thing->player && (
+				P_MobjTouchingSectorSpecialFlag(thing, SSF_NOSTEPDOWN)
+					|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_NOSTEPDOWN))
+				)) // Step down
 			{
 				// If the floor difference is MAXSTEPMOVE or less, and the sector isn't Section1:14, ALWAYS
 				// step down! Formerly required a Section1:13 sector for the full MAXSTEPMOVE, but no more.
@@ -2536,14 +2531,14 @@ increment_move
 				if (thingtop == thing->ceilingz && tmceilingz > thingtop && tmceilingz - thingtop <= maxstep)
 				{
 					thing->z = (thing->ceilingz = tmceilingz) - thing->height;
-					thing->ceilingrover = tmceilingrover;
 					thing->eflags |= MFE_JUSTSTEPPEDDOWN;
+					thing->ceilingdrop = 0;
 				}
 				else if (thing->z == thing->floorz && tmfloorz < thing->z && thing->z - tmfloorz <= maxstep)
 				{
 					thing->z = thing->floorz = tmfloorz;
-					thing->floorrover = tmfloorrover;
 					thing->eflags |= MFE_JUSTSTEPPEDDOWN;
+					thing->floordrop = 0;
 				}
 			}
 
