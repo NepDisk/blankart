@@ -1570,7 +1570,7 @@ static int lib_pSlideMove(lua_State *L)
 	if (!mo)
 		return LUA_ErrInvalid(L, "mobj_t");
 	
-	if (!P_TryMove(mo, mo->x + mo->momx, mo->y + mo->momy, true, &result))
+	if (!P_TryMove(mo, mo->x, mo->y, true, &result))
 		P_SlideMove(mo, &result);
 	return 0;
 }
@@ -1583,7 +1583,7 @@ static int lib_pBounceMove(lua_State *L)
 	INLEVEL
 	if (!mo)
 		return LUA_ErrInvalid(L, "mobj_t");
-	if (!P_TryMove(mo, mo->x + mo->momx, mo->y + mo->momy, true, &result))
+	if (!P_TryMove(mo, mo->x, mo->y, true, &result))
 		P_BounceMove(mo,&result);
 	return 0;
 }
