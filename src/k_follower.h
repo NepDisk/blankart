@@ -19,6 +19,7 @@
 
 #define FOLLOWERCOLOR_MATCH UINT16_MAX
 #define FOLLOWERCOLOR_OPPOSITE (UINT16_MAX-1)
+#define FOLLOWERCOLOR_DEFAULT 0
 
 extern CV_PossibleValue_t Followercolor_cons_t[]; // follower colours table, not a duplicate because of the "Match" option.
 
@@ -134,6 +135,25 @@ boolean K_SetFollowerByName(INT32 playernum, const char *skinname);
 --------------------------------------------------*/
 
 void K_SetFollowerByNum(INT32 playernum, INT32 skinnum);
+
+
+/*--------------------------------------------------
+	UINT16 K_GetEffectiveFollowerColor(UINT16 followercolor, follower_t *follower, UINT16 playercolor, skin_t *playerskin)
+
+		Updates a player's follower pointer, and does
+		its positioning and animations.
+
+	Input Arguments:-
+		followercolor - The raw color setting for the follower
+		follower - Follower struct to retrieve default color from. Can be NULL
+		playercolor - The player's associated colour, for reference
+		playerskin - Skin struct to retrieve default color from. Can be NULL
+
+	Return:-
+		The resultant skincolor enum for the follower
+--------------------------------------------------*/
+
+UINT16 K_GetEffectiveFollowerColor(UINT16 followercolor, follower_t *follower, UINT16 playercolor, skin_t *playerskin);
 
 
 /*--------------------------------------------------

@@ -3684,7 +3684,7 @@ void readfollower(MYFILE *f)
 	followers[numfollowers].horzlag = 3*FRACUNIT;
 	followers[numfollowers].vertlag = 6*FRACUNIT;
 	followers[numfollowers].anglelag = 8*FRACUNIT;
-	followers[numfollowers].bobspeed = TICRATE*2;
+	followers[numfollowers].bobspeed = (TICRATE*2)*FRACUNIT;
 	followers[numfollowers].bobamp = 4*FRACUNIT;
 	followers[numfollowers].hitconfirmtime = TICRATE;
 	followers[numfollowers].defaultcolor = SKINCOLOR_GREEN;
@@ -3735,7 +3735,15 @@ void readfollower(MYFILE *f)
 			}
 			else if (fastcmp(word, "DEFAULTCOLOR"))
 			{
-				followers[numfollowers].defaultcolor = get_number(word2);
+				if (word2)
+					strupr(word2);
+
+				if (fastcmp(word2, "MATCH"))
+					followers[numfollowers].defaultcolor = FOLLOWERCOLOR_MATCH;
+				else if (fastcmp(word2, "OPPOSITE"))
+					followers[numfollowers].defaultcolor = FOLLOWERCOLOR_OPPOSITE;
+				else
+					followers[numfollowers].defaultcolor = get_skincolor(word2);
 			}
 			else if (fastcmp(word, "SCALE"))
 			{
@@ -3894,9 +3902,11 @@ if ((signed)followers[numfollowers].field < threshold) \
 #undef FALLBACK
 
 	// Special case for color I suppose
-	if (followers[numfollowers].defaultcolor > (unsigned)(numskincolors-1))
+	if (followers[numfollowers].defaultcolor > (unsigned)(numskincolors-1)
+	 && followers[numfollowers].defaultcolor != FOLLOWERCOLOR_MATCH
+	 && followers[numfollowers].defaultcolor != FOLLOWERCOLOR_OPPOSITE)
 	{
-		followers[numfollowers].defaultcolor = SKINCOLOR_GREEN;
+		followers[numfollowers].defaultcolor = FOLLOWERCOLOR_MATCH;
 		deh_warning("Follower \'%s\': Value for 'color' should be between 1 and %d.\n", dname, numskincolors-1);
 	}
 

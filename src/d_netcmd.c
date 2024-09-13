@@ -316,10 +316,10 @@ consvar_t cv_follower[MAXSPLITSCREENPLAYERS] = {
 
 // player's follower colors... Also saved...
 consvar_t cv_followercolor[MAXSPLITSCREENPLAYERS] = {
-	CVAR_INIT ("followercolor", "1", CV_SAVE|CV_CALL|CV_NOINIT, Followercolor_cons_t, Followercolor_OnChange),
-	CVAR_INIT ("followercolor2", "1", CV_SAVE|CV_CALL|CV_NOINIT, Followercolor_cons_t, Followercolor2_OnChange),
-	CVAR_INIT ("followercolor3", "1", CV_SAVE|CV_CALL|CV_NOINIT, Followercolor_cons_t, Followercolor3_OnChange),
-	CVAR_INIT ("followercolor4", "1", CV_SAVE|CV_CALL|CV_NOINIT, Followercolor_cons_t, Followercolor4_OnChange)
+	CVAR_INIT ("followercolor", "Default", CV_SAVE|CV_CALL|CV_NOINIT, Followercolor_cons_t, Followercolor_OnChange),
+	CVAR_INIT ("followercolor2", "Default", CV_SAVE|CV_CALL|CV_NOINIT, Followercolor_cons_t, Followercolor2_OnChange),
+	CVAR_INIT ("followercolor3", "Default", CV_SAVE|CV_CALL|CV_NOINIT, Followercolor_cons_t, Followercolor3_OnChange),
+	CVAR_INIT ("followercolor4", "Default", CV_SAVE|CV_CALL|CV_NOINIT, Followercolor_cons_t, Followercolor4_OnChange)
 };
 
 consvar_t cv_skipmapcheck = CVAR_INIT ("skipmapcheck", "Off", CV_SAVE, CV_OnOff, NULL);
@@ -855,17 +855,20 @@ void D_RegisterClientCommands(void)
 		Color_cons_t[i].strvalue = skincolors[i].name;
 	}
 
-	for (i = 2; i < MAXSKINCOLORS; i++)
+	for (i = 3; i < MAXSKINCOLORS; i++)
 	{
-		Followercolor_cons_t[i].value = i-2;
-		Followercolor_cons_t[i].strvalue = skincolors[i-2].name;
+		Followercolor_cons_t[i].value = i-3;
+		Followercolor_cons_t[i].strvalue = skincolors[i-3].name;
 	}
 
-	Followercolor_cons_t[1].value = FOLLOWERCOLOR_MATCH;
-	Followercolor_cons_t[1].strvalue = "Match"; // Add "Match" option, which will make the follower color match the player's
+	Followercolor_cons_t[2].value = FOLLOWERCOLOR_MATCH;
+	Followercolor_cons_t[2].strvalue = "Match"; // Add "Match" option, which will make the follower color match the player's
 
-	Followercolor_cons_t[0].value = FOLLOWERCOLOR_OPPOSITE;
-	Followercolor_cons_t[0].strvalue = "Opposite"; // Add "Opposite" option, ...which is like "Match", but for coloropposite.
+	Followercolor_cons_t[1].value = FOLLOWERCOLOR_OPPOSITE;
+	Followercolor_cons_t[1].strvalue = "Opposite"; // Add "Opposite" option, ...which is like "Match", but for coloropposite.
+
+	Followercolor_cons_t[0].value = FOLLOWERCOLOR_DEFAULT;
+	Followercolor_cons_t[0].strvalue = "Default"; // Add "Default" option, which will use the default color of the selected follower
 
 	Color_cons_t[MAXSKINCOLORS].value = Followercolor_cons_t[MAXSKINCOLORS+2].value = 0;
 	Color_cons_t[MAXSKINCOLORS].strvalue = Followercolor_cons_t[MAXSKINCOLORS+2].strvalue = NULL;
@@ -1516,7 +1519,7 @@ static void SendNameAndColor(UINT8 n)
 
 	// ditto for follower colour:
 	if (!cv_followercolor[n].value)
-		CV_StealthSet(&cv_followercolor[n], "Match"); // set it to "Match". I don't care about your stupidity!
+		CV_StealthSet(&cv_followercolor[n], "Default"); // set it to "Default". I don't care about your stupidity!
 
 	// so like, this is sent before we even use anything like cvars or w/e so it's possible that follower is set to a pretty yikes value, so let's fix that before we send garbage that could crash the game:
 	if (cv_follower[n].value >= numfollowers || cv_follower[n].value < -1)
