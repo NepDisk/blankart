@@ -465,6 +465,87 @@ void K_UpdateMobjTerrain(mobj_t *mo, INT32 flatID)
 }
 
 /*--------------------------------------------------
+	void K_SetTerrainFriction(mobj_t *mo)
+
+		Applies friction from Terrain definition.
+	
+		Input Arguments:-
+		mo - The object to apply friction to.
+		
+--------------------------------------------------*/
+static void K_SetTerrainFriction(mobj_t *mo)
+{
+	boolean isPlayer = false;
+	fixed_t strength = mo->terrain->friction;
+	terrain_t *terrain = NULL;
+	fixed_t newFriction = INT32_MAX;
+	fixed_t newMovefactor = INT32_MAX;
+
+	if (mo == NULL || P_MobjWasRemoved(mo) == true)
+	{
+		// Invalid object.
+		return;
+	}
+
+	isPlayer = (mo->player != NULL);
+	terrain = mo->terrain;
+	
+	if (isPlayer && !((terrain->flags & TRF_BYPASSBOOST) 
+		|| (mo->player->invincibilitytimer == 0 && mo->player->hyudorotimer == 0
+		&& mo->player->sneakertimer == 0 && mo->player->growshrinktimer <= 0)))
+	{
+		// I want this to be consistent with sector friction
+		// so boosts bypass friction unless specficied otherwise
+		return;
+	}
+
+	mo->friction = ORIG_FRICTION;
+
+	if (isPlayer == true)
+	{
+		mo->movefactor = FRACUNIT;
+	}
+
+	if (strength > 0) // sludge
+	{
+		strength = strength * 2; // otherwise, the maximum sludginess value is +967...
+	}
+
+	// The following might seem odd. At the time of movement,
+	// the move distance is multiplied by 'friction/0x10000', so a
+	// higher friction value actually means 'less friction'.
+	newFriction = ORIG_FRICTION - FixedMul(0x1EB8, strength) / 0x80; // ORIG_FRICTION is 0xE800
+
+	if (newFriction > FRACUNIT)
+	{
+		newFriction = FRACUNIT;
+	}
+
+	if (newFriction < 0)
+	{
+		newFriction = 0;
+	}
+
+	mo->friction = newFriction;
+
+	if (isPlayer == true)
+	{
+		newMovefactor = FixedDiv(ORIG_FRICTION, newFriction);
+
+		if (newMovefactor < FRACUNIT)
+		{
+			newMovefactor = 19*newMovefactor - 18*FRACUNIT;
+		}
+		else
+		{
+			newMovefactor = FRACUNIT;
+		}
+
+		mo->movefactor = newMovefactor;
+	}
+}
+
+/*--------------------------------------------------
 	void K_ProcessTerrainEffect(mobj_t *mo)
 
 		See header file for description.
@@ -488,6 +569,9 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 
 	terrain = mo->terrain;
 	player = mo->player;
+	
+	if (terrain->friction) // Handle Friction set here so mobjs are affected as well.
+		K_SetTerrainFriction(mo);
 
 	if (player == NULL)
 	{
@@ -676,7 +760,7 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		if (!terrain->springStrength)
 			K_DoPogoSpring(player->mo, 0, 1);
 		else
-			S_StartSound(mo, sfx_kc2f);
+			S_StartSound(player->mo, sfx_kc2f);
 	}
 
 	// (Offroad is handled elsewhere!)
@@ -1672,6 +1756,10 @@ static void K_ParseTerrainParameter(size_t i, char *param, char *val)
 	else if (stricmp(param, "remap") == 0)
 	{
 		K_FlagBoolean(&terrain->flags, TRF_REMAP, val);
+	}
+	else if (stricmp(param, "fricfix") == 0 || stricmp(param, "frictionfix") == 0 || stricmp(param, "boostbypass") == 0)
+	{
+		K_FlagBoolean(&terrain->flags, TRF_BYPASSBOOST, val);
 	}
 }
 

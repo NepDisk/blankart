@@ -614,7 +614,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			return BMIT_CONTINUE; // underneath
 		if (thing->player && thing->flags & MF_SHOOTABLE && tm.thing->health > 0)
 		{
-			UINT32 damagetype = (tm.thing->info->mass & 0xFF);
+			UINT32 damagetype = (tm.thing->info->mass & DMG_TYPEMASK);
 			P_DamageMobj(thing, tm.thing, tm.thing, 1, damagetype);
 		}
 		return BMIT_CONTINUE;

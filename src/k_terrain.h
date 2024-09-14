@@ -96,7 +96,8 @@ typedef enum
 	TRF_SNEAKERPANEL = 1<<1, // Texture is a booster
 	TRF_WATERRUNPANEL = 1<<2, // Texture is a waterrun panel
 	TRF_TRIPWIRE = 1<<3, // Texture is a tripwire when used as a midtexture
-	TRF_REMAP = 1<<4 // Texture colors may be remapped with ENCOREMAP or TWEAKMAP
+	TRF_REMAP = 1<<4, // Texture colors may be remapped with ENCOREMAP or TWEAKMAP
+	TRF_BYPASSBOOST = 1<<5 // Texture bypasses boost friction resistence
 } terrain_flags_t;
 
 typedef struct terrain_s
@@ -515,23 +516,6 @@ void K_UpdateMobjTerrain(mobj_t *mo, INT32 flatID);
 --------------------------------------------------*/
 
 void K_ProcessTerrainEffect(mobj_t *mo);
-
-
-/*--------------------------------------------------
-	void K_SetDefaultFriction(mobj_t *mo);
-
-		Resets an object to their default friction values.
-		If they are on terrain with different friction,
-		they will update to that value.
-
-	Input Arguments:-
-		mo - The object to reset the friction values of.
-
-	Return:-
-		None
---------------------------------------------------*/
-
-void K_SetDefaultFriction(mobj_t *mo);
 
 
 /*--------------------------------------------------
