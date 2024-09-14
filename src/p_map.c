@@ -598,28 +598,24 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			return BMIT_CONTINUE; // overhead
 		if (thing->z + thing->height < tm.thing->z)
 			return BMIT_CONTINUE; // underneath
-		if (tm.thing->flags & MF_SHOOTABLE && thing->health > 0)
+		if (tm.thing->player && tm.thing->flags & MF_SHOOTABLE && thing->health > 0)
 		{
-			UINT32 damagetype = (thing->info->mass & 0xFF);
-
-			if (P_DamageMobj(tm.thing, thing, thing, 1, damagetype) && (damagetype = (thing->info->mass>>8)))
-				S_StartSound(thing, damagetype);
+			UINT32 damagetype = (tm.thing->info->mass & DMG_TYPEMASK);
+			P_DamageMobj(tm.thing, thing, thing, 1, damagetype);
 		}
 		return BMIT_CONTINUE;
 	}
-	else if (tm.thing->flags & MF_PAIN && thing->player)
+	else if (tm.thing->flags & MF_PAIN)
 	{ // Painful thing splats player in the face
 		// see if it went over / under
 		if (tm.thing->z > thing->z + thing->height)
 			return BMIT_CONTINUE; // overhead
 		if (tm.thing->z + tm.thing->height < thing->z)
 			return BMIT_CONTINUE; // underneath
-		if (thing->flags & MF_SHOOTABLE && tm.thing->health > 0)
+		if (thing->player && thing->flags & MF_SHOOTABLE && tm.thing->health > 0)
 		{
 			UINT32 damagetype = (tm.thing->info->mass & 0xFF);
-
-			if (P_DamageMobj(thing, tm.thing, tm.thing, 1, damagetype) && (damagetype = (tm.thing->info->mass>>8)))
-				S_StartSound(tm.thing, damagetype);
+			P_DamageMobj(thing, tm.thing, tm.thing, 1, damagetype);
 		}
 		return BMIT_CONTINUE;
 	}
