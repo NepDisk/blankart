@@ -6621,11 +6621,11 @@ static void P_ConvertBinaryThingTypes(void)
 			mapthings[i].args[2] = !(mapthings[i].options & (MTF_AMBUSH|MTF_OBJECTSPECIAL));
 			break;
 		case 462: //Balloon
+			mapthings[i].args[0] = !!(mapthings[i].options & MTF_AMBUSH);
 			if (mapthings[i].angle > 0)
 			{
-				P_WriteSkincolor(((mapthings[i].angle - 1) % (numskincolors - 1)) + 1, &mapthings[i].stringargs[0]);
+				mapthings[i].args[1] = (1 + (mapthings[i].angle % (numskincolors-1)));
 			}
-			mapthings[i].args[0] = !!(mapthings[i].options & MTF_AMBUSH);
 			break;
 		case 500: //Air bubble patch
 			mapthings[i].args[0] = !!(mapthings[i].options & MTF_AMBUSH);

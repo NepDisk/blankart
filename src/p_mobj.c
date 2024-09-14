@@ -12037,8 +12037,11 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 			mobj->health = FixedMul(mobj->subsector->sector->ceilingheight - mobj->subsector->sector->floorheight, 3*(FRACUNIT/4)) >> FRACBITS;
 		break;
 	case MT_BALLOON:
-		if (mthing->stringargs[0])
+		if (mthing->args[1])
+			mobj->color = mthing->args[1];
+		else if (mthing->stringargs[0])
 			mobj->color = get_number(mthing->stringargs[0]);
+		
 		if (mthing->args[0])
 			mobj->flags2 |= MF2_AMBUSH;
 		break;
