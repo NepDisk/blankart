@@ -714,13 +714,15 @@ void R_RenderMaskedSegRange(drawseg_t *ds, INT32 x1, INT32 x2)
 // Loop through R_DrawMaskedColumn calls
 static void R_DrawRepeatMaskedColumn(column_t *col, column_t *bm, INT32 baseclip)
 {
+	INT64 z;
 	while (sprtopscreen < sprbotscreen)
 	{
 		R_DrawMaskedColumn(col, bm, baseclip);
-		if ((INT64)sprtopscreen + dc_texheight*spryscale > (INT64)INT32_MAX) // prevent overflow
+		z = sprtopscreen + (INT64)dc_texheight*spryscale;
+		if (z > (INT64)INT32_MAX) // prevent overflow
 			sprtopscreen = INT32_MAX;
 		else
-			sprtopscreen += dc_texheight*spryscale;
+			sprtopscreen = z;
 	}
 }
 
