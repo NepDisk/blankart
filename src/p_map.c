@@ -1285,7 +1285,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			return BMIT_CONTINUE;
 		}
 	}
-
+#if 0
 	if ((tm.thing->flags & MF_SPRING || tm.thing->type == MT_STEAM || tm.thing->type == MT_SPIKE || tm.thing->type == MT_WALLSPIKE) && (thing->player))
 		; // springs, gas jets and springs should never be able to step up onto a player
 	// z checking at last
@@ -1384,6 +1384,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			}
 		}
 	}
+#endif
 	// not solid not blocked
 	return BMIT_CONTINUE;
 }
