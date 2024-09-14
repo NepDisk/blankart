@@ -1902,8 +1902,7 @@ void P_XYMovement(mobj_t *mo)
 	if (mo->type == MT_FLINGRING || mo->type == MT_BALLHOG || mo->type == MT_BUBBLESHIELDTRAP)
 		return;
 
-	if (player && (player->spinouttimer && !player->wipeoutslow)
-		&& player->speed <= FixedDiv(20*mapobjectscale, player->offroad + FRACUNIT))
+	if (mo->player && (mo->player->spinouttimer && !mo->player->wipeoutslow) && mo->player->speed <= K_GetKartSpeed(mo->player, false, true)/2)
 		return;
 	//}
 
