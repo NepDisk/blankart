@@ -925,20 +925,23 @@ static void G_DoAnglePrediction(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer, p
 	cmd->angle = (INT16)(localangle[ssplayer-1] >> TICCMD_REDUCE);
 }
 
+static fixed_t angleturn[3] = {KART_FULLTURN/2, KART_FULLTURN, KART_FULLTURN/4}; // + slow turn
 void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 {
 	const UINT8 forplayer = ssplayer-1;
-
+	
+	const INT32 baseturnspeed = 1;
 	const INT32 lookaxis = cv_lookaxis[forplayer].value;
 	const boolean invertmouse = cv_invertmouse.value;
 	const boolean analogjoystickmove = cv_usejoystick[forplayer].value && !Joystick[forplayer].bGamepadStyle;
 	const boolean gamepadjoystickmove = cv_usejoystick[forplayer].value && Joystick[forplayer].bGamepadStyle;
 	const boolean usejoystick = (analogjoystickmove || gamepadjoystickmove);
 
+	static INT32 turnheld[MAXSPLITSCREENPLAYERS]; // for accelerative turning
 	static boolean keyboard_look[MAXSPLITSCREENPLAYERS]; // true if lookup/down using keyboard
 	static boolean resetdown[MAXSPLITSCREENPLAYERS]; // don't cam reset every frame
 
-	INT32 forward, axis, side;
+	INT32 forward, axis, side, tspeed;
 
 	joystickvector2_t joystickvector;
 
@@ -1010,18 +1013,30 @@ void G_BuildTiccmd(ticcmd_t *cmd, INT32 realtics, UINT8 ssplayer)
 		turnleft = turnleft || (joystickvector.xaxis < 0);
 	}
 	forward = side = 0;
+	
+	// use two stage accelerative turning
+	// on the keyboard and joystick
+	if (turnleft || turnright)
+		turnheld[forplayer] += realtics;
+	else
+		turnheld[forplayer] = 0;
+
+	if (turnheld[forplayer] < SLOWTURNTICS)
+		tspeed = cv_turnsmooth.value == 2 ? 2 : 0; // slow turn
+	else
+		tspeed = baseturnspeed;
 
 	cmd->turning = 0;
 
 	// let movement keys cancel each other out
 	if (turnright && !(turnleft))
 	{
-		cmd->turning -= KART_FULLTURN;
+		cmd->turning -= angleturn[tspeed];
 		side += 4;
 	}
 	else if (turnleft && !(turnright))
 	{
-		cmd->turning += KART_FULLTURN;
+		cmd->turning += angleturn[tspeed];
 		side -= 4;
 	}
 

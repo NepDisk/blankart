@@ -1137,6 +1137,7 @@ static menuitem_t OP_ControlsMenu[] =
 	{IT_CALL | IT_STRING, NULL, "Player 4 Controls...", {.routine = M_Setup4PControlsMenu},  40},
 
 	{IT_STRING | IT_CVAR, NULL, "Controls per key", {.cvar = &cv_controlperkey}, 60},
+	{IT_STRING | IT_CVAR, NULL, "Digital turn easing", {.cvar = &cv_turnsmooth}, 70},
 };
 
 static menuitem_t OP_AllControlsMenu[] =
