@@ -1282,14 +1282,17 @@ static menuitem_t OP_VideoOptionsMenu[] =
 							NULL,	"Gamma",				{.cvar = &cv_globalgamma},			 50},
 
 	{IT_STRING | IT_CVAR,	NULL,	"Show FPS",				{.cvar = &cv_ticrate},				 60},
-	{IT_STRING | IT_CVAR,	NULL,	"FPS Cap",				{.cvar = &cv_fpscap},				 70},
+	{IT_STRING | IT_CVAR,	NULL,	"Vertical Sync",		{.cvar = &cv_vidwait},				 70},
+	{IT_STRING | IT_CVAR,	NULL,	"FPS Cap",				{.cvar = &cv_fpscap},				 80},
+	
+	{IT_STRING | IT_CVAR,	NULL,	"VHS Effect",			{.cvar = &cv_vhseffect},			 100},
 
-	{IT_STRING | IT_CVAR,	NULL,	"Draw Distance",		{.cvar = &cv_drawdist},				 90},
-	{IT_STRING | IT_CVAR,	NULL,	"Weather Draw Distance", {.cvar = &cv_drawdist_precip},		100},
-	{IT_STRING | IT_CVAR,	NULL,	"Skyboxes",				{.cvar = &cv_skybox},				110},
+	{IT_STRING | IT_CVAR,	NULL,	"Draw Distance",		{.cvar = &cv_drawdist},				110},
+	{IT_STRING | IT_CVAR,	NULL,	"Weather Draw Distance", {.cvar = &cv_drawdist_precip},		120},
+	{IT_STRING | IT_CVAR,	NULL,	"Skyboxes",				{.cvar = &cv_skybox},				130},
 
 #ifdef HWRENDER
-	{IT_CALL | IT_STRING,	NULL,	"OpenGL Options...",	{.routine = M_OpenGLOptionsMenu},	140},
+	{IT_CALL | IT_STRING,	NULL,	"OpenGL Options...",	{.routine = M_OpenGLOptionsMenu},	150},
 #endif
 };
 
@@ -1299,13 +1302,15 @@ enum
 #if (defined (__unix__) && !defined (MSDOS)) || defined (UNIXCOMMON) || defined (HAVE_SDL)
 	op_video_fullscreen,
 #endif
+	op_video_renderer,
 	op_video_gamma,
+	op_vide_showfps,
+	op_video_vsync,
+	op_video_fps,
+	op_video_vhs,
 	op_video_dd,
 	op_video_wdd,
-	//op_video_wd,
 	op_video_skybox,
-	op_video_fps,
-	op_video_vsync,
 #ifdef HWRENDER
 	op_video_ogl,
 #endif
@@ -3587,12 +3592,6 @@ void M_Init(void)
 		PlayerMenu[i].itemaction.routine = M_ChoosePlayer;
 		PlayerMenu[i].alphaKey = 0;
 	}
-
-#ifdef HWRENDER
-	// Permanently hide some options based on render mode
-	if (rendermode == render_soft)
-		OP_VideoOptionsMenu[op_video_ogl].status = IT_DISABLED;
-#endif
 
 #ifndef NONET
 	CV_RegisterVar(&cv_serversort);
@@ -10995,6 +10994,14 @@ static void M_DrawVideoMenu(void)
 	V_DrawRightAlignedString(BASEVIDWIDTH - currentMenu->x, currentMenu->y + OP_VideoOptionsMenu[0].alphaKey,
 		(SCR_IsAspectCorrect(vid.width, vid.height) ? recommendedflags : highlightflags),
 			va("%dx%d", vid.width, vid.height));
+	
+#ifdef HWRENDER
+	// Hide some options based on the current render mode
+	if (rendermode == render_opengl)
+		OP_VideoOptionsMenu[op_video_ogl].status = IT_CALL | IT_STRING;
+	else
+#endif
+		OP_VideoOptionsMenu[op_video_ogl].status = IT_DISABLED;
 }
 
 static void M_DrawHUDOptions(void)

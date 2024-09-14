@@ -34,6 +34,7 @@
 #include "s_sound.h" // ditto
 #include "g_game.h" // ditto
 #include "p_local.h" // P_AutoPause()
+#include "m_menu.h"
 
 #ifdef HWRENDER
 #include "hardware/hw_main.h"
@@ -499,9 +500,18 @@ void SCR_ChangeRenderer(void)
 	&& (cv_renderer.value == render_opengl))
 	{
 		if (M_CheckParm("-nogl"))
+		{
 			CONS_Alert(CONS_ERROR, "OpenGL rendering was disabled!\n");
+			if (menuactive)
+				M_StartMessage(M_GetText("OpenGL rendering was disabled!\n\n(Press a key)\n"), NULL, MM_NOTHING);
+		}
 		else
+		{
 			CONS_Alert(CONS_ERROR, "OpenGL never loaded\n");
+			if (menuactive)
+				M_StartMessage(M_GetText("OpenGL never loaded\n\n(Press a key)\n"), NULL, MM_NOTHING);
+		}
+		CV_SetValue(&cv_renderer, render_soft);
 		return;
 	}
 
