@@ -2476,23 +2476,7 @@ increment_move
 		if (P_UsingStepUp(thing))
 		{
 			//All things are affected by their scale.
-			fixed_t maxstep = FixedMul(MAXSTEPMOVE, mapobjectscale);
-
-			if (thing->player)
-			{
-				if (P_MobjTouchingSectorSpecialFlag(thing, SSF_DOUBLESTEPUP)
-					|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_DOUBLESTEPUP))
-				{
-					// If using type Section1:13, double the maxstep.
-					maxstep <<= 1;
-				}
-				else if (P_MobjTouchingSectorSpecialFlag(thing, SSF_NOSTEPUP)
-					|| (R_PointInSubsector(x, y)->sector->specialflags & SSF_NOSTEPUP))
-				{
-					// If using type Section1:12, no maxstep. For short walls, like Egg Zeppelin
-					maxstep = 0;
-				}
-			}
+			fixed_t maxstep = P_GetThingStepUp(thing, tryx, tryy);
 
 			if (thing->type == MT_SKIM)
 				maxstep = 0;
