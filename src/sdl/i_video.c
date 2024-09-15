@@ -1640,17 +1640,7 @@ static SDL_bool Impl_CreateContext(void)
 		// "direct3d" driver (D3D9) causes Drmingw exchndl
 		// to not write RPT files. Every other driver
 		// seems fine.
-
-		// well then why use the super slow opengl driver?
-		// d3d11 is the fastest out of all of em and works fine with drmingw
-		// for nix opengles2 also does a rather well job
-#ifdef _WIN32
-		if (SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11") == SDL_FALSE)
-			SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-#else
-		if (SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2") == SDL_FALSE)
-			SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-#endif
+		SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
 		if (!renderer)
 			renderer = SDL_CreateRenderer(window, -1, flags);
