@@ -2036,7 +2036,7 @@ static void SaveMobjThinker(const thinker_t *th, const UINT8 type)
 	if (mobj->dispoffset)
 		diff2 |= MD2_DISPOFFSET;
 	if (mobj == boss3cap)
-		diff2 |= MD2_WAYPOINTCAP;
+		diff2 |= MD2_BOSS3CAP;
 	if (mobj == waypointcap)
 		diff2 |= MD2_WAYPOINTCAP;
 	if (mobj == kitemcap)
