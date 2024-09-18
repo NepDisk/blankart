@@ -714,13 +714,15 @@ void R_RenderMaskedSegRange(drawseg_t *ds, INT32 x1, INT32 x2)
 // Loop through R_DrawMaskedColumn calls
 static void R_DrawRepeatMaskedColumn(column_t *col, column_t *bm, INT32 baseclip)
 {
+	INT64 z;
 	while (sprtopscreen < sprbotscreen)
 	{
 		R_DrawMaskedColumn(col, bm, baseclip);
-		if ((INT64)sprtopscreen + dc_texheight*spryscale > (INT64)INT32_MAX) // prevent overflow
+		z = sprtopscreen + (INT64)dc_texheight*spryscale;
+		if (z > (INT64)INT32_MAX) // prevent overflow
 			sprtopscreen = INT32_MAX;
 		else
-			sprtopscreen += dc_texheight*spryscale;
+			sprtopscreen = z;
 	}
 }
 
@@ -2024,32 +2026,25 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 		worldlow -= viewz;
 		worldlowslope -= viewz;
 
-		if (udmf) // more mess yippie
+		// hack to allow height changes in outdoor areas
+		// This is what gets rid of the upper textures if there should be sky
+		if (frontsector->ceilingpic == skyflatnum
+			&& backsector->ceilingpic == skyflatnum)
 		{
-			// hack to allow height changes in outdoor areas
-			// This is what gets rid of the upper textures if there should be sky
-			if (frontsector->ceilingpic == skyflatnum
-				&& backsector->ceilingpic == skyflatnum)
-			{
+			if (udmf)
 				bothceilingssky = true;
-			}
-
-			// likewise, but for floors and upper textures
-			if (frontsector->floorpic == skyflatnum
-				&& backsector->floorpic == skyflatnum)
-			{
-				bothfloorssky = true;
-			}
-		}
-		else
-		{
-			// hack to allow height changes in outdoor areas
-			if (frontsector->ceilingpic == skyflatnum
-				&& backsector->ceilingpic == skyflatnum)
+			else
 			{
 				worldtopslope = worldhighslope =
 				worldtop = worldhigh;
 			}
+		}
+
+		// likewise, but for floors and upper textures
+		if (frontsector->floorpic == skyflatnum
+			&& backsector->floorpic == skyflatnum)
+		{
+			bothfloorssky = true;
 		}
 
 		ds_p->sprtopclip = ds_p->sprbottomclip = NULL;
@@ -2073,7 +2068,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 			}
 		}
 
-		if (!bothceilingssky || !udmf)
+		if (!bothceilingssky)
 		{
 			if (worldtopslope < worldhighslope || worldtop < worldhigh)
 			{
@@ -2091,45 +2086,12 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 			}
 		}
 
-		if (!bothceilingssky && !bothfloorssky || !udmf)
-		{
-			if (worldhigh <= worldbottom && worldhighslope <= worldbottomslope)
-			{
-				ds_p->sprbottomclip = negonearray;
-				ds_p->bsilheight = INT32_MAX;
-				ds_p->silhouette |= SIL_BOTTOM;
-			}
-
-			if (worldlow >= worldtop && worldlowslope >= worldtopslope)
-			{
-				ds_p->sprtopclip = screenheightarray;
-				ds_p->tsilheight = INT32_MIN;
-				ds_p->silhouette |= SIL_TOP;
-			}
-		}
-
 		//SoM: 3/25/2000: This code fixes an automap bug that didn't check
 		// frontsector->ceiling and backsector->floor to see if a door was closed.
 		// Without the following code, sprites get displayed behind closed doors.
 		if (!bothceilingssky && !bothfloorssky || !udmf)
 		{
-			if (doorclosed || (worldhigh <= worldbottom && worldhighslope <= worldbottomslope))
-			{
-				ds_p->sprbottomclip = negonearray;
-				ds_p->bsilheight = INT32_MAX;
-				ds_p->silhouette |= SIL_BOTTOM;
-			}
-
-			if (doorclosed || (worldlow >= worldtop && worldlowslope >= worldtopslope))
-			{                   // killough 1/17/98, 2/8/98
-				ds_p->sprtopclip = screenheightarray;
-				ds_p->tsilheight = INT32_MIN;
-				ds_p->silhouette |= SIL_TOP;
-			}
-
-			//SoM: 3/25/2000: This code fixes an automap bug that didn't check
-			// frontsector->ceiling and backsector->floor to see if a door was closed.
-			// Without the following code, sprites get displayed behind closed doors.
+			if (udmf || !udmf && viewsector != frontsector && viewsector != backsector)
 			{
 				if (doorclosed || (worldhigh <= worldbottom && worldhighslope <= worldbottomslope))
 				{
@@ -2137,8 +2099,9 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 					ds_p->bsilheight = INT32_MAX;
 					ds_p->silhouette |= SIL_BOTTOM;
 				}
+
 				if (doorclosed || (worldlow >= worldtop && worldlowslope >= worldtopslope))
-				{                   // killough 1/17/98, 2/8/98
+				{
 					ds_p->sprtopclip = screenheightarray;
 					ds_p->tsilheight = INT32_MIN;
 					ds_p->silhouette |= SIL_TOP;
@@ -2146,7 +2109,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 			}
 		}
 
-		if (!udmf && bothfloorssky)
+		if (bothfloorssky)
 		{
 			// see double ceiling skies comment
 			// this is the same but for upside down thok barriers where the floor is sky and the ceiling is normal
@@ -2178,7 +2141,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 			markfloor = false;
 		}
 
-		if (!udmf && bothceilingssky)
+		if (bothceilingssky)
 		{
 			// double ceiling skies are special
 			// we don't want to lower the ceiling clipping, (no new plane is drawn anyway)
@@ -2213,8 +2176,8 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 
 		if (!bothceilingssky && !bothfloorssky || !udmf)
 		{
-			if ((udmf && ((worldhigh <= worldbottom && worldhighslope <= worldbottomslope)
-				|| (worldlow >= worldtop && worldlowslope >= worldtopslope))) || (! udmf && (backsector->ceilingheight <= frontsector->floorheight ||
+			if (((worldhigh <= worldbottom && worldhighslope <= worldbottomslope)
+				|| (worldlow >= worldtop && worldlowslope >= worldtopslope)) || (!udmf && (backsector->ceilingheight <= frontsector->floorheight ||
 				backsector->floorheight >= frontsector->ceilingheight)))
 			{
 				// closed door
@@ -2223,7 +2186,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 		}
 
 		// check TOP TEXTURE
-		if ((udmf && !bothceilingssky || !udmf) && (worldhigh < worldtop || worldhighslope < worldtopslope)) // never draw the top texture if on
+		if (!bothceilingssky && (worldhigh < worldtop || worldhighslope < worldtopslope)) // never draw the top texture if on
 		{
 			fixed_t texheight;
 			// top texture
@@ -2253,7 +2216,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 			}
 		}
 		// check BOTTOM TEXTURE
-		if ((udmf && !bothfloorssky || !udmf) && (worldlow > worldbottom || worldlowslope > worldbottomslope)) // never draw the top texture if on
+		if ((!bothfloorssky || !udmf) && (worldlow > worldbottom || worldlowslope > worldbottomslope)) // never draw the top texture if on
 		{
 			// bottom texture
 			bottomtexture = R_GetTextureNum(sidedef->bottomtexture);

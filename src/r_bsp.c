@@ -544,7 +544,8 @@ static void R_AddLine(seg_t *line)
 		SLOPEPARAMS( backsector->c_slope,  backc1,  backc2,  backsector->ceilingheight)
 #undef SLOPEPARAMS
 
-		if (udmf)
+
+		if (udmf || !udmf && viewsector != backsector && viewsector != frontsector)
 		{
 			// if both ceilings are skies, consider it always "open"
 			// same for floors
@@ -557,53 +558,33 @@ static void R_AddLine(seg_t *line)
 				}
 
 				// Check for automap fix. Store in doorclosed for r_segs.c
-				doorclosed = (backc1 <= backf1 && backc2 <= backf2
-				&& ((backc1 >= frontc1 && backc2 >= frontc2) || curline->sidedef->toptexture)
-				&& ((backf1 <= frontf1 && backf2 >= frontf2) || curline->sidedef->bottomtexture));
+				if (udmf)
+					// Check for automap fix. Store in doorclosed for r_segs.c
+					doorclosed = (backc1 <= backf1 && backc2 <= backf2
+					&& ((backc1 >= frontc1 && backc2 >= frontc2) || curline->sidedef->toptexture)
+					&& ((backf1 <= frontf1 && backf2 >= frontf2) || curline->sidedef->bottomtexture));
+				else
+					doorclosed = (backc1 <= backf1 && backc2 <= backf2
+					&& ((backc1 >= frontc1 && backc2 >= frontc2) || curline->sidedef->toptexture)
+					&& ((backf1 <= frontf1 && backf2 >= frontf2) || curline->sidedef->bottomtexture)
+					&& (backsector->ceilingpic != skyflatnum || frontsector->ceilingpic != skyflatnum));
 
 				if (doorclosed)
 					goto clipsolid;
 			}
-
-			// Window.
-			if (!bothceilingssky) // ceilings are always the "same" when sky
-				if (backc1 != frontc1 || backc2 != frontc2)
-					goto clippass;
-			if (!bothfloorssky)	// floors are always the "same" when sky
-				if (backf1 != frontf1 || backf2 != frontf2)
-					goto clippass;
 		}
-		else
-		{
-			if (viewsector != backsector && viewsector != frontsector)
-			{
-				if ((backc1 <= frontf1 && backc2 <= frontf2)
-					|| (backf1 >= frontc1 && backf2 >= frontc2))
-				{
-					goto clipsolid;
-				}
 
-				// Check for automap fix. Store in doorclosed for r_segs.c
-				doorclosed = (backc1 <= backf1 && backc2 <= backf2
-				&& ((backc1 >= frontc1 && backc2 >= frontc2) || curline->sidedef->toptexture)
-				&& ((backf1 <= frontf1 && backf2 >= frontf2) || curline->sidedef->bottomtexture)
-				&& (backsector->ceilingpic != skyflatnum || frontsector->ceilingpic != skyflatnum));
-
-				if (doorclosed)
-					goto clipsolid;
-			}
-
-			// Window.
-			if (backc1 != frontc1 || backc2 != frontc2
-				|| backf1 != frontf1 || backf2 != frontf2)
-			{
+		// Window.
+		if (!bothceilingssky) // ceilings are always the "same" when sky
+			if (backc1 != frontc1 || backc2 != frontc2)
 				goto clippass;
-			}
-		}
+		if (!bothfloorssky)	// floors are always the "same" when sky
+			if (backf1 != frontf1 || backf2 != frontf2)
+				goto clippass;
 	}
 	else
 	{
-		if (udmf)
+		if (udmf || !udmf && viewsector != backsector && viewsector != frontsector)
 		{
 			// if both ceilings are skies, consider it always "open"
 			// same for floors
@@ -624,10 +605,15 @@ static void R_AddLine(seg_t *line)
 				// of front-back closure (e.g. front floor is taller than back ceiling).
 				//
 				// if door is closed because back is shut:
-				doorclosed = backsector->ceilingheight <= backsector->floorheight
-				// preserve a kind of transparent door/lift special effect:
-				&& (backsector->ceilingheight >= frontsector->ceilingheight || curline->sidedef->toptexture)
-				&& (backsector->floorheight <= frontsector->floorheight || curline->sidedef->bottomtexture);
+				if (udmf)
+					doorclosed = backsector->ceilingheight <= backsector->floorheight
+					&& (backsector->ceilingheight >= frontsector->ceilingheight || curline->sidedef->toptexture)
+					&& (backsector->floorheight <= frontsector->floorheight || curline->sidedef->bottomtexture); // preserve a kind of transparent door/lift special effect:
+				else
+					doorclosed = (backsector->ceilingheight <= backsector->floorheight
+					&& (backsector->ceilingheight >= frontsector->ceilingheight || curline->sidedef->toptexture)
+					&& (backsector->floorheight <= frontsector->floorheight || curline->sidedef->bottomtexture)
+					&& (backsector->ceilingpic != skyflatnum || frontsector->ceilingpic != skyflatnum));
 
 				if (doorclosed)
 					goto clipsolid;
@@ -640,33 +626,6 @@ static void R_AddLine(seg_t *line)
 			if (!bothfloorssky)	// floors are always the "same" when sky
 				if (backsector->floorheight != frontsector->floorheight)
 					goto clippass;
-		}
-		else
-		{
-			if (viewsector != backsector && viewsector != frontsector)
-			{
-				if (backsector->ceilingheight <= frontsector->floorheight
-					|| backsector->floorheight >= frontsector->ceilingheight)
-				{
-					goto clipsolid;
-				}
-
-				// Check for automap fix. Store in doorclosed for r_segs.c
-				doorclosed = (backsector->ceilingheight <= backsector->floorheight
-				&& (backsector->ceilingheight >= frontsector->ceilingheight || curline->sidedef->toptexture)
-				&& (backsector->floorheight <= frontsector->floorheight || curline->sidedef->bottomtexture)
-				&& (backsector->ceilingpic != skyflatnum || frontsector->ceilingpic != skyflatnum));
-
-				if (doorclosed)
-					goto clipsolid;
-			}
-
-			// Window.
-			if (backsector->ceilingheight != frontsector->ceilingheight
-				|| backsector->floorheight != frontsector->floorheight)
-			{
-				goto clippass;
-			}
 		}
 	}
 
