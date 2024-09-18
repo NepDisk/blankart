@@ -1551,7 +1551,7 @@ static void SendNameAndColor(UINT8 n)
 		K_KartResetPlayerColor(player);
 
 		// Update follower for local games:
-		if (cv_follower[n].value >= -1 && cv_follower[n].value != player->followerskin)
+		if (cv_follower[n].value >= -1)
 			K_SetFollowerByNum(playernum, cv_follower[n].value);
 
 		player->followercolor = cv_followercolor[n].value;
