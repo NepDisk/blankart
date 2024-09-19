@@ -872,8 +872,6 @@ UINT16 W_InitFile(const char *filename, boolean mainfile, boolean startup)
 		break;
 	}
 
-	K_InitTerrain(numwadfiles - 1);
-
 	if (refreshdirmenu & REFRESHDIR_GAMEDATA)
 		G_LoadGameData();
 	DEH_UpdateMaxFreeslots();

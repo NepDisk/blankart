@@ -571,14 +571,15 @@ void K_UpdateTerrainOverlay(mobj_t *mo);
 
 		Finds the TERRAIN lumps in a WAD/PK3, and
 		processes all of them.
+		Also returns if new terrains were loaded
 
 	Input Arguments:-
 		wadNum - WAD file ID to process.
 
 	Return:-
-		None
+		terrainLoaded - Terrain was loaded
 --------------------------------------------------*/
 
-void K_InitTerrain(UINT16 wadNum);
+boolean K_InitTerrain(UINT16 wadNum);
 
 #endif // __K_TERRAIN_H__

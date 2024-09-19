@@ -2211,10 +2211,11 @@ static boolean K_TERRAINLumpParser(char *data, size_t size)
 
 		See header file for description.
 --------------------------------------------------*/
-void K_InitTerrain(UINT16 wadNum)
+boolean K_InitTerrain(UINT16 wadNum)
 {
 	UINT16 lumpNum;
 	lumpinfo_t *lump_p = wadfiles[wadNum]->lumpinfo;
+	boolean terrainLoaded = false;
 
 	// Iterate through all lumps and compare the name individually.
 	// In PK3 files, you can potentially have multiple TERRAIN differentiated by
@@ -2249,6 +2250,8 @@ void K_InitTerrain(UINT16 wadNum)
 			size = W_LumpLengthPwad(wadNum, lumpNum);
 
 			CONS_Printf(M_GetText("Loading TERRAIN from %s\n"), name);
+			terrainLoaded = true;
+			
 
 			datacopy = (char *)Z_Malloc((size+1)*sizeof(char),PU_STATIC,NULL);
 			memmove(datacopy,data,size);
@@ -2265,4 +2268,7 @@ void K_InitTerrain(UINT16 wadNum)
 	}
 
 	R_ClearTextureNumCache(false);
+
+	return terrainLoaded;
+	
 }

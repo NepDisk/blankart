@@ -175,6 +175,7 @@ mapthing_t *redctfstarts[MAXPLAYERS];
 // Might be replacable with parameters, but non-trivial when the functions are called on separate tics
 static SINT8 partadd_stage = -1;
 static boolean partadd_replacescurrentmap = false;
+static boolean partadd_terrainloaded = false;
 static boolean partadd_important = false;
 UINT16 partadd_earliestfile = UINT16_MAX;
 
@@ -8486,7 +8487,11 @@ UINT16 P_PartialAddWadFile(const char *wadfilename)
 
 	// Reload BRIGHT
 	K_InitBrightmapsPwad(wadnum);
-
+	
+	// Reload TERRAIN
+	if (K_InitTerrain(wadnum))
+		partadd_terrainloaded = true;
+		
 	//
 	// look for skins
 	//
@@ -8607,6 +8612,13 @@ boolean P_MultiSetupWadFiles(boolean fullsetup)
 			if (server)
 				SendNetXCmd(XD_EXITLEVEL, NULL, 0);
 		}
+		
+		if (partadd_terrainloaded && gamestate == GS_LEVEL)
+		{
+			CONS_Printf(M_GetText("Terrain Definition reloaded, ending the level to ensure consistency.\n"));
+			if (server)
+				SendNetXCmd(XD_EXITLEVEL, NULL, 0);
+		}
 		partadd_stage = -1;
 	}
 
@@ -8616,6 +8628,7 @@ boolean P_MultiSetupWadFiles(boolean fullsetup)
 	{
 		partadd_important = false;
 		partadd_replacescurrentmap = false;
+		partadd_terrainloaded = false;
 		partadd_earliestfile = UINT16_MAX;
 		return true;
 	}
