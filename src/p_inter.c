@@ -1429,57 +1429,10 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			else
 				target->fuse = 40*TICRATE;
 
-			// burst effects
-			for (i = 0; i < 2; i++)
-			{
-				mobj_t *blast = P_SpawnMobjFromMobj(target, 0, 0, target->info->height >> 1, MT_BATTLEBUMPER_BLAST);
-				blast->angle = angle + i*ANGLE_90;
-				P_SetScale(blast, 2*blast->scale/3);
-				blast->destscale = 2*blast->scale;
-			}
-
-			// dust effects
-			for (i = 0; i < 10; i++)
-			{
-				mobj_t *puff = P_SpawnMobjFromMobj(
-					target,
-					P_RandomRange(-spacing, spacing) * FRACUNIT,
-					P_RandomRange(-spacing, spacing) * FRACUNIT,
-					P_RandomRange(0, 4*spacing) * FRACUNIT,
-					MT_SPINDUST
-				);
-
-				P_SetScale(puff, (puff->destscale *= 2));
-				puff->momz = puff->scale * P_MobjFlip(puff);
-
-				P_Thrust(puff, R_PointToAngle2(target->x, target->y, puff->x, puff->y), 3*puff->scale);
-				if (attacker)
-				{
-					puff->momx += attacker->momx;
-					puff->momy += attacker->momy;
-					puff->momz += attacker->momz;
-				}
-			}
-
 			// remove inside item
 			if (target->tracer && !P_MobjWasRemoved(target->tracer))
-				P_RemoveMobj(target->tracer);
-
-			// bust capsule caps
-			while (part && !P_MobjWasRemoved(part))
 			{
-				P_InstaThrust(part, part->angle + ANGLE_90, 6 * part->target->scale);
-				P_SetObjectMomZ(part, 6 * FRACUNIT, false);
-				part->fuse = TICRATE/2;
-				part->flags &= ~MF_NOGRAVITY;
-
-				if (attacker)
-				{
-					part->momx += attacker->momx;
-					part->momy += attacker->momy;
-					part->momz += attacker->momz;
-				}
-				part = part->hnext;
+				P_RemoveMobj(target->tracer);
 			}
 
 			// give the player an item!
