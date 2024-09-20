@@ -693,7 +693,7 @@ extern mobj_t *hunt1, *hunt2, *hunt3; // Emerald hunt locations
 // For racing
 extern tic_t racecountdown, exitcountdown;
 
-#define DEFAULT_GRAVITY (4*FRACUNIT/5)
+#define DEFAULT_GRAVITY (FRACUNIT*8)/10
 extern fixed_t gravity;
 extern fixed_t mapobjectscale;
 
