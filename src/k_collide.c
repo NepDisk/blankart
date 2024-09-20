@@ -2,6 +2,7 @@
 /// \brief SRB2Kart item collision hooks
 
 #include "k_collide.h"
+#include "doomstat.h"
 #include "doomtype.h"
 #include "p_mobj.h"
 #include "k_kart.h"
@@ -525,7 +526,7 @@ boolean K_DropTargetCollide(mobj_t *t1, mobj_t *t2)
 
 	// Intensify bumps if already spinning...
 	P_Thrust(t1, R_PointToAngle2(t1->x, t1->y, t2->x, t2->y),
-		(t1->reactiontime && !draggeddroptarget) ? 35*FRACUNIT : 20*FRACUNIT);
+		(t1->reactiontime && !draggeddroptarget) ? 35*mapobjectscale : 20*mapobjectscale);
 
 	if (draggeddroptarget)
 	{
@@ -551,7 +552,7 @@ boolean K_DropTargetCollide(mobj_t *t1, mobj_t *t2)
 
 		t1->angle = t1->old_angle = R_PointToAngle2(0, 0, t1->momx, t1->momy);
 
-		t1->reactiontime = 7*(t1speed+t2speed)/FRACUNIT;
+		t1->reactiontime = 7*(t1speed+t2speed)/mapobjectscale;
 		if (t1->reactiontime < 10)
 			t1->reactiontime = 10;
 		t1->threshold = 10;
@@ -603,9 +604,6 @@ boolean K_DropTargetCollide(mobj_t *t1, mobj_t *t2)
 		? SKINCOLOR_GOLD
 		: SKINCOLOR_CRIMSON;
 	t1->flags &= ~MF_SHOOTABLE;
-
-	t1->spritexscale = 3*FRACUNIT;
-	t1->spriteyscale = 3*FRACUNIT/2;
 
 	if (!t2->player)
 	{
