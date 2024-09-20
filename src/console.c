@@ -259,7 +259,7 @@ static void CONS_Bind_f(void)
 		CONS_Printf("\x82%s", M_GetText("Bind table :\n"));
 		na = 0;
 		for (key = 0; key < NUMINPUTS; key++)
-			if (bindtable[key])
+			if (!menuactive && bindtable[key])
 			{
 				CONS_Printf("%s : \"%s\"\n", G_KeynumToString(key), bindtable[key]);
 				na = 1;
