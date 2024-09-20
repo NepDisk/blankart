@@ -7400,30 +7400,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		}
 
 		break;
-	case MT_FLAMESHIELDPAPER:
-		if (!mobj->target || P_MobjWasRemoved(mobj->target))
-		{
-			P_RemoveMobj(mobj);
-			return false;
-		}
-
-		mobj->z = mobj->target->z;
-
-		K_MatchGenericExtraFlags(mobj, mobj->target);
-
-		{
-			INT32 perpendicular = ((mobj->extravalue1 & 1) ? -ANGLE_90 : ANGLE_90);
-			fixed_t newx = mobj->target->x + P_ReturnThrustX(NULL, mobj->target->angle + perpendicular, 8*mobj->target->scale);
-			fixed_t newy = mobj->target->y + P_ReturnThrustY(NULL, mobj->target->angle + perpendicular, 8*mobj->target->scale);
-
-			P_MoveOrigin(mobj, newx, newy, mobj->target->z);
-
-			if (mobj->extravalue1 & 1)
-				mobj->angle = mobj->target->angle - ANGLE_45;
-			else
-				mobj->angle = mobj->target->angle + ANGLE_45;
-		}
-		break;
 	case MT_LIGHTNINGSHIELD:
 	{
 		fixed_t destx, desty;
@@ -7591,121 +7567,53 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		break;
 	}
 	case MT_FLAMESHIELD:
-	{
-		fixed_t destx, desty;
-		statenum_t curstate;
-		statenum_t underlayst = S_NULL;
-		INT32 flamemax = 0;
-
-		if (!mobj->target || !mobj->target->health || !mobj->target->player
-			|| mobj->target->player->curshield != KSHIELD_FLAME)
 		{
-			P_RemoveMobj(mobj);
-			return false;
-		}
-
-		flamemax = mobj->target->player->flamelength * flameseg;
-
-		P_SetScale(mobj, (mobj->destscale = (5*mobj->target->scale)>>2));
-
-		curstate = ((mobj->tics == 1) ? (mobj->state->nextstate) : ((statenum_t)(mobj->state-states)));
-
-		if (mobj->target->player->flamedash)
-		{
-			if (!(curstate >= S_FLAMESHIELDDASH1 && curstate <= S_FLAMESHIELDDASH12))
-				P_SetMobjState(mobj, S_FLAMESHIELDDASH1);
-
-			if (curstate == S_FLAMESHIELDDASH2)
-				underlayst = S_FLAMESHIELDDASH2_UNDERLAY;
-			else if (curstate == S_FLAMESHIELDDASH5)
-				underlayst = S_FLAMESHIELDDASH5_UNDERLAY;
-			else if (curstate == S_FLAMESHIELDDASH8)
-				underlayst = S_FLAMESHIELDDASH8_UNDERLAY;
-			else if (curstate == S_FLAMESHIELDDASH11)
-				underlayst = S_FLAMESHIELDDASH11_UNDERLAY;
-
-			if (leveltime & 1)
+			fixed_t destx, desty;
+			statenum_t curstate;
+			if (!mobj->target || !mobj->target->health || !mobj->target->player
+				|| mobj->target->player->curshield != KSHIELD_FLAME)
 			{
-				UINT8 i;
-				UINT8 nl = 2;
-
-				if (mobj->target->player->flamedash > mobj->extravalue1)
-					nl = 3;
-
-				for (i = 0; i < nl; i++)
-				{
-					mobj_t *fast = P_SpawnMobj(mobj->x + (P_RandomRange(-36,36) * mobj->scale),
-						mobj->y + (P_RandomRange(-36,36) * mobj->scale),
-						mobj->z + (mobj->height/2) + (P_RandomRange(-20,20) * mobj->scale),
-						MT_FASTLINE);
-
-					fast->angle = mobj->angle;
-					fast->momx = 3*mobj->target->momx/4;
-					fast->momy = 3*mobj->target->momy/4;
-					fast->momz = 3*P_GetMobjZMovement(mobj->target)/4;
-
-					K_MatchGenericExtraFlags(fast, mobj);
-					P_SetMobjState(fast, S_FLAMESHIELDLINE1 + i);
-				}
+				P_RemoveMobj(mobj);
+				return false;
 			}
-		}
-		else
-		{
-			if (curstate >= S_FLAMESHIELDDASH1 && curstate <= S_FLAMESHIELDDASH12)
-				P_SetMobjState(mobj, S_FLAMESHIELD1);
-		}
-
-		mobj->extravalue1 = mobj->target->player->flamedash;
-
-		if (mobj->target->player->flamemeter > flamemax)
-		{
-			mobj_t *flash = P_SpawnMobj(mobj->x + mobj->target->momx, mobj->y + mobj->target->momy, mobj->z + mobj->target->momz, MT_THOK);
-			P_SetMobjState(flash, S_FLAMESHIELDFLASH);
-
-			if (leveltime & 1)
+			P_SetScale(mobj, (mobj->destscale = (5*mobj->target->scale)>>2));
+			curstate = ((mobj->tics == 1) ? (mobj->state->nextstate) : ((statenum_t)(mobj->state-states)));
+			if (mobj->target->player->flamedash)
 			{
-				flash->frame |= 2 + ((leveltime / 2) % 4);
+				if (curstate != S_FLAMESHIELDDASH)
+					P_SetMobjState(mobj, S_FLAMESHIELDDASH);
+				mobj->renderflags ^= RF_DONTDRAW;
 			}
 			else
 			{
-				flash->frame |= ((leveltime / 2) % 2);
+				if (curstate == S_FLAMESHIELDDASH)
+					P_SetMobjState(mobj, S_FLAMESHIELD1);
+				mobj->renderflags &= ~RF_DONTDRAW;
 			}
-		}
-
-		if (!splitscreen /*&& rendermode != render_soft*/)
-		{
-			angle_t viewingangle;
-
-			if (players[displayplayers[0]].awayviewtics)
-				viewingangle = R_PointToAngle2(mobj->target->x, mobj->target->y, players[displayplayers[0]].awayviewmobj->x, players[displayplayers[0]].awayviewmobj->y);
-			else if (!camera[0].chase && players[displayplayers[0]].mo)
-				viewingangle = R_PointToAngle2(mobj->target->x, mobj->target->y, players[displayplayers[0]].mo->x, players[displayplayers[0]].mo->y);
+			if (!splitscreen /*&& rendermode != render_soft*/)
+			{
+				angle_t viewingangle;
+				if (players[displayplayers[0]].awayviewtics)
+					viewingangle = R_PointToAngle2(mobj->target->x, mobj->target->y, players[displayplayers[0]].awayviewmobj->x, players[displayplayers[0]].awayviewmobj->y);
+				else if (!camera[0].chase && players[displayplayers[0]].mo)
+					viewingangle = R_PointToAngle2(mobj->target->x, mobj->target->y, players[displayplayers[0]].mo->x, players[displayplayers[0]].mo->y);
+				else
+					viewingangle = R_PointToAngle2(mobj->target->x, mobj->target->y, camera[0].x, camera[0].y);
+				if (curstate >= S_FLAMESHIELD1 && curstate < S_FLAMESHIELDDASH && ((curstate-S_FLAMESHIELD1) & 1))
+					viewingangle += ANGLE_180;
+	
+				destx = mobj->target->x + P_ReturnThrustX(mobj->target, viewingangle, mobj->scale>>4);
+				desty = mobj->target->y + P_ReturnThrustY(mobj->target, viewingangle, mobj->scale>>4);
+			}
 			else
-				viewingangle = R_PointToAngle2(mobj->target->x, mobj->target->y, camera[0].x, camera[0].y);
-
-			if (curstate >= S_FLAMESHIELD1 && curstate < S_FLAMESHIELDDASH1 && ((curstate-S_FLAMESHIELD1) & 1))
-				viewingangle += ANGLE_180;
-
-			destx = mobj->target->x + P_ReturnThrustX(mobj->target, viewingangle, mobj->scale>>4);
-			desty = mobj->target->y + P_ReturnThrustY(mobj->target, viewingangle, mobj->scale>>4);
+			{
+				destx = mobj->target->x;
+				desty = mobj->target->y;
+			}
+			P_MoveOrigin(mobj, destx, desty, mobj->target->z);
+			mobj->angle = mobj->target->angle;
+			break;
 		}
-		else
-		{
-			destx = mobj->target->x;
-			desty = mobj->target->y;
-		}
-
-		P_MoveOrigin(mobj, destx, desty, mobj->target->z);
-		mobj->angle = K_MomentumAngle(mobj->target);
-
-		if (underlayst != S_NULL)
-		{
-			mobj_t *underlay = P_SpawnMobj(mobj->target->x, mobj->target->y, mobj->target->z, MT_FLAMESHIELDUNDERLAY);
-			underlay->angle = mobj->angle;
-			P_SetMobjState(underlay, underlayst);
-		}
-		break;
-	}
 	case MT_ROCKETSNEAKER:
 		if (!mobj->target || !mobj->target->health)
 		{

@@ -327,7 +327,6 @@ void A_RoamingShadowThinker(mobj_t *actor);
 void A_MayonakaArrow(mobj_t *actor);
 void A_ReaperThinker(mobj_t *actor);
 void A_MementosTPParticles(mobj_t *actor);
-void A_FlameShieldPaper(mobj_t *actor);
 void A_InvincSparkleRotate(mobj_t *actor);
 void A_DeathSpin(mobj_t *actor);
 
@@ -14152,50 +14151,6 @@ void A_ReaperThinker(mobj_t *actor)
 			if (!P_CheckSight(actor, actor->target) || R_PointToDist2(actor->x, actor->y, actor->target->x, actor->target->y) > 1024<<FRACBITS)
 				P_SetTarget(&actor->target, actor->hnext);
 		}
-	}
-}
-
-void A_FlameShieldPaper(mobj_t *actor)
-{
-	INT32 framea = 0;
-	INT32 frameb = 0;
-	INT32 locvar1 = var1;
-	INT32 locvar2 = var2;
-	UINT8 i;
-
-	if (LUA_CallAction(A_FLAMESHIELDPAPER, actor))
-		return;
-
-	framea = (locvar1 & FF_FRAMEMASK);
-	frameb = (locvar2 & FF_FRAMEMASK);
-
-	for (i = 0; i < 2; i++)
-	{
-		INT32 perpendicular = ((i & 1) ? -ANGLE_90 : ANGLE_90);
-		fixed_t newx = actor->x + P_ReturnThrustX(NULL, actor->angle + perpendicular, 8*actor->scale);
-		fixed_t newy = actor->y + P_ReturnThrustY(NULL, actor->angle + perpendicular, 8*actor->scale);
-		mobj_t *paper = P_SpawnMobj(newx, newy, actor->z, MT_FLAMESHIELDPAPER);
-
-		P_SetTarget(&paper->target, actor);
-		P_SetScale(paper, actor->scale);
-		paper->destscale = actor->destscale;
-
-		P_SetMobjState(paper, S_FLAMESHIELDPAPER);
-		paper->frame &= ~FF_FRAMEMASK;
-
-		paper->angle = actor->angle + ANGLE_45;
-
-		if (i & 1)
-		{
-			paper->angle -= ANGLE_90;
-			paper->frame |= frameb;
-		}
-		else
-		{
-			paper->frame |= framea;
-		}
-
-		paper->extravalue1 = i;
 	}
 }
 
