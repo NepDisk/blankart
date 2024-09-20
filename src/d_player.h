@@ -445,7 +445,6 @@ typedef struct player_s
 	UINT8 pickuprings;	// Number of rings being picked up before added to the counter (prevents rings from being deleted forever over 20)
 	UINT8 ringdelay;	// (0 to 3) - 3 tic delay between every ring usage
 	UINT16 ringboost;	// Ring boost timer
-	UINT8 sparkleanim;	// (0 to 19) - Angle offset for ring sparkle animation
 	UINT16 superring;	// Spawn rings on top of you every tic!
 
 	UINT8 curshield;	// see kartshields_t

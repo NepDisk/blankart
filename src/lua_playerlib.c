@@ -300,8 +300,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->ringdelay);
 	else if (fastcmp(field,"ringboost"))
 		lua_pushinteger(L, plr->ringboost);
-	else if (fastcmp(field,"sparkleanim"))
-		lua_pushinteger(L, plr->sparkleanim);
 	else if (fastcmp(field,"superring"))
 		lua_pushinteger(L, plr->superring);
 	else if (fastcmp(field,"curshield"))
@@ -652,8 +650,6 @@ static int player_set(lua_State *L)
 		plr->ringdelay = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"ringboost"))
 		plr->ringboost = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"sparkleanim"))
-		plr->sparkleanim = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"superring"))
 		plr->superring = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"curshield"))

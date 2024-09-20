@@ -4351,21 +4351,6 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_CHEESEHAPPY4",
 
 	"S_RINGDEBT",
-	"S_RINGSPARKS1",
-	"S_RINGSPARKS2",
-	"S_RINGSPARKS3",
-	"S_RINGSPARKS4",
-	"S_RINGSPARKS5",
-	"S_RINGSPARKS6",
-	"S_RINGSPARKS7",
-	"S_RINGSPARKS8",
-	"S_RINGSPARKS9",
-	"S_RINGSPARKS10",
-	"S_RINGSPARKS11",
-	"S_RINGSPARKS12",
-	"S_RINGSPARKS13",
-	"S_RINGSPARKS14",
-	"S_RINGSPARKS15",
 
 	"S_GAINAX_TINY",
 	"S_GAINAX_HUGE",
@@ -5460,7 +5445,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_TUMBLECOIN",
 
 	"MT_KARMAFIREWORK",
-	"MT_RINGSPARKS",
 	"MT_GAINAX",
 
 	"MT_OVERTIME_PARTICLE",

@@ -7341,21 +7341,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		K_MatchGenericExtraFlags(mobj, mobj->target);
 		P_MoveOrigin(mobj, mobj->target->x, mobj->target->y, mobj->target->z + (mobj->target->height/2) + mobj->movefactor);
 		break;
-	case MT_RINGSPARKS:
-		if (!mobj->target || P_MobjWasRemoved(mobj->target))
-		{
-			P_RemoveMobj(mobj);
-			return false;
-		}
-
-		mobj->z = mobj->target->z;
-
-		K_MatchGenericExtraFlags(mobj, mobj->target);
-
-		P_MoveOrigin(mobj, mobj->target->x + FINECOSINE(mobj->angle >> ANGLETOFINESHIFT),
-				mobj->target->y + FINESINE(mobj->angle >> ANGLETOFINESHIFT),
-				mobj->z + (mobj->target->height * P_MobjFlip(mobj)));
-		break;
 	case MT_GAINAX:
 		if (!mobj->target || P_MobjWasRemoved(mobj->target) // sanity
 			|| !mobj->target->player // ditto
