@@ -14,6 +14,7 @@
 #include "doomdef.h"
 #include "g_game.h"
 #include "i_video.h"
+#include "k_terrain.h"
 #include "r_local.h"
 #include "r_sky.h"
 #include "p_local.h"
@@ -1179,6 +1180,10 @@ void R_InitTextureData(void)
 
 	CONS_Printf("K_InitBrightmaps()...\n");
 	K_InitBrightmaps();
+	
+	CONS_Printf("K_InitTerrain()...\n");
+	K_InitTerrain();
+	
 }
 
 //

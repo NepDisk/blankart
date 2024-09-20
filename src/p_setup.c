@@ -8489,7 +8489,7 @@ UINT16 P_PartialAddWadFile(const char *wadfilename)
 	K_InitBrightmapsPwad(wadnum);
 	
 	// Reload TERRAIN
-	if (K_InitTerrain(wadnum))
+	if (K_InitTerrainPwad(wadnum))
 		partadd_terrainloaded = true;
 		
 	//

@@ -567,7 +567,7 @@ void K_UpdateTerrainOverlay(mobj_t *mo);
 
 
 /*--------------------------------------------------
-	void K_InitTerrain(UINT16 wadNum);
+	void K_InitTerrainPwad(UINT16 wadNum);
 
 		Finds the TERRAIN lumps in a WAD/PK3, and
 		processes all of them.
@@ -580,6 +580,14 @@ void K_UpdateTerrainOverlay(mobj_t *mo);
 		terrainLoaded - Terrain was loaded
 --------------------------------------------------*/
 
-boolean K_InitTerrain(UINT16 wadNum);
+boolean K_InitTerrainPwad(UINT16 wadNum);
+
+/*--------------------------------------------------
+	void K_InitTerrain(void);
+
+		Finds all TERRAIN lumps and processes them.
+--------------------------------------------------*/
+
+void K_InitTerrain(void);
 
 #endif // __K_TERRAIN_H__

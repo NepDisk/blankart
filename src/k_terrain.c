@@ -2207,11 +2207,11 @@ static boolean K_TERRAINLumpParser(char *data, size_t size)
 }
 
 /*--------------------------------------------------
-	void K_InitTerrain(UINT16 wadNum)
+	void K_InitTerrainPwad(UINT16 wadNum)
 
 		See header file for description.
 --------------------------------------------------*/
-boolean K_InitTerrain(UINT16 wadNum)
+boolean K_InitTerrainPwad(UINT16 wadNum)
 {
 	UINT16 lumpNum;
 	lumpinfo_t *lump_p = wadfiles[wadNum]->lumpinfo;
@@ -2271,4 +2271,19 @@ boolean K_InitTerrain(UINT16 wadNum)
 
 	return terrainLoaded;
 	
+}
+
+/*--------------------------------------------------
+	void K_InitTerrain(void)
+
+		See header file for description.
+--------------------------------------------------*/
+void K_InitTerrain(void)
+{
+	INT32 wadNum;
+
+	for (wadNum = 0; wadNum < numwadfiles; wadNum++)
+	{
+		K_InitTerrainPwad(wadNum);
+	}
 }
