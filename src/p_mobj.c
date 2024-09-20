@@ -1854,9 +1854,10 @@ void P_XYMovement(mobj_t *mo)
 			*/
 		
 		}
-		else if (predictedz - mo->z > abs(slopemom.z/2)
-			&& P_CanApplySlopePhysics(mo, mo->standingslope) == true && (!(mo->eflags & MFE_VERTICALFLIP) && (mo->z <= mo->floorz))) // mo->z <= mo->floorz means 'only do this if we did a stairstep up'
-			// Sryder 2018-11-26: Don't launch here if it's a slope without physics, we stick to those like glue anyway
+		else if (predictedz-mo->z > abs(slopemom.z/2) 
+		&& P_CanApplySlopePhysics(mo, mo->standingslope) == true // Now check if we were supposed to stick to this slope
+		&& ((!(mo->eflags & MFE_VERTICALFLIP) && (mo->z <= mo->floorz)) // mo->z <= mo->floorz means 'only do this if we did a stairstep up'
+		|| ((mo->eflags & MFE_VERTICALFLIP) && (mo->z+mo->height >= mo->ceilingz)))) // Always do this for old demos
 		{
 			// Now check if we were supposed to stick to this slope
 			//CONS_Printf("%d-%d > %d\n", (predictedz), (mo->z), (slopemom.z/2));
