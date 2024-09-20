@@ -2402,11 +2402,6 @@ boolean P_ZMovement(mobj_t *mo)
 			mom.z = P_MobjFlip(mo)*FixedMul(5*FRACUNIT, mo->scale);
 		else if (mo->type == MT_SPINFIRE) // elemental shield fire is another exception here
 			;
-		else if (mo->type == MT_DEBTSPIKE)
-		{
-			mom.x = mom.y = 0;
-			mom.z = -mom.z/2;
-		}
 		else if (mo->flags & MF_MISSILE)
 		{
 			if (!(mo->flags & MF_NOCLIP))
@@ -6732,12 +6727,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		else
 			A_AttractChase(mobj);
 		break;
-	case MT_DEBTSPIKE:
-		if (mobj->fuse == 0 && P_GetMobjFeet(mobj) == P_GetMobjGround(mobj))
-		{
-			mobj->fuse = 90;
-		}
-		break;
 	case MT_EMBLEM:
 		if (mobj->flags2 & MF2_NIGHTSPULL)
 			P_NightsItemChase(mobj);
@@ -9390,7 +9379,6 @@ static void P_DefaultMobjShadowScale(mobj_t *thing)
 			break;
 		case MT_RING:
 		case MT_FLINGRING:
-		case MT_DEBTSPIKE:
 		case MT_FLOATINGITEM:
 		case MT_BLUESPHERE:
 		case MT_EMERALD:

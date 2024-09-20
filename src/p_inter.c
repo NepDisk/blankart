@@ -2352,9 +2352,4 @@ void P_PlayerRingBurst(player_t *player, INT32 num_rings)
 	{
 		P_FlingBurst(player, fa, MT_FLINGRING, 60*TICRATE, FRACUNIT, i);
 	}
-
-	while (i < num_rings)
-	{
-		P_FlingBurst(player, fa, MT_DEBTSPIKE, 0, 3 * FRACUNIT / 2, i++);
-	}
 }

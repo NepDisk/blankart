@@ -134,7 +134,6 @@ char sprnames[NUMSPRITES + 1][5] =
 
 	// Collectible Items
 	"RING",
-	"DEBT",
 	"TRNG", // Team Rings
 	"TOKE", // Special Stage Token
 	"RFLG", // Red CTF Flag
@@ -4958,22 +4957,6 @@ state_t states[NUMSTATES] =
 	{SPR_WTRL, FF_TRANS50|FF_PAPERSPRITE|13, 2, {NULL}, 0, 0, S_NULL}, // S_WATERTRAILUNDERLAY6
 	{SPR_WTRL, FF_TRANS50|FF_PAPERSPRITE|14, 2, {NULL}, 0, 0, S_NULL}, // S_WATERTRAILUNDERLAY7
 	{SPR_WTRL, FF_TRANS50|FF_PAPERSPRITE|15, 2, {NULL}, 0, 0, S_NULL}, // S_WATERTRAILUNDERLAY8
-
-	// Funny Spike
-	{SPR_DEBT, 0|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE2}, // S_DEBTSPIKE1
-	{SPR_DEBT, 7|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE3}, // S_DEBTSPIKE2
-	{SPR_DEBT, 1|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE4}, // S_DEBTSPIKE3
-	{SPR_DEBT, 7|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE5}, // S_DEBTSPIKE4
-	{SPR_DEBT, 2|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE6}, // S_DEBTSPIKE5
-	{SPR_DEBT, 7|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE7}, // S_DEBTSPIKE6
-	{SPR_DEBT, 3|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE8}, // S_DEBTSPIKE7
-	{SPR_DEBT, 7|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE9}, // S_DEBTSPIKE8
-	{SPR_DEBT, 4|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKEA}, // S_DEBTSPIKE9
-	{SPR_DEBT, 7|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKEB}, // S_DEBTSPIKEA
-	{SPR_DEBT, 5|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKEC}, // S_DEBTSPIKEB
-	{SPR_DEBT, 7|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKED}, // S_DEBTSPIKEC
-	{SPR_DEBT, 6|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKEE}, // S_DEBTSPIKED
-	{SPR_DEBT, 7|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_DEBTSPIKE1}, // S_DEBTSPIKEE
 };
 
 mobjinfo_t mobjinfo[NUMMOBJTYPES] =
@@ -7566,33 +7549,6 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,              // damage
 		sfx_None,       // activesound
 		MF_SPECIAL|MF_DONTENCOREMAP, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_DEBTSPIKE
-		-1,             // doomednum
-		S_DEBTSPIKE1,   // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		0,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_SPRK1,        // deathstate
-		S_NULL,         // xdeathstate
-		sfx_itemup,     // deathsound
-		38*FRACUNIT,    // speed
-		24*FRACUNIT,    // radius
-		48*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_DONTENCOREMAP, // flags
 		S_NULL          // raisestate
 	},
 
