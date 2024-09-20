@@ -7006,18 +7006,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		break;
 	}
 	case MT_EGGMANITEM:
-		{
-			player_t *player = K_GetItemBoxPlayer(mobj);
-			UINT8 color = SKINCOLOR_BLACK;
-
-			if (player != NULL)
-			{
-				color = player->skincolor;
-			}
-
-			mobj->color = color;
-			mobj->colorized = false;
-		}
 		/* FALLTHRU */
 	case MT_BANANA:
 		mobj->friction = ORIG_FRICTION/4;
@@ -8741,9 +8729,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 	case MT_SPHEREBOX:
 		if (gametype == GT_BATTLE && mobj->threshold == 70)
 		{
-			mobj->color = K_RainbowColor(leveltime);
-			mobj->colorized = true;
-
 			if (battleovertime.enabled)
 			{
 				angle_t ang = FixedAngle((leveltime % 360) << FRACBITS);
@@ -8765,19 +8750,6 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 				ghost->fuse = 4;
 				ghost->frame |= FF_FULLBRIGHT;
 			}
-		}
-		else
-		{
-			player_t *player = K_GetItemBoxPlayer(mobj);
-			UINT8 color = SKINCOLOR_BLACK;
-
-			if (player != NULL)
-			{
-				color = player->skincolor;
-			}
-
-			mobj->color = color;
-			mobj->colorized = false;
 		}
 		break;
 	default:
