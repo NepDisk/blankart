@@ -314,6 +314,13 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			}
 
 			S_StartSound(toucher, special->info->deathsound);
+			
+			if (special->tracer && !P_MobjWasRemoved(special->tracer))
+			{
+				special->destscale = mapobjectscale>>4;
+				special->scalespeed <<= 1;
+			}
+			
 			P_KillMobj(special, toucher, toucher, DMG_NORMAL);
 			return;
 		case MT_KARMAHITBOX:
@@ -1429,58 +1436,11 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			else
 				target->fuse = 40*TICRATE;
 
-			// burst effects
-			for (i = 0; i < 2; i++)
-			{
-				mobj_t *blast = P_SpawnMobjFromMobj(target, 0, 0, target->info->height >> 1, MT_BATTLEBUMPER_BLAST);
-				blast->angle = angle + i*ANGLE_90;
-				P_SetScale(blast, 2*blast->scale/3);
-				blast->destscale = 2*blast->scale;
-			}
-
-			// dust effects
-			for (i = 0; i < 10; i++)
-			{
-				mobj_t *puff = P_SpawnMobjFromMobj(
-					target,
-					P_RandomRange(-spacing, spacing) * FRACUNIT,
-					P_RandomRange(-spacing, spacing) * FRACUNIT,
-					P_RandomRange(0, 4*spacing) * FRACUNIT,
-					MT_SPINDUST
-				);
-
-				P_SetScale(puff, (puff->destscale *= 2));
-				puff->momz = puff->scale * P_MobjFlip(puff);
-
-				P_Thrust(puff, R_PointToAngle2(target->x, target->y, puff->x, puff->y), 3*puff->scale);
-				if (attacker)
-				{
-					puff->momx += attacker->momx;
-					puff->momy += attacker->momy;
-					puff->momz += attacker->momz;
-				}
-			}
-
 			// remove inside item
-			if (target->tracer && !P_MobjWasRemoved(target->tracer))
-				P_RemoveMobj(target->tracer);
-
-			// bust capsule caps
-			while (part && !P_MobjWasRemoved(part))
+			/*if (target->tracer && !P_MobjWasRemoved(target->tracer))
 			{
-				P_InstaThrust(part, part->angle + ANGLE_90, 6 * part->target->scale);
-				P_SetObjectMomZ(part, 6 * FRACUNIT, false);
-				part->fuse = TICRATE/2;
-				part->flags &= ~MF_NOGRAVITY;
-
-				if (attacker)
-				{
-					part->momx += attacker->momx;
-					part->momy += attacker->momy;
-					part->momz += attacker->momz;
-				}
-				part = part->hnext;
-			}
+				P_RemoveMobj(target->tracer);
+			}*/
 
 			// give the player an item!
 			if (source && source->player)
@@ -1491,13 +1451,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 				if (target->threshold == KITEM_SUPERRING)
 				{
 					K_AwardPlayerRings(player, 5 * target->movecount, true);
-					break;
-				}
-
-				// special behavior for SPB capsules
-				if (target->threshold == KITEM_SPB)
-				{
-					K_ThrowKartItem(player, true, MT_SPB, 1, 0);
 					break;
 				}
 

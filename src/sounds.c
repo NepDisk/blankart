@@ -1098,9 +1098,6 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"syfail", false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Funny sync failure
   {"itfree", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // :shitsfree:
   {"dbgsal", false, 255,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Debug notification
-  {"cock",   false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Hammer cocks, bang bang
-  {"itcaps", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, "Item capsule"},
-  {"kstart", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Sonic Adventure shwing!
   {"typri1", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SA2 boss typewriting 1
   {"typri2", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SA2 final boss-type typewriting
   {"eggspr", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Sonic Unleashed Trap Spring
