@@ -1090,6 +1090,7 @@ typedef enum sprite
 	SPR_KINB, // Darker invincibility sparkle trail
 	SPR_KINF, // Invincibility flash
 	SPR_INVI, // Invincibility speedlines
+	SPR_ICAP, // Item capsules
 
 	SPR_WIPD, // Wipeout dust trail
 	SPR_DRIF, // Drift Sparks
@@ -4298,6 +4299,12 @@ typedef enum state
 
 	// Item capsules
 	S_ITEMCAPSULE,
+	S_ITEMCAPSULE_TOP_SIDE,
+	S_ITEMCAPSULE_BOTTOM_SIDE_AIR,
+	S_ITEMCAPSULE_BOTTOM_SIDE_GROUND,
+	//S_ITEMCAPSULE_TOP,
+	//S_ITEMCAPSULE_BOTTOM,
+	//S_ITEMCAPSULE_INSIDE,
 
 	// Signpost sparkles
 	S_SIGNSPARK1,

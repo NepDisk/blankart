@@ -3325,6 +3325,12 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 
 	// Item capsules
 	"S_ITEMCAPSULE",
+	"S_ITEMCAPSULE_TOP_SIDE",
+	"S_ITEMCAPSULE_BOTTOM_SIDE_AIR",
+	"S_ITEMCAPSULE_BOTTOM_SIDE_GROUND",
+	//"S_ITEMCAPSULE_TOP",
+	//"S_ITEMCAPSULE_BOTTOM",
+	//"S_ITEMCAPSULE_INSIDE",
 
 	// Signpost sparkles
 	"S_SIGNSPARK1",

@@ -4121,6 +4121,42 @@ static void P_RefreshItemCapsuleParts(mobj_t *mobj)
 	if (itemType < 1 || itemType >= NUMKARTITEMS)
 		itemType = KITEM_SAD;
 
+	// update invincibility properties
+	if (itemType == KITEM_INVINCIBILITY)
+	{
+		mobj->renderflags = (mobj->renderflags & ~RF_BRIGHTMASK) | RF_FULLBRIGHT;
+		mobj->colorized = true;
+	}
+	else
+	{
+		mobj->renderflags = (mobj->renderflags & ~RF_BRIGHTMASK) | RF_SEMIBRIGHT;
+		mobj->color = SKINCOLOR_NONE;
+		mobj->colorized = false;
+	}
+
+	// update cap colors
+	if (itemType == KITEM_SUPERRING)
+	{
+		color = SKINCOLOR_GOLD;
+		newRenderFlags |= RF_SEMIBRIGHT;
+	}
+	else if (mobj->spawnpoint && (mobj->spawnpoint->args[2] & TMICF_INVERTTIMEATTACK))
+		color = SKINCOLOR_SAPPHIRE;
+	else if (itemType == KITEM_SPB)
+		color = SKINCOLOR_JET;
+	else
+		color = SKINCOLOR_NONE;
+
+	colorized = (color != SKINCOLOR_NONE);
+	part = mobj;
+	while (!P_MobjWasRemoved(part->hnext))
+	{
+		part = part->hnext;
+		part->color = color;
+		part->colorized = colorized;
+		part->renderflags = (part->renderflags & ~RF_BRIGHTMASK) | newRenderFlags;
+	}
+
 	// update inside item frame
 	part = mobj->tracer;
 	if (P_MobjWasRemoved(part))
@@ -4197,11 +4233,24 @@ static void P_RefreshItemCapsuleParts(mobj_t *mobj)
 		P_SetTarget(&part->tracer, NULL);
 	}
 }
+
+#define CAPSULESIDES 5
+#define ANG_CAPSULE (UINT32_MAX / CAPSULESIDES)
 #define ROTATIONSPEED (2*ANG2)
 static void P_SpawnItemCapsuleParts(mobj_t *mobj)
 {
 	UINT8 i;
 	mobj_t *part;
+	fixed_t buttScale = 0;
+	statenum_t buttState = S_ITEMCAPSULE_BOTTOM_SIDE_AIR;
+	angle_t spin = ANGLE_MAX - ROTATIONSPEED;
+
+	if (P_IsObjectOnGround(mobj))
+	{
+		buttScale = 13*FRACUNIT/10;
+		buttState = S_ITEMCAPSULE_BOTTOM_SIDE_GROUND;
+		spin = 0;
+	}
 
 	// inside item
 	part = P_SpawnMobjFromMobj(mobj, 0, 0, 0, MT_ITEMCAPSULE_PART);
@@ -4214,8 +4263,36 @@ static void P_SpawnItemCapsuleParts(mobj_t *mobj)
 	part->eflags &= ~MFE_VERTICALFLIP;
 	P_SetTarget(&mobj->tracer, part); // pointer to this item, so we can modify its sprite/frame
 
+	// capsule caps
+	part = mobj;
+	for (i = 0; i < CAPSULESIDES; i++)
+	{
+		// a bottom side
+		P_SetTarget(&part->hnext, P_SpawnMobjFromMobj(mobj, 0, 0, 0, MT_ITEMCAPSULE_PART));
+		P_SetTarget(&part->hnext->hprev, part);
+		part = part->hnext;
+		P_SetTarget(&part->target, mobj);
+		P_SetMobjState(part, buttState);
+		part->angle = i * ANG_CAPSULE;
+		part->movedir = spin; // rotation speed
+		part->movefactor = 0; // z offset
+		part->extravalue1 = buttScale; // relative scale
+
+		// a top side
+		P_SetTarget(&part->hnext, P_SpawnMobjFromMobj(mobj, 0, 0, 0, MT_ITEMCAPSULE_PART));
+		P_SetTarget(&part->hnext->hprev, part);
+		part = part->hnext;
+		P_SetTarget(&part->target, mobj);
+		P_SetMobjState(part, S_ITEMCAPSULE_TOP_SIDE);
+		part->angle = i * ANG_CAPSULE;
+		part->movedir = spin; // rotation speed
+		part->movefactor = mobj->info->height - part->info->height; // z offset
+	}
+
 	P_RefreshItemCapsuleParts(mobj);
 }
+#undef CAPSULESIDES
+#undef ANG_CAPSULE
 #undef ROTATIONSPEED
 
 //

@@ -539,6 +539,7 @@ char sprnames[NUMSPRITES + 1][5] =
 	"KINB", // Darker invincibility sparkle trail
 	"KINF", // Invincibility flash
 	"INVI", // Invincibility speedlines
+	"ICAP", // Item capsules
 
 	"WIPD", // Wipeout dust trail
 	"DRIF", // Drift Sparks
@@ -3887,7 +3888,13 @@ state_t states[NUMSTATES] =
 
 	{SPR_NULL, FF_FULLBRIGHT, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMICON
 
-	{SPR_NULL,                         FF_ADD|0, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMCAPSULE
+	{SPR_ICAP,                         FF_ADD|0, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMCAPSULE
+	{SPR_ICAP,                 FF_PAPERSPRITE|1, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMCAPSULE_TOP_SIDE
+	{SPR_ICAP, FF_VERTICALFLIP|FF_PAPERSPRITE|1, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMCAPSULE_BOTTOM_SIDE_AIR
+	{SPR_ICAP,                 FF_PAPERSPRITE|2, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMCAPSULE_BOTTOM_SIDE_GROUND
+	//{SPR_ICAP,                 FF_FLOORSPRITE|3, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMCAPSULE_TOP
+	//{SPR_ICAP,                 FF_FLOORSPRITE|4, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMCAPSULE_BOTTOM
+	//{SPR_ICAP,                 FF_FLOORSPRITE|5, -1, {NULL}, 0, 0, S_NULL}, // S_ITEMCAPSULE_INSIDE
 
 	{SPR_SGNS, FF_ADD|FF_FULLBRIGHT, 1, {NULL}, 0, 0, S_SIGNSPARK2}, // S_SIGNSPARK1
 	{SPR_SGNS, FF_ADD|FF_FULLBRIGHT|1, 1, {NULL}, 0, 0, S_SIGNSPARK3}, // S_SIGNSPARK2
@@ -22148,7 +22155,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL,         // missilestate
 		S_INVISIBLE,    // deathstate
 		S_NULL,         // xdeathstate
-		sfx_itpick,     // deathsound
+		sfx_itcaps,     // deathsound
 		0,              // speed
 		56*FRACUNIT,    // radius
 		112*FRACUNIT,   // height
