@@ -314,13 +314,6 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			}
 
 			S_StartSound(toucher, special->info->deathsound);
-			
-			if (special->tracer && !P_MobjWasRemoved(special->tracer))
-			{
-				special->destscale = mapobjectscale>>4;
-				special->scalespeed <<= 1;
-			}
-			
 			P_KillMobj(special, toucher, toucher, DMG_NORMAL);
 			return;
 		case MT_KARMAHITBOX:
@@ -1437,10 +1430,10 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 				target->fuse = 40*TICRATE;
 
 			// remove inside item
-			/*if (target->tracer && !P_MobjWasRemoved(target->tracer))
+			if (target->tracer && !P_MobjWasRemoved(target->tracer))
 			{
 				P_RemoveMobj(target->tracer);
-			}*/
+			}
 
 			// give the player an item!
 			if (source && source->player)

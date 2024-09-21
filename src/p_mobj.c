@@ -4106,13 +4106,6 @@ static void P_ItemCapsulePartThinker(mobj_t *mobj)
 				target->y + P_ReturnThrustY(mobj, mobj->angle + ANGLE_90, mobj->radius),
 				z);
 	}
-	
-	if (mobj->scale <= mapobjectscale>>4)
-    {
-        P_RemoveMobj(mobj);
-        return;
-    }
-	
 }
 
 static void P_RefreshItemCapsuleParts(mobj_t *mobj)
