@@ -3528,35 +3528,6 @@ void K_TakeBumpersFromPlayer(player_t *player, player_t *victim, UINT8 amount)
 	K_HandleBumperChanges(victim, oldVictimBumpers);
 }
 
-#define MINEQUAKEDIST 4096
-
-// Does the proximity screen flash and quake for explosions
-void K_MineFlashScreen(mobj_t *source)
-{
-	INT32 pnum;
-	player_t *p;
-
-	// check for potential display players near the source so we can have a sick earthquake / flashpal.
-	for (pnum = 0; pnum < MAXPLAYERS; pnum++)
-	{
-		p = &players[pnum];
-
-		if (!playeringame[pnum] || !P_IsDisplayPlayer(p))
-			continue;
-
-		if (R_PointToDist2(p->mo->x, p->mo->y, source->x, source->y) < mapobjectscale*MINEQUAKEDIST)
-		{
-			P_StartQuake(55<<FRACBITS, 12);
-			if (!bombflashtimer && P_CheckSight(p->mo, source))
-			{
-				bombflashtimer = TICRATE*2;
-				P_FlashPal(p, PAL_WHITE, 1);
-			}
-			break;	// we can break right now because quakes are global to all split players somehow.
-		}
-	}
-}
-
 // Spawns the purely visual explosion
 void K_SpawnMineExplosion(mobj_t *source, UINT8 color)
 {
@@ -3565,8 +3536,6 @@ void K_SpawnMineExplosion(mobj_t *source, UINT8 color)
 	mobj_t *dust;
 	mobj_t *truc;
 	INT32 speed, speed2;
-
-	//K_MineFlashScreen(source);
 
 	K_MatchGenericExtraFlags(smoldering, source);
 	smoldering->tics = TICRATE*3;
@@ -3638,8 +3607,6 @@ void K_SpawnMineExplosion(mobj_t *source, UINT8 color)
 		truc->color = color;
 	}
 }
-
-#undef MINEQUAKEDIST
 
 static mobj_t *K_SpawnKartMissile(mobj_t *source, mobjtype_t type, angle_t an, INT32 flags2, fixed_t speed)
 {
