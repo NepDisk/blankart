@@ -3432,7 +3432,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			break;
 		}
 		case 448: // Change skybox viewpoint/centerpoint
-			if ((mo && mo->player && P_IsLocalPlayer(mo->player)) || line->args[3])
+			if ((mo && mo->player && P_IsLocalPlayer(mo->player)) || args[3])
 			{
 				INT32 viewid = args[0];
 				INT32 centerid = args[1];
