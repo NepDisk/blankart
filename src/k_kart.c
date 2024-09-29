@@ -3566,7 +3566,7 @@ void K_SpawnMineExplosion(mobj_t *source, UINT8 color)
 	mobj_t *truc;
 	INT32 speed, speed2;
 
-	K_MineFlashScreen(source);
+	//K_MineFlashScreen(source);
 
 	K_MatchGenericExtraFlags(smoldering, source);
 	smoldering->tics = TICRATE*3;

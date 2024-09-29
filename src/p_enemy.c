@@ -13668,7 +13668,7 @@ void A_LandMineExplode(mobj_t *actor)
 	if (actor->target && !P_MobjWasRemoved(actor->target))
 		colour = actor->target->color;
 
-	K_MineFlashScreen(actor);
+	//K_MineFlashScreen(actor);
 
 	// Spawn smoke remains:
 	smoldering = P_SpawnMobj(actor->x, actor->y, actor->z, MT_SMOLDERING);
