@@ -115,6 +115,7 @@ unsigned char mapmd5[16];
 //
 
 boolean udmf;
+INT32 udmf_version;
 size_t numvertexes, numsegs, numsectors, numsubsectors, numnodes, numlines, numsides, nummapthings;
 size_t num_orig_vertexes;
 vertex_t *vertexes;
@@ -1539,8 +1540,18 @@ static boolean TextmapCount(size_t size)
 
 	// Check if namespace is valid.
 	tkn = M_TokenizerRead(0);
-	if (!(fastcmp(tkn, "srb2") || fastcmp(tkn, "ringracers"))) // Would like to use "ringracers", but it turns off features in UZB.
-		CONS_Alert(CONS_WARNING, "Invalid namespace '%s', only 'srb2' or 'ringracers' is supported.\n", tkn);
+	if (!(fastcmp(tkn, "srb2") || fastcmp(tkn, "ringracers") || fastcmp(tkn, "srb2kart")))
+		CONS_Alert(CONS_WARNING, "Invalid namespace '%s', only 'srb2' or 'ringracers' or 'srb2kart' is supported.\n", tkn);
+	
+	// Check for version
+	tkn = M_TokenizerRead(0);
+	if (fastcmp(tkn, "version"))
+	{
+		tkn = M_TokenizerRead(0);
+		udmf_version = atoi(tkn);
+		if (udmf_version > UDMF_CURRENT_VERSION)
+			CONS_Alert(CONS_WARNING, "Map is intended for future UDMF version '%d', current supported version is '%d'. This map may have issues loading.\n", udmf_version, UDMF_CURRENT_VERSION);
+	}
 
 	while ((tkn = M_TokenizerRead(0)) && M_TokenizerGetEndPos() < size)
 	{
@@ -2503,6 +2514,7 @@ static void P_WriteTextmap(void)
 	}
 
 	fprintf(f, "namespace = \"srb2\";\n");
+	fprintf(f, "version = %d;\n", UDMF_CURRENT_VERSION);
 	for (i = k = 0; i < nummapthings; i++)
 	{
 		if (wmapthings[i].type == mobjinfo[MT_WAYPOINT].doomednum
@@ -7232,6 +7244,7 @@ static boolean P_LoadMapFromFile(void)
 	virtlump_t *textmap = vres_Find(virt, "TEXTMAP");
 	size_t i;
 	udmf = textmap != NULL;
+	udmf_version = 0;
 
 	if (!P_LoadMapData(virt))
 		return false;
