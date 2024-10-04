@@ -422,7 +422,6 @@ typedef struct player_s
 	fixed_t boostpower;		// Base boost value, for offroad
 	fixed_t speedboost;		// Boost value smoothing for max speed
 	fixed_t accelboost;		// Boost value smoothing for acceleration
-	fixed_t handleboost;	// Boost value smoothing for handling
 	angle_t boostangle;		// angle set when not spun out OR boosted to determine what direction you should keep going at if you're spun out and boosted.
 
 	UINT8 tripwireState; // see tripwirestate_t
@@ -483,7 +482,7 @@ typedef struct player_s
 
 	UINT32 roundscore; // battle score this round
 	UINT8 emeralds;
-	UINT8 bumpers;
+	UINT8 bumper;
 	INT16 karmadelay;
 	tic_t overtimekarma; // time to live in overtime comeback
 	INT16 spheres;

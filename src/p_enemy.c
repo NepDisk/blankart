@@ -14084,7 +14084,7 @@ void A_ReaperThinker(mobj_t *actor)
 				continue;
 
 			player = &players[i];
-			if (player && player->mo && player->bumpers && player->score >= maxscore)
+			if (player && player->mo && player->bumper && player->score >= maxscore)
 			{
 				targetplayermo = player->mo;
 				maxscore = player->score;

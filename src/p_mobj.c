@@ -4309,7 +4309,7 @@ boolean P_SupermanLook4Players(mobj_t *actor)
 			if (players[c].mo->health <= 0)
 				continue; // dead
 
-			if ((gametyperules & GTR_BUMPERS) && players[c].bumpers <= 0)
+			if ((gametyperules & GTR_BUMPERS) && players[c].bumper <= 0)
 				continue; // other dead
 
 			playersinthegame[stop] = &players[c];
@@ -5827,10 +5827,10 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 			else
 				ang = FixedAngle(mobj->info->speed);
 
-			if (mobj->target->player->bumpers <= 1)
+			if (mobj->target->player->bumper <= 1)
 				diff = 0;
 			else
-				diff = FixedAngle(360*FRACUNIT/mobj->target->player->bumpers);
+				diff = FixedAngle(360*FRACUNIT/mobj->target->player->bumper);
 
 			ang = (ang*leveltime) + (diff * (mobj->threshold-1));
 
@@ -5867,9 +5867,9 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 				mobj->color = mobj->target->color;
 			}
 
-			if (mobj->target->player->bumpers < 2)
+			if (mobj->target->player->bumper < 2)
 				P_SetMobjState(mobj, S_BATTLEBUMPER3);
-			else if (mobj->target->player->bumpers < 3)
+			else if (mobj->target->player->bumper < 3)
 				P_SetMobjState(mobj, S_BATTLEBUMPER2);
 			else
 				P_SetMobjState(mobj, S_BATTLEBUMPER1);
@@ -5886,7 +5886,7 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 				P_SetThingPosition(mobj);
 			}
 
-			if (mobj->target->player->bumpers <= mobj->threshold)
+			if (mobj->target->player->bumper <= mobj->threshold)
 			{
 				// Do bumper destruction
 				P_KillMobj(mobj, NULL, NULL, DMG_NORMAL);
@@ -5920,7 +5920,7 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 			mobj->color = mobj->target->color;
 			K_MatchGenericExtraFlags(mobj, mobj->target);
 
-			if ((gametype == GT_RACE || mobj->target->player->bumpers <= 0)
+			if ((gametype == GT_RACE || mobj->target->player->bumper <= 0)
 #if 1 // Set to 0 to test without needing to host
 				|| (P_IsDisplayPlayer(mobj->target->player))
 #endif
@@ -7553,7 +7553,7 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			statenum_t state = (mobj->state-states);
 
 			if (!mobj->target || !mobj->target->health || !mobj->target->player || mobj->target->player->spectator
-				|| (gametype == GT_RACE || mobj->target->player->bumpers))
+				|| (gametype == GT_RACE || mobj->target->player->bumper))
 			{
 				P_RemoveMobj(mobj);
 				return false;
@@ -10812,24 +10812,24 @@ void P_SpawnPlayer(INT32 playernum)
 		if (p->spectator)
 		{
 			// HEY! No being cheap...
-			p->bumpers = 0;
+			p->bumper = 0;
 		}
-		else if ((p->bumpers > 0) || (leveltime < starttime) || (pcount <= 1))
+		else if ((p->bumper > 0) || (leveltime < starttime) || (pcount <= 1))
 		{
 			if ((leveltime < starttime) || (pcount <= 1)) // Start of the map?
 			{
 				if (leveltime > 2) // Reset those bumpers!
 				{
-					p->bumpers = K_StartingBumperCount();
+					p->bumper = K_StartingBumperCount();
 					K_SpawnPlayerBattleBumpers(p);
 				}
 				else // temp, will get overwritten in K_BattleInit
 				{
-					p->bumpers = 1;
+					p->bumper = 1;
 				}
 			}
 		}
-		else if (p->bumpers <= 0)
+		else if (p->bumper <= 0)
 		{
 			mobj_t *karmahitbox = P_SpawnMobj(mobj->x, mobj->y, mobj->z, MT_KARMAHITBOX); // Player hitbox is too small!!
 			P_SetTarget(&karmahitbox->target, mobj);

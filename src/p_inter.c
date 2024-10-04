@@ -117,7 +117,7 @@ boolean P_CanPickupItem(player_t *player, UINT8 weapon)
 #ifndef OTHERKARMAMODES
 	&& !weapon
 #endif
-	&& player->bumpers <= 0)
+	&& player->bumper <= 0)
 		return false;
 
 	if (weapon)
@@ -256,7 +256,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			if (!P_CanPickupItem(player, 3) || (player->itemamount && player->itemtype != special->threshold))
 				return;
 
-			if ((gametyperules & GTR_BUMPERS) && player->bumpers <= 0)
+			if ((gametyperules & GTR_BUMPERS) && player->bumper <= 0)
 				return;
 
 			player->itemtype = special->threshold;
@@ -291,7 +291,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			P_KillMobj(special, toucher, toucher, DMG_NORMAL);
 			break;
 		case MT_ITEMCAPSULE:
-			if ((gametyperules & GTR_BUMPERS) && player->bumpers <= 0)
+			if ((gametyperules & GTR_BUMPERS) && player->bumper <= 0)
 				return;
 
 			if (special->scale < special->extravalue1) // don't break it while it's respawning
@@ -321,7 +321,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 				return;
 			if (player == special->target->player)
 				return;
-			if (player->bumpers <= 0)
+			if (player->bumper <= 0)
 				return;
 			if (special->target->player->exiting || player->exiting)
 				return;
@@ -437,7 +437,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			S_StartSound(special, sfx_s1a2);
 			return;
 		case MT_CDUFO: // SRB2kart
-			if (special->fuse || !P_CanPickupItem(player, 1) || ((gametyperules & GTR_BUMPERS) && player->bumpers <= 0))
+			if (special->fuse || !P_CanPickupItem(player, 1) || ((gametyperules & GTR_BUMPERS) && player->bumper <= 0))
 				return;
 
 			player->itemroulette = 1;
@@ -1880,7 +1880,7 @@ static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source,
 			P_SetTarget(&boom->target, player->mo);
 		}
 
-		K_DestroyBumpers(player, player->bumpers);
+		K_DestroyBumpers(player, player->bumper);
 		player->pflags |= PF_ELIMINATED;
 	}
 
@@ -1994,7 +1994,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 			{
 				if (gametyperules & GTR_BUMPERS)
 				{
-					if (player->bumpers <= 0 && player->karmadelay)
+					if (player->bumper <= 0 && player->karmadelay)
 					{
 						// No bumpers & in WAIT, can't be hurt
 						K_DoInstashield(player);
@@ -2059,7 +2059,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 
 					if (type == DMG_KARMA)
 					{
-						takeBumpers = player->bumpers;
+						takeBumpers = player->bumper;
 					}
 				}
 				else
@@ -2067,7 +2067,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 					if (type == DMG_KARMA)
 					{
 						// Take half of their bumpers for karma comeback damage
-						takeBumpers = max(1, player->bumpers / 2);
+						takeBumpers = max(1, player->bumper / 2);
 					}
 				}
 
@@ -2081,7 +2081,7 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 					if (type == DMG_KARMA)
 					{
 						// Destroy any remainder bumpers from the player for karma comeback damage
-						K_DestroyBumpers(player, player->bumpers);
+						K_DestroyBumpers(player, player->bumper);
 					}
 					else
 					{

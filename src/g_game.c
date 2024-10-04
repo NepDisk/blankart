@@ -1731,7 +1731,7 @@ boolean G_CouldView(INT32 playernum)
 	// I don't know if we want this actually, but I'll humor the suggestion anyway
 	if ((gametyperules & GTR_BUMPERS) && !demo.playback)
 	{
-		if (player->bumpers <= 0)
+		if (player->bumper <= 0)
 			return false;
 	}
 
@@ -2344,7 +2344,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		else
 			growshrinktimer = 0;
 
-		bumper = players[player].bumpers;
+		bumper = players[player].bumper;
 		rings = players[player].rings;
 		spheres = players[player].spheres;
 		kickstartaccel = players[player].kickstartaccel;
@@ -2449,7 +2449,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	p->itemtype = itemtype;
 	p->itemamount = itemamount;
 	p->growshrinktimer = growshrinktimer;
-	p->bumpers = bumper;
+	p->bumper = bumper;
 	p->karmadelay = comebacktime;
 	p->overtimekarma = 0;
 	p->eggmanblame = -1;
@@ -2931,7 +2931,7 @@ void G_ExitLevel(void)
 			{
 				if (playeringame[i] && !players[i].spectator && !players[i].bot)
 				{
-					if (players[i].bumpers > 0)
+					if (players[i].bumper > 0)
 					{
 						youlost = false;
 						break;

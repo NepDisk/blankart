@@ -1154,8 +1154,8 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 			}
 
 			if ((gametyperules & GTR_BUMPERS)
-				&& ((thing->player->bumpers && !tm.thing->player->bumpers)
-				|| (tm.thing->player->bumpers && !thing->player->bumpers)))
+				&& ((thing->player->bumper && !tm.thing->player->bumper)
+				|| (tm.thing->player->bumper && !thing->player->bumper)))
 			{
 				return BMIT_CONTINUE;
 			}

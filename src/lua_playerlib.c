@@ -234,6 +234,8 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->flashing);
 	else if (fastcmp(field,"spinouttimer"))
 		lua_pushinteger(L, plr->spinouttimer);
+	else if (fastcmp(field,"spinouttype"))
+		lua_pushinteger(L, plr->spinouttype);
 	else if (fastcmp(field,"instashield"))
 		lua_pushinteger(L, plr->instashield);
 	else if (fastcmp(field,"wipeoutslow"))
@@ -250,7 +252,11 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->boostcharge);
 	else if (fastcmp(field,"startboost"))
 		lua_pushinteger(L, plr->startboost);
-	else if (fastcmp(field,"aizdriftstraft"))
+	else if (fastcmp(field,"dropdash"))
+		lua_pushinteger(L, plr->dropdash);
+	else if (fastcmp(field,"respawn"))
+		lua_pushinteger(L, plr->respawn);
+	else if (fastcmp(field,"aizdriftstrat"))
 		lua_pushinteger(L, plr->aizdriftstrat);
 	else if (fastcmp(field,"aizdrifttilt"))
 		lua_pushinteger(L, plr->aizdrifttilt);
@@ -258,6 +264,10 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->aizdriftturn);
 	else if (fastcmp(field,"offroad"))
 		lua_pushinteger(L, plr->offroad);
+	else if (fastcmp(field,"pogospring"))
+		lua_pushinteger(L, plr->pogospring);
+	else if (fastcmp(field,"brakestop"))
+		lua_pushinteger(L, plr->brakestop);
 	else if (fastcmp(field,"waterskip"))
 		lua_pushinteger(L, plr->waterskip);
 	else if (fastcmp(field,"dashpadcooldown"))
@@ -268,8 +278,6 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->speedboost);
 	else if (fastcmp(field,"accelboost"))
 		lua_pushinteger(L, plr->accelboost);
-	else if (fastcmp(field,"handleboost"))
-		lua_pushinteger(L, plr->handleboost);
 	else if (fastcmp(field,"boostangle"))
 		lua_pushangle(L, plr->boostangle);
 	else if (fastcmp(field,"tripwireState"))
@@ -318,6 +326,8 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->hyudorotimer);
 	else if (fastcmp(field,"stealingtimer"))
 		lua_pushinteger(L, plr->stealingtimer);
+	else if (fastcmp(field,"stolentimer"))
+		lua_pushinteger(L, plr->stolentimer);
 	else if (fastcmp(field,"sneakertimer"))
 		lua_pushinteger(L, plr->sneakertimer);
 	else if (fastcmp(field,"floorboost"))
@@ -326,6 +336,10 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->waterrun);
 	else if (fastcmp(field,"growshrinktimer"))
 		lua_pushinteger(L, plr->growshrinktimer);
+	else if (fastcmp(field,"growcancel"))
+		lua_pushinteger(L, plr->growcancel);
+	else if (fastcmp(field,"squishedtimer"))
+		lua_pushinteger(L, plr->squishedtimer);
 	else if (fastcmp(field,"rocketsneakertimer"))
 		lua_pushinteger(L, plr->rocketsneakertimer);
 	else if (fastcmp(field,"invincibilitytimer"))
@@ -351,7 +365,7 @@ static int player_get(lua_State *L)
 	else if (fastcmp(field,"emeralds"))
 		lua_pushinteger(L, plr->emeralds);
 	else if (fastcmp(field,"bumpers"))
-		lua_pushinteger(L, plr->bumpers);
+		lua_pushinteger(L, plr->bumper);
 	else if (fastcmp(field,"karmadelay"))
 		lua_pushinteger(L, plr->karmadelay);
 	else if (fastcmp(field,"spheres"))
@@ -455,6 +469,8 @@ static int player_get(lua_State *L)
 
 	else if (fastcmp(field,"spectator"))
 		lua_pushboolean(L, plr->spectator);
+	else if (fastcmp(field,"spectatewait"))
+		lua_pushinteger(L, plr->spectatewait);
 	else if (fastcmp(field,"bot"))
 		lua_pushboolean(L, plr->bot);
 	else if (fastcmp(field,"jointime"))
@@ -584,6 +600,8 @@ static int player_set(lua_State *L)
 		plr->flashing = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"spinouttimer"))
 		plr->spinouttimer = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"spinouttype"))
+		plr->spinouttype = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"instashield"))
 		plr->instashield = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"wipeoutslow"))
@@ -600,7 +618,11 @@ static int player_set(lua_State *L)
 		plr->boostcharge = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"startboost"))
 		plr->startboost = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"aizdriftstraft"))
+	else if (fastcmp(field,"dropdash"))
+		plr->dropdash = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"respawn"))
+		plr->respawn = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"aizdriftstrat"))
 		plr->aizdriftstrat = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"aizdrifttilt"))
 		plr->aizdrifttilt = luaL_checkinteger(L, 3);
@@ -608,6 +630,10 @@ static int player_set(lua_State *L)
 		plr->aizdriftturn = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"offroad"))
 		plr->offroad = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"pogospring"))
+		plr->pogospring = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"brakestop"))
+		plr->brakestop = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"waterskip"))
 		plr->waterskip = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"dashpadcooldown"))
@@ -618,8 +644,6 @@ static int player_set(lua_State *L)
 		plr->speedboost = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"accelboost"))
 		plr->accelboost = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"handleboost"))
-		plr->handleboost = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"boostangle"))
 		plr->boostangle = luaL_checkangle(L, 3);
 	else if (fastcmp(field,"tripwireState"))
@@ -668,6 +692,8 @@ static int player_set(lua_State *L)
 		plr->hyudorotimer = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"stealingtimer"))
 		plr->stealingtimer = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"stolentimer"))
+		plr->stealingtimer = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"sneakertimer"))
 		plr->sneakertimer = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"floorboost"))
@@ -676,6 +702,10 @@ static int player_set(lua_State *L)
 		plr->waterrun = luaL_checkboolean(L, 3);
 	else if (fastcmp(field,"growshrinktimer"))
 		plr->growshrinktimer = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"growcancel"))
+		plr->growcancel = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"squishedtimer"))
+		plr->squishedtimer = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"rocketsneakertimer"))
 		plr->rocketsneakertimer = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"invincibilitytimer"))
@@ -701,7 +731,7 @@ static int player_set(lua_State *L)
 	else if (fastcmp(field,"emeralds"))
 		plr->emeralds = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"bumpers"))
-		plr->bumpers = luaL_checkinteger(L, 3);
+		plr->bumper = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"karmadelay"))
 		plr->karmadelay = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"spheres"))
@@ -801,6 +831,8 @@ static int player_set(lua_State *L)
 		plr->awayviewaiming = luaL_checkangle(L, 3);
 	else if (fastcmp(field,"spectator"))
 		plr->spectator = lua_toboolean(L, 3);
+	else if (fastcmp(field,"spectatewait"))
+		plr->spectatewait = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"bot"))
 		return NOSET;
 	else if (fastcmp(field,"jointime"))

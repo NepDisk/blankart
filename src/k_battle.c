@@ -116,7 +116,7 @@ void K_CheckBumpers(void)
 			maxroundscore = players[i].roundscore;
 		}
 
-		if (players[i].bumpers <= 0) // if you don't have any bumpers, you're probably not a winner
+		if (players[i].bumper <= 0) // if you don't have any bumpers, you're probably not a winner
 		{
 			nobumpers = true;
 			continue;
@@ -206,7 +206,7 @@ void K_CheckEmeralds(player_t *player)
 			continue;
 		}
 
-		players[i].bumpers = 0;
+		players[i].bumper = 0;
 	}
 
 	K_CheckBumpers();
@@ -376,7 +376,7 @@ void K_RunPaperItemSpawners(void)
 		emeraldsSpawned |= players[i].emeralds;
 
 		if ((players[i].exiting > 0 || (players[i].pflags & PF_ELIMINATED))
-			|| ((gametyperules & GTR_BUMPERS) && players[i].bumpers <= 0))
+			|| ((gametyperules & GTR_BUMPERS) && players[i].bumper <= 0))
 		{
 			continue;
 		}
@@ -748,16 +748,16 @@ void K_SetupMovingCapsule(mapthing_t *mt, mobj_t *mobj)
 
 void K_SpawnPlayerBattleBumpers(player_t *p)
 {
-	if (!p->mo || p->bumpers <= 0)
+	if (!p->mo || p->bumper <= 0)
 		return;
 
 	{
 		INT32 i;
-		angle_t diff = FixedAngle(360*FRACUNIT/p->bumpers);
+		angle_t diff = FixedAngle(360*FRACUNIT/p->bumper);
 		angle_t newangle = p->mo->angle;
 		mobj_t *bump;
 
-		for (i = 0; i < p->bumpers; i++)
+		for (i = 0; i < p->bumper; i++)
 		{
 			bump = P_SpawnMobjFromMobj(p->mo,
 				P_ReturnThrustX(p->mo, newangle + ANGLE_180, 64*FRACUNIT),
@@ -817,7 +817,7 @@ aftercapsules:
 		{
 			if (!playeringame[i] || players[i].spectator)
 				continue;
-			players[i].bumpers = maxbumpers;
+			players[i].bumper = maxbumpers;
 			K_SpawnPlayerBattleBumpers(players+i);
 		}
 	}

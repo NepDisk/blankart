@@ -273,7 +273,6 @@ static void P_NetArchivePlayers(void)
 		WRITEFIXED(save_p, players[i].boostpower);
 		WRITEFIXED(save_p, players[i].speedboost);
 		WRITEFIXED(save_p, players[i].accelboost);
-		WRITEFIXED(save_p, players[i].handleboost);
 		WRITEANGLE(save_p, players[i].boostangle);
 
 		WRITEUINT8(save_p, players[i].tripwireState);
@@ -330,7 +329,7 @@ static void P_NetArchivePlayers(void)
 
 		WRITEUINT32(save_p, players[i].roundscore);
 		WRITEUINT8(save_p, players[i].emeralds);
-		WRITEUINT8(save_p, players[i].bumpers);
+		WRITEUINT8(save_p, players[i].bumper);
 		WRITEINT16(save_p, players[i].karmadelay);
 		WRITEUINT32(save_p, players[i].overtimekarma);
 		WRITEINT16(save_p, players[i].spheres);
@@ -560,7 +559,6 @@ static void P_NetUnArchivePlayers(void)
 		players[i].boostpower = READFIXED(save_p);
 		players[i].speedboost = READFIXED(save_p);
 		players[i].accelboost = READFIXED(save_p);
-		players[i].handleboost = READFIXED(save_p);
 		players[i].boostangle = READANGLE(save_p);
 
 		players[i].tripwireState = READUINT8(save_p);
@@ -617,7 +615,7 @@ static void P_NetUnArchivePlayers(void)
 
 		players[i].roundscore = READUINT32(save_p);
 		players[i].emeralds = READUINT8(save_p);
-		players[i].bumpers = READUINT8(save_p);
+		players[i].bumper = READUINT8(save_p);
 		players[i].karmadelay = READINT16(save_p);
 		players[i].overtimekarma = READUINT32(save_p);
 		players[i].spheres = READINT16(save_p);

@@ -796,13 +796,13 @@ void G_WriteGhostTic(mobj_t *ghost, INT32 playernum)
 	if (ghost->player && (
 			ghostext[playernum].kartitem != ghost->player->itemtype ||
 			ghostext[playernum].kartamount != ghost->player->itemamount ||
-			ghostext[playernum].kartbumpers != ghost->player->bumpers
+			ghostext[playernum].kartbumpers != ghost->player->bumper
 		))
 	{
 		ghostext[playernum].flags |= EZT_KART;
 		ghostext[playernum].kartitem = ghost->player->itemtype;
 		ghostext[playernum].kartamount = ghost->player->itemamount;
-		ghostext[playernum].kartbumpers = ghost->player->bumpers;
+		ghostext[playernum].kartbumpers = ghost->player->bumper;
 	}
 
 	if (ghostext[playernum].flags)
@@ -1087,7 +1087,7 @@ void G_ConsGhostTic(INT32 playernum)
 
 		if (players[playernum].itemtype != ghostext[playernum].kartitem
 			|| players[playernum].itemamount != ghostext[playernum].kartamount
-			|| players[playernum].bumpers != ghostext[playernum].kartbumpers)
+			|| players[playernum].bumper != ghostext[playernum].kartbumpers)
 		{
 			if (demosynced)
 				CONS_Alert(CONS_WARNING, M_GetText("Demo playback has desynced (item/bumpers)!\n"));
@@ -1095,7 +1095,7 @@ void G_ConsGhostTic(INT32 playernum)
 
 			players[playernum].itemtype = ghostext[playernum].kartitem;
 			players[playernum].itemamount = ghostext[playernum].kartamount;
-			players[playernum].bumpers = ghostext[playernum].kartbumpers;
+			players[playernum].bumper = ghostext[playernum].kartbumpers;
 		}
 	}
 

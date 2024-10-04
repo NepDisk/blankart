@@ -231,7 +231,7 @@ boolean K_EggItemCollide(mobj_t *t1, mobj_t *t2)
 		if (!P_CanPickupItem(t2->player, 2))
 			return true;
 
-		if ((gametyperules & GTR_BUMPERS) && t2->player->bumpers <= 0)
+		if ((gametyperules & GTR_BUMPERS) && t2->player->bumper <= 0)
 		{
 			return true;
 		}
@@ -263,7 +263,7 @@ boolean K_EggItemCollide(mobj_t *t1, mobj_t *t2)
 
 			if (t1->target && t1->target->player)
 			{
-				if ((gametyperules & GTR_CIRCUIT) || t1->target->player->bumpers > 0)
+				if ((gametyperules & GTR_CIRCUIT) || t1->target->player->bumper > 0)
 					t2->player->eggmanblame = t1->target->player-players;
 				else
 					t2->player->eggmanblame = t2->player-players;
