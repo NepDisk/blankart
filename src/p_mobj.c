@@ -3355,17 +3355,18 @@ void P_MobjCheckWater(mobj_t *mobj)
 				P_SetScale(splish, mobj->scale);
 
 				// skipping stone!
-				if (K_WaterSkip(p) == true && ((!(mobj->eflags & MFE_VERTICALFLIP) && thingtop - mobj->momz > mobj->watertop)
-				|| ((mobj->eflags & MFE_VERTICALFLIP) && mobj->z - mobj->momz < mobj->waterbottom)))
+				if (p && p->waterskip < 2
+					&& ((p->speed/3 > abs(mobj->momz)) // Going more forward than horizontal, so you can skip across the water.
+					|| (p->speed > K_GetKartSpeed(p,false,true)/3 && p->waterskip)) // Already skipped once, so you can skip once more!
+					&& ((!(mobj->eflags & MFE_VERTICALFLIP) && thingtop - mobj->momz > mobj->watertop)
+					|| ((mobj->eflags & MFE_VERTICALFLIP) && mobj->z - mobj->momz < mobj->waterbottom)))
 				{
-
 					const fixed_t min = 6<<FRACBITS;
-					//const fixed_t max = 8<<FRACBITS;
 
 					mobj->momx = mobj->momx/2;
 					mobj->momy = mobj->momy/2;
 					mobj->momz = -mobj->momz/2;
-					
+
 					if (!(mobj->eflags & MFE_VERTICALFLIP) && mobj->momz < FixedMul(min, mobj->scale))
 						mobj->momz = FixedMul(min, mobj->scale);
 					else if (mobj->eflags & MFE_VERTICALFLIP && mobj->momz > FixedMul(-min, mobj->scale))

@@ -2695,34 +2695,11 @@ boolean K_TripwirePass(player_t *player)
 	return (player->tripwirePass != TRIPWIRE_NONE);
 }
 
-boolean K_MovingHorizontally(player_t *player)
-{
-	return (player->speed/3 > abs(player->mo->momz));
-}
-
 boolean K_WaterRun(player_t *player)
 {
 	if (player->waterrun)
 		return true;
 	return false;
-}
-
-boolean K_WaterSkip(player_t *player)
-{
-	if (player->waterskip > 2)
-	{
-		// Already finished waterskipping.
-		return false;
-	}
-
-	if (player->waterskip > 0)
-	{
-		// Already waterskipping.
-		// Simply make sure you haven't slowed down drastically.
-		return (K_GetKartSpeed(player,false,true)/3);
-	}
-
-	return K_MovingHorizontally(player);
 }
 
 static fixed_t K_FlameShieldDashVar(INT32 val)
