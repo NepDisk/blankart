@@ -822,8 +822,8 @@ boolean K_SMKIceBlockCollide(mobj_t *t1, mobj_t *t2)
 		return true;
 	*/
 
-	K_KartSolidBounce(t1, t2);
-	return true;
+	K_KartBouncing(t1, t2);
+	return false;
 }
 
 boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)

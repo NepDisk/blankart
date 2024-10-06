@@ -636,17 +636,7 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 
 	// SRB2kart 011617 - Colission[sic] code for kart items //{
 
-	if (tm.thing->type == MT_SMK_ICEBLOCK)
-	{
-		// see if it went over / under
-		if (tm.thing->z > thing->z + thing->height)
-			return BMIT_CONTINUE; // overhead
-		if (tm.thing->z + tm.thing->height < thing->z)
-			return BMIT_CONTINUE; // underneath
-
-		return K_SMKIceBlockCollide(tm.thing, thing) ? BMIT_CONTINUE : BMIT_ABORT;
-	}
-	else if (thing->type == MT_SMK_ICEBLOCK)
+	if (thing->type == MT_SMK_ICEBLOCK)
 	{
 		// see if it went over / under
 		if (tm.thing->z > thing->z + thing->height)
