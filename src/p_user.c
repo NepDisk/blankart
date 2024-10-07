@@ -1791,10 +1791,7 @@ static void P_3dMovement(player_t *player)
 	if (!player->pogospring)
 		cmd->sidemove = 0;
 	
-	if ((player->exiting || mapreset) || player->pflags & PF_STASIS || player->spinouttimer) // pw_introcam?
-	{
-		cmd->forwardmove = cmd->sidemove = 0;
-	}
+	cmd->forwardmove = K_GetForwardMove(player);
 
 	// Get the old momentum; this will be needed at the end of the function! -SH
 	oldMagnitude = R_PointToDist2(player->mo->momx - player->cmomx, player->mo->momy - player->cmomy, 0, 0);
@@ -1882,10 +1879,10 @@ static void P_3dMovement(player_t *player)
 		if (player->mo->movefactor != FRACUNIT) // Friction-scaled acceleration...
 			movepushforward = FixedMul(movepushforward, player->mo->movefactor);
 
-		if (cmd->buttons & BT_BRAKE && (K_GetForwardMove(player) == 0)) // SRB2kart - braking isn't instant
+		if (cmd->buttons & BT_BRAKE && (player->cmd.forwardmove == 0)) // SRB2kart - braking isn't instant
 			movepushforward /= 64;
 
-		if (K_GetForwardMove(player) > 0)
+		if (player->cmd.forwardmove > 0)
 			player->brakestop = 0;
 		else if (player->brakestop < 6) // Don't start reversing with brakes until you've made a stop first
 		{

@@ -2179,7 +2179,7 @@ void K_KartMoveAnimation(player_t *player)
 				player->pflags |= PF_GAINAX;
 			}
 		}
-		else if (K_GetForwardMove(player) < 0 && destGlanceDir == 0)
+		else if (player->cmd.forwardmove < 0 && destGlanceDir == 0)
 		{
 			// Reversing -- like looking back, but doesn't stack on the other glances.
 			if (player->glanceDir != 0)
@@ -2997,6 +2997,11 @@ UINT16 K_GetKartButtons(player_t *player)
 SINT8 K_GetForwardMove(player_t *player)
 {
 	SINT8 forwardmove = player->cmd.forwardmove;
+	
+	if ((player->exiting || mapreset))
+	{
+		return 0;
+	}
 
 	if ((player->pflags & PF_STASIS) || (player->carry == CR_SLIDING))
 	{
@@ -5978,7 +5983,7 @@ static void K_UpdateEngineSounds(player_t *player)
 	else
 	{
 		// Average out the value of forwardmove and the speed that you're moving at.
-		targetsnd = (((6 * K_GetForwardMove(player)) / 25) + ((player->speed / mapobjectscale) / 5)) / 2;
+		targetsnd = (((6 * player->cmd.forwardmove) / 25) + ((player->speed / mapobjectscale) / 5)) / 2;
 	}
 
 	if (targetsnd < 0) { targetsnd = 0; }
@@ -8140,7 +8145,7 @@ static void K_AirFailsafe(player_t *player)
 		return;
 	}
 
-	if ((K_GetKartButtons(player) & BT_ACCELERATE) || K_GetForwardMove(player) != 0)
+	if ((K_GetKartButtons(player) & BT_ACCELERATE) || player->cmd.forwardmove != 0)
 	{
 		// Queue up later
 		player->pflags |= PF_AIRFAILSAFE;
