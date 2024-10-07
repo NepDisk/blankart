@@ -270,6 +270,22 @@ angle_t R_InterpolateAngle(angle_t from, angle_t to)
 
 void R_InterpolateMobjState(mobj_t *mobj, fixed_t frac, interpmobjstate_t *out)
 {
+	// Yucky hack to make sure these values don't affect drawangle value. Blame lua compat concerns.
+	// v1 had its art assets show a different angle on drift while v2 does not. This recreates that effect without touching drawangle or the art assets
+	// This makes sure that scripts that set drawangle/frameangle to match player angle won't eat the drift frames.
+	angle_t addangle = 0;
+	if (mobj->player)
+	{
+		if (mobj->player->aizdriftturn)
+		{
+			addangle += mobj->player->aizdriftturn;
+		}
+		else if (mobj->player->drift != 0)
+		{
+			addangle += (ANGLE_45 / 5) * mobj->player->drift;
+		}
+	}
+	
 	if (frac == FRACUNIT)
 	{
 		out->x = mobj->x;
@@ -277,7 +293,7 @@ void R_InterpolateMobjState(mobj_t *mobj, fixed_t frac, interpmobjstate_t *out)
 		out->z = mobj->z;
 		out->scale = mobj->scale;
 		out->subsector = mobj->subsector;
-		out->angle = mobj->player ? mobj->player->drawangle : mobj->angle;
+		out->angle = mobj->player ? mobj->player->drawangle + addangle : mobj->angle;
 		out->spritexscale = mobj->spritexscale;
 		out->spriteyscale = mobj->spriteyscale;
 		out->spritexoffset = mobj->spritexoffset;
@@ -302,6 +318,7 @@ void R_InterpolateMobjState(mobj_t *mobj, fixed_t frac, interpmobjstate_t *out)
 	if (mobj->player)
 	{
 		out->angle = mobj->resetinterp ? mobj->player->drawangle : R_LerpAngle(mobj->player->old_drawangle, mobj->player->drawangle, frac);
+		out->angle += addangle;
 	}
 	else
 	{

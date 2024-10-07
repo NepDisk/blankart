@@ -51,10 +51,6 @@ automatically.
 	X (PreThinkFrame)/* frame (before mobj and player thinkers) */,\
 	X (ThinkFrame),/* frame (after mobj and player thinkers) */\
 	X (PostThinkFrame),/* frame (at end of tick, ie after overlays, precipitation, specials) */\
-	X (JumpSpecial),/* P_DoJumpStuff (Any-jumping) */\
-	X (AbilitySpecial),/* P_DoJumpStuff (Double-jumping) */\
-	X (SpinSpecial),/* P_DoSpinAbility (Spin button effect) */\
-	X (JumpSpinSpecial),/* P_DoJumpStuff (Spin button effect (mid-air)) */\
 	X (BotTiccmd),/* B_BuildTiccmd */\
 	X (PlayerMsg),/* chat messages */\
 	X (HurtMsg),/* imhurttin */\

@@ -2202,17 +2202,6 @@ void P_MovePlayer(player_t *player)
 		else
 		{
 			player->drawangle = player->mo->angle;
-
-			if (player->aizdriftturn)
-			{
-				player->drawangle += player->aizdriftturn;
-			}
-			else if (player->drift != 0)
-			{
-				INT32 a = (ANGLE_45 / 5) * player->drift;
-
-				player->drawangle += a;
-			}
 		}
 
 		player->mo->rollangle = 0;
