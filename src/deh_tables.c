@@ -2054,10 +2054,8 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_BSZVINE_ORANGE",
 	"S_BSZSHRUB",
 	"S_BSZCLOVER",
-	"S_BIG_PALMTREE_TRUNK",
-	"S_BIG_PALMTREE_TOP",
-	"S_PALMTREE_TRUNK",
-	"S_PALMTREE_TOP",
+	"S_BSZSUNFLOWER",
+	"S_BSZFISH",
 
 	"S_DBALL1",
 	"S_DBALL2",
@@ -3029,6 +3027,9 @@ const char *const STATE_LIST[] = { // array length left dynamic for sanity testi
 	"S_NIGHTSCORE80_2",
 	"S_NIGHTSCORE90_2",
 	"S_NIGHTSCORE100_2",
+	
+	"S_NIGHTSWING",
+	"S_NIGHTSWING_XMAS",
 
 	// NiGHTS Paraloop Powerups
 	"S_NIGHTSSUPERLOOP",
@@ -4900,10 +4901,8 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_BSZVINE_ORANGE",
 	"MT_BSZSHRUB",
 	"MT_BSZCLOVER",
-	"MT_BIG_PALMTREE_TRUNK",
-	"MT_BIG_PALMTREE_TOP",
-	"MT_PALMTREE_TRUNK",
-	"MT_PALMTREE_TOP",
+	"MT_BSZFISH",
+	"MT_BSZSUNFLOWER",
 
 	// Misc scenery
 	"MT_DBALL",
@@ -5057,6 +5056,7 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 	"MT_NIGHTSSTAR", // NiGHTS Star
 	"MT_FLINGNIGHTSSTAR", // Lost NiGHTS Star
 	"MT_NIGHTSSUPERLOOP",
+	"MT_NIGHTSWING",
 	"MT_NIGHTSDRILLREFILL",
 	"MT_NIGHTSHELPER",
 	"MT_NIGHTSEXTRATIME",

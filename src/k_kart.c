@@ -635,8 +635,16 @@ INT32 K_KartGetItemOdds(
 	{
 		case KITEM_BANANA:
 		case KITEM_EGGMAN:
+			notNearEnd = true;
+			break;
 		case KITEM_SUPERRING:
 			notNearEnd = true;
+			
+			if (ringsdisabled) // No rings rolled if rings are turned off.
+			{
+				newodds = 0;
+			}
+			
 			break;
 		case KITEM_ROCKETSNEAKER:
 		case KITEM_JAWZ:
@@ -989,7 +997,7 @@ static void K_KartItemRoulette(player_t *player, ticcmd_t *cmd)
 	{
 		if (gametype == GT_RACE)
 		{
-			if (mashed && (modeattacking || cv_superring.value)) // ANY mashed value? You get rings.
+			if (mashed && (modeattacking || (cv_superring.value && !ringsdisabled))) // ANY mashed value? You get rings.
 			{
 				K_KartGetItemResult(player, KITEM_SUPERRING);
 				player->karthud[khud_itemblinkmode] = 1;
@@ -1043,7 +1051,7 @@ static void K_KartItemRoulette(player_t *player, ticcmd_t *cmd)
 
 	// SPECIAL CASE No. 4:
 	// Being in ring debt occasionally forces Super Ring on you if you mashed
-	if (!(gametyperules & GTR_SPHERES) && mashed && player->rings < 0 && cv_superring.value)
+	if (!(gametyperules & GTR_SPHERES || ringsdisabled) && mashed && player->rings < 0 && cv_superring.value)
 	{
 		INT32 debtamount = min(20, abs(player->rings));
 		if (P_RandomChance((debtamount*FRACUNIT)/20))
@@ -8260,7 +8268,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 	if (!(cmd->buttons & BT_ATTACK))
 	{
 		if (player->itemtype == KITEM_NONE
-			&& NO_HYUDORO && !(HOLDING_ITEM
+			&& NO_HYUDORO && !ringsdisabled && !(HOLDING_ITEM
 			|| player->itemamount
 			|| player->itemroulette
 			|| player->rocketsneakertimer

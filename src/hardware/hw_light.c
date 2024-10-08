@@ -415,13 +415,7 @@ light_t *t_lspr[NUMSPRITES] =
 	&lspr[NOLIGHT],     // SPR_BSZ1
 	&lspr[NOLIGHT],     // SPR_BSZ2
 	&lspr[NOLIGHT],     // SPR_BSZ3
-	//&lspr[NOLIGHT],     -- SPR_BSZ4
-	&lspr[NOLIGHT],     // SPR_BST1
-	&lspr[NOLIGHT],     // SPR_BST2
-	&lspr[NOLIGHT],     // SPR_BST3
-	&lspr[NOLIGHT],     // SPR_BST4
-	&lspr[NOLIGHT],     // SPR_BST5
-	&lspr[NOLIGHT],     // SPR_BST6
+	&lspr[NOLIGHT],     // SPR_BSZ4
 	&lspr[NOLIGHT],     // SPR_BSZ5
 	&lspr[NOLIGHT],     // SPR_BSZ6
 	&lspr[NOLIGHT],     // SPR_BSZ7

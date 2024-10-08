@@ -319,13 +319,7 @@ char sprnames[NUMSPRITES + 1][5] =
 	"BSZ1", // Tall flowers
 	"BSZ2", // Medium flowers
 	"BSZ3", // Small flowers
-	//"BSZ4", -- Tulips
-	"BST1", // Red tulip
-	"BST2", // Purple tulip
-	"BST3", // Blue tulip
-	"BST4", // Cyan tulip
-	"BST5", // Yellow tulip
-	"BST6", // Orange tulip
+	"BSZ4", // Tulips
 	"BSZ5", // Cluster of Tulips
 	"BSZ6", // Bush
 	"BSZ7", // Vine
@@ -466,6 +460,7 @@ char sprnames[NUMSPRITES + 1][5] =
 	"NBMP", // NiGHTS Bumper
 	"HOOP", // NiGHTS hoop sprite
 	"NSCR", // NiGHTS score sprite
+	"NWNG", // NiGHTS score sprite
 	"NPRU", // Nights Powerups
 	"CAPS", // Capsule thingy for NiGHTS
 	"IDYA", // Ideya
@@ -2536,12 +2531,12 @@ state_t states[NUMSTATES] =
 	{SPR_BSZ3, 3, -1, {NULL}, 0, 0, S_NULL}, // S_BSZSHORTFLOWER_CYAN
 	{SPR_BSZ3, 4, -1, {NULL}, 0, 0, S_NULL}, // S_BSZSHORTFLOWER_YELLOW
 	{SPR_BSZ3, 5, -1, {NULL}, 0, 0, S_NULL}, // S_BSZSHORTFLOWER_ORANGE
-	{SPR_BST1, FF_ANIMATE, -1, {NULL}, 11, 4, S_NULL}, // S_BSZTULIP_RED
-	{SPR_BST2, FF_ANIMATE, -1, {NULL}, 11, 4, S_NULL}, // S_BSZTULIP_PURPLE
-	{SPR_BST3, FF_ANIMATE, -1, {NULL}, 11, 4, S_NULL}, // S_BSZTULIP_BLUE
-	{SPR_BST4, FF_ANIMATE, -1, {NULL}, 11, 4, S_NULL}, // S_BSZTULIP_CYAN
-	{SPR_BST5, FF_ANIMATE, -1, {NULL}, 11, 4, S_NULL}, // S_BSZTULIP_YELLOW
-	{SPR_BST6, FF_ANIMATE, -1, {NULL}, 11, 4, S_NULL}, // S_BSZTULIP_ORANGE
+	{SPR_BSZ4, 0, -1, {NULL}, 0, 0, S_NULL}, // S_BSZTULIP_RED
+	{SPR_BSZ4, 1, -1, {NULL}, 0, 0, S_NULL}, // S_BSZTULIP_PURPLE
+	{SPR_BSZ4, 2, -1, {NULL}, 0, 0, S_NULL}, // S_BSZTULIP_BLUE
+	{SPR_BSZ4, 3, -1, {NULL}, 0, 0, S_NULL}, // S_BSZTULIP_CYAN
+	{SPR_BSZ4, 4, -1, {NULL}, 0, 0, S_NULL}, // S_BSZTULIP_YELLOW
+	{SPR_BSZ4, 5, -1, {NULL}, 0, 0, S_NULL}, // S_BSZTULIP_ORANGE
 	{SPR_BSZ5, 0, -1, {NULL}, 0, 0, S_NULL}, // S_BSZCLUSTER_RED
 	{SPR_BSZ5, 1, -1, {NULL}, 0, 0, S_NULL}, // S_BSZCLUSTER_PURPLE
 	{SPR_BSZ5, 2, -1, {NULL}, 0, 0, S_NULL}, // S_BSZCLUSTER_BLUE
@@ -2562,10 +2557,8 @@ state_t states[NUMSTATES] =
 	{SPR_BSZ7, 5, -1, {NULL}, 0, 0, S_NULL}, // S_BSZVINE_ORANGE
 	{SPR_BSZ8, 0, -1, {NULL}, 0, 0, S_NULL}, // S_BSZSHRUB
 	{SPR_BSZ8, 1, -1, {NULL}, 0, 0, S_NULL}, // S_BSZCLOVER
-	{SPR_BSZ8, 2, -1, {NULL}, 0, 0, S_NULL}, // S_BIG_PALMTREE_TRUNK
-	{SPR_BSZ8, 3, -1, {A_ConnectToGround}, MT_BIG_PALMTREE_TRUNK, 0, S_NULL}, // S_BIG_PALMTREE_TOP
-	{SPR_BSZ8, 4, -1, {NULL}, 0, 0, S_NULL}, // S_PALMTREE_TRUNK
-	{SPR_BSZ8, 5, -1, {A_ConnectToGround},     MT_PALMTREE_TRUNK, 0, S_NULL}, // S_PALMTREE_TOP
+	{SPR_BSZ8, 2, -1, {NULL}, 0, 0, S_NULL}, // S_BSZFISH
+	{SPR_BSZ8, 3, -1, {NULL}, 0, 0, S_NULL}, // S_BSZSUNFLOWER
 
 	// Disco ball
 	{SPR_DBAL, FF_FULLBRIGHT,   5, {NULL}, 0, 0, S_DBALL2}, // S_DBALL1
@@ -3595,6 +3588,9 @@ state_t states[NUMSTATES] =
 	{SPR_NSCR, FF_FULLBRIGHT|17, -1, {NULL}, 0, 0, S_NULL}, // S_NIGHTSCORE80_2
 	{SPR_NSCR, FF_FULLBRIGHT|18, -1, {NULL}, 0, 0, S_NULL}, // S_NIGHTSCORE90_2
 	{SPR_NSCR, FF_FULLBRIGHT|19, -1, {NULL}, 0, 0, S_NULL}, // S_NIGHTSCORE100_2
+	
+	{SPR_NWNG, 0, -1, {NULL}, 0, 0, S_NULL}, // S_NIGHTSWING
+	{SPR_NWNG, 1, -1, {NULL}, 0, 0, S_NULL}, // S_NIGHTSWING_XMAS
 
 	// NiGHTS Paraloop Powerups
 	{SPR_NPRU, 0, -1, {NULL}, 0, 0, S_NULL}, // S_NIGHTSSUPERLOOP
@@ -9139,7 +9135,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_MYSTERY_BOX
-		-1, //412,      // doomednum
+		412,      // doomednum
 		S_MYSTERY_BOX,  // spawnstate
 		1,              // spawnhealth
 		S_NULL,         // seestate
@@ -10516,7 +10512,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_CANNONBALLDECOR
-		1124,           // doomednum
+		526,           // doomednum
 		S_CANNONBALL1,  // spawnstate
 		1,              // spawnhealth
 		S_NULL,         // seestate
@@ -13918,7 +13914,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_FJSPINAXISA
-		1302,           // doomednum
+		3575,           // doomednum
 		S_FJSPINAXISA1, // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
@@ -13945,7 +13941,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 	},
 
 	{           // MT_FJSPINAXISB
-		1303,           // doomednum
+		3576,           // doomednum
 		S_FJSPINAXISB1, // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
@@ -16646,10 +16642,10 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		MF_NOTHINK|MF_NOBLOCKMAP|MF_NOCLIP|MF_SCENERY, // flags
 		S_NULL          // raisestate
 	},
-
-	{           // MT_BIG_PALMTREE_TRUNK
-		-1,             // doomednum
-		S_BIG_PALMTREE_TRUNK, // spawnstate
+	
+		{           // MT_BSZFISH
+		1472,           // doomednum
+		S_BSZFISH,      // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
 		sfx_None,       // seesound
@@ -16665,7 +16661,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,       // deathsound
 		0,              // speed
 		16*FRACUNIT,    // radius
-		160*FRACUNIT,   // height
+		32*FRACUNIT,    // height
 		0,              // display offset
 		100,            // mass
 		0,              // damage
@@ -16674,9 +16670,9 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		S_NULL          // raisestate
 	},
 
-	{           // MT_BIG_PALMTREE_TOP
+	{           // MT_BSZSUNFLOWER
 		1473,           // doomednum
-		S_BIG_PALMTREE_TOP, // spawnstate
+		S_BSZSUNFLOWER, // spawnstate
 		1000,           // spawnhealth
 		S_NULL,         // seestate
 		sfx_None,       // seesound
@@ -16692,66 +16688,12 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		sfx_None,       // deathsound
 		0,              // speed
 		16*FRACUNIT,    // radius
-		160*FRACUNIT,   // height
-		0,              // display offset
-		100,            // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_RUNSPAWNFUNC|MF_NOTHINK|MF_NOBLOCKMAP|MF_NOCLIP|MF_SCENERY, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_PALMTREE_TRUNK
-		-1,             // doomednum
-		S_PALMTREE_TRUNK, // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		16*FRACUNIT,    // radius
-		80*FRACUNIT,    // height
+		32*FRACUNIT,    // height
 		0,              // display offset
 		100,            // mass
 		0,              // damage
 		sfx_None,       // activesound
 		MF_NOTHINK|MF_NOBLOCKMAP|MF_NOCLIP|MF_SCENERY, // flags
-		S_NULL          // raisestate
-	},
-
-	{           // MT_PALMTREE_TOP
-		1475,           // doomednum
-		S_PALMTREE_TOP, // spawnstate
-		1000,           // spawnhealth
-		S_NULL,         // seestate
-		sfx_None,       // seesound
-		8,              // reactiontime
-		sfx_None,       // attacksound
-		S_NULL,         // painstate
-		0,              // painchance
-		sfx_None,       // painsound
-		S_NULL,         // meleestate
-		S_NULL,         // missilestate
-		S_NULL,         // deathstate
-		S_NULL,         // xdeathstate
-		sfx_None,       // deathsound
-		0,              // speed
-		16*FRACUNIT,    // radius
-		80*FRACUNIT,    // height
-		0,              // display offset
-		100,            // mass
-		0,              // damage
-		sfx_None,       // activesound
-		MF_RUNSPAWNFUNC|MF_NOTHINK|MF_NOBLOCKMAP|MF_NOCLIP|MF_SCENERY, // flags
 		S_NULL          // raisestate
 	},
 
@@ -20292,6 +20234,33 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,              // damage
 		sfx_None,       // activesound
 		MF_SLIDEME|MF_SPECIAL, // flags
+		S_NULL          // raisestate
+	},
+	
+	{          // MT_NIGHTSWING
+		1706,           // doomednum
+		S_NIGHTSWING,   // spawnstate
+		1000,           // spawnhealth
+		S_NIGHTSWING_XMAS, // seestate
+		sfx_None,       // seesound
+		8,              // reactiontime
+		sfx_None,       // attacksound
+		S_NULL,         // painstate
+		0,              // painchance
+		sfx_itemup,     // painsound
+		S_RING,         // meleestate
+		S_NULL,         // missilestate
+		S_SPRK1,        // deathstate
+		S_NULL,         // xdeathstate
+		sfx_None,       // deathsound
+		1,              // speed
+		12*FRACUNIT,    // radius
+		24*FRACUNIT,    // height
+		0,              // display offset
+		4,              // mass
+		0,              // damage
+		sfx_ncitem,     // activesound
+		MF_SLIDEME|MF_SPECIAL|MF_NOGRAVITY|MF_NOCLIPHEIGHT, // flags
 		S_NULL          // raisestate
 	},
 

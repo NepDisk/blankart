@@ -870,13 +870,7 @@ typedef enum sprite
 	SPR_BSZ1, // Tall flowers
 	SPR_BSZ2, // Medium flowers
 	SPR_BSZ3, // Small flowers
-	//SPR_BSZ4, -- Tulips
-	SPR_BST1, // Red tulip
-	SPR_BST2, // Purple tulip
-	SPR_BST3, // Blue tulip
-	SPR_BST4, // Cyan tulip
-	SPR_BST5, // Yellow tulip
-	SPR_BST6, // Orange tulip
+	SPR_BSZ4, // Tulip
 	SPR_BSZ5, // Cluster of Tulips
 	SPR_BSZ6, // Bush
 	SPR_BSZ7, // Vine
@@ -1017,6 +1011,7 @@ typedef enum sprite
 	SPR_NBMP, // NiGHTS Bumper
 	SPR_HOOP, // NiGHTS hoop sprite
 	SPR_NSCR, // NiGHTS score sprite
+	SPR_NWNG, // NIGHTS Wing
 	SPR_NPRU, // Nights Powerups
 	SPR_CAPS, // Capsule thingy for NiGHTS
 	SPR_IDYA, // Ideya
@@ -3029,10 +3024,8 @@ typedef enum state
 	S_BSZVINE_ORANGE,
 	S_BSZSHRUB,
 	S_BSZCLOVER,
-	S_BIG_PALMTREE_TRUNK,
-	S_BIG_PALMTREE_TOP,
-	S_PALMTREE_TRUNK,
-	S_PALMTREE_TOP,
+	S_BSZFISH,
+	S_BSZSUNFLOWER,
 
 	S_DBALL1,
 	S_DBALL2,
@@ -4003,6 +3996,9 @@ typedef enum state
 	S_NIGHTSCORE80_2,
 	S_NIGHTSCORE90_2,
 	S_NIGHTSCORE100_2,
+	
+	S_NIGHTSWING,
+	S_NIGHTSWING_XMAS,
 
 	// NiGHTS Paraloop Powerups
 	S_NIGHTSSUPERLOOP,
@@ -5915,10 +5911,8 @@ typedef enum mobj_type
 	MT_BSZVINE_ORANGE,
 	MT_BSZSHRUB,
 	MT_BSZCLOVER,
-	MT_BIG_PALMTREE_TRUNK,
-	MT_BIG_PALMTREE_TOP,
-	MT_PALMTREE_TRUNK,
-	MT_PALMTREE_TOP,
+	MT_BSZFISH,
+	MT_BSZSUNFLOWER,
 
 	// Misc scenery
 	MT_DBALL,
@@ -6072,6 +6066,7 @@ typedef enum mobj_type
 	MT_NIGHTSSTAR, // NiGHTS Star
 	MT_FLINGNIGHTSSTAR, // Lost NiGHTS Star
 	MT_NIGHTSSUPERLOOP,
+	MT_NIGHTSWING,
 	MT_NIGHTSDRILLREFILL,
 	MT_NIGHTSHELPER,
 	MT_NIGHTSEXTRATIME,
