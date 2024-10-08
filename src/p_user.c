@@ -1251,7 +1251,7 @@ mobj_t *P_SpawnGhostMobj(mobj_t *mobj)
 // Player exits the map via sector trigger
 void P_DoPlayerExit(player_t *player)
 {
-	const boolean losing = K_IsPlayerLosing(player);
+	boolean losing;
 
 	if (player->exiting || mapreset)
 		return;
@@ -1263,30 +1263,23 @@ void P_DoPlayerExit(player_t *player)
 		player->griefstrikes--; // Remove a strike for finishing a race normally
 
 	player->exiting = 1;
+	
+	if (!player->spectator && (gametyperules & GTR_CIRCUIT)) // Special Race-like handling
+	{
+		K_UpdateAllPlayerPositions();
+	}
+	
+	losing = K_IsPlayerLosing(player); // HEY!!!! Set it AFTER K_UpdateAllPlayerPositions!!!!
 
 	if (!player->spectator)
 	{
 		if ((gametyperules & GTR_CIRCUIT)) // If in Race Mode, allow
 		{
-			K_UpdateAllPlayerPositions();
 			if (cv_kartvoices.value)
 			{
-				if (P_IsDisplayPlayer(player))
-				{
-					sfxenum_t sfx_id;
-					if (losing)
-						sfx_id = ((skin_t *)player->mo->skin)->soundsid[S_sfx[sfx_klose].skinsound];
-					else
-						sfx_id = ((skin_t *)player->mo->skin)->soundsid[S_sfx[sfx_kwin].skinsound];
-					S_StartSound(NULL, sfx_id);
-				}
-				else
-				{
-					if (losing)
-						S_StartSound(player->mo, sfx_klose);
-					else
-						S_StartSound(player->mo, sfx_kwin);
-				}
+				const INT32 sfx_id = (losing ? sfx_klose : sfx_kwin);
+				skin_t *playerskin = &skins[player->skin];
+				S_StartSound(player->mo, playerskin->soundsid[S_sfx[sfx_id].skinsound]);
 			}
 
 			if (!K_CanChangeRules() || cv_inttime.value > 0)
