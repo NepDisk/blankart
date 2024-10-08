@@ -844,6 +844,16 @@ static void Got_Saycmd(UINT8 **p, INT32 playernum)
 			cstart = color_prefix;
 		}
 		prefix = cstart;
+		
+		if (strnicmp(msg, ">", 1) == 0) // >imagine not having this hardcoded already
+		{
+			textcolor = "\x83";
+		}
+		
+		if (strnicmp(msg, "\\", 1) == 0) // I love yen texting :)
+		{
+			textcolor = "\x88";
+		}
 
 		// Give admins and remote admins their symbols.
 		if (playernum == serverplayer)
