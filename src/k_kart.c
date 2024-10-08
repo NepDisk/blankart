@@ -7648,6 +7648,7 @@ INT32 K_GetKartDriftSparkValueForStage(player_t *player, UINT8 stage)
 static void K_KartDrift(player_t *player, boolean onground)
 {
 	fixed_t minspeed = (10 * player->mo->scale);
+	fixed_t driftadditive = 24;
 	INT32 dsone = K_GetKartDriftSparkValue(player);
 	INT32 dstwo = dsone*2;
 	INT32 dsthree = dstwo*2;
@@ -7730,8 +7731,6 @@ static void K_KartDrift(player_t *player, boolean onground)
 	// Incease/decrease the drift value to continue drifting in that direction
 	if (!P_PlayerInPain(player) && (player->pflags & PF_DRIFTINPUT) && onground && player->drift != 0)
 	{
-		fixed_t driftadditive = 24;
-
 		if (player->drift >= 1) // Drifting to the left
 		{
 			player->drift++;
@@ -7771,21 +7770,21 @@ static void K_KartDrift(player_t *player, boolean onground)
 			if (P_IsDisplayPlayer(player)) // UGHGHGH...
 				S_StartSoundAtVolume(player->mo, sfx_s3ka2, 192); // Ugh...
 		}
-
-
-		// moved this below sounds to help with scaling
-		// This spawns the drift sparks
-		if (player->driftcharge + driftadditive >= dsone)
-			K_SpawnDriftSparks(player);
-
+		
 		player->driftcharge += driftadditive;
 		player->pflags &= ~PF_DRIFTEND;
+	}
+	
+	// Spawn Sparks regardless of size
+	if (!P_PlayerInPain(player) && player->drift != 0)
+	{
+		if (player->driftcharge >= dsone)
+			K_SpawnDriftSparks(player);
 	}
 
 	// Stop drifting
 	if (P_PlayerInPain(player) || player->speed < minspeed)
 	{
-		// Stop drifting
 		player->drift = player->driftcharge = player->aizdriftstrat = 0;
 		player->pflags &= ~(PF_BRAKEDRIFT|PF_GETSPARKS);
 	}
