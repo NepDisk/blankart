@@ -83,7 +83,10 @@ void K_TimerInit(void)
 		starttime = 6*TICRATE + (3*TICRATE/4);
 		
 		if (gametyperules & GTR_FREEROAM)
-			starttime = introtime+1;
+		{
+			introtime = 0;
+			starttime = 0;
+		}
 	}
 
 	// NOW you can try to spawn in the Battle capsules, if there's not enough players for a match
@@ -2091,7 +2094,7 @@ void K_KartMoveAnimation(player_t *player)
 	const boolean onground = P_IsObjectOnGround(player->mo);
 
 	UINT16 buttons = K_GetKartButtons(player);
-	const boolean spinningwheels = (((buttons & BT_ACCELERATE) == BT_ACCELERATE) || (onground && player->speed > 0));
+	const boolean spinningwheels = (player->speed > 0);
 	const boolean lookback = ((buttons & BT_LOOKBACK) == BT_LOOKBACK);
 
 	SINT8 turndir = 0;
@@ -3002,7 +3005,7 @@ SINT8 K_GetForwardMove(player_t *player)
 	{
 		return 0;
 	}
-
+	
 	if ((player->pflags & PF_STASIS) || (player->carry == CR_SLIDING))
 	{
 		return 0;
@@ -3014,6 +3017,11 @@ SINT8 K_GetForwardMove(player_t *player)
 	}
 
 	if (player->spinouttimer)
+	{
+		return 0;
+	}
+	
+	if (leveltime < starttime && !(gametyperules & GTR_FREEROAM))
 	{
 		return 0;
 	}
@@ -5975,7 +5983,7 @@ static void K_UpdateEngineSounds(player_t *player)
 		return;
 	}
 
-	if ((leveltime >= starttime-(2*TICRATE) && leveltime <= starttime) || player->dropdash) // Startup boost and dropdashing
+	if ((leveltime >= starttime-(2*TICRATE) && leveltime <= starttime) || player->respawn) // Startup boost and dropdashing
 	{
 		// Startup boosts only want to check for BT_ACCELERATE being pressed.
 		targetsnd = ((buttons & BT_ACCELERATE) ? 12 : 0);
@@ -6357,10 +6365,6 @@ static void K_UpdateTripwire(player_t *player)
 
 static void K_RaceStart(player_t *player)
 {
-
-	if (leveltime <= starttime)
-		player->nocontrol = 1;
-
 	// Start charging once you're given the opportunity.
 	if (leveltime >= starttime-(2*TICRATE) && leveltime <= starttime)
 	{

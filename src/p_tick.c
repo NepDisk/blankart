@@ -670,17 +670,20 @@ void P_Ticker(boolean run)
 		// Plays the music after the starting countdown.
 		else
 		{
-			if (leveltime == starttime-(3*TICRATE))
+			if (!(gametyperules & GTR_FREEROAM))
 			{
-				S_StartSound(NULL, sfx_s3ka7); // 3,
-			}
-			else if ((leveltime == starttime-(2*TICRATE)) || (leveltime == starttime-TICRATE))
-			{
-				S_StartSound(NULL, sfx_s3ka7); // 2, 1,
-			}
-			else if (leveltime == starttime)
-			{
-				S_StartSound(NULL, sfx_s3kad); // GO!
+				if (leveltime == starttime-(3*TICRATE))
+				{
+					S_StartSound(NULL, sfx_s3ka7); // 3,
+				}
+				else if ((leveltime == starttime-(2*TICRATE)) || (leveltime == starttime-TICRATE))
+				{
+					S_StartSound(NULL, sfx_s3ka7); // 2, 1,
+				}
+				else if (leveltime == starttime)
+				{
+					S_StartSound(NULL, sfx_s3kad); // GO!
+				}
 			}
 			if (leveltime == (starttime + (TICRATE/2)))
 			{
