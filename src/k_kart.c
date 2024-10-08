@@ -3382,8 +3382,6 @@ void K_HandleBumperChanges(player_t *player, UINT8 prevBumpers)
 
 	if (player->bumper > 0 && prevBumpers == 0)
 	{
-		K_DoInvincibility(player, 8 * TICRATE);
-
 		if (netgame)
 		{
 			CONS_Printf(M_GetText("%s is back in the game!\n"), player_names[player-players]);

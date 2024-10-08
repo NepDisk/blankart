@@ -10819,15 +10819,8 @@ void P_SpawnPlayer(INT32 playernum)
 		{
 			if ((leveltime < starttime) || (pcount <= 1)) // Start of the map?
 			{
-				if (leveltime > 2) // Reset those bumpers!
-				{
-					p->bumper = K_StartingBumperCount();
-					K_SpawnPlayerBattleBumpers(p);
-				}
-				else // temp, will get overwritten in K_BattleInit
-				{
-					p->bumper = 1;
-				}
+				p->bumper = K_StartingBumperCount();
+				K_SpawnPlayerBattleBumpers(p);
 			}
 		}
 		else if (p->bumper <= 0)
