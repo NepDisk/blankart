@@ -2217,6 +2217,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	INT16 totalring;
 	UINT8 laps;
 	UINT8 latestlap;
+	boolean lapvalidation;
 	UINT16 skincolor;
 	INT32 skin;
 	UINT32 availabilities;
@@ -2307,6 +2308,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		nocontrol = 0;
 		laps = 0;
 		latestlap = 0;
+		lapvalidation = false;
 		roundscore = 0;
 		exiting = 0;
 		khudcardanimation = 0;
@@ -2353,6 +2355,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 
 		laps = players[player].laps;
 		latestlap = players[player].latestlap;
+		lapvalidation = players[player].lapvalidation;
 
 		roundscore = players[player].roundscore;
 
@@ -2433,6 +2436,7 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 
 	p->laps = laps;
 	p->latestlap = latestlap;
+	p->lapvalidation = lapvalidation;
 	p->totalring = totalring;
 
 	p->bot = bot;
