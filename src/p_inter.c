@@ -2020,26 +2020,10 @@ boolean P_DamageMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, INT32 da
 
 				{
 					
-					if (((type == DMG_NORMAL) || (type == DMG_WIPEOUT)) || (type == DMG_STING) || (type == DMG_WOMBO)) // No combos pls thx
-					{
-						if (player->spinouttimer > 0)
-						{
-							K_DoInstashield(player);
-							//CONS_Printf("is this shit even working....\n");
-							return false;
-						}
-					}
-					
-					if (player->squishedtimer > 0)
-					{
-						K_DoInstashield(player);
-						return false;
-					}
-					
 					// Check if we should allow wombo combos (hard hits by default, inverted by the presence of DMG_WOMBO).
-					boolean allowcombo = (hardhit == !(damagetype & DMG_WOMBO));
+					boolean allowcombo = hardhit;
 
-					if ((allowcombo == false) && player->flashing > 0)
+					if ((allowcombo == false) && (player->flashing > 0 || player->squishedtimer > 0))
 					{
 						// Post-hit invincibility
 						K_DoInstashield(player);

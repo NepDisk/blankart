@@ -67,7 +67,7 @@ boolean K_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 		else
 		{
 			// Player Damage
-			P_DamageMobj(t2, t1, t1->target, 1, DMG_WIPEOUT|DMG_WOMBO);
+			P_DamageMobj(t2, t1, t1->target, 1, DMG_WIPEOUT);
 			K_KartBouncing(t2, t1);
 			S_StartSound(t2, sfx_s3k7b);
 		}
@@ -160,7 +160,7 @@ boolean K_BananaBallhogCollide(mobj_t *t1, mobj_t *t2)
 		}
 		else
 		{
-			P_DamageMobj(t2, t1, t1->target, 1, DMG_NORMAL|DMG_WOMBO);
+			P_DamageMobj(t2, t1, t1->target, 1, DMG_NORMAL);
 		}
 
 		damageitem = true;
@@ -688,7 +688,7 @@ static inline BlockItReturn_t PIT_LightningShieldAttack(mobj_t *thing)
 	}
 #endif
 
-	P_DamageMobj(thing, lightningSource, lightningSource, 1, DMG_NORMAL|DMG_CANTHURTSELF|DMG_WOMBO);
+	P_DamageMobj(thing, lightningSource, lightningSource, 1, DMG_NORMAL|DMG_CANTHURTSELF);
 	return BMIT_CONTINUE;
 }
 
@@ -731,7 +731,7 @@ boolean K_BubbleShieldCollide(mobj_t *t1, mobj_t *t2)
 			return true;
 
 		// Player Damage
-		P_DamageMobj(t2, ((t1->type == MT_BUBBLESHIELD) ? t1->target : t1), t1, 1, DMG_NORMAL|DMG_WOMBO);
+		P_DamageMobj(t2, ((t1->type == MT_BUBBLESHIELD) ? t1->target : t1), t1, 1, DMG_NORMAL);
 		S_StartSound(t1, sfx_s3k44);
 	}
 	else
@@ -880,12 +880,12 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 
 	if (t1Condition == true && t2Condition == false)
 	{
-		P_DamageMobj(t2, t1, t1, 1, DMG_WIPEOUT|DMG_WOMBO);
+		P_DamageMobj(t2, t1, t1, 1, DMG_WIPEOUT);
 		return true;
 	}
 	else if (t1Condition == false && t2Condition == true)
 	{
-		P_DamageMobj(t1, t2, t2, 1, DMG_WIPEOUT|DMG_WOMBO);
+		P_DamageMobj(t1, t2, t2, 1, DMG_WIPEOUT);
 		return true;
 	}
 
@@ -902,12 +902,12 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 
 		if (t1Condition == true && t2Condition == false)
 		{
-			P_DamageMobj(t2, t1, t1, 1, DMG_WIPEOUT|DMG_STEAL|DMG_WOMBO);
+			P_DamageMobj(t2, t1, t1, 1, DMG_WIPEOUT|DMG_STEAL);
 			return true;
 		}
 		else if (t1Condition == false && t2Condition == true)
 		{
-			P_DamageMobj(t1, t2, t2, 1, DMG_WIPEOUT|DMG_STEAL|DMG_WOMBO);
+			P_DamageMobj(t1, t2, t2, 1, DMG_WIPEOUT|DMG_STEAL);
 			return true;
 		}
 	}
@@ -921,7 +921,7 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		{
 			if (t2->player->rings <= 0)
 			{
-				P_DamageMobj(t2, t1, t1, 1, DMG_STING|DMG_WOMBO);
+				P_DamageMobj(t2, t1, t1, 1, DMG_STING);
 				stungT2 = true;
 			}
 
@@ -932,7 +932,7 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 		{
 			if (t1->player->rings <= 0)
 			{
-				P_DamageMobj(t1, t2, t2, 1, DMG_STING|DMG_WOMBO);
+				P_DamageMobj(t1, t2, t2, 1, DMG_STING);
 				stungT1 = true;
 			}
 

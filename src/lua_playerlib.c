@@ -528,8 +528,6 @@ static int player_set(lua_State *L)
 		return NOSET;
 	else if (fastcmp(field,"oldcmd"))
 		return NOSET;
-	else if (fastcmp(field,"respawn"))
-		return NOSET;
 	else if (fastcmp(field,"playerstate"))
 		plr->playerstate = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"viewz"))

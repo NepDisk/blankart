@@ -5439,8 +5439,6 @@ const char *const MOBJTYPE_LIST[] = {  // array length left dynamic for sanity t
 
 	"MT_PAPERITEMSPOT",
 
-	"MT_BEAMPOINT",
-
 	"MT_LOOPENDPOINT",
 	"MT_LOOPCENTERPOINT",
 };
@@ -6298,7 +6296,6 @@ struct int_const_s const INT_CONST[] = {
 	//// Masks
 	{"DMG_STEAL",DMG_STEAL},
 	{"DMG_CANTHURTSELF",DMG_CANTHURTSELF},
-	{"DMG_WOMBO", DMG_WOMBO},
 	{"DMG_DEATHMASK",DMG_DEATHMASK},
 	{"DMG_TYPEMASK",DMG_TYPEMASK},
 
