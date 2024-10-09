@@ -2616,9 +2616,13 @@ static void P_DeathThink(player_t *player)
 		}
 	}
 
-	if (playerGone == false && player->deadtimer > TICRATE)
+	if (playerGone == false)
 	{
-		player->playerstate = PST_REBORN;
+		// SRB2kart - spawn automatically after 1 second
+		if (player->deadtimer > ((netgame || multiplayer)
+			? cv_respawntime.value*TICRATE
+			: TICRATE)) // don't let them change it in record attack
+				player->playerstate = PST_REBORN;
 	}
 
 	// Keep time rolling
