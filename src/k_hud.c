@@ -2971,7 +2971,7 @@ static void K_DrawTypingNotifier(fixed_t x, fixed_t y, player_t *p)
 {
 	if (p->cmd.flags & TICCMD_TYPING)
 	{
-		V_DrawFixedPatch(x, y, FRACUNIT, V_HUDTRANS|V_SPLITSCREEN, kp_talk, NULL);
+		V_DrawFixedPatch(x, y, FRACUNIT,V_SPLITSCREEN, kp_talk, NULL);
 
 		/* spacing closer with the last two looks a better most of the time */
 		K_DrawTypingDot(x + 3*FRACUNIT,              y, 15, p);
