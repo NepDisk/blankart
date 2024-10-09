@@ -43,12 +43,13 @@ static const char *const hud_disable_options[] = {
 	"stagetitle",
 	"textspectator",
 	"crosshair",
-
+	"scores",
 	"time",
 	"gametypeinfo",	// Bumpers / Karma / Laps depending on gametype
 	"minimap",
 	"item",
 	"position",
+	"nametags",
 	"check",		// "CHECK" f-zero indicator
 	"minirankings",	// Gametype rankings to the left
 	"battlerankingsbumpers",	// bumper drawer for battle. Useful if you want to make a custom battle gamemode without bumpers being involved.

@@ -6730,10 +6730,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		}
 		player->superring--;
 	}
-
-	// Start at lap 1 when using old checkpoint system just to be safe.
-	if ((numbosswaypoints > 0) && (player->laps == 0) && (numlaps > 0))
-		player->laps = 1;
 	
 	if (player->stealingtimer == 0 && player->stolentimer == 0
 		&& player->rocketsneakertimer)

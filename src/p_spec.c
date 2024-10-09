@@ -1889,7 +1889,7 @@ static void K_HandleLapIncrement(player_t *player)
 {
 	if (player)
 	{
-		if (((numbosswaypoints > 0) ? (player->starpostnum >= (numstarposts - (numstarposts/2))) : (player->starpostnum == numstarposts)) || (player->laps == 0))
+		if (((numbosswaypoints > 0) ? (player->starpostnum >= (numstarposts - (numstarposts/2))) : (player->starpostnum == numstarposts)))
 		{
 			size_t i = 0;
 			UINT8 nump = 0;
