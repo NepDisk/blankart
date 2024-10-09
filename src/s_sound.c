@@ -112,9 +112,7 @@ consvar_t cv_music_resync_powerups_only = CVAR_INIT ("music_resync_powerups_only
 
 // Window focus sound sytem toggles
 consvar_t cv_playmusicifunfocused = CVAR_INIT ("playmusicifunfocused",  "No", CV_SAVE|CV_CALL|CV_NOINIT, CV_YesNo, PlayMusicIfUnfocused_OnChange);
-consvar_t cv_streamersafemusic = CVAR_INIT ("playsoundsifunfocused", "No", CV_SAVE|CV_CALL|CV_NOINIT, CV_YesNo, PlaySoundIfUnfocused_OnChange);
-
-consvar_t cv_playsoundifunfocused = CVAR_INIT ("streamersafemusic", "No", CV_SAVE, CV_YesNo, PlaySoundIfUnfocused_OnChange);
+consvar_t cv_streamersafemusic = CVAR_INIT ("streamersafemusic", "No", CV_SAVE, CV_YesNo, NULL);
 
 #ifdef HAVE_OPENMPT
 openmpt_module *openmpt_mhandle = NULL;
