@@ -6523,14 +6523,16 @@ static boolean P_IsLineDisabled (const line_t * line)
 {
 	if (line->special != 7) // This is a hack. I can at least hope nobody wants to prevent flat alignment in netgames...
 	{
+		const INT16 NETONLY = udmf ? ML_NETONLY : ML_NETONLY_OLD;
+
 		if (netgame)
 		{
-			if (line->flags & ML_NONET)
+			if (line->flags & (udmf ? ML_NONET : 0))
 			{
 				return true;
 			}
 		}
-		else if (line->flags & ML_NETONLY)
+		else if ((line->flags & NETONLY) == NETONLY)
 		{
 			return true;
 		}

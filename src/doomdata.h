@@ -137,6 +137,7 @@ enum
 
 	// Apply effect only in netgames
 	ML_NETONLY			= 0x00000800,
+	ML_NETONLY_OLD		= 0x3800, // Combination of old ML_NOSONIC, ML_NOTAILS and ML_NOKNUX
 
 	// Apply effect only in single player games
 	ML_NONET			= 0x00001000,
