@@ -166,6 +166,7 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT32(save_p, players[i].realtime);
 		WRITEUINT8(save_p, players[i].laps);
 		WRITEUINT8(save_p, players[i].latestlap);
+		WRITEUINT8(save_p, players[i].lapvalidation);
 		
 		WRITEUINT32(save_p, players[i].starposttime);
 		WRITEINT16(save_p, players[i].starpostx);
@@ -460,6 +461,7 @@ static void P_NetUnArchivePlayers(void)
 		players[i].realtime = READUINT32(save_p); // integer replacement for leveltime
 		players[i].laps = READUINT8(save_p); // Number of laps (optional)
 		players[i].latestlap = READUINT8(save_p);
+		players[i].lapvalidation = READUINT8(save_p);
 		
 		players[i].starposttime = READUINT32(save_p);
 		players[i].starpostx = READINT16(save_p);

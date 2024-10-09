@@ -514,6 +514,7 @@ typedef struct player_s
 	tic_t realtime; // integer replacement for leveltime
 	UINT8 laps; // Number of laps (optional)
 	UINT8 latestlap;
+	boolean lapvalidation; // A hack to prevent lap 1 (0) from incrementing the lap count on waypoint only maps
 	
 	// Starpost information
 	INT16 starpostx;
