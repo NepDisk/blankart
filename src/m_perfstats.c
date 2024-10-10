@@ -52,6 +52,7 @@ precise_t ps_botticcmd_time = 0;
 precise_t ps_thinkertime = 0;
 
 precise_t ps_thlist_times[NUM_ACTIVETHINKERLISTS];
+precise_t ps_acs_time = 0;
 
 int ps_checkposition_calls = 0;
 
