@@ -28,13 +28,13 @@
 #include "p_tick.h"
 #include "p_local.h"
 
-#include "CAPI/BinaryIO.h"
-#include "CAPI/Environment.h"
-#include "CAPI/Module.h"
-#include "CAPI/PrintBuf.h"
-#include "CAPI/Scope.h"
-#include "CAPI/String.h"
-#include "CAPI/Thread.h"
+#include "ACS/CAPI/BinaryIO.h"
+#include "ACS/CAPI/Environment.h"
+#include "ACS/CAPI/Module.h"
+#include "ACS/CAPI/PrintBuf.h"
+#include "ACS/CAPI/Scope.h"
+#include "ACS/CAPI/String.h"
+#include "ACS/CAPI/Thread.h"
 
 static ACSVM_Environment *ACSenv = NULL;
 
@@ -620,14 +620,14 @@ void ACS_LoadLevelScripts(size_t mapID)
 
 	// Insert BEHAVIOR lump into the list.
 	{
-		char const *str = mapheaderinfo[mapID]->lumpname;
+		char const *str = va("MAP%lu",mapID);
 		size_t len = strlen(str);
 		size_t hash = ACSVM_StrHash(str, len);
 
 		ACSVM_ModuleName name = {0};
 
 		name.s = ACSVM_StringTable_GetStringByData(strTab, str, len, hash);
-		name.i = mapheaderinfo[mapID]->lumpnum;
+		name.i = mapID;
 
 		if (modules_len >= modules_size)
 		{

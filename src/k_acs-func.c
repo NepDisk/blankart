@@ -201,7 +201,7 @@ bool ACS_CF_Random(ACSVM_Thread *thread, ACSVM_Word const *argV, ACSVM_Word argC
 	low = argV[0];
 	high = argV[1];
 
-	ACSVM_Thread_DataStk_Push(thread, P_RandomRange(PR_ACS, low, high));
+	ACSVM_Thread_DataStk_Push(thread, P_RandomRange(low, high));
 	return false;
 }
 

@@ -82,6 +82,7 @@ if(${CMAKE_SYSTEM} MATCHES "Windows") ###set on Windows only
 endif()
 
 add_subdirectory(blua)
+add_subdirectory(ACS)
 add_subdirectory(blan)
 add_subdirectory(objects)
 
@@ -355,3 +356,4 @@ add_subdirectory(sdl)
 if(NOT ${SRB2_SDL2_AVAILABLE})
 	message(FATAL_ERROR "There are no targets available to build an SRB2Kart executable. :(")
 endif()
+
