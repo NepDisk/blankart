@@ -1594,10 +1594,11 @@ boolean P_RunTriggerLinedef(line_t *triggerline, mobj_t *actor, sector_t *caller
 		// These special types work only once
 		if (specialtype == 313  // No more enemies
 			|| specialtype == 321 // Trigger on X calls
+			||specialtype == 323 // Record Attack only - Once
+			|| specialtype == 328 // Encore Load
 			|| specialtype == 399) // Level Load
 			triggerline->special = 0;
-		else if ((specialtype == 323 // Nightserize
-			|| specialtype == 325 // DeNightserize
+		else if ((specialtype == 325 // DeNightserize
 			|| specialtype == 327 // Nights lap
 			|| specialtype == 329) // Nights bonus time
 			&& triggerline->args[0])
@@ -1648,7 +1649,7 @@ void P_LinedefExecute(INT16 tag, mobj_t *actor, sector_t *caller)
 			continue;
 
 		// "No More Enemies" and "Level Load" take care of themselves.
-		if (lines[masterline].special == 313  || lines[masterline].special == 399)
+		if (lines[masterline].special == 313 || lines[masterline].special == 323 || lines[masterline].special == 328 || lines[masterline].special == 399)
 			continue;
 
 		// Each-time executors handle themselves, too
@@ -7390,6 +7391,22 @@ void P_SpawnSpecials(boolean fromnetsave)
 				lines[i].callcount = (lines[i].args[2] && lines[i].args[3] > 0) ? lines[i].args[3] : lines[i].args[1]; // optional "starting" count
 				if (lines[i].args[0] > TMXT_EACHTIMEMASK) // Each time
 					P_AddEachTimeThinker(&lines[i], lines[i].args[0] == TMXT_EACHTIMEENTERANDEXIT);
+				break;
+				
+			// Record attack only linedef exec
+			case 323:
+				if (!modeattacking)
+					lines[i].special = 0;
+				break;
+
+			case 328: // Encore-only linedef execute on map load
+				if (!encoremode)
+					lines[i].special = 0;
+				// This is handled in P_RunLevelLoadExecutors.
+				break;
+
+			case 399: // Linedef execute on map load
+				// This is handled in P_RunLevelLoadExecutors.
 				break;
 
 			case 449: // Enable bosses with parameter

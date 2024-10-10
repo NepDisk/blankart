@@ -5293,7 +5293,6 @@ static void P_ConvertBinaryLinedefTypes(void)
 		case 325: //DeNiGHTSerize - Each time
 		case 326: //DeNiGHTSerize - Once
 		case 327: //NiGHTS lap - Each time
-		case 328: //NiGHTS lap - Once
 		case 329: //Ideya capture touch - Each time
 		case 330: //Ideya capture touch - Once
 			lines[i].args[0] = (lines[i].special + 1) % 2;
