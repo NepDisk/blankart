@@ -81,8 +81,11 @@ if(${CMAKE_SYSTEM} MATCHES "Windows") ###set on Windows only
 	"Use SRB2Kart's internal copies of required dependencies (SDL2, PNG, zlib, GME, OpenMPT, cURL).")
 endif()
 
-add_subdirectory(blua)
+set(ACSVM_NOFLAGS ON)
+set(ACSVM_SHARED ON)
 add_subdirectory(ACS)
+
+add_subdirectory(blua)
 add_subdirectory(blan)
 add_subdirectory(objects)
 

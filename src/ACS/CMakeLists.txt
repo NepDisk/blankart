@@ -177,17 +177,14 @@ include_directories(.)
 
 add_subdirectory(ACSVM)
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/CAPI")
-   add_subdirectory(CAPI)
-endif()
+include_directories(CAPI)
+add_subdirectory(CAPI)
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/Exec")
-   add_subdirectory(Exec)
-endif()
+include_directories(Exec)
+add_subdirectory(Exec)
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/Util")
-   add_subdirectory(Util)
-endif()
+include_directories(Util)
+add_subdirectory(Util)
 
 ## EOF
 

@@ -157,6 +157,8 @@ if(${SDL2_FOUND})
 		)
 	endif()
 
+	target_link_libraries(SRB2SDL2 PRIVATE acsvm acsvm-capi)
+
 	target_include_directories(SRB2SDL2 PRIVATE
 		${SDL2_INCLUDE_DIRS}
 		${SDL2_MIXER_INCLUDE_DIRS}
