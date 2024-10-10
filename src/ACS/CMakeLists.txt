@@ -177,13 +177,10 @@ include_directories(.)
 
 add_subdirectory(ACSVM)
 
-include_directories(CAPI)
 add_subdirectory(CAPI)
 
-include_directories(Exec)
 add_subdirectory(Exec)
 
-include_directories(Util)
 add_subdirectory(Util)
 
 ## EOF
