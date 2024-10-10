@@ -620,14 +620,18 @@ void ACS_LoadLevelScripts(size_t mapID)
 
 	// Insert BEHAVIOR lump into the list.
 	{
-		char const *str = va("MAP%lu",mapID);
+		static const char *maplumpname;
+		
+		maplumpname = G_BuildMapName(gamemap);
+		
+		char const *str = maplumpname;
 		size_t len = strlen(str);
 		size_t hash = ACSVM_StrHash(str, len);
 
 		ACSVM_ModuleName name = {0};
 
 		name.s = ACSVM_StringTable_GetStringByData(strTab, str, len, hash);
-		name.i = mapID;
+		name.i = W_CheckNumForMap(maplumpname);
 
 		if (modules_len >= modules_size)
 		{
