@@ -50,18 +50,6 @@ typedef enum
 	ACS_TAGTYPE_SECTOR,
 } acs_tagType_e;
 
-//
-// Thread activator info
-//
-typedef struct
-{
-	mobj_t *mo;				// Object that activated this thread.
-	line_t *line;			// Linedef that activated this thread.
-	UINT8 side;				// Front / back side of said linedef.
-	sector_t *sector;		// Sector that activated this thread.
-	polyobj_t *po;			// Polyobject that activated this thread.
-} acs_threadinfo_t;
-
 /*--------------------------------------------------
 	ACSVM_Environment *ACS_GetEnvironment(void);
 

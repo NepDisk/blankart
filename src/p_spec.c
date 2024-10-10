@@ -5188,7 +5188,7 @@ static void P_EvaluateOldSectorSpecial(player_t *player, sector_t *sector, secto
 			if ((gametyperules & GTR_CIRCUIT) && (player->exiting == 0) && !(player->pflags & PF_HITFINISHLINE))
 			{
 					K_HandleLapIncrement(player, true);
-					ACS_RunLapScript(player->mo, line);
+					//ACS_RunLapScript(player->mo, line); // Theres no line so what is this supposed to run on.
 					player->pflags |= PF_HITFINISHLINE;
 			}
 			break;
