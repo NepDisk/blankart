@@ -1160,10 +1160,8 @@ static BlockItReturn_t PIT_CheckThing(mobj_t *thing)
 				P_DamageMobj(tm.thing, thing, thing, 1, DMG_WIPEOUT|DMG_STEAL);
 			}
 
-			if (K_PvPTouchDamage(tm.thing, thing) == true)
-				K_KartBouncing(tm.thing, thing);
-			else
-				K_KartBouncing(tm.thing, thing);
+			K_PvPTouchDamage(tm.thing, thing);
+			K_KartBouncing(tm.thing, thing);
 			
 			return BMIT_CONTINUE;
 		}
