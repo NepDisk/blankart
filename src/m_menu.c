@@ -5920,7 +5920,7 @@ static void M_DrawReplayStartMenu(void)
 		}
 	}
 
-	V_DrawFill(10, 10, 300, 60, V_SNAPTOTOP|159);
+	V_DrawFill(10, 10, 300, 60, V_SNAPTOTOP|239);
 	DrawReplayHutReplayInfo();
 
 	V_DrawString(10, 72, V_SNAPTOTOP|highlightflags|V_ALLOWLOWERCASE, demolist[dir_on[menudepthleft]].title);
@@ -7966,7 +7966,7 @@ void M_DrawTimeAttackMenu(void)
 			time = mainrecords[cv_nextmap.value-1]->time;
 		}
 
-		V_DrawFill((BASEVIDWIDTH - dupadjust)>>1, 78, dupadjust, 36, 159);
+		V_DrawFill((BASEVIDWIDTH - dupadjust)>>1, 78, dupadjust, 36, 239);
 
 		if (levellistmode != LLM_BREAKTHECAPSULES)
 		{
@@ -9162,7 +9162,7 @@ Update the maxplayers label...
 #ifndef NONET
 	y += MP_MainMenu[8].alphaKey;
 
-	V_DrawFill(x+5, y+4+5, /*16*8 + 6,*/ BASEVIDWIDTH - 2*(x+5), 8+6, 159);
+	V_DrawFill(x+5, y+4+5, /*16*8 + 6,*/ BASEVIDWIDTH - 2*(x+5), 8+6, 239);
 
 	// draw name string
 	V_DrawString(x+8,y+12, V_ALLOWLOWERCASE, setupm_ip);
@@ -9662,7 +9662,7 @@ static void M_DrawSetupMultiPlayerMenu(void)
 		flags |= V_FLIP; // This sprite is left/right flipped!
 
 	// draw box around guy
-	V_DrawFill(mx + 43 - (charw/2), my+65, charw, 84, 159);
+	V_DrawFill(mx + 43 - (charw/2), my+65, charw, 84, 239);
 
 	// draw player sprite
 	if (setupm_fakecolor->color) // inverse should never happen
