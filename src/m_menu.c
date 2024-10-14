@@ -4931,10 +4931,10 @@ static void M_DrawTemperature(INT32 x, fixed_t t)
 		t = (FixedMul(h<<FRACBITS, t)>>FRACBITS);
 
 	// border
-	V_DrawFill(x - 1, vpadding, 1, h, 0);
-	V_DrawFill(x + width, vpadding, 1, h, 0);
-	V_DrawFill(x - 1, vpadding-1, width+2, 1, 0);
-	V_DrawFill(x - 1, vpadding+h, width+2, 1, 0);
+	V_DrawFill(x - 1, vpadding, 1, h, 120);
+	V_DrawFill(x + width, vpadding, 1, h, 120);
+	V_DrawFill(x - 1, vpadding-1, width+2, 1, 120);
+	V_DrawFill(x - 1, vpadding+h, width+2, 1, 120);
 
 	// bar itself
 	y = h;
@@ -5089,14 +5089,14 @@ static void M_DrawAddons(void)
 	x = currentMenu->x;
 	y = currentMenu->y + 1;
 
-	hilicol = V_GetStringColormap(highlightflags)[0];
+	hilicol = V_GetStringColormap(highlightflags)[120];
 
 	V_DrawString(x-21, (y - 16) + (lsheadingheight - 12), highlightflags|V_ALLOWLOWERCASE, M_AddonsHeaderPath());
 	V_DrawFill(x-21, (y - 16) + (lsheadingheight - 3), MAXSTRINGLENGTH*8+6, 1, hilicol);
 	V_DrawFill(x-21, (y - 16) + (lsheadingheight - 2), MAXSTRINGLENGTH*8+6, 1, 30);
 
 	m = (BASEVIDHEIGHT - currentMenu->y + 2) - (y - 1);
-	V_DrawFill(x - 21, y - 1, MAXSTRINGLENGTH*8+6, m, 159);
+	V_DrawFill(x - 21, y - 1, MAXSTRINGLENGTH*8+6, m, 239);
 
 	// scrollbar!
 	if (sizedirmenu <= (2*numaddonsshown + 1))
@@ -5824,8 +5824,8 @@ static void M_DrawReplayHut(void)
 	y = sizedirmenu*10 + currentMenu->menuitems[replaylistitem].alphaKey + 30;
 	if (y > SCALEDVIEWHEIGHT-80)
 	{
-		V_DrawFill(BASEVIDWIDTH-4, 75, 4, SCALEDVIEWHEIGHT-80, V_SNAPTOTOP|V_SNAPTORIGHT|159);
-		V_DrawFill(BASEVIDWIDTH-3, 76 + (SCALEDVIEWHEIGHT-80) * replayhutmenuy / y, 2, (((SCALEDVIEWHEIGHT-80) * (SCALEDVIEWHEIGHT-80))-1) / y - 1, V_SNAPTOTOP|V_SNAPTORIGHT|149);
+		V_DrawFill(BASEVIDWIDTH-4, 75, 4, SCALEDVIEWHEIGHT-80, V_SNAPTOTOP|V_SNAPTORIGHT|239);
+		V_DrawFill(BASEVIDWIDTH-3, 76 + (SCALEDVIEWHEIGHT-80) * replayhutmenuy / y, 2, (((SCALEDVIEWHEIGHT-80) * (SCALEDVIEWHEIGHT-80))-1) / y - 1, V_SNAPTOTOP|V_SNAPTORIGHT|229);
 	}
 
 	// Draw the cursor
@@ -5834,7 +5834,7 @@ static void M_DrawReplayHut(void)
 	V_DrawString(currentMenu->x, cursory, V_SNAPTOTOP|V_SNAPTOLEFT|highlightflags, currentMenu->menuitems[itemOn].text);
 
 	// Now draw some replay info!
-	V_DrawFill(10, 10, 300, 60, V_SNAPTOTOP|159);
+	V_DrawFill(10, 10, 300, 60, V_SNAPTOTOP|239);
 
 	if (itemOn == replaylistitem)
 	{
