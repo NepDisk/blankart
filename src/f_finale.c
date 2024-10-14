@@ -965,7 +965,7 @@ void F_GameEvaluationDrawer(void)
 		V_DrawFixedPatch(x, y, scale, 0, rockpat, colormap[0]);
 		if (trans < 10)
 		{
-			colormap[1] = R_GetTranslationColormap(TC_BLINK, SKINCOLOR_AQUAMARINE, GTC_CACHE);
+			colormap[1] = R_GetTranslationColormap(TC_BLINK, SKINCOLOR_ULTRAMARINE, GTC_CACHE);
 			V_DrawFixedPatch(x, y, scale, trans<<V_ALPHASHIFT, rockpat, colormap[1]);
 		}
 		if (goodending)
@@ -982,7 +982,7 @@ void F_GameEvaluationDrawer(void)
 					//         2 -                   2 and not rendered
 					V_DrawFixedPatch(x+sparkloffs[j-1][0], y+sparkloffs[j-1][1], FRACUNIT, 0,
 						W_CachePatchName(va("ENDSPKL%.1d", (j - ((sparklloop & 1) ? 0 : 1))), PU_PATCH),
-						R_GetTranslationColormap(TC_DEFAULT, SKINCOLOR_AQUAMARINE, GTC_CACHE));
+						R_GetTranslationColormap(TC_DEFAULT, SKINCOLOR_ULTRAMARINE, GTC_CACHE));
 				}
 				j--;
 			}
@@ -1424,7 +1424,7 @@ void F_EndingDrawer(void)
 					trans = -trans;
 				if (trans < 10)
 					V_DrawFixedPatch(x, y, scale, trans<<V_ALPHASHIFT, rockpat,
-						R_GetTranslationColormap(TC_BLINK, SKINCOLOR_AQUAMARINE, GTC_CACHE));
+						R_GetTranslationColormap(TC_BLINK, SKINCOLOR_ULTRAMARINE, GTC_CACHE));
 			}
 
 			if (goodending && finalecount > INFLECTIONPOINT)

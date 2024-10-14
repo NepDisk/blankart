@@ -1355,7 +1355,7 @@ skippedghosttic:
 				g->mo->color = skin->supercolor;
 			}
 			else
-				g->mo->color = SKINCOLOR_SUPERGOLD1;
+				g->mo->color = SKINCOLOR_SUPER1;
 			g->mo->color += abs( ( (signed)( (unsigned)leveltime >> 1 ) % 9) - 4);
 			break;
 		case GHC_INVINCIBLE: // Mario invincibility (P_CheckInvincibilityTimer)

@@ -1824,26 +1824,7 @@ void K_SpawnNormalSpeedLines(player_t *player)
 		P_SetScale(fast, 3*fast->scale/2);
 	}
 
-	if (player->eggmanexplode)
-	{
-		// Make it red when you have the eggman speed boost
-		fast->color = SKINCOLOR_RED;
-		fast->colorized = true;
-	}
-	else if (player->invincibilitytimer)
-	{
-		const tic_t defaultTime = itemtime+(2*TICRATE);
-		if (player->invincibilitytimer > defaultTime)
-		{
-			fast->color = player->mo->color;
-		}
-		else
-		{
-			fast->color = SKINCOLOR_INVINCFLASH;
-		}
-		fast->colorized = true;
-	}
-	else if (player->tripwireLeniency)
+	if (player->tripwireLeniency)
 	{
 		// Make it pink+blue+big when you can go through tripwire
 		fast->color = (leveltime & 1) ? SKINCOLOR_LILAC : SKINCOLOR_JAWZ;

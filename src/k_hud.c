@@ -1848,7 +1848,7 @@ static boolean K_drawKartPositionFaces(void)
 			}
 		}
 
-		for (j = 0; j < 7; j++)
+		/*for (j = 0; j < 7; j++)
 		{
 			UINT32 emeraldFlag = (1 << j);
 			UINT16 emeraldColor = SKINCOLOR_CHAOSEMERALD1 + j;
@@ -1859,7 +1859,7 @@ static boolean K_drawKartPositionFaces(void)
 				V_DrawMappedPatch(emeraldx, Y+7, V_HUDTRANS|V_SNAPTOLEFT, kp_rankemerald, colormap);
 				emeraldx += 7;
 			}
-		}
+		}*/
 
 		if (i == strank)
 			V_DrawScaledPatch(FACE_X, Y, V_HUDTRANS|V_SNAPTOLEFT, kp_facehighlight[(leveltime / 4) % 8]);
@@ -2055,7 +2055,7 @@ static void K_drawKartEmeralds(void)
 		}
 	}
 
-	for (i = 0; i < 7; i++)
+	/*for (i = 0; i < 7; i++)
 	{
 		UINT32 emeraldFlag = (1 << i);
 		UINT16 emeraldColor = SKINCOLOR_CHAOSEMERALD1 + i;
@@ -2086,7 +2086,7 @@ static void K_drawKartEmeralds(void)
 				);
 			}
 		}
-	}
+	}*/
 }
 
 //
