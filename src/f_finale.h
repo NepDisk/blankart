@@ -146,11 +146,9 @@ extern INT32 lastwipetic;
 
 void F_WipeStartScreen(void);
 void F_WipeEndScreen(void);
-void F_RunWipe(UINT8 wipetype, boolean drawMenu, const char *colormap, boolean reverse, boolean encorewiggle);
+void F_RunWipe(UINT8 wipetype, boolean drawMenu);
 void F_WipeStageTitle(void);
 #define F_WipeColorFill(c) V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, c)
-tic_t F_GetWipeLength(UINT8 wipetype);
-boolean F_WipeExists(UINT8 wipetype);
 
 enum
 {
