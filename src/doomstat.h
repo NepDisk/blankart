@@ -694,8 +694,15 @@ extern UINT8 maxXtraLife; // Max extra lives from rings
 
 extern mobj_t *hunt1, *hunt2, *hunt3; // Emerald hunt locations
 
+struct exitcondition_t
+{
+	boolean losing;
+	boolean retry;
+};
+
 // For racing
 extern tic_t racecountdown, exitcountdown;
+extern exitcondition_t g_exit;
 
 #define DEFAULT_GRAVITY (FRACUNIT*8)/10
 extern fixed_t gravity;

@@ -113,6 +113,7 @@ TYPEDEF (customoption_t);
 TYPEDEF (mapheader_t);
 TYPEDEF (tolinfo_t);
 TYPEDEF (cupheader_t);
+TYPEDEF (exitcondition_t);
 TYPEDEF (mapheader_lighting_t);
 
 // font.h

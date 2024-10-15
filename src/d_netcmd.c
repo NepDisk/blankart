@@ -5273,7 +5273,7 @@ static void Got_ExitLevelcmd(UINT8 **cp, INT32 playernum)
 		return;
 	}
 
-	G_ExitLevel();
+	G_FinishExitLevel();
 }
 
 static void Got_SetupVotecmd(UINT8 **cp, INT32 playernum)

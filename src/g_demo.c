@@ -3777,7 +3777,7 @@ boolean G_CheckDemoStatus(void)
 			I_Quit();
 
 		if (multiplayer && !demo.title)
-			G_ExitLevel();
+			G_FinishExitLevel();
 		else
 		{
 			G_StopDemo();

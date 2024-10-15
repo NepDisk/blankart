@@ -282,6 +282,7 @@ mobj_t *hunt2;
 mobj_t *hunt3;
 
 tic_t racecountdown, exitcountdown; // for racing
+exitcondition_t g_exit;
 
 fixed_t gravity;
 fixed_t mapobjectscale;
@@ -2918,69 +2919,91 @@ void G_AddPlayer(INT32 playernum)
 	demo_extradata[playernum] |= DXD_PLAYSTATE|DXD_COLOR|DXD_NAME|DXD_SKIN|DXD_FOLLOWER; // Set everything
 }
 
-void G_ExitLevel(void)
+void G_BeginLevelExit(void)
 {
-	if (gamestate == GS_LEVEL)
+	g_exit.losing = true;
+	g_exit.retry = false;
+
+	if (!G_GametypeUsesLives() || skipstats != 0)
+	{
+		g_exit.losing = false; // never force a retry
+	}
+	else if (bossinfo.boss == true)
 	{
 		UINT8 i;
-		boolean youlost = false;
-		if (bossinfo.boss == true)
+
+		for (i = 0; i < MAXPLAYERS; i++)
 		{
-			youlost = true;
-			for (i = 0; i < MAXPLAYERS; i++)
+			if (playeringame[i] && !players[i].spectator && !players[i].bot)
 			{
-				if (playeringame[i] && !players[i].spectator && !players[i].bot)
+				if (!K_IsPlayerLosing(&players[i]))
 				{
-					if (players[i].bumper > 0)
-					{
-						youlost = false;
-						break;
-					}
+					g_exit.losing = false;
+					break;
 				}
 			}
 		}
-		else if (grandprixinfo.gp == true && grandprixinfo.eventmode == GPEVENT_NONE)
+	}
+	else if (grandprixinfo.gp == true && grandprixinfo.eventmode == GPEVENT_NONE)
+	{
+		g_exit.losing = (grandprixinfo.wonround != true);
+	}
+	else if (grandprixinfo.gp == true && grandprixinfo.eventmode == GPEVENT_NONE)
+	{
+		g_exit.losing = (grandprixinfo.wonround != true);
+	}
+
+	if (g_exit.losing)
+	{
+		// You didn't win...
+
+		UINT8 i;
+
+		for (i = 0; i < MAXPLAYERS; i++)
 		{
-			youlost = (grandprixinfo.wonround != true);
+			if (playeringame[i] && !players[i].spectator && !players[i].bot)
+			{
+				if (players[i].lives > 0)
+				{
+					g_exit.retry = true;
+					break;
+				}
+			}
 		}
+	}
 
-		if (youlost)
+	exitcountdown = raceexittime+1;
+}
+
+void G_FinishExitLevel(void)
+{
+
+	if (gamestate == GS_LEVEL)
+	{
+		if (g_exit.retry)
 		{
-			// You didn't win...
-
-			for (i = 0; i < MAXPLAYERS; i++)
+			// Restart cup here whenever we do Online GP
+			if (!netgame)
 			{
-				if (playeringame[i] && !players[i].spectator && !players[i].bot)
-				{
-					if (players[i].lives > 0)
-					{
-						break;
-					}
-				}
-			}
-
-			if (i == MAXPLAYERS)
-			{
-				// GAME OVER, try again from the start!
-
-				if (netgame)
-				{
-					; // restart cup here if we do online GP
-				}
-				else
-				{
-					D_QuitNetGame();
-					CL_Reset();
-					D_StartTitle();
-				}
-			}
-			else
-			{
-				// Go redo this course.
+				// We have lives, just redo this one course.
 				G_SetRetryFlag();
+				return;
 			}
+		}
+		else if (g_exit.losing)
+		{
+			// We were in a Special Stage.
+			// We can still progress to the podium when we game over here.
+			const boolean special = grandprixinfo.gp == true && grandprixinfo.eventmode == GPEVENT_SPECIAL;
 
-			return;
+			if (!netgame && !special)
+			{
+				// Back to the menu with you.
+				D_QuitNetGame();
+				CL_Reset();
+				M_StartControlPanel();
+				return;
+			}
 		}
 
 		gameaction = ga_completed;
