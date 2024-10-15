@@ -2249,7 +2249,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	tic_t grieftime;
 	UINT8 griefstrikes;
 	UINT16 nocontrol;
-	INT32 khudfault;
 	INT32 kickstartaccel;
 
 	score = players[player].score;
@@ -2303,7 +2302,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 		rings = ((gametyperules & GTR_SPHERES) ? 0 : 10);
 		spheres = 0;
 		kickstartaccel = 0;
-		khudfault = 0;
 		nocontrol = 0;
 		laps = 0;
 		latestlap = 0;
@@ -4134,6 +4132,9 @@ void G_LoadGameData(void)
 		save.p = NULL;
 		I_Error("Game data is from another version of SRB2.\nDelete %s(maybe in %s) and try again.", gamedatafilename, gdfolder);
 	}
+	
+	totalplaytime = READUINT32(save.p);
+	matchesplayed = READUINT32(save.p);
 
 	for (i = 0; i < PWRLV_NUMTYPES; i++)
 	{
@@ -4141,6 +4142,8 @@ void G_LoadGameData(void)
 		if (vspowerlevel[i] < PWRLVRECORD_MIN || vspowerlevel[i] > PWRLVRECORD_MAX)
 			goto datacorrupt;
 	}
+	
+	modded = READUINT8(save.p);
 
 	// Aha! Someone's been screwing with the save file!
 	if ((modded && !savemoddata))
