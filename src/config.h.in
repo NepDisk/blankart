@@ -11,18 +11,9 @@
 
 #ifdef CMAKECONFIG
 
-#define ASSET_HASH_MAIN_PK3     "${SRB2_ASSET_main.pk3_HASH}"
-#define ASSET_HASH_GFX_PK3       "${SRB2_ASSET_gfx.pk3_HASH}"
-#define ASSET_HASH_TEXTURES_PK3  "${SRB2_ASSET_textures.pk3_HASH}"
-#define ASSET_HASH_CHARS_PK3     "${SRB2_ASSET_chars.pk3_HASH}"
-#define ASSET_HASH_MAPS_PK3      "${SRB2_ASSET_maps.pk3_HASH}"
-#define ASSET_HASH_FOLLOWERS_PK3 "${SRB2_ASSET_followers.pk3_HASH}"
-#ifdef USE_PATCH_FILE
-#define ASSET_HASH_PATCH_PK3     "${SRB2_ASSET_patch.pk3_HASH}"
-#endif
-
 #define SRB2_COMP_REVISION       "${SRB2_COMP_REVISION}"
 #define SRB2_COMP_BRANCH         "${SRB2_COMP_BRANCH}"
+#define SRB2_COMP_LASTCOMMIT         "${SRB2_COMP_LASTCOMMIT}"
 // This is done with configure_file instead of defines in order to avoid
 // recompiling the whole target whenever the working directory state changes
 #cmakedefine SRB2_COMP_UNCOMMITTED
@@ -30,11 +21,8 @@
 #define COMPVERSION_UNCOMMITTED
 #endif
 
-#define SRB2_COMP_LASTCOMMIT         "${SRB2_COMP_LASTCOMMIT}"
+#endif
 
-#define CMAKE_ASSETS_DIR         "${CMAKE_SOURCE_DIR}/assets"
-
-#else
 
 /* Manually defined asset hashes for non-CMake builds
  * Last updated 2019 / 01 / 18 - Kart v1.0.2 - Main assets

@@ -1091,7 +1091,6 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"gemhit", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "/"}, // Opulence gem/coin tumbling
   {"bhurry", false, 255,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Hurry up!"}, // v1.0.2 Battle overtime
   {"bsnipe", false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, "Sniped"}, // Banana sniping
-  {"sploss", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Down to yellow sparks
   {"join",   false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Player joined server
   {"leave",  false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Player left server
   {"requst", false,  96,  8, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Got a Discord join request
@@ -1106,11 +1105,6 @@ sfxinfo_t S_sfx[NUMSFX] =
   {"kdtrg1", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Low energy, SF_X8AWAYSOUND
   {"kdtrg2", false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // Medium energy, SF_X8AWAYSOUND
   {"kdtrg3", false,  64, 80, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // High energy, SF_X2AWAYSOUND|SF_X8AWAYSOUND
-
-    // SRB2kart - Grow/invinc clash
-  {"parry",  false,  64, 16, -1, NULL, 0,        -1,  -1, LUMPERROR, ""}, // SF_X8AWAYSOUND
-
-  {"ffbonc", false,  64,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, ""},
 
   // Shout message sound effect
   {"sysmsg", false,  60,  0, -1, NULL, 0,        -1,  -1, LUMPERROR, "Server notification"},

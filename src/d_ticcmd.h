@@ -60,7 +60,7 @@ typedef enum
 #pragma pack(1)
 #endif
 
-typedef struct
+struct ticcmd_t
 {
 	SINT8 forwardmove; // -MAXPLMOVE to MAXPLMOVE (50)
 	SINT8 sidemove; // -MAXPLMOVE to MAXPLMOVE (50)
@@ -71,7 +71,7 @@ typedef struct
 	UINT16 buttons;
 	UINT8 latency; // Netgames: how many tics ago was this ticcmd generated from this player's end?
 	UINT8 flags;
-} ATTRPACK ticcmd_t;
+} ATTRPACK;
 
 #if defined(_MSC_VER)
 #pragma pack()

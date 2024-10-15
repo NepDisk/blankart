@@ -841,7 +841,6 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 
 	if ((t1Condition == true || flameT1 == true) && (t2Condition == true || flameT2 == true))
 	{
-		K_DoPowerClash(t1->player, t2->player);
 		return false;
 	}
 	else if (t1Condition == true && t2Condition == false)
@@ -860,7 +859,6 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 	
 	if ((t1Condition == true || flameT1 == true) && (t2Condition == true || flameT2 == true))
 	{
-		K_DoPowerClash(t1->player, t2->player);
 		return false;
 	}
 	else if (t1Condition == true && t2Condition == false)

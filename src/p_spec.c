@@ -369,10 +369,7 @@ void P_ParseAnimationDefintion(SINT8 istexture)
 	Z_Free(animdefsToken);
 
 	// set texture type
-	if (istexture)
-		animdefs[i].istexture = 1;
-	else
-		animdefs[i].istexture = (animdeftempflats ? 2 : 0);
+	animdefs[i].istexture = istexture;
 
 	// "RANGE"
 	animdefsToken = M_GetToken(NULL);

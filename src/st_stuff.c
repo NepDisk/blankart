@@ -487,57 +487,6 @@ static void ST_drawDebugInfo(void)
 tic_t lt_ticker = 0, lt_lasttic = 0;
 tic_t lt_exitticker = 0, lt_endtime = 0;
 
-// SRB2KART: HUD shit for new titlecards:
-static patch_t *tcchev1;
-static patch_t *tcchev2;
-
-static patch_t *tcol1;
-static patch_t *tcol2;
-
-static patch_t *tcroundbar;
-static patch_t *tcround;
-static patch_t *tcbonus;
-
-static patch_t *tccircletop;
-static patch_t *tccirclebottom;
-static patch_t *tccirclebg;
-
-static patch_t *tcbanner;
-static patch_t *tcbanner2;
-
-static patch_t *tcroundnum[10];
-static patch_t *tcroundbonus;
-
-static patch_t *tcactnum[10];
-static patch_t *tcact;
-
-static patch_t *twarn;
-static patch_t *twarn2;
-
-// some coordinates define to make my life easier....
-#define FINAL_ROUNDX (24)
-#define FINAL_EGGY (160)
-#define FINAL_ROUNDY (16)
-#define FINAL_BANNERY (160)
-
-INT32 chev1x, chev1y, chev2x, chev2y, chevtflag;
-INT32 roundx, roundy;
-INT32 bannerx, bannery;
-
-INT32 roundnumx, roundnumy;
-INT32 eggx1, eggx2, eggy1, eggy2;
-
-// These are all arbitrary values found by trial and error trying to align the hud lmao.
-// But they'll work.
-#define BASE_CHEV1X (252)
-#define BASE_CHEV1Y (60)
-#define BASE_CHEV2X (65)
-#define BASE_CHEV2Y (135)
-
-#define TTANIMTHRESHOLD (TICRATE)
-#define TTANIMSTART (TTANIMTHRESHOLD-16)
-#define TTANIMENDTHRESHOLD (TICRATE*3)
-#define TTANIMEND (TICRATE*4)
 
 //
 // Load the graphics for the title card.
@@ -548,44 +497,6 @@ static void ST_cacheLevelTitle(void)
 	UINT8 i;
 	char buf[9];
 
-	// SRB2KART
-	tcchev1 = 		(patch_t *)W_CachePatchName("TCCHEV1W", PU_HUDGFX);
-	tcchev2 = 		(patch_t *)W_CachePatchName("TCCHEV2W", PU_HUDGFX);
-
-	tcol1 = 		(patch_t *)W_CachePatchName("TCCHOL1", PU_HUDGFX);
-	tcol2 = 		(patch_t *)W_CachePatchName("TCCHOL2", PU_HUDGFX);
-
-	tcroundbar = 	(patch_t *)W_CachePatchName("TCBB0", PU_HUDGFX);
-	tcround = 		(patch_t *)W_CachePatchName("TCROUND", PU_HUDGFX);
-	tcbonus = 		(patch_t *)W_CachePatchName("TCBONUS", PU_HUDGFX);
-
-	tccircletop = 	(patch_t *)W_CachePatchName("TCSN1", PU_HUDGFX);
-	tccirclebottom =(patch_t *)W_CachePatchName("TCSN2", PU_HUDGFX);
-	tccirclebg = 	(patch_t *)W_CachePatchName("TCEG3", PU_HUDGFX);
-
-	tcbanner = 		(patch_t *)W_CachePatchName("TCBSKA0", PU_HUDGFX);
-	tcbanner2 = 	(patch_t *)W_CachePatchName("TCBC0", PU_HUDGFX);
-
-	tcact =			(patch_t *)W_CachePatchName("TT_ACT", PU_HUDGFX);
-
-	twarn = 		(patch_t *)W_CachePatchName("K_BOSW01", PU_HUDGFX);
-	twarn2 = 		(patch_t *)W_CachePatchName("K_BOSW02", PU_HUDGFX);
-
-	// Cache round #
-	for (i=1; i < 11; i++)
-	{
-		sprintf(buf, "TT_RND%d", i);
-		tcroundnum[i-1] = (patch_t *)W_CachePatchName(buf, PU_HUDGFX);
-	}
-	tcroundbonus =	(patch_t *)W_CachePatchName("TT_RNDB", PU_HUDGFX);
-
-	// Cache act #
-	for (i=0; i < 10; i++)
-	{
-		sprintf(buf, "TT_ACT%d", i);
-		tcactnum[i] = (patch_t *)W_CachePatchName(buf, PU_HUDGFX);
-	}
-
 }
 
 //
@@ -594,26 +505,7 @@ static void ST_cacheLevelTitle(void)
 void ST_startTitleCard(void)
 {
 	// cache every HUD patch used
-	ST_cacheLevelTitle();
-
-	// Set most elements to start off-screen, ST_runTitleCard will have them slide in afterwards
-	chev1x = BASE_CHEV1X +350;	// start off-screen
-	chev1y = BASE_CHEV1Y;
-	chev2x = BASE_CHEV2X -350;	// start off-screen
-	chev2y = BASE_CHEV2Y;
-	chevtflag = 0;
-
-	roundx = -999;
-	roundy = -999;
-
-	roundnumx = -999;
-	roundnumy = -999;
-	eggx1 = -999;
-	eggx2 = -999;
-	eggy1 = -999;
-	eggy2 = -999;
-
-	bannery = 300;
+	ST_cacheLevelTitle(); // Nothing
 
 	// initialize HUD variables
 	lt_ticker = lt_exitticker = lt_lasttic = 0;
@@ -642,7 +534,6 @@ void ST_preDrawTitleCard(void)
 void ST_runTitleCard(void)
 {
 	boolean run = !(paused || P_AutoPause());
-	INT32 auxticker;
 	boolean gp = (marathonmode || (grandprixinfo.gp && grandprixinfo.roundnum));
 
 	if (!G_IsTitleCardAvailable())
@@ -655,163 +546,6 @@ void ST_runTitleCard(void)
 	{
 		// tick
 		lt_ticker++;
-
-		// SRB2KART
-		// side Zig-Zag positions...
-		if (bossinfo.boss == true)
-		{
-			// Handle name info...
-			if (bossinfo.enemyname)
-			{
-				UINT32 len = strlen(bossinfo.enemyname)+1;
-				if (len > 1 && bossinfo.titleshow < len)
-				{
-					len = (lt_endtime-(TICRATE/2))/len;
-					if (lt_ticker % len == 0)
-					{
-						char c = toupper(bossinfo.enemyname[bossinfo.titleshow]);
-						bossinfo.titleshow++;
-						c -= LT_FONTSTART;
-						if (c < 0 || c >= LT_FONTSIZE || !fontv[GTFN_FONT].font[(INT32)c] || !bossinfo.titlesound)
-						{
-							;
-						}
-						else
-						{
-							S_StartSound(NULL, bossinfo.titlesound);
-						}
-					}
-				}
-			}
-			// No matter the circumstances, scroll the WARN...
-			bannerx = -((lt_ticker*2)%((encoremode ? twarn2 : twarn)->width));
-		}
-		else
-		{
-			// TITLECARD START
-			if (lt_ticker < TTANIMSTART)
-			{
-				chev1x = max(BASE_CHEV1X, (BASE_CHEV1X +350) - (INT32)(lt_ticker)*50);
-				chev2x = min(BASE_CHEV2X, (BASE_CHEV2X -350) + (INT32)(lt_ticker)*50);
-			}
-
-			// OPEN ZIG-ZAGS 1 SECOND IN
-			if (lt_ticker > TTANIMTHRESHOLD)
-			{
-				auxticker = (INT32)(lt_ticker) - TTANIMTHRESHOLD;
-
-				chev1x = min(320, BASE_CHEV1X + auxticker*16);
-				chev1y = max(0, BASE_CHEV1Y - auxticker*16);
-
-				chev2x = max(0, BASE_CHEV2X - auxticker*16);
-				chev2y = min(200, BASE_CHEV2Y + auxticker*16);
-
-				// translucent fade after opening up.
-				chevtflag = min(5, ((auxticker)/5)) << V_ALPHASHIFT;
-
-
-				// OPEN ZIG-ZAG: END OF ANIMATION (they leave the screen borders)
-				if (lt_ticker > TTANIMENDTHRESHOLD)
-				{
-					auxticker = (INT32)lt_ticker - TTANIMENDTHRESHOLD;
-
-					chev1x += auxticker*16;
-					chev1y -= auxticker*16;
-
-					chev2x -= auxticker*16;
-					chev2y += auxticker*16;
-				}
-			}
-
-		// 	ROUND BAR + EGG
-
-			eggy1 = FINAL_EGGY;	// Make sure to reset that each call so that Y position doesn't go bonkers
-
-			// SLIDE BAR IN, SLIDE "ROUND" DOWNWARDS
-			if (lt_ticker <= TTANIMTHRESHOLD)
-			{
-				INT32 interptimer = (INT32)lt_ticker - TTANIMSTART;
-				// INT32 because tic_t is unsigned and we want this to be potentially negative
-
-				if (interptimer >= 0)
-				{
-					INT32 interpdiff = ((TTANIMTHRESHOLD-TTANIMSTART) - interptimer);
-					interpdiff *= interpdiff;	// interpdiff^2
-
-					roundx = FINAL_ROUNDX - interpdiff;
-					roundy = FINAL_ROUNDY - interpdiff;
-					eggy1 = FINAL_EGGY + interpdiff;
-
-				}
-			}
-			// SLIDE BAR OUT, SLIDE "ROUND" DOWNWARDS FASTER
-			else if (lt_ticker >= TTANIMENDTHRESHOLD)
-			{
-				auxticker = (INT32)lt_ticker - TTANIMENDTHRESHOLD;
-
-				roundx = FINAL_ROUNDX - auxticker*24;
-				roundy = FINAL_ROUNDY + auxticker*48;
-				eggy1 = FINAL_EGGY + auxticker*48;
-			}
-
-			// follow the round bar.
-			eggx1 = roundx + tcroundbar->width/2;
-
-			// initially, both halves are on the same coordinates.
-			eggx2 = eggx1;
-			eggy2 = eggy1;
-			// same for the background (duh)
-			roundnumx = eggx1;
-			roundnumy = eggy1;
-
-			// split both halves of the egg, but only do that in grand prix!
-			if (gp && lt_ticker > TTANIMTHRESHOLD + TICRATE/2)
-			{
-				auxticker = (INT32)lt_ticker - (TTANIMTHRESHOLD + TICRATE/2);
-
-				eggx1 -= auxticker*12;
-				eggy1 -= auxticker*12;
-
-				eggx2 += auxticker*12;
-				eggy2 += auxticker*12;
-
-			}
-
-
-		// SCROLLING BOTTOM BANNER
-
-			// SLIDE BANNER UPWARDS WITH A FUNNY BOUNCE (this requires trig :death:)
-			if (lt_ticker < TTANIMTHRESHOLD)
-			{
-				INT32 costimer = (INT32)lt_ticker - TTANIMSTART;
-				// INT32 because tic_t is unsigned and we want this to be potentially negative
-
-				if (costimer > 0)
-				{
-					// For this animation, we're going to do a tiny bit of stupid trigonometry.
-					// Admittedly all of this is going to look like magic numbers, and honestly? They are.
-
-					// start at angle 355 (where y = ~230 with our params)
-					// and go to angle 131 (where y = ~160 with our params)
-
-					UINT8 basey = 190;
-					UINT8 amplitude = 45;
-					fixed_t ang = (355 - costimer*14)*FRACUNIT;
-
-					bannery = basey + (amplitude * FINECOSINE(FixedAngle(ang)>>ANGLETOFINESHIFT)) / FRACUNIT;
-				}
-			}
-			// SLIDE BANNER DOWNWARDS OUT OF THE SCREEN AT THE END
-			else if (lt_ticker >= TTANIMENDTHRESHOLD)
-			{
-				auxticker = (INT32)lt_ticker - TTANIMENDTHRESHOLD;
-				bannery = FINAL_BANNERY + auxticker*16;
-			}
-
-			// No matter the circumstances, scroll the banner...
-			bannerx = -((lt_ticker*2)%(tcbanner->width));
-		}
-
 
 		// used for hud slidein
 		if (lt_ticker >= lt_endtime)
@@ -886,8 +620,6 @@ void ST_drawTitleCard(void)
 
 		if (subttl[0])
 			V_DrawRightAlignedString(sub + zonexpos - 8, bary+1, V_ALLOWLOWERCASE|V_SNAPTOBOTTOM, subttl);
-		//else
-			//V_DrawRightAlignedString(sub + zonexpos - 8, bary+1, V_ALLOWLOWERCASE, va("%s Mode", gametype_cons_t[gametype].strvalue));
 	}
 
 	ttlnumxpos += sub;
@@ -913,21 +645,6 @@ luahook:
 	LUA_HUD_DrawList(luahuddrawlist_titlecard);
 }
 
-// Clear defined coordinates, we don't need them anymore
-#undef FINAL_ROUNDX
-#undef FINAL_EGGY
-#undef FINAL_ROUNDY
-#undef FINAL_BANNERY
-
-#undef BASE_CHEV1X
-#undef BASE_CHEV1Y
-#undef BASE_CHEV2X
-#undef BASE_CHEV2Y
-
-#undef TTANIMTHRESHOLD
-#undef TTANIMSTART
-#undef TTANIMENDTHRESHOLD
-#undef TTANIMEND
 
 //
 // Drawer for G_PreLevelTitleCard.
@@ -1112,7 +829,6 @@ void ST_Drawer(void)
 		if (rendermode != render_none) ST_doPaletteStuff();
 
 	{
-//#if 0
 		const tic_t length = TICRATE/2;
 
 		if (lt_exitticker)
@@ -1123,9 +839,6 @@ void ST_Drawer(void)
 		}
 		else
 			st_translucency = 0;
-//#else
-//		st_translucency = cv_translucenthud.value;
-//#endif
 	}
 
 	// Check for a valid level title

@@ -62,9 +62,8 @@ typedef enum
 //
 // SoundFX struct.
 //
-typedef struct sfxinfo_struct sfxinfo_t;
 
-struct sfxinfo_struct
+struct sfxinfo_t
 {
 	// up to 6-character name
 	const char *name;
@@ -1155,7 +1154,6 @@ typedef enum
 	sfx_gemhit,
 	sfx_bhurry,
 	sfx_bsnipe,
-	sfx_sploss,
 	sfx_join,
 	sfx_leave,
 	sfx_requst,
@@ -1170,12 +1168,6 @@ typedef enum
 	sfx_kdtrg1,
 	sfx_kdtrg2,
 	sfx_kdtrg3,
-
-	// SRB2Kart - Powerup clash SFX
-	sfx_parry,
-
-	// Fast fall bounce
-	sfx_ffbonc,
 
 	// Shout message sound effect
 	sfx_sysmsg,

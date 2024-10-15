@@ -262,7 +262,7 @@ typedef enum
 #define ACCEL_KICKSTART (TICRATE)
 
 // player_t struct for all bot variables
-typedef struct botvars_s
+struct botvars_t
 {
 	UINT8 difficulty; // Bot's difficulty setting
 	UINT8 diffincrease; // In GP: bot difficulty will increase this much next round
@@ -276,19 +276,21 @@ typedef struct botvars_s
 
 	SINT8 turnconfirm; // Confirm turn direction
 
-} botvars_t;
+};
 
-typedef struct {
+struct sonicloopcamvars_t
+{
 	tic_t enter_tic, exit_tic;
 	tic_t zoom_in_speed, zoom_out_speed;
 	fixed_t dist;
 	angle_t pan;
 	fixed_t pan_speed; // in degrees
 	tic_t pan_accel, pan_back;
-} sonicloopcamvars_t;
+};
 
 // player_t struct for loop state
-typedef struct {
+struct sonicloopvars_t 
+{
 	fixed_t radius;
 	fixed_t revolution, min_revolution, max_revolution;
 	angle_t yaw;
@@ -296,12 +298,12 @@ typedef struct {
 	vector2_t shift;
 	boolean flip;
 	sonicloopcamvars_t camera;
-} sonicloopvars_t;
+};
 
 // ========================================================================
 //                          PLAYER STRUCTURE
 // ========================================================================
-typedef struct player_s
+struct player_t
 {
 	mobj_t *mo;
 
@@ -569,7 +571,7 @@ typedef struct player_s
 #ifdef HWRENDER
 	fixed_t fovadd; // adjust FOV for hw rendering
 #endif
-} player_t;
+};
 
 // Value for infinite lives
 #define INFLIVES 0x7F

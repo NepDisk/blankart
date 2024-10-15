@@ -133,10 +133,10 @@ extern char logfilename[1024];
 // VERSIONSTRING_RC is for the resource-definition script used by windows builds
 #else
 #ifdef BETAVERSION
-#define VERSIONSTRING "v"SRB2VERSION" "BETAVERSION
+#define VERSIONSTRING "v" SRB2VERSION " " BETAVERSION
 #define VERSIONSTRING_RC SRB2VERSION " " BETAVERSION "\0"
 #else
-#define VERSIONSTRING "v"SRB2VERSION
+#define VERSIONSTRING "v" SRB2VERSION
 #define VERSIONSTRING_RC SRB2VERSION "\0"
 #endif
 // Hey! If you change this, add 1 to the MODVERSION below!
@@ -216,7 +216,7 @@ extern char logfilename[1024];
 // Master Server compatibility ONLY
 #define MSCOMPAT_MAXPLAYERS (32)
 
-typedef struct skincolor_s
+struct skincolor_t
 {
 	char name[MAXCOLORNAME+1];  // Skincolor name
 	UINT8 ramp[COLORRAMPSIZE];  // Colormap ramp
@@ -224,7 +224,7 @@ typedef struct skincolor_s
 	UINT8 invshade;             // Signpost color shade
 	UINT16 chatcolor;           // Chat color
 	boolean accessible;         // Accessible by the color command + setup menu
-} skincolor_t;
+};
 
 typedef enum
 {
@@ -580,11 +580,13 @@ UINT32 quickncasehash (const char *p, size_t n)
 	return x;
 }
 
+#ifndef __cplusplus
 #ifndef min // Double-Check with WATTCP-32's cdefs.h
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #endif
 #ifndef max // Double-Check with WATTCP-32's cdefs.h
 #define max(x, y) (((x) > (y)) ? (x) : (y))
+#endif
 #endif
 
 #ifndef CLAMP

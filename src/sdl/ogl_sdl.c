@@ -94,7 +94,6 @@ boolean LoadGL(void)
 			CONS_Printf("If you know what is the OpenGL library's name, use -OGLlib\n");
 		return 0;
 	}
-
 #endif
 	return SetupGLfunc();
 }
@@ -146,6 +145,12 @@ boolean OglSdlSurface(INT32 w, INT32 h)
 	else
 		maximumAnisotropy = 1;
 	
+	if (sscanf((const char*)gl_version, "%d.%d", &majorGL, &minorGL)
+		&& (!(majorGL == 1 && minorGL <= 3)))
+		supportMipMap = true;
+	else
+		supportMipMap = false;
+
 	if (sscanf((const char*)gl_version, "%d.%d", &majorGL, &minorGL)
 		&& (!(majorGL == 1 && minorGL <= 3)))
 		supportMipMap = true;
