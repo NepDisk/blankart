@@ -1084,7 +1084,7 @@ bool CallFunc_CountPushables(ACSVM::Thread *thread, const ACSVM::Word *argV, ACS
 
 		Returns if an unlockable trigger has been gotten.
 --------------------------------------------------*/
-bool CallFunc_HaveUnlockableTrigger(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+/*bool CallFunc_HaveUnlockableTrigger(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
 {
 	UINT8 id = 0;
 	bool unlocked = false;
@@ -1104,14 +1104,14 @@ bool CallFunc_HaveUnlockableTrigger(ACSVM::Thread *thread, const ACSVM::Word *ar
 
 	thread->dataStk.push(unlocked);
 	return false;
-}
+}*/
 
 /*--------------------------------------------------
 	bool CallFunc_HaveUnlockable(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
 
 		Returns if an unlockable has been gotten.
 --------------------------------------------------*/
-bool CallFunc_HaveUnlockable(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+/*bool CallFunc_HaveUnlockable(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
 {
 	UINT8 id = 0;
 	bool unlocked = false;
@@ -1131,7 +1131,7 @@ bool CallFunc_HaveUnlockable(ACSVM::Thread *thread, const ACSVM::Word *argV, ACS
 
 	thread->dataStk.push(unlocked);
 	return false;
-}
+}*/
 
 /*--------------------------------------------------
 	bool CallFunc_PlayerSkin(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)

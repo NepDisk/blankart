@@ -146,8 +146,8 @@ Environment::Environment()
 
 	addFuncDataACS0( 300, addCallFunc(CallFunc_CountEnemies));
 	addFuncDataACS0( 301, addCallFunc(CallFunc_CountPushables));
-	addFuncDataACS0( 302, addCallFunc(CallFunc_HaveUnlockableTrigger));
-	addFuncDataACS0( 303, addCallFunc(CallFunc_HaveUnlockable));
+	//addFuncDataACS0( 302, addCallFunc(CallFunc_HaveUnlockableTrigger));
+	//addFuncDataACS0( 303, addCallFunc(CallFunc_HaveUnlockable));
 	addFuncDataACS0( 304, addCallFunc(CallFunc_PlayerSkin));
 	addFuncDataACS0( 305, addCallFunc(CallFunc_GetObjectDye));
 	addFuncDataACS0( 306, addCallFunc(CallFunc_PlayerEmeralds));
