@@ -37,6 +37,7 @@ extern "C" {
 #include "ACSVM/ACSVM/Script.hpp"
 #include "ACSVM/ACSVM/Serial.hpp"
 #include "ACSVM/ACSVM/Thread.hpp"
+#include "ACSVM/ACSVM/Action.hpp"
 #include "ACSVM/Util/Floats.hpp"
 
 #include "environment.hpp"
