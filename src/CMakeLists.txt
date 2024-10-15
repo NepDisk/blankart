@@ -150,6 +150,35 @@ set(SRB2_CONFIG_TESTERS OFF CACHE BOOL
 	"Compile a build for testers.")
 set(SRB2_CONFIG_HOSTTESTERS OFF CACHE BOOL
 	"Compile a build to host netgames for testers builds.")
+	
+set(SRB2_CONFIG_SKIP_COMPTIME OFF CACHE BOOL
+	"Skip Comptime rebuild.")
+	
+if(NOT SRB2_CONFIG_SKIP_COMPTIME)
+	# This updates the modification time for comptime.c at the
+	# end of building so when the build system is ran next time,
+	# that file gets flagged. comptime.c will always be rebuilt.
+	#
+	# This begs the question, why always rebuild comptime.c?
+	# Some things like the git commit must be checked each time
+	# the program is built. But the build system determines which
+	# files should be rebuilt before anything else. So
+	# comptime.c, which only needs to be rebuilt based on
+	# information known at build time, must be told to rebuild
+	# before that information can be ascertained.
+	add_custom_command(
+		TARGET SRB2SDL2
+		POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${CMAKE_CURRENT_SOURCE_DIR}/comptime.c
+	)
+endif()
+
+set(GIT_EXECUTABLE "git" CACHE FILEPATH "Path to git binary")
+add_custom_target(_SRB2_reconf ALL
+	COMMAND ${CMAKE_COMMAND} -DGIT_EXECUTABLE=${GIT_EXECUTABLE} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DBINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/.. -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Comptime.cmake
+	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+add_dependencies(SRB2SDL2 _SRB2_reconf)
 
 add_subdirectory(blua)
 add_subdirectory(blan)
