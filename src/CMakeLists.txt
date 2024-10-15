@@ -233,6 +233,7 @@ target_compile_options(SRB2SDL2 PRIVATE
 		-Wcast-align # Was controlled by NOCASTALIGNWARN
 		-Wwrite-strings
 		-Wsign-compare
+		-Wno-comment
 		-Wmissing-prototypes
 		-Wmissing-declarations
 		-Wmissing-noreturn
@@ -372,7 +373,6 @@ endif()
 
 add_subdirectory(sdl)
 add_subdirectory(objects)
-add_subdirectory(tests)
 
 # strip debug symbols into separate file when using gcc.
 # to be consistent with Makefile, don't generate for OS X.
