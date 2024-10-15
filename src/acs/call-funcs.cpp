@@ -37,6 +37,7 @@ extern "C" {
 #include "../r_skins.h"
 #include "../k_battle.h"
 #include "../z_zone.h"
+#include "../m_misc.h"
 }
 
 #include "ACSVM/ACSVM/Code.hpp"
@@ -1665,7 +1666,7 @@ bool CallFunc_MapWarp(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Wor
 	const char *levelName = NULL;
 	size_t levelLen = 0;
 
-	UINT16 nextmap = NEXTMAP_INVALID;
+	UINT16 nextmap = NUMMAPS;
 
 	(void)argC;
 
@@ -1686,10 +1687,13 @@ bool CallFunc_MapWarp(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Wor
 	{
 		CONS_Alert(CONS_WARNING, "MapWarp level name was not provided.\n");
 	}
+	
+	if (levelName[0] == 'M' && levelName[1] == 'A' && levelName[2] == 'P' && levelName[5]=='\0')
+	{
+		levelName = va("MAP%d",M_MapNumber(levelName[3], levelName[4]));
+	}
 
-	nextmap = G_MapNumber(levelName);
-
-	if (nextmap == NEXTMAP_INVALID)
+	if (nextmap >= NUMMAPS)
 	{
 		CONS_Alert(CONS_WARNING, "MapWarp level %s is not valid or loaded.\n", levelName);
 		return false;
@@ -2768,8 +2772,6 @@ bool CallFunc_GetThingProperty(ACSVM::Thread *thread, const ACSVM::Word *argV, A
 			PROP_INT(THING_PROP_WORLDXOFFSET, sprxoff)
 			PROP_INT(THING_PROP_WORLDYOFFSET, spryoff)
 			PROP_INT(THING_PROP_WORLDZOFFSET, sprzoff)
-			PROP_INT(THING_PROP_HITLAG, hitlag)
-			PROP_INT(THING_PROP_WATERSKIP, waterskip)
 			PROP_INT(THING_PROP_DISPOFFSET, dispoffset)
 			PROP_MOBJ(THING_PROP_TARGET, target)
 			PROP_MOBJ(THING_PROP_TRACER, tracer)
@@ -3038,8 +3040,6 @@ bool CallFunc_SetThingProperty(ACSVM::Thread *thread, const ACSVM::Word *argV, A
 			PROP_INT(THING_PROP_WORLDXOFFSET, sprxoff)
 			PROP_INT(THING_PROP_WORLDYOFFSET, spryoff)
 			PROP_INT(THING_PROP_WORLDZOFFSET, sprzoff)
-			PROP_INT(THING_PROP_HITLAG, hitlag)
-			PROP_INT(THING_PROP_WATERSKIP, waterskip)
 			PROP_INT(THING_PROP_DISPOFFSET, dispoffset)
 			PROP_MOBJ(THING_PROP_TARGET, target)
 			PROP_MOBJ(THING_PROP_TRACER, tracer)
