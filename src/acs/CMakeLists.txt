@@ -1,4 +1,3 @@
-set(ACSVM_NOFLAGS ON)
 set(ACSVM_SHARED ON)
 add_subdirectory(ACSVM)
 target_sources(SRB2SDL2 PRIVATE
