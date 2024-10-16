@@ -6266,7 +6266,7 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 		break;
 	case MT_SCRIPT_THING:
 	{
-		if (mobj->thing_args[2] != 0)
+		if (mobj->spawnpoint->args[2] != 0)
 		{
 			// turned off
 			break;
@@ -6291,11 +6291,11 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 				player->mo->x, player->mo->y
 			);
 
-			if (dist < mobj->thing_args[0] * FRACUNIT)
+			if (dist < mobj->spawnpoint->args[0] * FRACUNIT)
 			{
 				P_ActivateThingSpecial(mobj, player->mo);
 
-				if (mobj->thing_args[1] == 0)
+				if (mobj->spawnpoint->args[1] == 0)
 				{
 					P_RemoveMobj(mobj);
 					return;
