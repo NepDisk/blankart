@@ -262,7 +262,7 @@ struct mapthing_t
 	UINT16 options;
 	INT16 z;
 	UINT8 extrainfo;
-	taglist_t tags;
+	mtag_t tid;
 	fixed_t scale;
 	fixed_t spritexscale, spriteyscale;
 	INT16 special;

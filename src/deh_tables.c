@@ -6340,11 +6340,6 @@ struct int_const_s const INT_CONST[] = {
 	// Value for infinite lives
 	{"INFLIVES",INFLIVES},
 
-	// Got Flags, for player->gotflag!
-	// Used to be MF_ for some stupid reason, now they're GF_ to stop them looking like mobjflags
-	{"GF_REDFLAG",GF_REDFLAG},
-	{"GF_BLUEFLAG",GF_BLUEFLAG},
-
 	// Customisable sounds for Skins, from sounds.h
 	{"SKSSPIN",SKSSPIN},
 	{"SKSPUTPUT",SKSPUTPUT},

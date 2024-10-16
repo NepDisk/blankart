@@ -179,13 +179,6 @@ textprompt_t *textprompts[MAX_PROMPTS];
 INT16 nextmapoverride;
 UINT8 skipstats;
 
-// Pointers to each CTF flag
-mobj_t *redflag;
-mobj_t *blueflag;
-// Pointers to CTF spawn location
-mapthing_t *rflagpoint;
-mapthing_t *bflagpoint;
-
 struct quake quake;
 
 // Map Header Information

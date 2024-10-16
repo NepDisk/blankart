@@ -303,10 +303,6 @@ extern UINT32 ssspheres; //  Total # of spheres in a level
 
 // Fun extra stuff
 extern INT16 lastmap; // Last level you were at (returning from special stages).
-extern mobj_t *redflag, *blueflag; // Pointers to physical flags
-extern mapthing_t *rflagpoint, *bflagpoint; // Pointers to the flag spawn locations
-#define GF_REDFLAG 1
-#define GF_BLUEFLAG 2
 
 // A single point in space.
 struct mappoint_t

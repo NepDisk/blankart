@@ -939,7 +939,6 @@ void LUA_InvalidateMapthings(void)
 	for (i = 0; i < nummapthings; i++)
 	{
 		LUA_InvalidateUserdata(&mapthings[i]);
-		LUA_InvalidateUserdata(&mapthings[i].tags);
 		LUA_InvalidateUserdata(mapthings[i].args);
 		LUA_InvalidateUserdata(mapthings[i].stringargs);
 	}

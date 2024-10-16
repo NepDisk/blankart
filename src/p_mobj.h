@@ -418,6 +418,10 @@ struct mobj_t
 	mobj_t *terrainOverlay; // Overlay sprite object for terrain
 
 	INT32 dispoffset;
+	
+	INT16 special;
+	INT32 args[NUMMAPTHINGARGS];
+	char *stringargs[NUMMAPTHINGSTRINGARGS];
 
 	// WARNING: New fields must be added separately to savegame and Lua.
 };
