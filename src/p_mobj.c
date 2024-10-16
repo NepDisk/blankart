@@ -12541,14 +12541,6 @@ static mobj_t *P_SpawnMobjFromMapThing(mapthing_t *mthing, fixed_t x, fixed_t y,
 		M_Memcpy(mobj->script_stringargs[arg], mthing->script_stringargs[arg], len + 1);
 	}
 
-	if (!P_SetupSpawnedMapThing(mthing, mobj, &doangle))
-	{
-		if (P_MobjWasRemoved(mobj))
-			return NULL;
-
-		return mobj;
-	}
-
 	mthing->mobj = mobj;
 
 	// Generic reverse gravity for individual objects flag.

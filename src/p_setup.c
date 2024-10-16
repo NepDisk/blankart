@@ -2138,6 +2138,23 @@ static void ParseTextmapThingParameter(UINT32 i, const char *param, const char *
 			return;
 		mapthings[i].args[argnum] = atol(val);
 	}
+	else if (fastncmp(param, "thingarg", 8) && strlen(param) > 8)
+	{
+		size_t argnum = atol(param + 8);
+		if (argnum >= NUM_MAPTHING_ARGS)
+			return;
+		mapthings[i].args[argnum] = atol(val);
+	}
+	else if (fastncmp(param, "thingstringarg", 14) && strlen(param) > 14)
+	{
+		size_t argnum = atol(param + 14);
+		if (argnum >= NUM_MAPTHING_ARGS)
+			return;
+		size_t len = strlen(val);
+		mapthings[i].stringargs[argnum] = Z_Malloc(len + 1, PU_LEVEL, NULL);
+		M_Memcpy(mapthings[i].stringargs[argnum], val, len);
+		mapthings[i].stringargs[argnum][len] = '\0';
+	}
 	else if (fastncmp(param, "scriptstringarg", 15) && strlen(param) > 15)
 	{
 		size_t argnum = atol(param + 15);
