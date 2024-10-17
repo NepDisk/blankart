@@ -8345,6 +8345,8 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	P_ResetSpawnpoints();
 
 	P_ResetTubeWaypoints();
+	
+	P_MapStart(); // tm.thing can be used starting from this point
 
 	// init anything that P_SpawnSlopes/P_LoadThings needs to know
 	P_InitSpecials();
