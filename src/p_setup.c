@@ -8493,6 +8493,11 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		{
 			postimgtype[i] = postimg_none;
 		}
+		
+		if (marathonmode & MA_INGAME)
+		{
+			marathonmode |= MA_INIT;
+		}
 	}
 	else
 	{
