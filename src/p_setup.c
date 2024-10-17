@@ -8009,9 +8009,6 @@ static void P_InitGametype(void)
 	spectateGriefed = 0;
 	K_CashInPowerLevels(); // Pushes power level changes even if intermission was skipped
 
-	K_TimerInit();
-	P_InitPlayers();
-
 	if (modeattacking && !demo.playback)
 		P_LoadRecordGhosts();
 
@@ -8442,9 +8439,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	if (precache || dedicated)
 		R_PrecacheLevel();
 
-	nextmapoverride = 0;
-	skipstats = 0;
-
 	if (!(netgame || multiplayer || demo.playback) && !majormods)
 		mapvisited[gamemap-1] |= MV_VISITED;
 	else if (!demo.playback)
@@ -8497,18 +8491,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		{
 			postimgtype[i] = postimg_none;
 		}
-
-		if (marathonmode & MA_INGAME)
-		{
-			marathonmode |= MA_INIT;
-		}
-
-		P_MapStart(); // just in case MapLoad modifies tmthing
-		
-		ACS_RunLevelStartScripts();
-		LUA_HookInt(gamemap, HOOK(MapLoad));
-		
-		P_MapEnd(); // just in case MapLoad modifies tm.thing
 	}
 	else
 	{
@@ -8560,6 +8542,13 @@ void P_PostLoadLevel(void)
 		// We're in a Match Race, use simplistic randomized bots.
 		K_UpdateMatchRaceBots();
 	}
+	
+	K_TimerInit();
+
+	P_InitPlayers();
+	
+	nextmapoverride = 0;
+	skipstats = 0;
 
 	P_RunCachedActions();
 
@@ -8567,6 +8556,9 @@ void P_PostLoadLevel(void)
 	{
 		marathonmode &= ~MA_INIT;
 	}
+	
+	ACS_RunLevelStartScripts();
+	LUA_HookInt(gamemap, HOOK(MapLoad));
 	
 	UINT8 i;
 	for (i = 0; i < MAXPLAYERS; i++)
@@ -8577,6 +8569,8 @@ void P_PostLoadLevel(void)
 			continue;
 		ACS_RunPlayerEnterScript(&players[i]);
 	}
+	
+	P_MapEnd();
 
 	// We're now done loading the level.
 	levelloading = false;
