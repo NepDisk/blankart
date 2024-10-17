@@ -154,8 +154,10 @@ Environment::Environment()
 
 	addFuncDataACS0( 300, addCallFunc(CallFunc_CountEnemies));
 	addFuncDataACS0( 301, addCallFunc(CallFunc_CountPushables));
-	//addFuncDataACS0( 302, addCallFunc(CallFunc_HaveUnlockableTrigger));
-	//addFuncDataACS0( 303, addCallFunc(CallFunc_HaveUnlockable));
+	
+	addFuncDataACS0( 302, addCallFunc(CallFunc_PlaceHolder));
+	addFuncDataACS0( 303, addCallFunc(CallFunc_PlaceHolder));
+	
 	addFuncDataACS0( 304, addCallFunc(CallFunc_PlayerSkin));
 	addFuncDataACS0( 305, addCallFunc(CallFunc_GetObjectDye));
 	addFuncDataACS0( 306, addCallFunc(CallFunc_PlayerEmeralds));
@@ -166,9 +168,15 @@ Environment::Environment()
 	addFuncDataACS0( 311, addCallFunc(CallFunc_TimeAttack));
 	addFuncDataACS0( 312, addCallFunc(CallFunc_ThingCount));
 	addFuncDataACS0( 313, addCallFunc(CallFunc_GrandPrix));
+	
+	addFuncDataACS0( 314, addCallFunc(CallFunc_PlaceHolder));
+	
 	addFuncDataACS0( 315, addCallFunc(CallFunc_PlayerBot));
 	addFuncDataACS0( 316, addCallFunc(CallFunc_PositionStart));
 	addFuncDataACS0( 317, addCallFunc(CallFunc_FreePlay));
+	
+	addFuncDataACS0( 318, addCallFunc(CallFunc_PlaceHolder));
+	
 	addFuncDataACS0( 319, addCallFunc(CallFunc_PlayerLosing));
 	addFuncDataACS0( 320, addCallFunc(CallFunc_PlayerExiting));
 
@@ -182,6 +190,21 @@ Environment::Environment()
 	addFuncDataACS0( 508, addCallFunc(CallFunc_MusicPlay));
 	addFuncDataACS0( 509, addCallFunc(CallFunc_MusicStopAll));
 	addFuncDataACS0( 510, addCallFunc(CallFunc_MusicRemap));
+	
+	addFuncDataACS0( 511, addCallFunc(CallFunc_PlaceHolder));
+	addFuncDataACS0( 512, addCallFunc(CallFunc_PlaceHolder));
+	
+	addFuncDataACS0( 600, addCallFunc(CallFunc_PlaceHolder));
+	addFuncDataACS0( 601, addCallFunc(CallFunc_PlaceHolder));
+	addFuncDataACS0( 602, addCallFunc(CallFunc_PlaceHolder));
+	addFuncDataACS0( 603, addCallFunc(CallFunc_PlaceHolder));
+	addFuncDataACS0( 604, addCallFunc(CallFunc_PlaceHolder));
+	addFuncDataACS0( 605, addCallFunc(CallFunc_PlaceHolder));
+
+	addFuncDataACS0( 700, addCallFunc(CallFunc_PlaceHolder));
+	addFuncDataACS0( 701, addCallFunc(CallFunc_PlaceHolder));
+	addFuncDataACS0( 702, addCallFunc(CallFunc_PlaceHolder));
+	addFuncDataACS0( 703, addCallFunc(CallFunc_PlaceHolder));
 }
 
 ACSVM::Thread *Environment::allocThread()

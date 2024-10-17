@@ -3698,3 +3698,18 @@ bool CallFunc_GetThingUserProperty(ACSVM::Thread *thread, const ACSVM::Word *arg
 	thread->dataStk.push(ret);
 	return false;
 }
+
+/*--------------------------------------------------
+	bool CallFunc_MusicPlay(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		This function is ran for stuff that is only a placeholer.
+--------------------------------------------------*/
+bool CallFunc_PlaceHolder(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{	
+	(void)argV;
+	(void)argC;
+
+	CONS_Printf("Place holder function ran!\n");
+
+	return false;
+}
