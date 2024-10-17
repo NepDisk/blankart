@@ -6423,6 +6423,26 @@ static void K_RaceStart(player_t *player)
 
 }
 
+static void K_TireGreaseEffect(player_t *player)
+{
+	const INT16 spawnrange = player->mo->radius>>FRACBITS;
+	
+	fixed_t spawnx = P_RandomRange(-spawnrange, spawnrange)<<FRACBITS;
+	fixed_t spawny = P_RandomRange(-spawnrange, spawnrange)<<FRACBITS;
+	INT32 speedrange = 2;
+	mobj_t *dust = P_SpawnMobj(player->mo->x + spawnx, player->mo->y + spawny, player->mo->z, MT_DRIFTDUST);
+	dust->momx = FixedMul(player->mo->momx + (P_RandomRange(-speedrange, speedrange)<<FRACBITS), 3*(player->mo->scale)/4);
+	dust->momy = FixedMul(player->mo->momy + (P_RandomRange(-speedrange, speedrange)<<FRACBITS), 3*(player->mo->scale)/4);
+	dust->momz = P_MobjFlip(player->mo) * (P_RandomRange(1, 4) * (player->mo->scale));
+	P_SetScale(dust, player->mo->scale/2);
+	dust->destscale = player->mo->scale * 3;
+	dust->scalespeed = player->mo->scale/12;
+	dust->target = player->mo;
+
+	if (leveltime % 6 == 0)
+		S_StartSound(player->mo, sfx_screec);
+}
+
 /**	\brief	Decreases various kart timers and powers per frame. Called in P_PlayerThink in p_user.c
 
 	\param	player	player object passed from P_PlayerThink
@@ -6442,6 +6462,15 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	player->mo->spriteyoffset = 0;
 
 	player->cameraOffset = 0;
+	
+	if (player->loop.radius)
+	{
+		// Offset sprite Z position so wheels touch top of
+		// hitbox when rotated 180 degrees.
+		// TODO: this should be generalized for pitch/roll
+		angle_t pitch = FixedAngle(player->loop.revolution * 360) / 2;
+		player->mo->sprzoff += FixedMul(player->mo->height, FSIN(pitch));
+	}
 	
 	K_UpdateOffroad(player);
 	K_UpdateEngineSounds(player); // Thanks, VAda!
@@ -6482,6 +6511,10 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 			
 			// Could probably be moved somewhere else.
 			K_HandleFootstepParticles(player->mo);
+			if (player->tiregrease)
+			{
+				K_TireGreaseEffect(player);
+			}
 		}
 
 		if (gametype == GT_RACE && player->rings <= 0 && !ringsdisabled) // spawn ring debt indicator
@@ -6735,6 +6768,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	
 	if (player->outruntime > 0)
 		player->outruntime--;
+		
+	if (player->tiregrease > 0)
+		player->tiregrease--;;
 
 	K_UpdateTripwire(player);
 
@@ -8155,6 +8191,7 @@ static void K_AirFailsafe(player_t *player)
 static void K_AdjustPlayerFriction(player_t *player)
 {
 	boolean onground = P_IsObjectOnGround(player->mo);
+	fixed_t basefriction = ORIG_FRICTION;
 	// JugadorXEI: Do *not* calculate friction when a player is pogo'd
 	// because they'll be in the air and friction will not reset!
 	if (onground && !player->pogospring)
@@ -8168,6 +8205,12 @@ static void K_AdjustPlayerFriction(player_t *player)
 
 		if (player->speed > 0 && player->cmd.forwardmove < 0)	// change friction while braking no matter what, otherwise it's not any more effective than just letting go off accel
 			player->mo->friction -= 2048;
+		
+		// Reduce friction after hitting a spring
+		if (player->tiregrease)
+		{
+			player->mo->friction += ((FRACUNIT - FRACUNIT) / 3*TICRATE) * player->tiregrease;
+		}
 
 		// Karma ice physics
 		if ((gametyperules & GTR_KARMA) && player->bumper <= 0)
@@ -8200,6 +8243,14 @@ static void K_AdjustPlayerFriction(player_t *player)
 				player->mo->friction -= 9824;
 		}
 	}
+}
+
+void K_SetTireGrease(player_t *player, tic_t tics)
+{
+	if (player->pogospring > 0)
+		return;
+
+	player->tiregrease = tics;
 }
 
 void K_SetItemOut(player_t *player)

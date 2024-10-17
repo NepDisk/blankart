@@ -434,6 +434,7 @@ struct player_t
 	UINT8 pogospring;		// Pogo spring bounce effect
 	UINT8 brakestop;		// Wait until you've made a complete stop for a few tics before letting brake go in reverse.
 	UINT8 waterskip;		// Water skipping counter
+	UINT8 tiregrease;		// Adjusts friction
 
 	UINT8 dashpadcooldown;	// Separate the vanilla SA-style dash pads from using flashing
 	
