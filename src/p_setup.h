@@ -106,6 +106,7 @@ void P_ScanThings(INT16 mapnum, INT16 wadnum, INT16 lumpnum);
 #endif
 void P_RespawnThings(void);
 boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate);
+void P_PostLoadLevel(void);
 #ifdef HWRENDER
 void HWR_LoadLevel(void);
 #endif

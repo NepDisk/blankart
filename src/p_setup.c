@@ -8349,8 +8349,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 
 	P_ResetTubeWaypoints();
 
-	P_MapStart(); // tm.thing can be used starting from this point
-
 	// init anything that P_SpawnSlopes/P_LoadThings needs to know
 	P_InitSpecials();
 
@@ -8420,7 +8418,12 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	//  a netgame save is being loaded, and could actively be harmful by messing with
 	//  the client's view of the data.)
 	if (!fromnetsave)
+	{
 		P_InitGametype();
+
+		// Initialize ACS scripts
+		ACS_LoadLevelScripts(gamemap-1);
+	}
 
 	if (!reloadinggamestate)
 	{
@@ -8431,13 +8434,7 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 
 	// clear special respawning que
 	iquehead = iquetail = 0;
-
-	// Initialize ACS scripts
-	if (!fromnetsave)
-	{
-		ACS_LoadLevelScripts(gamemap-1);
-	}
-
+	
 	// Remove the loading shit from the screen
 	if (rendermode != render_none && !titlemapinaction && !reloadinggamestate)
 		F_WipeColorFill(levelfadecol);
@@ -8455,10 +8452,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 
 	G_AddMapToBuffer(gamemap-1);
 
-	levelloading = false;
-
-	P_RunCachedActions();
-
 	P_MapEnd(); // tm.thing is no longer needed from this point onwards
 
 	// Took me 3 hours to figure out why my progression kept on getting overwritten with the titlemap...
@@ -8475,7 +8468,79 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		lastmaploaded = gamemap; // HAS to be set after saving!!
 	}
 
-	if (reloadinggamestate)
+	if (bossinfo.boss)
+	{
+		// Reset some pesky boss state that can't be handled elsewhere.
+		bossinfo.barlen = BOSSHEALTHBARLEN;
+		bossinfo.visualbar = 0;
+		Z_Free(bossinfo.enemyname);
+		Z_Free(bossinfo.subtitle);
+		bossinfo.enemyname = bossinfo.subtitle = NULL;
+		bossinfo.titleshow = 0;
+		bossinfo.titlesound = sfx_typri1;
+		memset(&(bossinfo.weakspots), 0, sizeof(weakspot_t)*NUMWEAKSPOTS);
+	}
+
+	if (!fromnetsave)
+	{
+		INT32 buf = gametic % BACKUPTICS;
+
+		for (i = 0; i < MAXPLAYERS; i++)
+		{
+			if (playeringame[i])
+			{
+				G_CopyTiccmd(&players[i].cmd, &netcmds[buf][i], 1);
+			}
+		}
+
+		for (i = 0; i <= r_splitscreen; i++)
+		{
+			postimgtype[i] = postimg_none;
+		}
+
+		if (marathonmode & MA_INGAME)
+		{
+			marathonmode |= MA_INIT;
+		}
+
+		P_MapStart(); // just in case MapLoad modifies tmthing
+		
+		ACS_RunLevelStartScripts();
+		LUA_HookInt(gamemap, HOOK(MapLoad));
+		
+		P_MapEnd(); // just in case MapLoad modifies tm.thing
+	}
+	else
+	{
+		// Don't run P_PostLoadLevel when loading netgames.
+		levelloading = false;
+	}
+
+	if (rendermode != render_none && reloadinggamestate == false)
+	{
+
+		R_ResetViewInterpolation(0);
+		R_ResetViewInterpolation(0);
+		R_UpdateMobjInterpolators();
+
+		// Title card!
+		G_StartTitleCard();
+
+		// Can the title card actually run, though?
+		if (WipeStageTitle && ranspecialwipe != 2 && fromnetsave == false)
+		{
+			G_PreLevelTitleCard();
+		}
+	}
+	
+	return true;
+}
+
+void P_PostLoadLevel(void)
+{
+	P_MapStart(); // tm.thing can be used starting from this point
+	
+	if (demo.playback)
 		;
 	else if (grandprixinfo.gp == true)
 	{
@@ -8496,61 +8561,27 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		K_UpdateMatchRaceBots();
 	}
 
-	if (bossinfo.boss)
+	P_RunCachedActions();
+
+	if (marathonmode & MA_INGAME)
 	{
-		// Reset some pesky boss state that can't be handled elsewhere.
-		bossinfo.barlen = BOSSHEALTHBARLEN;
-		bossinfo.visualbar = 0;
-		Z_Free(bossinfo.enemyname);
-		Z_Free(bossinfo.subtitle);
-		bossinfo.enemyname = bossinfo.subtitle = NULL;
-		bossinfo.titleshow = 0;
-		bossinfo.titlesound = sfx_typri1;
-		memset(&(bossinfo.weakspots), 0, sizeof(weakspot_t)*NUMWEAKSPOTS);
-	}
-
-	if (!fromnetsave) // uglier hack
-	{
-		INT32 buf = gametic % BACKUPTICS;
-
-		for (i = 0; i < MAXPLAYERS; i++)
-		{
-			if (playeringame[i])
-				G_CopyTiccmd(&players[i].cmd, &netcmds[buf][i], 1);
-		}
-
-		ACS_RunLevelStartScripts();
-
-		P_MapStart(); // just in case MapLoad modifies tmthing
-		LUA_HookInt(gamemap, HOOK(MapLoad));
-		P_MapEnd(); // just in case MapLoad modifies tm.thing
-	}
-
-
-	if (rendermode != render_none && reloadinggamestate == false)
-	{
-
-		R_ResetViewInterpolation(0);
-		R_ResetViewInterpolation(0);
-		R_UpdateMobjInterpolators();
-
-		// Title card!
-		G_StartTitleCard();
-
-		// Can the title card actually run, though?
-		if (!WipeStageTitle)
-			return true;
-		if (ranspecialwipe == 2)
-			return true;
-
-		// If so...
-		// but not if joining because the fade may time us out
-		if (!fromnetsave)
-			G_PreLevelTitleCard();
+		marathonmode &= ~MA_INIT;
 	}
 	
-	return true;
+	UINT8 i;
+	for (i = 0; i < MAXPLAYERS; i++)
+	{
+		if (!playeringame[i])
+			continue;
+		if (players[i].spectator)
+			continue;
+		ACS_RunPlayerEnterScript(&players[i]);
+	}
+
+	// We're now done loading the level.
+	levelloading = false;
 }
+
 
 //
 // P_RunSOC
