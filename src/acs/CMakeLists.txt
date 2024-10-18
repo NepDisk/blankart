@@ -1,4 +1,3 @@
-set(ACSVM_SHARED ON)
 add_subdirectory(ACSVM)
 target_sources(SRB2SDL2 PRIVATE
 	environment.cpp
