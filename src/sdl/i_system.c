@@ -364,9 +364,10 @@ static void I_ShowErrorMessageBox(const char *messagefordevelopers, boolean dump
 	// Implement message box with SDL_ShowSimpleMessageBox,
 	// which should fail gracefully if it can't put a message box up
 	// on the target system
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-		"Dr. Robotnik's Ring Racers "VERSIONSTRING" Error",
-		finalmessage, NULL);
+	if (!M_CheckParm("-dedicated"))
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+			"Dr. Robotnik's Ring Racers "VERSIONSTRING" Error",
+			finalmessage, NULL);
 
 	// Note that SDL_ShowSimpleMessageBox does *not* require SDL to be
 	// initialized at the time, so calling it after SDL_Quit() is
