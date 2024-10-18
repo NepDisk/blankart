@@ -8427,9 +8427,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		memset(localaiming, 0, sizeof(localaiming));
 		K_InitDirector();
 	}
-
-	// clear special respawning que
-	iquehead = iquetail = 0;
 	
 	// Remove the loading shit from the screen
 	if (rendermode != render_none && !titlemapinaction && !reloadinggamestate)
