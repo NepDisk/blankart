@@ -6535,7 +6535,7 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		}
 	}
 
-	if (player->itemtype == KITEM_NONE)
+	if (player->itemtype == KITEM_NONE && player->flametimer == 0)
 		player->pflags &= ~PF_HOLDREADY;
 
 	// DKR style camera for boosting
@@ -8256,7 +8256,8 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 			|| player->itemroulette
 			|| player->rocketsneakertimer
 			|| player->eggmanexplode
-			|| (player->growshrinktimer > 0)))
+			|| (player->growshrinktimer > 0
+			|| player->flametimer)))
 			player->pflags |= PF_USERINGS;
 		else
 			player->pflags &= ~PF_USERINGS;
@@ -8316,41 +8317,45 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 				}
 				// Flame Shield usage
 				else if (player->flametimer > 0)
-				{
-					if ((cmd->buttons & BT_ATTACK) && NO_HYUDORO)
+				{	
+					if (!HOLDING_ITEM && NO_HYUDORO)
 					{
-						// TODO: gametyperules
-						const SINT8 incr = gametype == GT_BATTLE ? 3 : 2;
-						const SINT8 metincr = gametype == GT_BATTLE ? 4 : 3;
-						const SINT8 comincr = gametype == GT_BATTLE ? 8 : 4;
-
-						if (player->flamestore == 0)
+						if (!(cmd->buttons & BT_ATTACK))
 						{
-							S_StartSound(player->mo, sfx_s3k43);
-							K_PlayBoostTaunt(player->mo);
-						}
-
-						player->flamedash += incr;
-						player->flamestore = min(player->flamestore + metincr, TICRATE*2);
-						player->flametimer -= comincr;
-						
-						if (player->flametimer <= 0)
-						{
-							K_DropHnextList(player, false);
-						}
-
-						if (!onground)
-						{
-							P_Thrust(
-								player->mo, K_MomentumAngle(player->mo),
-								FixedMul(player->mo->scale, K_GetKartGameSpeedScalar(gamespeed))
-							);
+							player->pflags |= PF_HOLDREADY;
 						}
 						
-					}
-					else
-					{
-						player->pflags |= PF_HOLDREADY;
+						if ((cmd->buttons & BT_ATTACK) && (player->pflags & PF_HOLDREADY))
+						{
+							// TODO: gametyperules
+							const SINT8 incr = gametype == GT_BATTLE ? 3 : 2;
+							const SINT8 metincr = gametype == GT_BATTLE ? 4 : 3;
+							const SINT8 comincr = gametype == GT_BATTLE ? 8 : 4;
+
+							if (player->flamestore == 0)
+							{
+								S_StartSound(player->mo, sfx_s3k43);
+								K_PlayBoostTaunt(player->mo);
+							}
+
+							player->flamedash += incr;
+							player->flamestore = min(player->flamestore + metincr, TICRATE*2);
+							player->flametimer -= comincr;
+							
+							if (player->flametimer <= 0)
+							{
+								K_DropHnextList(player, false);
+							}
+
+							if (!onground && (leveltime % 8))
+							{
+								P_Thrust(
+									player->mo, K_MomentumAngle(player->mo),
+									mapobjectscale
+								);
+							}
+							
+						}
 					}
 				}
 				// Grow Canceling
