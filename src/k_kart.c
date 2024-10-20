@@ -6751,11 +6751,6 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->stealingtimer == 0 && player->stolentimer == 0
 		&& player->flametimer > 0)
 		player->flametimer--;
-	
-	if (player->flametimer <= 0)
-	{
-		K_DropHnextList(player, false);
-	}
 
 	if (player->hyudorotimer)
 		player->hyudorotimer--;
