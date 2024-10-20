@@ -8325,7 +8325,7 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							player->pflags |= PF_HOLDREADY;
 						}
 						
-						if ((cmd->buttons & BT_ATTACK) && (player->pflags & PF_HOLDREADY))
+						if ((cmd->buttons & BT_ATTACK) && (player->pflags & PF_HOLDREADY) && onground)
 						{
 							// TODO: gametyperules
 							const SINT8 incr = gametype == GT_BATTLE ? 3 : 2;
@@ -8347,13 +8347,13 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 								K_DropHnextList(player, false);
 							}
 
-							if (!onground && (leveltime % 8))
+							/*if (!onground && (leveltime % 8))
 							{
 								P_Thrust(
 									player->mo, K_MomentumAngle(player->mo),
 									mapobjectscale
 								);
-							}
+							}*/
 							
 						}
 					}
