@@ -399,6 +399,23 @@ static INT32 K_KartItemOddsBattle[NUMKARTRESULTS][2] =
 #define SPBFORCEDIST (15*DISTVAR) // Distance when SPB is forced onto 2nd place
 #define ENDDIST (12*DISTVAR) // Distance when the game stops giving you bananas
 
+INT32 K_GetShieldFromPlayer(player_t *player)
+{
+	
+	if (player->flametimer > 0)
+	{
+		return KSHIELD_FLAME;
+	}
+	
+	switch (player->itemtype)
+	{
+		case KITEM_LIGHTNINGSHIELD: return KSHIELD_LIGHTNING;
+		case KITEM_BUBBLESHIELD: return KSHIELD_BUBBLE;
+		//case KITEM_FLAMESHIELD: return KSHIELD_FLAME; not active until flametimer is active.
+		default: return KSHIELD_NONE;
+	}
+}
+
 INT32 K_GetShieldFromItem(INT32 item)
 {
 	switch (item)
@@ -601,7 +618,7 @@ INT32 K_KartGetItemOdds(
 		if (players[i].exiting)
 			pexiting++;
 
-		if (shieldtype != KSHIELD_NONE && shieldtype == K_GetShieldFromItem(players[i].itemtype))
+		if (shieldtype != KSHIELD_NONE && shieldtype == K_GetShieldFromPlayer(&players[i]))
 		{
 			// Don't allow more than one of each shield type at a time
 			return 0;
@@ -2649,7 +2666,7 @@ boolean K_ApplyOffroad(player_t *player)
 
 boolean K_SlopeResistance(player_t *player)
 {
-	if (player->invincibilitytimer || player->sneakertimer || player->flamedash)
+	if (player->invincibilitytimer || player->sneakertimer || player->flamestore)
 		return true;
 	return false;
 }
@@ -2687,7 +2704,7 @@ tripwirepass_t K_TripwirePassConditions(player_t *player)
 		return TRIPWIRE_BLASTER;
 
 	if (
-			player->flamedash ||
+			player->flamestore ||
 			((player->speed > K_PlayerTripwireSpeedThreshold(player)) && player->tripwireReboundDelay == 0)
 	)
 		return TRIPWIRE_BOOST;
@@ -2715,8 +2732,8 @@ boolean K_WaterRun(player_t *player)
 
 static fixed_t K_FlameShieldDashVar(INT32 val)
 {
-	// 1 second = 75% + 50% top speed
-	return (3*FRACUNIT/4) + (((val * FRACUNIT) / TICRATE) / 2);
+	// 1 second = 15% + ????% top speed
+	return (FRACUNIT/6) + (((val * (FRACUNIT)) / TICRATE) / 2);
 }
 
 // sets boostpower, speedboost and accelboost to whatever we need it to be
@@ -2782,11 +2799,24 @@ static void K_GetKartBoostPower(player_t *player)
 	{
 		ADDBOOST(FRACUNIT/5, 0); // + 20% top speed, + 0% acceleration, +25% handling
 	}
-
-	if (player->flamedash) // Flame Shield dash
+	
+	if (player->flamestore) // Flame Shield dash
 	{
 		fixed_t dash = K_FlameShieldDashVar(player->flamedash);
-		ADDBOOST( dash,	3*FRACUNIT); // + infinite top speed // + 300% acceleration
+		fixed_t intermediate = 0;
+		fixed_t boost = 0;
+		fixed_t val = 52428; // Rim idea: diminish starts around 1.2x sneaker speed and plateaus around 1.4-1.5x
+		fixed_t accel = 3*FRACUNIT;
+		
+		intermediate = FixedDiv(FixedMul(val, FRACUNIT*-1/2) - FRACUNIT/4,-val+FRACUNIT/2);
+		boost = FixedMul(val,(FRACUNIT-FixedDiv(FRACUNIT,(dash+intermediate))));
+		
+		if (player->drift)
+		{
+			accel += FRACUNIT/2 + FRACUNIT*2;
+		}
+		
+		ADDBOOST(boost, accel);
 	}
 
 	if (player->startboost) // Startup Boost
@@ -4953,7 +4983,7 @@ void K_DropHnextList(player_t *player, boolean keepshields)
 	INT32 flip;
 	mobjtype_t type;
 	boolean orbit, ponground, dropall = true;
-	INT32 shield = K_GetShieldFromItem(player->itemtype);
+	INT32 shield = K_GetShieldFromPlayer(player);
 
 	if (work == NULL || P_MobjWasRemoved(work))
 	{
@@ -6660,6 +6690,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 
 	if (player->flamedash)
 		player->flamedash--;
+	
+	if (player->flamestore)
+		player->flamestore--;
 
 	if (player->sneakertimer && player->wipeoutslow > 0 && player->wipeoutslow < wipeoutslowtime+1)
 		player->wipeoutslow = wipeoutslowtime+1;
@@ -6714,6 +6747,15 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 	if (player->stealingtimer == 0 && player->stolentimer == 0
 		&& player->rocketsneakertimer)
 		player->rocketsneakertimer--;
+	
+	if (player->stealingtimer == 0 && player->stolentimer == 0
+		&& player->flametimer > 0)
+		player->flametimer--;
+	
+	if (player->flametimer <= 0)
+	{
+		K_DropHnextList(player, false);
+	}
 
 	if (player->hyudorotimer)
 		player->hyudorotimer--;
@@ -6805,9 +6847,9 @@ void K_KartPlayerThink(player_t *player, ticcmd_t *cmd)
 		player->bubblecool = 0;
 	}
 
-	if (player->itemtype != KITEM_FLAMESHIELD)
+	if (player->flametimer == 0)
 	{
-		if (player->flamedash)
+		if (player->flamestore)
 			K_FlameDashLeftoverSmoke(player->mo);
 	}
 
@@ -8083,36 +8125,6 @@ void K_StripOther(player_t *player)
 	}
 }
 
-static INT32 K_FlameShieldMax(player_t *player)
-{
-	UINT32 disttofinish = 0;
-	UINT32 distv = DISTVAR;
-	UINT8 numplayers = 0;
-	UINT8 i;
-
-	for (i = 0; i < MAXPLAYERS; i++)
-	{
-		if (playeringame[i] && !players[i].spectator)
-			numplayers++;
-		if (players[i].position == 1)
-			disttofinish = players[i].distancetofinish;
-	}
-
-	if (numplayers <= 1 || gametype == GT_BATTLE)
-	{
-		return 16; // max when alone, for testing
-		// and when in battle, for chaos
-	}
-	else if (player->position == 1)
-	{
-		return 0; // minimum for first
-	}
-
-	disttofinish = player->distancetofinish - disttofinish;
-	distv = FixedMul(distv * FRACUNIT, mapobjectscale) / FRACUNIT;
-	return min(16, 1 + (disttofinish / distv));
-}
-
 SINT8 K_Sliptiding(player_t *player)
 {
 	return player->drift ? 0 : player->aizdriftstrat;
@@ -8305,6 +8317,45 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							player->rocketsneakertimer = 1;
 						else
 							player->rocketsneakertimer -= 3*TICRATE;
+					}
+				}
+				// Flame Shield usage
+				else if (player->flametimer > 0)
+				{
+					if ((cmd->buttons & BT_ATTACK) && NO_HYUDORO)
+					{
+						// TODO: gametyperules
+						const SINT8 incr = gametype == GT_BATTLE ? 3 : 2;
+						const SINT8 metincr = gametype == GT_BATTLE ? 4 : 3;
+						const SINT8 comincr = gametype == GT_BATTLE ? 8 : 4;
+
+						if (player->flamestore == 0)
+						{
+							S_StartSound(player->mo, sfx_s3k43);
+							K_PlayBoostTaunt(player->mo);
+						}
+
+						player->flamedash += incr;
+						player->flamestore = min(player->flamestore + metincr, TICRATE*2);
+						player->flametimer -= comincr;
+						
+						if (player->flametimer <= 0)
+						{
+							K_DropHnextList(player, false);
+						}
+
+						if (!onground)
+						{
+							P_Thrust(
+								player->mo, K_MomentumAngle(player->mo),
+								FixedMul(player->mo->scale, K_GetKartGameSpeedScalar(gamespeed))
+							);
+						}
+						
+					}
+					else
+					{
+						player->pflags |= PF_HOLDREADY;
 					}
 				}
 				// Grow Canceling
@@ -8725,84 +8776,19 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 							}
 							break;
 						case KITEM_FLAMESHIELD:
-							if (player->curshield != KSHIELD_FLAME)
+							
+							if (ATTACK_IS_DOWN && !HOLDING_ITEM && NO_HYUDORO && player->flametimer == 0)
 							{
-								mobj_t *shield = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_FLAMESHIELD);
-								P_SetScale(shield, (shield->destscale = (5*shield->destscale)>>2));
-								P_SetTarget(&shield->target, player->mo);
-								S_StartSound(player->mo, sfx_s3k3e);
-								player->curshield = KSHIELD_FLAME;
-							}
-
-							if (!HOLDING_ITEM && NO_HYUDORO)
-							{
-								INT32 destlen = K_FlameShieldMax(player);
-								INT32 flamemax = 0;
-
-								if (player->flamelength < destlen)
-									player->flamelength++; // Can always go up!
-
-								flamemax = player->flamelength * flameseg;
-								if (flamemax > 0)
-									flamemax += TICRATE; // leniency period
-
-								if ((cmd->buttons & BT_ATTACK) && (player->pflags & PF_HOLDREADY))
+								player->flametimer = (itemtime*3);
+								player->itemamount--;
+								
+								if (player->curshield != KSHIELD_FLAME)
 								{
-									// TODO: gametyperules
-									const INT32 incr = gametype == GT_BATTLE ? 4 : 2;
-
-									if (player->flamedash == 0)
-									{
-										S_StartSound(player->mo, sfx_s3k43);
-										K_PlayBoostTaunt(player->mo);
-									}
-
-									player->flamedash += incr;
-									player->flamemeter += incr;
-
-									if (!onground)
-									{
-										P_Thrust(
-											player->mo, K_MomentumAngle(player->mo),
-											FixedMul(player->mo->scale, K_GetKartGameSpeedScalar(gamespeed))
-										);
-									}
-
-									if (player->flamemeter > flamemax)
-									{
-										P_Thrust(
-											player->mo, player->mo->angle,
-											FixedMul((50*player->mo->scale), K_GetKartGameSpeedScalar(gamespeed))
-										);
-
-										player->flamemeter = 0;
-										player->flamelength = 0;
-										player->pflags &= ~PF_HOLDREADY;
-										player->itemamount--;
-									}
-								}
-								else
-								{
-									player->pflags |= PF_HOLDREADY;
-
-									// TODO: gametyperules
-									if (gametype != GT_BATTLE || leveltime % 6 == 0)
-									{
-										if (player->flamemeter > 0)
-											player->flamemeter--;
-									}
-
-									if (player->flamelength > destlen)
-									{
-										player->flamelength--; // Can ONLY go down if you're not using it
-
-										flamemax = player->flamelength * flameseg;
-										if (flamemax > 0)
-											flamemax += TICRATE; // leniency period
-									}
-
-									if (player->flamemeter > flamemax)
-										player->flamemeter = flamemax;
+									mobj_t *shield = P_SpawnMobj(player->mo->x, player->mo->y, player->mo->z, MT_FLAMESHIELD);
+									P_SetScale(shield, (shield->destscale = (5*shield->destscale)>>2));
+									P_SetTarget(&shield->target, player->mo);
+									S_StartSound(player->mo, sfx_s3k3e);
+									player->curshield = KSHIELD_FLAME;
 								}
 							}
 							break;
@@ -8880,13 +8866,13 @@ void K_MoveKartPlayer(player_t *player, boolean onground)
 			player->itemtype = KITEM_NONE;
 		}
 
-		if (K_GetShieldFromItem(player->itemtype) == KSHIELD_NONE)
+		if (K_GetShieldFromPlayer(player) == KSHIELD_NONE)
 		{
 			player->curshield = KSHIELD_NONE; // RESET shield type
 			player->bubbleblowup = 0;
 			player->bubblecool = 0;
-			player->flamelength = 0;
-			player->flamemeter = 0;
+			//player->flamedash = 0;
+			player->flametimer = 0;
 		}
 
 		if (spbplace == -1 || player->position != spbplace)
