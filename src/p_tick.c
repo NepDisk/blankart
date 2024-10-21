@@ -204,23 +204,15 @@ void Command_CountMobjs_f(void)
 void P_InitThinkers(void)
 {
 	UINT8 i;
-
-	for (i = 0; i < NUM_THINKERLISTS; i++)
-	{
-		thlist[i].prev = thlist[i].next = &thlist[i];
-	}
-
-	iquehead = iquetail = 0;
-
+	boss3cap = NULL;
 	waypointcap = NULL;
 	kitemcap = NULL;
-
-	for (i = 0; i <= 15; i++)
-	{
-		skyboxcenterpnts[i] = skyboxviewpnts[i] = NULL;
-	}
+	P_InvalidateThinkersWithoutInit();
+	for (i = 0; i < NUM_THINKERLISTS; i++)
+		thlist[i].prev = thlist[i].next = &thlist[i];
+	
+	iquehead = iquetail = 0;
 }
-
 
 //
 // P_InvalidateThinkersWithoutInit
