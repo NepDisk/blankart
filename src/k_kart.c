@@ -7631,6 +7631,16 @@ INT16 K_GetKartTurnValue(player_t *player, INT16 turnvalue)
 
 	if (player->invincibilitytimer || player->sneakertimer || player->growshrinktimer > 0)
 		turnvalue = FixedMul(turnvalue, FixedDiv(5*FRACUNIT, 4*FRACUNIT));
+	
+	if (player->flamedash && player->flamestore) // Reduce turning
+	{
+		fixed_t dashval = ((player->flamedash<<FRACBITS) / TICRATE) / 40; // 1 second = -2.5% handling
+		if (dashval > FRACUNIT)
+			return 0; // NO MORE TURNING!
+		turnvalue = FixedMul(turnvalue, FRACUNIT-dashval);
+		//CONS_Printf("dashval: %d\n",dashval);
+		//CONS_Printf("turnval: %d\n",turnvalue);
+	}
 
 	return turnvalue;
 }
@@ -7808,10 +7818,10 @@ static void K_KartDrift(player_t *player, boolean onground)
 		player->pflags &= ~(PF_BRAKEDRIFT|PF_GETSPARKS);
 	}
 
-	if ((player->sneakertimer == 0)
-	|| (!stplyr->cmd.turning)
+	if ( (!(player->sneakertimer || player->flamestore))
+	|| (!player->cmd.turning)
 	|| (!player->aizdriftstrat)
-	|| (stplyr->cmd.turning > 0) != (player->aizdriftstrat > 0))
+	|| (player->cmd.turning > 0) != (player->aizdriftstrat > 0))
 	{
 		if (!player->drift)
 			player->aizdriftstrat = 0;
