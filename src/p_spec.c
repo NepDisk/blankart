@@ -1897,12 +1897,14 @@ static void K_HandleLapIncrement(player_t *player, boolean fromsector)
 		{
 			size_t i = 0;
 			UINT8 nump = 0;
-			UINT8 lowestLap;
+			UINT8 lowestLap = UINT8_MAX;
 
 			for (i = 0; i < MAXPLAYERS; i++)
 			{
 				if (!playeringame[i] || players[i].spectator)
 					continue;
+				if (players[i].laps < lowestLap)
+					lowestLap = players[i].laps;
 				nump++;
 			}
 
@@ -2017,7 +2019,12 @@ static void K_HandleLapIncrement(player_t *player, boolean fromsector)
 				player->grieftime = 0;
 			
 
-				lowestLap = P_FindLowestLap();
+				{
+					UINT8 prevLowest = lowestLap;
+
+					lowestLap = P_FindLowestLap();
+				}
+
 
 				for (i = 0; i < numlines; i++)
 				{

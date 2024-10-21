@@ -1424,7 +1424,7 @@ boolean P_InQuicksand(mobj_t *mo) // Returns true if you are in quicksand
 static boolean P_PlayerCanBust(player_t *player, ffloor_t *rover)
 {
 	// TODO: Make these act like the Lua SA2 boxes.
-	(void)player;
+	// (void)player;
 	(void)rover;
 
 	if (!(rover->fofflags & FOF_EXISTS))
@@ -1447,11 +1447,6 @@ static void P_CheckBustableBlocks(player_t *player)
 
 	oldx = player->mo->x;
 	oldy = player->mo->y;
-
-	P_UnsetThingPosition(player->mo);
-	player->mo->x += player->mo->momx;
-	player->mo->y += player->mo->momy;
-	P_SetThingPosition(player->mo);
 
 	for (node = player->mo->touching_sectorlist; node; node = node->m_sectorlist_next)
 	{
@@ -1524,7 +1519,7 @@ static void P_CheckBustableBlocks(player_t *player)
 			//if (metalrecording)
 			//	G_RecordBustup(rover);
 
-			EV_CrumbleChain(NULL, rover); // node->m_sector
+			EV_CrumbleChain(node->m_sector, rover); // node->m_sector
 
 			// Run a linedef executor??
 			if (rover->bustflags & FB_EXECUTOR)
@@ -1533,7 +1528,6 @@ static void P_CheckBustableBlocks(player_t *player)
 			goto bustupdone;
 		}
 	}
-
 bustupdone:
 	P_UnsetThingPosition(player->mo);
 	player->mo->x = oldx;
