@@ -22,6 +22,13 @@
 
 #ifdef HAVE_OPENMPT
 #include "libopenmpt/libopenmpt.h"
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef HAVE_OPENMPT
 extern openmpt_module *openmpt_mhandle;
 #endif
 
@@ -67,12 +74,12 @@ typedef enum
 	SF_X2AWAYSOUND   = 64, // Hear it from 2x the distance away
 } soundflags_t;
 
-typedef struct {
+struct listener_t {
 	fixed_t x, y, z;
 	angle_t angle;
-} listener_t;
+};
 
-typedef struct
+struct channel_t
 {
 	// sound information (if null, channel avail.)
 	sfxinfo_t *sfxinfo;
@@ -86,14 +93,14 @@ typedef struct
 	// handle of the sound being played
 	INT32 handle;
 
-} channel_t;
+};
 
-typedef struct {
+struct caption_t {
 	channel_t *c;
 	sfxinfo_t *s;
 	UINT16 t;
 	UINT8 b;
-} caption_t;
+};
 
 #define NUMCAPTIONS 8
 #define MAXCAPTIONTICS (2*TICRATE)
@@ -168,7 +175,7 @@ boolean S_SpeedMusic(float speed);
 #define MAXDEFTRACKS 3
 
 // Music credits
-typedef struct musicdef_s
+struct musicdef_t
 {
 	char name[MAXDEFTRACKS][7];
 	UINT32 hash[MAXDEFTRACKS];
@@ -179,8 +186,8 @@ typedef struct musicdef_s
 	char *composers;
 	int volume;
 	boolean contentidunsafe;
-	struct musicdef_s *next;
-} musicdef_t;
+	musicdef_t *next;
+};
 
 extern struct cursongcredit
 {
@@ -223,7 +230,7 @@ UINT32 S_GetMusicPosition(void);
 // Music Stacking (Jingles)
 //
 
-typedef struct musicstack_s
+struct musicstack_t
 {
 	char musname[7];
 	UINT16 musflags;
@@ -234,9 +241,9 @@ typedef struct musicstack_s
 	lumpnum_t mlumpnum;
 	boolean noposition; // force music stack resuming from zero (like music_stack_noposition)
 
-    struct musicstack_s *prev;
-    struct musicstack_s *next;
-} musicstack_t;
+    musicstack_t *prev;
+    musicstack_t *next;
+};
 
 extern char music_stack_nextmusname[7];
 extern boolean music_stack_noposition;
@@ -334,6 +341,10 @@ void S_StopSoundByNum(sfxenum_t sfxnum);
 #ifndef HW3SOUND
 #define S_StartAttackSound S_StartSound
 #define S_StartScreamSound S_StartSound
+#endif
+
+#ifdef __cplusplus
+} // extern "C"
 #endif
 
 #endif

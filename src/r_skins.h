@@ -21,6 +21,10 @@
 #include "r_picformats.h" // spriteinfo_t
 #include "r_defs.h" // spritedef_t
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// Defaults
 #define SKINNAMESIZE 16
 #define SKINRIVALS 3
@@ -31,7 +35,7 @@
 #define DEFAULTSKIN4 "eggman" // fourth player
 
 /// The skin_t struct
-typedef struct
+struct skin_t
 {
 	char name[SKINNAMESIZE+1]; // INT16 descriptive name of the skin
 	UINT16 wadnum;
@@ -62,7 +66,7 @@ typedef struct
 	// contains super versions too
 	spritedef_t sprites[NUMPLAYERSPRITES*2];
 	spriteinfo_t sprinfo[NUMPLAYERSPRITES*2];
-} skin_t;
+};
 
 enum facepatches {
 	FACE_RANK = 0,
@@ -89,5 +93,9 @@ void R_PatchSkins(UINT16 wadnum);
 void R_AddSkins(UINT16 wadnum);
 
 UINT8 P_GetSkinSprite2(skin_t *skin, UINT8 spr2, player_t *player);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif //__R_SKINS__

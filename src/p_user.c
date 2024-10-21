@@ -1286,7 +1286,9 @@ void P_DoPlayerExit(player_t *player)
 				P_EndingMusic(player);
 
 			if (P_CheckRacers() && !exitcountdown)
-				exitcountdown = raceexittime+1;
+			{
+				G_BeginLevelExit();
+			}
 		}
 		else if ((gametyperules & GTR_BUMPERS)) // Battle Mode exiting
 		{
@@ -1297,7 +1299,7 @@ void P_DoPlayerExit(player_t *player)
 		else // Accidental death safeguard???
 		{
 			if (!exitcountdown)
-				exitcountdown = raceexittime+2;
+				G_BeginLevelExit();
 		}
 
 		if (grandprixinfo.gp == true)
@@ -3733,6 +3735,7 @@ boolean P_SpectatorJoinGame(player_t *player)
 	player->spectatewait = 0;
 	player->ctfteam = changeto;
 	player->playerstate = PST_REBORN;
+	player->enteredGame = true;
 
 	// Reset away view (some code referenced from Got_Teamchange)
 	{
@@ -3920,7 +3923,7 @@ void P_DoTimeOver(player_t *player)
 	P_EndingMusic(player);
 
 	if (!exitcountdown)
-		exitcountdown = 5*TICRATE;
+		G_BeginLevelExit();
 }
 
 // SRB2Kart: These are useful functions, but we aren't using them yet.

@@ -19,6 +19,10 @@
 #include "sounds.h"
 #include "m_fixed.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // deh_tables.c now has lists for the more named enums! PLEASE keep them up to date!
 // For great modding!!
 
@@ -5380,7 +5384,7 @@ typedef enum state
 	NUMSTATES
 } statenum_t;
 
-typedef struct
+struct state_t
 {
 	spritenum_t sprite;
 	UINT32 frame; // we use the upper 16 bits for translucency and other shade effects
@@ -5389,7 +5393,7 @@ typedef struct
 	INT32 var1;
 	INT32 var2;
 	statenum_t nextstate;
-} state_t;
+};
 
 extern state_t states[NUMSTATES];
 extern char sprnames[NUMSPRITES + 1][5];
@@ -6451,13 +6455,15 @@ typedef enum mobj_type
 
 	MT_LOOPENDPOINT,
 	MT_LOOPCENTERPOINT,
-
+	
+	MT_SCRIPT_THING,
+	
 	MT_FIRSTFREESLOT,
 	MT_LASTFREESLOT = MT_FIRSTFREESLOT + NUMMOBJFREESLOTS - 1,
 	NUMMOBJTYPES
 } mobjtype_t;
 
-typedef struct
+struct mobjinfo_t
 {
 	INT32 doomednum;
 	statenum_t spawnstate;
@@ -6483,7 +6489,7 @@ typedef struct
 	sfxenum_t activesound;
 	UINT32 flags;
 	statenum_t raisestate;
-} mobjinfo_t;
+};
 
 extern mobjinfo_t mobjinfo[NUMMOBJTYPES];
 
@@ -6492,5 +6498,9 @@ void P_PatchInfoTables(void);
 void P_BackupTables(void);
 
 void P_ResetData(INT32 flags);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

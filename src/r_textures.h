@@ -19,6 +19,10 @@
 #include "p_setup.h" // levelflats
 #include "r_data.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef __GNUG__
 #pragma interface
 #endif
@@ -28,7 +32,7 @@
 // A single patch from a texture definition,
 //  basically a rectangular area within
 //  the texture rectangle.
-typedef struct
+struct texpatch_t
 {
 	// Block origin (always UL), which has already accounted for the internal origin of the patch.
 	INT16 originx, originy;
@@ -36,7 +40,7 @@ typedef struct
 	UINT8 flip; // 1 = flipx, 2 = flipy, 3 = both
 	UINT8 alpha; // Translucency value
 	patchalphastyle_t style;
-} texpatch_t;
+};
 
 // texture type
 enum
@@ -52,7 +56,7 @@ enum
 // A texture_t describes a rectangular texture,
 //  which is composed of one or more texpatch_t structures
 //  that arrange graphic patches.
-typedef struct
+struct texture_t
 {
 	// Keep name for switch changing, etc.
 	char name[8];
@@ -67,7 +71,7 @@ typedef struct
 	// All the patches[patchcount] are drawn back to front into the cached texture.
 	INT16 patchcount;
 	texpatch_t patches[];
-} texture_t;
+};
 
 // all loaded and prepared textures from the start of the game
 extern texture_t **textures;
@@ -112,5 +116,9 @@ INT32 R_CheckTextureNumForName(const char *name);
 lumpnum_t R_GetFlatNumForName(const char *name);
 
 extern INT32 numtextures;
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

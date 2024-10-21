@@ -23,6 +23,10 @@
 #define DNWH void * // unused in DOS version
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // quickhack for V_Init()... to be cleaned up
 #ifdef NOPOSTPROCESSING
 #define NUMSCREENS 2
@@ -45,7 +49,7 @@
 #define BASEVIDHEIGHT 200 // resolution of the graphics.
 
 // global video state
-typedef struct viddef_s
+struct viddef_t
 {
 	INT32 modenum; // vidmode num indexes videomodes list
 
@@ -74,7 +78,7 @@ typedef struct viddef_s
 	INT32/*fixed_t*/ fmeddupx, fmeddupy;
 	INT32 glstate;
 #endif
-} viddef_t;
+};
 
 enum
 {
@@ -84,16 +88,16 @@ enum
 };
 
 // internal additional info for vesa modes only
-typedef struct
+struct vesa_extra_t
 {
 	INT32 vesamode; // vesa mode number plus LINEAR_MODE bit
 	void *plinearmem; // linear address of start of frame buffer
-} vesa_extra_t;
+};
 // a video modes from the video modes list,
 // note: video mode 0 is always standard VGA320x200.
-typedef struct vmode_s
+struct vmode_t
 {
-	struct vmode_s *pnext;
+	vmode_t *pnext;
 	char *name;
 	UINT32 width, height;
 	UINT32 rowbytes; // bytes per scanline
@@ -102,12 +106,12 @@ typedef struct vmode_s
 	INT32 numpages;
 	vesa_extra_t *pextradata; // vesa mode extra data
 #ifdef _WIN32
-	INT32 (WINAPI *setmode)(viddef_t *lvid, struct vmode_s *pcurrentmode);
+	INT32 (WINAPI *setmode)(viddef_t *lvid, vmode_t *pcurrentmode);
 #else
-	INT32 (*setmode)(viddef_t *lvid, struct vmode_s *pcurrentmode);
+	INT32 (*setmode)(viddef_t *lvid, vmode_t *pcurrentmode);
 #endif
 	INT32 misc; // misc for display driver (r_opengl.dll etc)
-} vmode_t;
+};
 
 #define NUMSPECIALMODES  4
 extern vmode_t specialmodes[NUMSPECIALMODES];
@@ -243,4 +247,9 @@ void SCR_ClosedCaptions(void);
 void SCR_DisplayLocalPing(void);
 void SCR_DisplayMarathonInfo(void);
 #undef DNWH
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #endif //__SCREEN_H__

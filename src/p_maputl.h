@@ -17,15 +17,19 @@
 #include "r_defs.h"
 #include "m_fixed.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //
 // P_MAPUTL
 //
-typedef struct
+struct divline_t
 {
 	fixed_t x, y, dx, dy;
-} divline_t;
+};
 
-typedef struct
+struct intercept_t
 {
 	fixed_t frac; // along trace line
 	boolean isaline;
@@ -34,7 +38,7 @@ typedef struct
 		mobj_t *thing;
 		line_t *line;
 	} d;
-} intercept_t;
+};
 
 typedef boolean (*traverser_t)(intercept_t *in);
 
@@ -93,4 +97,9 @@ extern divline_t g_trace;
 // bbox defined by the radius
 //boolean P_RadiusLinesCheck(fixed_t radius, fixed_t x, fixed_t y,
 //	boolean (*func)(line_t *));
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #endif // __P_MAPUTL__

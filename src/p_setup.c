@@ -96,7 +96,9 @@
 #include "k_terrain.h" // TRF_TRIPWIRE
 #include "k_brightmap.h"
 #include "k_director.h" // K_InitDirector
+#include "acs/interface.h"
 #include "doomstat.h" // MAXMUSNAMES
+#include "k_mapuser.h"
 
 // Replay names have time
 #if !defined (UNDER_CE)
@@ -869,7 +871,7 @@ static int cmp_loopends(const void *a, const void *b)
 
 	// weighted sorting; tag takes precedence over type
 	return
-		intsign(Tag_FGet(&mt1->tags) - Tag_FGet(&mt2->tags)) * 2 +
+		intsign(mt1->tid - mt2->tid) * 2 +
 		intsign(mt1->args[0] - mt2->args[0]);
 }
 
@@ -948,7 +950,7 @@ static void P_SpawnMapThings(boolean spawnemblems)
 			*mt1 = loopends[i - 1],
 			*mt2 = loopends[i];
 
-		if (Tag_FGet(&mt1->tags) == Tag_FGet(&mt2->tags) &&
+		if (mt1->tid == mt2->tid &&
 				mt1->args[0] == mt2->args[0])
 		{
 			P_SpawnItemLine(mt1, mt2);
@@ -965,34 +967,37 @@ void P_WriteThings(void)
 {
 	size_t i, length;
 	mapthing_t *mt;
-	UINT8 *savebuffer, *savebuf_p;
+	savebuffer_t save;
 	INT16 temp;
 
-	savebuf_p = savebuffer = (UINT8 *)malloc(nummapthings * sizeof (mapthing_t));
+	save.size = nummapthings * sizeof (mapthing_t);
+	save.p = save.buffer = (UINT8 *)malloc(nummapthings * sizeof (mapthing_t));
 
-	if (!savebuf_p)
+	if (!save.p)
 	{
 		CONS_Alert(CONS_ERROR, M_GetText("No more free memory for thing writing!\n"));
 		return;
 	}
 
+	save.end = save.buffer + save.size;
+
 	mt = mapthings;
 	for (i = 0; i < nummapthings; i++, mt++)
 	{
-		WRITEINT16(savebuf_p, mt->x);
-		WRITEINT16(savebuf_p, mt->y);
+		WRITEINT16(save.p, mt->x);
+		WRITEINT16(save.p, mt->y);
 
-		WRITEINT16(savebuf_p, mt->angle);
+		WRITEINT16(save.p, mt->angle);
 
 		temp = (INT16)(mt->type + ((INT16)mt->extrainfo << 12));
-		WRITEINT16(savebuf_p, temp);
-		WRITEUINT16(savebuf_p, mt->options);
+		WRITEINT16(save.p, temp);
+		WRITEUINT16(save.p, mt->options);
 	}
 
-	length = savebuf_p - savebuffer;
+	length = save.p - save.buffer;
 
-	FIL_WriteFile(va("newthings%d.lmp", gamemap), savebuffer, length);
-	free(savebuffer);
+	FIL_WriteFile(va("newthings%d.lmp", gamemap), save.buffer, length);
+	free(save.buffer);
 	savebuf_p = NULL;
 
 	CONS_Printf(M_GetText("newthings%d.lmp saved.\n"), gamemap);
@@ -1111,8 +1116,8 @@ static void P_LoadSectors(UINT8 *data)
 		ss->friction = ORIG_FRICTION;
 
 		ss->action = 0;
-		memset(ss->args, 0, NUMLINEARGS*sizeof(*ss->args));
-		memset(ss->stringargs, 0x00, NUMLINESTRINGARGS*sizeof(*ss->stringargs));
+		memset(ss->args, 0, NUM_SCRIPT_ARGS*sizeof(*ss->args));
+		memset(ss->stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*ss->stringargs));
 		ss->activation = 0;
 
 		P_InitializeSector(ss);
@@ -1221,8 +1226,8 @@ static void P_LoadLinedefs(UINT8 *data)
 		ld->flags = (UINT32)(SHORT(mld->flags));
 		ld->special = SHORT(mld->special);
 		Tag_FSet(&ld->tags, SHORT(mld->tag));
-		memset(ld->args, 0, NUMLINEARGS*sizeof(*ld->args));
-		memset(ld->stringargs, 0x00, NUMLINESTRINGARGS*sizeof(*ld->stringargs));
+		memset(ld->args, 0, NUM_SCRIPT_ARGS*sizeof(*ld->args));
+		memset(ld->stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*ld->stringargs));
 		ld->alpha = FRACUNIT;
 		ld->executordelay = 0;
 		ld->activation = 0;
@@ -1425,6 +1430,10 @@ static void P_LoadSidedefs(UINT8 *data)
 			case 459: // Control text prompt (named tag)
 			case 461: // Spawns an object on the map based on texture offsets
 			case 463: // Colorizes an object
+			case 475: // ACS_Execute
+			case 476: // ACS_ExecuteAlways
+			case 477: // ACS_Suspend
+			case 478: // ACS_Terminate
 			{
 				char process[8*3+1];
 				memset(process,0,8*3+1);
@@ -1492,12 +1501,14 @@ static void P_LoadThings(UINT8 *data)
 		mt->type = READUINT16(data);
 		mt->options = READUINT16(data);
 		mt->extrainfo = (UINT8)(mt->type >> 12);
-		Tag_FSet(&mt->tags, 0);
+		mt->tid = 0;
 		mt->scale = FRACUNIT;
 		mt->spritexscale = mt->spriteyscale = FRACUNIT;
-		memset(mt->args, 0, NUMMAPTHINGARGS*sizeof(*mt->args));
-		memset(mt->stringargs, 0x00, NUMMAPTHINGSTRINGARGS*sizeof(*mt->stringargs));
-		//mt->special = 0;
+		memset(mt->args, 0, NUM_MAPTHING_ARGS*sizeof(*mt->args));
+		memset(mt->stringargs, 0x00, NUM_MAPTHING_STRINGARGS*sizeof(*mt->stringargs));
+		mt->special = 0;
+		memset(mt->script_args, 0, NUM_SCRIPT_ARGS*sizeof(*mt->script_args));
+		memset(mt->script_stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*mt->script_stringargs));
 		mt->pitch = mt->roll = 0;
 		mt->layer = 0;
 
@@ -1585,6 +1596,82 @@ static boolean TextmapCount(size_t size)
 	}
 
 	return true;
+}
+
+enum
+{
+	PROP_NUM_TYPE_NA,
+	PROP_NUM_TYPE_INT,
+	PROP_NUM_TYPE_FLOAT
+};
+
+static void ParseUserProperty(mapUserProperties_t *user, const char *param, const char *val)
+{
+	if (fastncmp(param, "user_", 5) && strlen(param) > 5)
+	{
+		const boolean valIsString = M_TokenizerJustReadString();
+		const char *key = param + 5;
+		const size_t valLen = strlen(val);
+		UINT8 numberType = PROP_NUM_TYPE_INT;
+		size_t i = 0;
+
+		if (valIsString == true)
+		{
+			// Value is a string. Upload directly!
+			K_UserPropertyPush(user, key, USER_PROP_STR, &val);
+			return;
+		}
+
+		for (i = 0; i < valLen; i++)
+		{
+			if (val[i] == '.')
+			{
+				numberType = PROP_NUM_TYPE_FLOAT;
+			}
+			else if (val[i] < '0' || val[i] > '9')
+			{
+				numberType = PROP_NUM_TYPE_NA;
+				break;
+			}
+		}
+
+		switch (numberType)
+		{
+			case PROP_NUM_TYPE_INT:
+			{
+				// Value is an integer.
+				INT32 vInt = atol(val);
+				K_UserPropertyPush(user, key, USER_PROP_INT, &vInt);
+				break;
+			}
+			case PROP_NUM_TYPE_FLOAT:
+			{
+				// Value is a float. Convert to fixed.
+				fixed_t vFixed = FLOAT_TO_FIXED(atof(val));
+				K_UserPropertyPush(user, key, USER_PROP_FIXED, &vFixed);
+				break;
+			}
+			case PROP_NUM_TYPE_NA:
+			default:
+			{
+				// Value is some other kind of type.
+				// Currently we just support bool.
+
+				boolean vBool = fastcmp("true", val);
+				if (vBool == true || fastcmp("false", val))
+				{
+					// Value is a boolean.
+					K_UserPropertyPush(user, key, USER_PROP_BOOL, &vBool);
+				}
+				else
+				{
+					// Value is invalid.
+					CONS_Alert(CONS_WARNING, "Could not interpret user property \"%s\" value (%s)\n", param, val);
+				}
+				break;
+			}
+		}
+	}
 }
 
 static void ParseTextmapVertexParameter(UINT32 i, const char *param, const char *val)
@@ -1832,7 +1919,7 @@ static void ParseTextmapSectorParameter(UINT32 i, const char *param, const char 
 	else if (fastncmp(param, "stringarg", 9) && strlen(param) > 9)
 	{
 		size_t argnum = atol(param + 9);
-		if (argnum >= NUMSECTORSTRINGARGS)
+		if (argnum >= NUM_SCRIPT_STRINGARGS)
 			return;
 		sectors[i].stringargs[argnum] = Z_Malloc(strlen(val) + 1, PU_LEVEL, NULL);
 		M_Memcpy(sectors[i].stringargs[argnum], val, strlen(val) + 1);
@@ -1840,12 +1927,14 @@ static void ParseTextmapSectorParameter(UINT32 i, const char *param, const char 
 	else if (fastncmp(param, "arg", 3) && strlen(param) > 3)
 	{
 		size_t argnum = atol(param + 3);
-		if (argnum >= NUMSECTORARGS)
+		if (argnum >= NUM_SCRIPT_ARGS)
 			return;
 		sectors[i].args[argnum] = atol(val);
 	}
 	else if (fastcmp(param, "repeatspecial") && fastcmp("true", val))
-		sectors[i].activation |= SECSPAC_REPEATSPECIAL;
+		sectors[i].activation |= ((sectors[i].activation & ~SECSPAC_TRIGGERMASK) | SECSPAC_REPEATSPECIAL);
+	else if (fastcmp(param, "continuousspecial") && fastcmp("true", val))
+		sectors[i].activation |= ((sectors[i].activation & ~SECSPAC_TRIGGERMASK) | SECSPAC_CONTINUOUSSPECIAL);
 	else if (fastcmp(param, "playerenter") && fastcmp("true", val))
 		sectors[i].activation |= SECSPAC_ENTER;
 	else if (fastcmp(param, "playerfloor") && fastcmp("true", val))
@@ -1864,6 +1953,8 @@ static void ParseTextmapSectorParameter(UINT32 i, const char *param, const char 
 		sectors[i].activation |= SECSPAC_FLOORMISSILE;
 	else if (fastcmp(param, "missileceiling") && fastcmp("true", val))
 		sectors[i].activation |= SECSPAC_CEILINGMISSILE;
+	else
+		ParseUserProperty(&sectors[i].user, param, val);
 }
 
 static void ParseTextmapSidedefParameter(UINT32 i, const char *param, const char *val)
@@ -1882,6 +1973,8 @@ static void ParseTextmapSidedefParameter(UINT32 i, const char *param, const char
 		P_SetSidedefSector(i, atol(val));
 	else if (fastcmp(param, "repeatcnt"))
 		sides[i].repeatcnt = atol(val);
+	else
+		ParseUserProperty(&sides[i].user, param, val);
 }
 
 static void ParseTextmapLinedefParameter(UINT32 i, const char *param, const char *val)
@@ -1907,7 +2000,7 @@ static void ParseTextmapLinedefParameter(UINT32 i, const char *param, const char
 	else if (fastncmp(param, "stringarg", 9) && strlen(param) > 9)
 	{
 		size_t argnum = atol(param + 9);
-		if (argnum >= NUMLINESTRINGARGS)
+		if (argnum >= NUM_SCRIPT_STRINGARGS)
 			return;
 		lines[i].stringargs[argnum] = Z_Malloc(strlen(val) + 1, PU_LEVEL, NULL);
 		M_Memcpy(lines[i].stringargs[argnum], val, strlen(val) + 1);
@@ -1915,7 +2008,7 @@ static void ParseTextmapLinedefParameter(UINT32 i, const char *param, const char
 	else if (fastncmp(param, "arg", 3) && strlen(param) > 3)
 	{
 		size_t argnum = atol(param + 3);
-		if (argnum >= NUMLINEARGS)
+		if (argnum >= NUM_SCRIPT_ARGS)
 			return;
 		lines[i].args[argnum] = atol(val);
 	}
@@ -1991,22 +2084,14 @@ static void ParseTextmapLinedefParameter(UINT32 i, const char *param, const char
 		lines[i].activation |= SPAC_PUSHMONSTER;
 	else if (fastcmp(param, "impact") && fastcmp("true", val))
 		lines[i].activation |= SPAC_IMPACT;
+	else
+		ParseUserProperty(&lines[i].user, param, val);
 }
 
 static void ParseTextmapThingParameter(UINT32 i, const char *param, const char *val)
 {
 	if (fastcmp(param, "id"))
-		Tag_FSet(&mapthings[i].tags, atol(val));
-	else if (fastcmp(param, "moreids"))
-	{
-		const char* id = val;
-		while (id)
-		{
-			Tag_Add(&mapthings[i].tags, atol(id));
-			if ((id = strchr(id, ' ')))
-				id++;
-		}
-	}
+		mapthings[i].tid = atol(val);
 	else if (fastcmp(param, "x"))
 		mapthings[i].x = atol(val);
 	else if (fastcmp(param, "y"))
@@ -2032,14 +2117,14 @@ static void ParseTextmapThingParameter(UINT32 i, const char *param, const char *
 	// Flags
 	else if (fastcmp(param, "flip") && fastcmp("true", val))
 		mapthings[i].options |= MTF_OBJECTFLIP;
-	//else if (fastcmp(param, "special"))
-		//mapthings[i].special = atol(val);
+	else if (fastcmp(param, "special"))
+		mapthings[i].special = atol(val);
 	else if (fastcmp(param, "foflayer"))
 		mapthings[i].layer = atol(val);
 	else if (fastncmp(param, "stringarg", 9) && strlen(param) > 9)
 	{
 		size_t argnum = atol(param + 9);
-		if (argnum >= NUMMAPTHINGSTRINGARGS)
+		if (argnum >= NUM_MAPTHING_STRINGARGS)
 			return;
 		size_t len = strlen(val);
 		mapthings[i].stringargs[argnum] = Z_Malloc(len + 1, PU_LEVEL, NULL);
@@ -2049,27 +2134,46 @@ static void ParseTextmapThingParameter(UINT32 i, const char *param, const char *
 	else if (fastncmp(param, "arg", 3) && strlen(param) > 3)
 	{
 		size_t argnum = atol(param + 3);
-		if (argnum >= NUMMAPTHINGARGS)
+		if (argnum >= NUM_MAPTHING_ARGS)
 			return;
 		mapthings[i].args[argnum] = atol(val);
 	}
 	else if (fastncmp(param, "thingarg", 8) && strlen(param) > 8)
 	{
 		size_t argnum = atol(param + 8);
-		if (argnum >= NUMMAPTHINGARGS)
+		if (argnum >= NUM_MAPTHING_ARGS)
 			return;
 		mapthings[i].args[argnum] = atol(val);
 	}
 	else if (fastncmp(param, "thingstringarg", 14) && strlen(param) > 14)
 	{
 		size_t argnum = atol(param + 14);
-		if (argnum >= NUMMAPTHINGSTRINGARGS)
+		if (argnum >= NUM_MAPTHING_ARGS)
 			return;
 		size_t len = strlen(val);
 		mapthings[i].stringargs[argnum] = Z_Malloc(len + 1, PU_LEVEL, NULL);
 		M_Memcpy(mapthings[i].stringargs[argnum], val, len);
 		mapthings[i].stringargs[argnum][len] = '\0';
 	}
+	else if (fastncmp(param, "scriptstringarg", 15) && strlen(param) > 15)
+	{
+		size_t argnum = atol(param + 15);
+		if (argnum >= NUM_SCRIPT_STRINGARGS)
+			return;
+		size_t len = strlen(val);
+		mapthings[i].script_stringargs[argnum] = Z_Malloc(len + 1, PU_LEVEL, NULL);
+		M_Memcpy(mapthings[i].script_stringargs[argnum], val, len);
+		mapthings[i].script_stringargs[argnum][len] = '\0';
+	}
+	else if (fastncmp(param, "scriptarg", 9) && strlen(param) > 9)
+	{
+		size_t argnum = atol(param + 9);
+		if (argnum >= NUM_SCRIPT_ARGS)
+			return;
+		mapthings[i].script_args[argnum] = atol(val);
+	}
+	else
+		ParseUserProperty(&mapthings[i].user, param, val);
 }
 
 /** From a given position table, run a specified parser function through a {}-encapsuled text.
@@ -2213,8 +2317,8 @@ static void P_WriteTextmapThing(FILE *f, mapthing_t *wmapthings, size_t i, size_
 	size_t j;
 	fprintf(f, "thing // %s\n", sizeu1(k));
 	fprintf(f, "{\n");
-	//if (wmapthings[i].tid != 0)
-		//fprintf(f, "id = %d;\n", wmapthings[i].tid);
+	if (wmapthings[i].tid != 0)
+		fprintf(f, "id = %d;\n", wmapthings[i].tid);
 	fprintf(f, "x = %d;\n", wmapthings[i].x);
 	fprintf(f, "y = %d;\n", wmapthings[i].y);
 	if (wmapthings[i].z != 0)
@@ -2234,14 +2338,42 @@ static void P_WriteTextmapThing(FILE *f, mapthing_t *wmapthings, size_t i, size_
 		fprintf(f, "mobjscale = %f;\n", FIXED_TO_FLOAT(wmapthings[i].scale));
 	if (wmapthings[i].options & MTF_OBJECTFLIP)
 		fprintf(f, "flip = true;\n");
-	//if (wmapthings[i].special != 0)
-		//fprintf(f, "special = %d;\n", wmapthings[i].special);
-	for (j = 0; j < NUMMAPTHINGARGS; j++)
+	if (wmapthings[i].special != 0)
+		fprintf(f, "special = %d;\n", wmapthings[i].special);
+	for (j = 0; j < NUM_SCRIPT_ARGS; j++)
+		if (wmapthings[i].script_args[j] != 0)
+			fprintf(f, "scriptarg%s = %d;\n", sizeu1(j), wmapthings[i].script_args[j]);
+	for (j = 0; j < NUM_SCRIPT_STRINGARGS; j++)
+		if (mapthings[i].script_stringargs[j])
+			fprintf(f, "scriptstringarg%s = \"%s\";\n", sizeu1(j), mapthings[i].script_stringargs[j]);
+	for (j = 0; j < NUM_MAPTHING_ARGS; j++)
 		if (wmapthings[i].args[j] != 0)
 			fprintf(f, "arg%s = %d;\n", sizeu1(j), wmapthings[i].args[j]);
-	for (j = 0; j < NUMMAPTHINGSTRINGARGS; j++)
+	for (j = 0; j < NUM_MAPTHING_STRINGARGS; j++)
 		if (mapthings[i].stringargs[j])
 			fprintf(f, "stringarg%s = \"%s\";\n", sizeu1(j), mapthings[i].stringargs[j]);
+	if (wmapthings[i].user.length > 0)
+	{
+		for (j = 0; j < wmapthings[i].user.length; j++)
+		{
+			mapUserProperty_t *const prop = &wmapthings[i].user.properties[j];
+			switch (prop->type)
+			{
+				case USER_PROP_BOOL:
+					fprintf(f, "user_%s = %s;\n", prop->key, (prop->valueBool == true) ? "true" : "false");
+					break;
+				case USER_PROP_INT:
+					fprintf(f, "user_%s = %d;\n", prop->key, prop->valueInt);
+					break;
+				case USER_PROP_FIXED:
+					fprintf(f, "user_%s = %f;\n", prop->key, FIXED_TO_FLOAT(prop->valueFixed));
+					break;
+				case USER_PROP_STR:
+					fprintf(f, "user_%s = \"%s\";\n", prop->key, prop->valueStr);
+					break;
+			}
+		}
+	}
 	fprintf(f, "}\n");
 	fprintf(f, "\n");
 }
@@ -2281,12 +2413,31 @@ static void P_WriteTextmap(void)
 	memcpy(wsides, sides, numsides * sizeof(*sides));
 
 	for (i = 0; i < nummapthings; i++)
-		if (mapthings[i].tags.count)
-			wmapthings[i].tags.tags = memcpy(Z_Malloc(mapthings[i].tags.count * sizeof(mtag_t), PU_LEVEL, NULL), mapthings[i].tags.tags, mapthings[i].tags.count * sizeof(mtag_t));
+	{
+		if (mapthings[i].user.length)
+		{
+			wmapthings[i].user.properties = memcpy(
+				Z_Malloc(mapthings[i].user.length * sizeof(mapUserProperty_t), PU_LEVEL, NULL),
+				mapthings[i].user.properties,
+				mapthings[i].user.length * sizeof(mapUserProperty_t)
+			);
+		}
+	}
 
 	for (i = 0; i < numsectors; i++)
+	{
 		if (sectors[i].tags.count)
 			wsectors[i].tags.tags = memcpy(Z_Malloc(sectors[i].tags.count*sizeof(mtag_t), PU_LEVEL, NULL), sectors[i].tags.tags, sectors[i].tags.count*sizeof(mtag_t));
+
+		if (sectors[i].user.length)
+		{
+			wsectors[i].user.properties = memcpy(
+				Z_Malloc(sectors[i].user.length * sizeof(mapUserProperty_t), PU_LEVEL, NULL),
+				sectors[i].user.properties,
+				sectors[i].user.length * sizeof(mapUserProperty_t)
+			);
+		}
+	}
 
 	for (i = 0; i < numlines; i++)
 	{
@@ -2295,11 +2446,32 @@ static void P_WriteTextmap(void)
 		if (lines[i].tags.count)
 			wlines[i].tags.tags = memcpy(Z_Malloc(lines[i].tags.count * sizeof(mtag_t), PU_LEVEL, NULL), lines[i].tags.tags, lines[i].tags.count * sizeof(mtag_t));
 
+		if (lines[i].user.length)
+		{
+			wlines[i].user.properties = memcpy(
+				Z_Malloc(lines[i].user.length * sizeof(mapUserProperty_t), PU_LEVEL, NULL),
+				lines[i].user.properties,
+				lines[i].user.length * sizeof(mapUserProperty_t)
+			);
+		}
+
 		v = lines[i].v1 - vertexes;
 		wusedvertexes[v] = true;
 
 		v = lines[i].v2 - vertexes;
 		wusedvertexes[v] = true;
+	}
+
+	for (i = 0; i < numsides; i++)
+	{
+		if (sides[i].user.length)
+		{
+			wsides[i].user.properties = memcpy(
+				Z_Malloc(sides[i].user.length * sizeof(mapUserProperty_t), PU_LEVEL, NULL),
+				sides[i].user.properties,
+				sides[i].user.length * sizeof(mapUserProperty_t)
+			);
+		}
 	}
 
 	freetag = Tag_NextUnused(0);
@@ -2401,7 +2573,7 @@ static void P_WriteTextmap(void)
 					CONS_Alert(CONS_WARNING, M_GetText("No unused tag found. Linedef %s with type 412 cannot be converted.\n"), sizeu1(i));
 					break;
 				}
-				Tag_Add(&specialthings[s].teleport->tags, freetag);
+				specialthings[s].teleport->tid = freetag;
 				wlines[i].args[0] = freetag;
 				freetag = Tag_NextUnused(freetag);
 				break;
@@ -2415,7 +2587,7 @@ static void P_WriteTextmap(void)
 					CONS_Alert(CONS_WARNING, M_GetText("No unused tag found. Linedef %s with type 422 cannot be converted.\n"), sizeu1(i));
 					break;
 				}
-				Tag_Add(&specialthings[s].altview->tags, freetag);
+				specialthings[s].altview->tid = freetag;
 				wlines[i].args[0] = freetag;
 				specialthings[s].altview->pitch = wlines[i].args[2];
 				freetag = Tag_NextUnused(freetag);
@@ -2440,7 +2612,7 @@ static void P_WriteTextmap(void)
 					CONS_Alert(CONS_WARNING, M_GetText("No unused tag found. Linedef %s with type 457 cannot be converted.\n"), sizeu1(i));
 					break;
 				}
-				Tag_Add(&specialthings[s].angleanchor->tags, freetag);
+				specialthings[s].angleanchor->tid = freetag;
 				wlines[i].args[0] = freetag;
 				freetag = Tag_NextUnused(freetag);
 				break;
@@ -2578,10 +2750,10 @@ static void P_WriteTextmap(void)
 		}
 		if (wlines[i].special != 0)
 			fprintf(f, "special = %d;\n", wlines[i].special);
-		for (j = 0; j < NUMLINEARGS; j++)
+		for (j = 0; j < NUM_SCRIPT_ARGS; j++)
 			if (wlines[i].args[j] != 0)
 				fprintf(f, "arg%s = %d;\n", sizeu1(j), wlines[i].args[j]);
-		for (j = 0; j < NUMLINESTRINGARGS; j++)
+		for (j = 0; j < NUM_SCRIPT_STRINGARGS; j++)
 			if (lines[i].stringargs[j])
 				fprintf(f, "stringarg%s = \"%s\";\n", sizeu1(j), lines[i].stringargs[j]);
 		if (wlines[i].alpha != FRACUNIT)
@@ -2660,6 +2832,28 @@ static void P_WriteTextmap(void)
 			fprintf(f, "monsterpush = true;\n");
 		if (wlines[i].activation & SPAC_IMPACT)
 			fprintf(f, "impact = true;\n");
+		if (wlines[i].user.length > 0)
+		{
+			for (j = 0; j < wlines[i].user.length; j++)
+			{
+				mapUserProperty_t *const prop = &wlines[i].user.properties[j];
+				switch (prop->type)
+				{
+					case USER_PROP_BOOL:
+						fprintf(f, "user_%s = %s;\n", prop->key, (prop->valueBool == true) ? "true" : "false");
+						break;
+					case USER_PROP_INT:
+						fprintf(f, "user_%s = %d;\n", prop->key, prop->valueInt);
+						break;
+					case USER_PROP_FIXED:
+						fprintf(f, "user_%s = %f;\n", prop->key, FIXED_TO_FLOAT(prop->valueFixed));
+						break;
+					case USER_PROP_STR:
+						fprintf(f, "user_%s = \"%s\";\n", prop->key, prop->valueStr);
+						break;
+				}
+			}
+		}
 		fprintf(f, "}\n");
 		fprintf(f, "\n");
 	}
@@ -2681,6 +2875,28 @@ static void P_WriteTextmap(void)
 			fprintf(f, "texturemiddle = \"%.*s\";\n", 8, textures[wsides[i].midtexture]->name);
 		if (wsides[i].repeatcnt != 0)
 			fprintf(f, "repeatcnt = %d;\n", wsides[i].repeatcnt);
+		if (wsides[i].user.length > 0)
+		{
+			for (j = 0; j < wsides[i].user.length; j++)
+			{
+				mapUserProperty_t *const prop = &wsides[i].user.properties[j];
+				switch (prop->type)
+				{
+					case USER_PROP_BOOL:
+						fprintf(f, "user_%s = %s;\n", prop->key, (prop->valueBool == true) ? "true" : "false");
+						break;
+					case USER_PROP_INT:
+						fprintf(f, "user_%s = %d;\n", prop->key, prop->valueInt);
+						break;
+					case USER_PROP_FIXED:
+						fprintf(f, "user_%s = %f;\n", prop->key, FIXED_TO_FLOAT(prop->valueFixed));
+						break;
+					case USER_PROP_STR:
+						fprintf(f, "user_%s = \"%s\";\n", prop->key, prop->valueStr);
+						break;
+				}
+			}
+		}
 		fprintf(f, "}\n");
 		fprintf(f, "\n");
 	}
@@ -2833,14 +3049,25 @@ static void P_WriteTextmap(void)
 			fprintf(f, "triggerer = %d;\n", wsectors[i].triggerer);
 		if (wsectors[i].action != 0)
 			fprintf(f, "action = %d;\n", wsectors[i].action);
-		for (j = 0; j < NUMSECTORARGS; j++)
+		for (j = 0; j < NUM_SCRIPT_ARGS; j++)
 			if (wsectors[i].args[j] != 0)
 				fprintf(f, "arg%s = %d;\n", sizeu1(j), wsectors[i].args[j]);
-		for (j = 0; j < NUMSECTORSTRINGARGS; j++)
+		for (j = 0; j < NUM_SCRIPT_STRINGARGS; j++)
 			if (wsectors[i].stringargs[j])
 				fprintf(f, "stringarg%s = \"%s\";\n", sizeu1(j), wsectors[i].stringargs[j]);
-		if (wsectors[i].activation & SECSPAC_REPEATSPECIAL)
-			fprintf(f, "repeatspecial = true;\n");
+		switch (wsectors[i].activation & SECSPAC_TRIGGERMASK)
+		{
+			case SECSPAC_REPEATSPECIAL:
+			{
+				fprintf(f, "repeatspecial = true;\n");
+				break;
+			}
+			case SECSPAC_CONTINUOUSSPECIAL:
+			{
+				fprintf(f, "continuousspecial = true;\n");
+				break;
+			}
+		}
 		if (wsectors[i].activation & SECSPAC_ENTER)
 			fprintf(f, "playerenter = true;\n");
 		if (wsectors[i].activation & SECSPAC_FLOOR)
@@ -2859,6 +3086,28 @@ static void P_WriteTextmap(void)
 			fprintf(f, "missilefloor = true;\n");
 		if (wsectors[i].activation & SECSPAC_CEILINGMISSILE)
 			fprintf(f, "missileceiling = true;\n");
+		if (wsectors[i].user.length > 0)
+		{
+			for (j = 0; j < wsectors[i].user.length; j++)
+			{
+				mapUserProperty_t *const prop = &wsectors[i].user.properties[j];
+				switch (prop->type)
+				{
+					case USER_PROP_BOOL:
+						fprintf(f, "user_%s = %s;\n", prop->key, (prop->valueBool == true) ? "true" : "false");
+						break;
+					case USER_PROP_INT:
+						fprintf(f, "user_%s = %d;\n", prop->key, prop->valueInt);
+						break;
+					case USER_PROP_FIXED:
+						fprintf(f, "user_%s = %f;\n", prop->key, FIXED_TO_FLOAT(prop->valueFixed));
+						break;
+					case USER_PROP_STR:
+						fprintf(f, "user_%s = \"%s\";\n", prop->key, prop->valueStr);
+						break;
+				}
+			}
+		}
 		fprintf(f, "}\n");
 		fprintf(f, "\n");
 	}
@@ -2866,16 +3115,35 @@ static void P_WriteTextmap(void)
 	fclose(f);
 
 	for (i = 0; i < nummapthings; i++)
-		if (wmapthings[i].tags.count)
-			Z_Free(wmapthings[i].tags.tags);
+	{
+
+		if (wmapthings[i].user.length)
+			Z_Free(wmapthings[i].user.properties);
+	}
 
 	for (i = 0; i < numsectors; i++)
+	{
 		if (wsectors[i].tags.count)
 			Z_Free(wsectors[i].tags.tags);
 
+		if (wsectors[i].user.length)
+			Z_Free(wsectors[i].user.properties);
+	}
+
 	for (i = 0; i < numlines; i++)
+	{
 		if (wlines[i].tags.count)
 			Z_Free(wlines[i].tags.tags);
+
+		if (wlines[i].user.length)
+			Z_Free(wlines[i].user.properties);
+	}
+
+	for (i = 0; i < numsides; i++)
+	{
+		if (wsides[i].user.length)
+			Z_Free(wsides[i].user.properties);
+	}
 
 	Z_Free(wmapthings);
 	Z_Free(wvertexes);
@@ -2978,9 +3246,11 @@ static void P_LoadTextmap(void)
 		sc->friction = ORIG_FRICTION;
 
 		sc->action = 0;
-		memset(sc->args, 0, NUMSECTORARGS*sizeof(*sc->args));
-		memset(sc->stringargs, 0x00, NUMSECTORSTRINGARGS*sizeof(*sc->stringargs));
+		memset(sc->args, 0, NUM_SCRIPT_ARGS*sizeof(*sc->args));
+		memset(sc->stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*sc->stringargs));
 		sc->activation = 0;
+
+		K_UserPropertiesClear(&sc->user);
 
 		textmap_colormap.used = false;
 		textmap_colormap.lightcolor = 0;
@@ -3027,14 +3297,15 @@ static void P_LoadTextmap(void)
 		ld->special = 0;
 		Tag_FSet(&ld->tags, 0);
 
-		memset(ld->args, 0, NUMLINEARGS*sizeof(*ld->args));
-		memset(ld->stringargs, 0x00, NUMLINESTRINGARGS*sizeof(*ld->stringargs));
+		memset(ld->args, 0, NUM_SCRIPT_ARGS*sizeof(*ld->args));
+		memset(ld->stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*ld->stringargs));
 		ld->alpha = FRACUNIT;
 		ld->executordelay = 0;
 		ld->sidenum[0] = 0xffff;
 		ld->sidenum[1] = 0xffff;
 
 		ld->activation = 0;
+		K_UserPropertiesClear(&ld->user);
 
 		TextmapParse(linesPos[i], i, ParseTextmapLinedefParameter);
 
@@ -3059,6 +3330,8 @@ static void P_LoadTextmap(void)
 		sd->sector = NULL;
 		sd->repeatcnt = 0;
 
+		K_UserPropertiesClear(&sd->user);
+
 		TextmapParse(sidesPos[i], i, ParseTextmapSidedefParameter);
 
 		if (!sd->sector)
@@ -3076,14 +3349,18 @@ static void P_LoadTextmap(void)
 		mt->options = 0;
 		mt->z = 0;
 		mt->extrainfo = 0;
-		Tag_FSet(&mt->tags, 0);
+		mt->tid = 0;
 		mt->scale = FRACUNIT;
 		mt->spritexscale = mt->spriteyscale = FRACUNIT;
-		memset(mt->args, 0, NUMMAPTHINGARGS*sizeof(*mt->args));
-		memset(mt->stringargs, 0x00, NUMMAPTHINGSTRINGARGS*sizeof(*mt->stringargs));
-		//mt->special = 0;
+		memset(mt->args, 0, NUM_MAPTHING_ARGS*sizeof(*mt->args));
+		memset(mt->stringargs, 0x00, NUM_MAPTHING_STRINGARGS*sizeof(*mt->stringargs));
+		mt->special = 0;
+		memset(mt->script_args, 0, NUM_SCRIPT_ARGS*sizeof(*mt->script_args));
+		memset(mt->script_stringargs, 0x00, NUM_SCRIPT_STRINGARGS*sizeof(*mt->script_stringargs));
 		mt->layer = 0;
 		mt->mobj = NULL;
+
+		K_UserPropertiesClear(&mt->user);
 
 		TextmapParse(mapthingsPos[i], i, ParseTextmapThingParameter);
 	}
@@ -4376,7 +4653,7 @@ static void P_AddBinaryMapTags(void)
 		case 760:
 		case 761:
 		case 762:
-			Tag_FSet(&mapthings[i].tags, mapthings[i].angle);
+			mapthings[i].tid = mapthings[i].angle;
 			break;
 		case 290:
 		case 292:
@@ -4384,7 +4661,7 @@ static void P_AddBinaryMapTags(void)
 		case 780:
 		case 2020: // MT_LOOPENDPOINT
 		case 2021: // MT_LOOPCENTERPOINT
-			Tag_FSet(&mapthings[i].tags, mapthings[i].extrainfo);
+			mapthings[i].tid = mapthings[i].extrainfo;
 			break;
 		default:
 			break;
@@ -5915,6 +6192,16 @@ static void P_ConvertBinaryLinedefTypes(void)
 			lines[i].args[2] = TML_SECTOR;
 			lines[i].args[3] = !!(lines[i].flags & ML_MIDPEG);
 			break;
+		case 475: // ACS_Execute
+		case 476: // ACS_ExecuteAlways
+		case 477: // ACS_Suspend
+		case 478: // ACS_Terminate
+			if (sides[lines[i].sidenum[0]].text)
+			{
+				lines[i].stringargs[0] = Z_Malloc(strlen(sides[lines[i].sidenum[0]].text) + 1, PU_LEVEL, NULL);
+				M_Memcpy(lines[i].stringargs[0], sides[lines[i].sidenum[0]].text, strlen(sides[lines[i].sidenum[0]].text) + 1);
+			}
+			break;
 		case 480: //Polyobject - door slide
 		case 481: //Polyobject - door move
 			lines[i].args[0] = tag;
@@ -6796,9 +7083,8 @@ static void P_ConvertBinaryThingTypes(void)
 		{
 			INT32 check = -1;
 			INT32 firstline = -1;
-			mtag_t tag = Tag_FGet(&mapthings[i].tags);
 
-			TAG_ITER_LINES(tag, check)
+			TAG_ITER_LINES(mapthings[i].tid, check)
 			{
 				if (lines[check].special == 20)
 				{
@@ -7018,7 +7304,7 @@ static void P_ConvertBinaryThingTypes(void)
 		{
 			INT32 firstline = Tag_FindLineSpecial(2000, (INT16)mapthings[i].angle);
 
-			Tag_FSet(&mapthings[i].tags, mapthings[i].angle);
+			mapthings[i].tid = mapthings[i].angle;
 
 			mapthings[i].args[0] = mapthings[i].z;
 			mapthings[i].z = 0;
@@ -7095,6 +7381,10 @@ static void P_ConvertBinaryThingTypes(void)
 		case 2050: // MT_DUELBOMB
 			mapthings[i].args[1] = !!(mapthings[i].options & MTF_AMBUSH);
 			break;
+		case 1950: // MT_AAZTREE_HELPER
+			mapthings[i].args[0] = mapthings[i].extrainfo;
+			mapthings[i].args[1] = mapthings[i].angle;
+			break;
 		case 2333: // MT_BATTLECAPSULE
 			mapthings[i].args[0] = mapthings[i].extrainfo;
 			mapthings[i].args[1] = mapthings[i].angle;
@@ -7120,7 +7410,7 @@ static void P_ConvertBinaryThingTypes(void)
 			break;
 		case FLOOR_SLOPE_THING:
 		case CEILING_SLOPE_THING:
-			mapthings[i].args[0] = mapthings[i].extrainfo;
+			mapthings[i].tid = mapthings[i].extrainfo;
 			break;
 		default:
 			break;
@@ -7353,10 +7643,6 @@ static void P_InitLevelSettings(boolean reloadinggamestate)
 		countdowntimer = 0;
 	countdowntimeup = false;
 
-	// clear ctf pointers
-	redflag = blueflag = NULL;
-	rflagpoint = bflagpoint = NULL;
-
 	// circuit, race and competition stuff
 	circuitmap = false;
 	numstarposts = 0;
@@ -7392,6 +7678,9 @@ static void P_InitLevelSettings(boolean reloadinggamestate)
 
 	racecountdown = exitcountdown = exitfadestarted = 0;
 	curlap = bestlap = 0; // SRB2Kart
+	
+	g_exit.losing = false;
+	g_exit.retry = false;
 
 	// SRB2Kart: map load variables
 	if (grandprixinfo.gp == true)
@@ -7568,15 +7857,12 @@ static void P_ResetSpawnpoints(void)
 
 static void P_LoadRecordGhosts(void)
 {
+
 	// see also m_menu.c's Nextmap_OnChange
-	const size_t glen = strlen(srb2home)+1+strlen("media")+1+strlen("replay")+1+strlen(timeattackfolder)+1+strlen("MAPXX")+1;
-	char *gpath = malloc(glen);
+	char *gpath;
 	INT32 i;
 
-	if (!gpath)
-		return;
-
-	sprintf(gpath,"%s"PATHSEP"media"PATHSEP"replay"PATHSEP"%s"PATHSEP"%s", srb2home, timeattackfolder, G_BuildMapName(gamemap));
+	gpath = Z_StrDup(va("%s"PATHSEP"media"PATHSEP"replay"PATHSEP"%s"PATHSEP"%s", srb2home, timeattackfolder, G_BuildMapName(gamemap)));
 
 	// Best Time ghost
 	if (cv_ghost_besttime.value)
@@ -7636,7 +7922,7 @@ static void P_LoadRecordGhosts(void)
 		}
 	}
 
-	free(gpath);
+	Z_Free(gpath);
 }
 
 static void P_SetupCamera(UINT8 pnum, camera_t *cam)
@@ -7719,9 +8005,6 @@ static void P_InitGametype(void)
 
 	spectateGriefed = 0;
 	K_CashInPowerLevels(); // Pushes power level changes even if intermission was skipped
-
-	K_TimerInit();
-	P_InitPlayers();
 
 	if (modeattacking && !demo.playback)
 		P_LoadRecordGhosts();
@@ -8003,6 +8286,8 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	// Close text prompt before freeing the old level
 	F_EndTextPrompt(false, true);
 
+	ACS_InvalidateMapScope();
+
 	LUA_InvalidateLevel();
 
 	for (ss = sectors; sectors+numsectors != ss; ss++)
@@ -8057,7 +8342,7 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	P_ResetSpawnpoints();
 
 	P_ResetTubeWaypoints();
-
+	
 	P_MapStart(); // tm.thing can be used starting from this point
 
 	// init anything that P_SpawnSlopes/P_LoadThings needs to know
@@ -8129,7 +8414,12 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	//  a netgame save is being loaded, and could actively be harmful by messing with
 	//  the client's view of the data.)
 	if (!fromnetsave)
+	{
 		P_InitGametype();
+
+		// Initialize ACS scripts
+		ACS_LoadLevelScripts(gamemap-1);
+	}
 
 	if (!reloadinggamestate)
 	{
@@ -8137,10 +8427,7 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		memset(localaiming, 0, sizeof(localaiming));
 		K_InitDirector();
 	}
-
-	// clear special respawning que
-	iquehead = iquetail = 0;
-
+	
 	// Remove the loading shit from the screen
 	if (rendermode != render_none && !titlemapinaction && !reloadinggamestate)
 		F_WipeColorFill(levelfadecol);
@@ -8148,19 +8435,12 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	if (precache || dedicated)
 		R_PrecacheLevel();
 
-	nextmapoverride = 0;
-	skipstats = 0;
-
 	if (!(netgame || multiplayer || demo.playback) && !majormods)
 		mapvisited[gamemap-1] |= MV_VISITED;
 	else if (!demo.playback)
 		mapvisited[gamemap-1] |= MV_MP; // you want to record that you've been there this session, but not permanently
 
 	G_AddMapToBuffer(gamemap-1);
-
-	levelloading = false;
-
-	P_RunCachedActions();
 
 	P_MapEnd(); // tm.thing is no longer needed from this point onwards
 
@@ -8178,7 +8458,77 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		lastmaploaded = gamemap; // HAS to be set after saving!!
 	}
 
-	if (reloadinggamestate)
+	if (bossinfo.boss)
+	{
+		// Reset some pesky boss state that can't be handled elsewhere.
+		bossinfo.barlen = BOSSHEALTHBARLEN;
+		bossinfo.visualbar = 0;
+		Z_Free(bossinfo.enemyname);
+		Z_Free(bossinfo.subtitle);
+		bossinfo.enemyname = bossinfo.subtitle = NULL;
+		bossinfo.titleshow = 0;
+		bossinfo.titlesound = sfx_typri1;
+		memset(&(bossinfo.weakspots), 0, sizeof(weakspot_t)*NUMWEAKSPOTS);
+	}
+
+	if (!fromnetsave)
+	{
+		INT32 buf = gametic % BACKUPTICS;
+
+		for (i = 0; i < MAXPLAYERS; i++)
+		{
+			if (playeringame[i])
+			{
+				G_CopyTiccmd(&players[i].cmd, &netcmds[buf][i], 1);
+			}
+		}
+
+		for (i = 0; i <= r_splitscreen; i++)
+		{
+			postimgtype[i] = postimg_none;
+		}
+		
+		if (marathonmode & MA_INGAME)
+		{
+			marathonmode |= MA_INIT;
+		}
+	}
+	else
+	{
+		// Don't run P_PostLoadLevel when loading netgames.
+		levelloading = false;
+	}
+
+	if (rendermode != render_none && reloadinggamestate == false)
+	{
+
+		R_ResetViewInterpolation(0);
+		R_ResetViewInterpolation(0);
+		R_UpdateMobjInterpolators();
+
+		// Title card!
+		G_StartTitleCard();
+
+		// Can the title card actually run, though?
+		if (WipeStageTitle && ranspecialwipe != 2 && fromnetsave == false)
+		{
+			G_PreLevelTitleCard();
+		}
+	}
+	
+	return true;
+}
+
+void P_PostLoadLevel(void)
+{
+	P_MapStart(); // tm.thing can be used starting from this point
+	
+	if (G_GametypeHasSpectators())
+	{
+		K_CheckSpectateStatus(false);
+	}
+	
+	if (demo.playback)
 		;
 	else if (grandprixinfo.gp == true)
 	{
@@ -8198,58 +8548,40 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		// We're in a Match Race, use simplistic randomized bots.
 		K_UpdateMatchRaceBots();
 	}
+	
+	K_TimerInit();
 
-	if (bossinfo.boss)
+	P_InitPlayers();
+	
+	nextmapoverride = 0;
+	skipstats = 0;
+
+	P_RunCachedActions();
+
+	if (marathonmode & MA_INGAME)
 	{
-		// Reset some pesky boss state that can't be handled elsewhere.
-		bossinfo.barlen = BOSSHEALTHBARLEN;
-		bossinfo.visualbar = 0;
-		Z_Free(bossinfo.enemyname);
-		Z_Free(bossinfo.subtitle);
-		bossinfo.enemyname = bossinfo.subtitle = NULL;
-		bossinfo.titleshow = 0;
-		bossinfo.titlesound = sfx_typri1;
-		memset(&(bossinfo.weakspots), 0, sizeof(weakspot_t)*NUMWEAKSPOTS);
-	}
-
-	if (!fromnetsave) // uglier hack
-	{
-		INT32 buf = gametic % BACKUPTICS;
-		for (i = 0; i < MAXPLAYERS; i++)
-		{
-			if (playeringame[i])
-				G_CopyTiccmd(&players[i].cmd, &netcmds[buf][i], 1);
-		}
-		P_MapStart(); // just in case MapLoad modifies tmthing
-		LUA_HookInt(gamemap, HOOK(MapLoad));
-		P_MapEnd(); // just in case MapLoad modifies tm.thing
-	}
-
-
-	if (rendermode != render_none && reloadinggamestate == false)
-	{
-
-		R_ResetViewInterpolation(0);
-		R_ResetViewInterpolation(0);
-		R_UpdateMobjInterpolators();
-
-		// Title card!
-		G_StartTitleCard();
-
-		// Can the title card actually run, though?
-		if (!WipeStageTitle)
-			return true;
-		if (ranspecialwipe == 2)
-			return true;
-
-		// If so...
-		// but not if joining because the fade may time us out
-		if (!fromnetsave)
-			G_PreLevelTitleCard();
+		marathonmode &= ~MA_INIT;
 	}
 	
-	return true;
+	ACS_RunLevelStartScripts();
+	LUA_HookInt(gamemap, HOOK(MapLoad));
+	
+	UINT8 i;
+	for (i = 0; i < MAXPLAYERS; i++)
+	{
+		if (!playeringame[i])
+			continue;
+		if (players[i].spectator)
+			continue;
+		ACS_RunPlayerEnterScript(&players[i]);
+	}
+	
+	P_MapEnd();
+
+	// We're now done loading the level.
+	levelloading = false;
 }
+
 
 //
 // P_RunSOC

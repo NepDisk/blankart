@@ -312,7 +312,7 @@ boolean M_CanShowLevelInList(INT32 mapnum, INT32 gt);
 
 typedef union
 {
-	struct menu_s *submenu;      // IT_SUBMENU
+	menu_t *submenu;      // IT_SUBMENU
 	consvar_t *cvar;             // IT_CVAR
 	void (*routine)(INT32 choice); // IT_CALL, IT_KEYHANDLER, IT_ARROWS
 	void (*eventhandler)(event_t *ev); // MM_EVENTHANDLER
@@ -321,7 +321,7 @@ typedef union
 //
 // MENU TYPEDEFS
 //
-typedef struct menuitem_s
+struct menuitem_t
 {
 	// show IT_xxx
 	UINT16 status;
@@ -333,20 +333,20 @@ typedef struct menuitem_s
 
 	// hotkey in menu or y of the item
 	UINT16 alphaKey;
-} menuitem_t;
+};
 
-typedef struct menu_s
+struct menu_t
 {
 	UINT32         menuid;             // ID to encode menu type and hierarchy
 	const char    *menutitlepic;
 	INT16          numitems;           // # of menu items
-	struct menu_s *prevMenu;           // previous menu
+	menu_t *prevMenu;           // previous menu
 	menuitem_t    *menuitems;          // menu items
 	void         (*drawroutine)(void); // draw routine
 	INT16          x, y;               // x, y of menu
 	INT16          lastOn;             // last item user was on in menu
 	boolean      (*quitroutine)(void); // called before quit a menu return true if we can
-} menu_t;
+};
 
 void M_SetupNextMenu(menu_t *menudef);
 void M_ClearMenus(boolean callexitmenufunc);
@@ -413,12 +413,12 @@ typedef struct
 extern gtdesc_t gametypedesc[NUMGAMETYPES];*/
 
 // mode descriptions for video mode menu
-typedef struct
+struct modedesc_t
 {
 	INT32 modenum; // video mode number in the vidmodes list
 	const char *desc;  // XXXxYYY
 	UINT8 goodratio; // aspect correct if 1
-} modedesc_t;
+};
 
 // savegame struct for save game menu
 typedef struct
@@ -479,11 +479,11 @@ INT32 HU_GetHighlightColor(void);
 void Moviemode_option_Onchange(void);
 
 // Player Setup menu colors linked list
-typedef struct menucolor_s {
-	struct menucolor_s *next;
-	struct menucolor_s *prev;
+struct menucolor_t {
+	menucolor_t *next;
+	menucolor_t *prev;
 	UINT16 color;
-} menucolor_t;
+};
 
 extern menucolor_t *menucolorhead, *menucolortail;
 

@@ -19,6 +19,10 @@
 #include "r_data.h"
 #include "doomstat.h" // MAXSPLITSCREENPLAYERS
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef __GNUG__
 #pragma interface
 #endif
@@ -28,13 +32,13 @@
 //
 
 // needed for pre rendering (fracs)
-typedef struct
+struct sprcache_t
 {
 	fixed_t width;
 	fixed_t offset;
 	fixed_t topoffset;
 	fixed_t height;
-} sprcache_t;
+};
 
 extern sprcache_t *spritecachedinfo;
 
@@ -120,5 +124,9 @@ extern angle_t rw_normalangle;
 
 // angle to line origin
 extern angle_t rw_angle1;
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

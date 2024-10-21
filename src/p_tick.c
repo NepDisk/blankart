@@ -37,8 +37,15 @@
 #include "k_boss.h"
 #include "k_waypoint.h"
 #include "k_director.h"
+#include "acs/interface.h"
+
+#ifdef PARANOIA
+#include "deh_tables.h" // MOBJTYPE_LIST
+#endif
 
 tic_t leveltime;
+
+UINT32 thinker_era = 0;
 
 INT32 P_AltFlip(INT32 n, tic_t tics)
 {
@@ -197,11 +204,31 @@ void Command_CountMobjs_f(void)
 void P_InitThinkers(void)
 {
 	UINT8 i;
-	boss3cap = NULL;
+
+	for (i = 0; i < NUM_THINKERLISTS; i++)
+	{
+		thlist[i].prev = thlist[i].next = &thlist[i];
+	}
+
+	iquehead = iquetail = 0;
+
 	waypointcap = NULL;
 	kitemcap = NULL;
-	for (i = 0; i < NUM_THINKERLISTS; i++)
-		thlist[i].prev = thlist[i].next = &thlist[i];
+
+	for (i = 0; i <= 15; i++)
+	{
+		skyboxcenterpnts[i] = skyboxviewpnts[i] = NULL;
+	}
+}
+
+
+//
+// P_InvalidateThinkersWithoutInit
+//
+
+void P_InvalidateThinkersWithoutInit(void)
+{
+	thinker_era++;
 }
 
 // Adds a new thinker at the end of the list.
@@ -218,7 +245,48 @@ void P_AddThinker(const thinklistnum_t n, thinker_t *thinker)
 
 	thinker->references = 0;    // killough 11/98: init reference counter to 0
 	thinker->cachable = n == THINK_MOBJ;
+
+#ifdef PARANOIA
+	thinker->debug_mobjtype = MT_NULL;
+#endif
 }
+
+#ifdef PARANOIA
+static const char *MobjTypeName(const mobj_t *mobj)
+{
+	actionf_p1 p1 = mobj->thinker.function.acp1;
+
+	if (p1 == (actionf_p1)P_MobjThinker)
+	{
+		return MOBJTYPE_LIST[mobj->type];
+	}
+	else if (p1 == (actionf_p1)P_RemoveThinkerDelayed)
+	{
+		if (mobj->thinker.debug_mobjtype != MT_NULL)
+		{
+			return MOBJTYPE_LIST[mobj->thinker.debug_mobjtype];
+		}
+	}
+
+	return "<Not a mobj>";
+}
+
+static const char *MobjThinkerName(const mobj_t *mobj)
+{
+	actionf_p1 p1 = mobj->thinker.function.acp1;
+
+	if (p1 == (actionf_p1)P_MobjThinker)
+	{
+		return "P_MobjThinker";
+	}
+	else if (p1 == (actionf_p1)P_RemoveThinkerDelayed)
+	{
+		return "P_RemoveThinkerDelayed";
+	}
+
+	return "<Unknown Thinker>";
+}
+#endif
 
 //
 // killough 11/98:
@@ -336,12 +404,45 @@ void P_RemoveThinker(thinker_t *thinker)
  * references, and delay removal until the count is 0.
  */
 
-mobj_t *P_SetTarget(mobj_t **mop, mobj_t *targ)
+mobj_t *P_SetTarget2(mobj_t **mop, mobj_t *targ
+#ifdef PARANOIA
+		, const char *source_file, int source_line
+#endif
+)
 {
-	if (*mop)              // If there was a target already, decrease its refcount
+	if (*mop) // If there was a target already, decrease its refcount
+	{
 		(*mop)->thinker.references--;
-if ((*mop = targ) != NULL) // Set new target and if non-NULL, increase its counter
+
+#ifdef PARANOIA
+		if ((*mop)->thinker.references < 0)
+		{
+			CONS_Printf(
+					"PARANOIA/P_SetTarget: %p %s %s references=%d, references go negative! (%s:%d)\n",
+					(void*)*mop,
+					MobjTypeName(*mop),
+					MobjThinkerName(*mop),
+					(*mop)->thinker.references,
+					source_file,
+					source_line
+			);
+		}
+
+		(*mop)->thinker.debug_time = leveltime;
+#endif
+	}
+
+	if (targ != NULL) // Set new target and if non-NULL, increase its counter
+	{
 		targ->thinker.references++;
+
+#ifdef PARANOIA
+		targ->thinker.debug_time = leveltime;
+#endif
+	}
+
+	*mop = targ;
+
 	return targ;
 }
 
@@ -367,7 +468,7 @@ if ((*mop = targ) != NULL) // Set new target and if non-NULL, increase its count
 // Rewritten to delete nodes implicitly, by making currentthinker
 // external and using P_RemoveThinkerDelayed() implicitly.
 //
-static inline void P_RunThinkers(void)
+static void P_RunThinkers(void)
 {
 	size_t i;
 
@@ -389,6 +490,10 @@ static inline void P_RunThinkers(void)
 
 	if ((gametyperules & GTR_BUMPERS) && battleovertime.enabled)
 		K_RunBattleOvertime();
+
+	ps_acs_time = I_GetPreciseTime();
+	ACS_Tick();
+	ps_acs_time = I_GetPreciseTime() - ps_acs_time;
 }
 
 //
@@ -707,7 +812,19 @@ void P_Ticker(boolean run)
 	P_PrecipitationEffects();
 
 	if (run)
+	{
 		leveltime++;
+
+		if (starttime > introtime && leveltime == starttime)
+		{
+			ACS_RunPositionScript();
+		}
+
+		if (timelimitintics > 0 && leveltime == (timelimitintics + starttime + 1))
+		{
+			ACS_RunOvertimeScript();
+		}
+	}
 
 	timeinmap++;
 

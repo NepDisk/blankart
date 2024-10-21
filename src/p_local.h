@@ -24,6 +24,10 @@
 #include "p_maputl.h"
 #include "doomstat.h" // MAXSPLITSCREENPLAYERS
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define FLOATSPEED (FRACUNIT*4)
 
 //#define VIEWHEIGHTS "41"
@@ -79,6 +83,7 @@ extern thinker_t thlist[];
 extern mobj_t *mobjcache;
 
 void P_InitThinkers(void);
+void P_InvalidateThinkersWithoutInit(void);
 void P_AddThinker(const thinklistnum_t n, thinker_t *thinker);
 void P_RemoveThinker(thinker_t *thinker);
 void P_UnlinkThinker(thinker_t *thinker);
@@ -86,7 +91,7 @@ void P_UnlinkThinker(thinker_t *thinker);
 //
 // P_USER
 //
-typedef struct camera_s
+struct camera_t
 {
 	boolean chase;
 	angle_t aiming;
@@ -102,7 +107,7 @@ typedef struct camera_s
 	//More drawing info: to determine current sprite.
 	angle_t angle; // orientation
 
-	struct subsector_s *subsector;
+	subsector_t *subsector;
 
 	// The closest interval over all contacted Sectors (or Things).
 	fixed_t floorz;
@@ -125,7 +130,7 @@ typedef struct camera_s
 	// Interpolation data
 	fixed_t old_x, old_y, old_z;
 	angle_t old_angle, old_aiming;
-} camera_t;
+};
 
 // demo freecam or something before i commit die
 struct demofreecam_s {
@@ -254,11 +259,11 @@ typedef enum
 	NUMJINGLES
 } jingletype_t;
 
-typedef struct
+struct jingle_t
 {
 	char musname[7];
 	boolean looping;
-} jingle_t;
+};
 
 extern jingle_t jingleinfo[NUMJINGLES];
 
@@ -390,7 +395,7 @@ void P_InternalFlickyHop(mobj_t *actor, fixed_t momz, fixed_t momh, angle_t angl
 // P_MAP
 //
 
-typedef struct tm_s
+struct tm_t
 {
 	mobj_t *thing;
 	fixed_t x, y;
@@ -420,7 +425,7 @@ typedef struct tm_s
 	// set by PIT_CheckLine() for any line that stopped the PIT_CheckLine()
 	// that is, for any line which is 'solid'
 	line_t *blockingline;
-} tm_t;
+};
 
 extern tm_t tm;
 
@@ -440,12 +445,12 @@ void P_UnsetThingPosition(mobj_t *thing);
 void P_SetThingPosition(mobj_t *thing);
 void P_SetUnderlayPosition(mobj_t *thing);
 
-typedef struct TryMoveResult_s
+struct TryMoveResult_t
 {
 	boolean success;
 	line_t *line;
 	mobj_t *mo;
-} TryMoveResult_t;
+};
 
 boolean P_CheckPosition(mobj_t *thing, fixed_t x, fixed_t y, TryMoveResult_t *result);
 boolean P_CheckMove(mobj_t *thing, fixed_t x, fixed_t y, boolean allowdropoff, TryMoveResult_t *result);
@@ -507,7 +512,7 @@ extern precipmobj_t **precipblocklinks; // special blockmap for precip rendering
 //
 // P_INTER
 //
-typedef struct BasicFF_s
+struct BasicFF_t
 {
 	INT32 ForceX; ///< The X of the Force's Vel
 	INT32 ForceY; ///< The Y of the Force's Vel
@@ -517,7 +522,7 @@ typedef struct BasicFF_s
 	INT32 Gain; ///< /The gain to be applied to the effect, in the range from 0 through 10,000.
 	//All, CONSTANTFORCE �10,000 to 10,000
 	INT32 Magnitude; ///< Magnitude of the effect, in the range from 0 through 10,000.
-} BasicFF_t;
+};
 
 /* Damage/death types, for P_DamageMobj and related */
 //// Damage types
@@ -589,5 +594,10 @@ void P_InitTIDHash(void);
 void P_SetThingTID(mobj_t *mo, mtag_t tid);
 void P_RemoveThingTID(mobj_t *mo);
 mobj_t *P_FindMobjFromTID(mtag_t tid, mobj_t *i, mobj_t *activator);
+void P_DeleteMobjStringArgs(mobj_t *mobj);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // __P_LOCAL__

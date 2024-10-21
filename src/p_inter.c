@@ -38,6 +38,7 @@
 #include "k_boss.h"
 #include "p_spec.h"
 #include "k_objects.h"
+#include "acs/interface.h"
 
 // CTF player names
 #define CTFTEAMCODE(pl) pl->ctfteam ? (pl->ctfteam == 1 ? "\x85" : "\x84") : ""
@@ -556,7 +557,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			return;
 
 		case MT_STARPOST:
-			P_TouchStarPost(special, player, special->spawnpoint && special->spawnpoint->args[1]);
+			P_TouchStarPost(special, player, special->args[1]);
 			return;
 
 		case MT_BIGTUMBLEWEED:
@@ -1053,6 +1054,10 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 	if (LUA_HookMobjDeath(target, inflictor, source, damagetype) || P_MobjWasRemoved(target))
 		return;
 
+	P_ActivateThingSpecial(target, source);
+
+	//K_SetHitLagForObjects(target, inflictor, MAXHITLAGTICS, true);
+
 	// SRB2kart
 	// I wish I knew a better way to do this
 	if (target->target && target->target->player && target->target->player->mo)
@@ -1158,6 +1163,8 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			K_CheckBumpers();
 
 		target->player->pogospring = 0;
+
+		ACS_RunPlayerDeathScript(target->player);
 	}
 
 	if (source && target && target->player && source->player)

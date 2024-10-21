@@ -16,6 +16,10 @@
 
 #include "doomdef.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Customisable sounds for Skins
 typedef enum
 {
@@ -62,9 +66,8 @@ typedef enum
 //
 // SoundFX struct.
 //
-typedef struct sfxinfo_struct sfxinfo_t;
 
-struct sfxinfo_struct
+struct sfxinfo_t
 {
 	// up to 6-character name
 	const char *name;
@@ -1332,5 +1335,9 @@ void S_InitRuntimeSounds(void);
 sfxenum_t S_AddSoundFx(const char *name, boolean singular, INT32 flags, boolean skinsound);
 extern sfxenum_t sfxfree; // sound test and slotting
 void S_RemoveSoundFx(sfxenum_t id);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

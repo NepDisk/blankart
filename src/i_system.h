@@ -17,6 +17,10 @@
 #include "d_ticcmd.h"
 #include "d_event.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef __GNUG__
 #pragma interface
 #endif
@@ -131,7 +135,7 @@ typedef enum
 	NumberofForces,
 } FFType;
 
-typedef struct JoyFF_s
+struct JoyFF_t
 {
 	INT32 ForceX; ///< The X of the Force's Vel
 	INT32 ForceY; ///< The Y of the Force's Vel
@@ -147,7 +151,7 @@ typedef struct JoyFF_s
 	INT32 Offset; ///< Offset of the effect.
 	UINT32 Phase; ///< Position in the cycle of the periodic effect at which playback begins, in the range from 0 through 35,999
 	UINT32 Period; ///< Period of the effect, in microseconds.
-} JoyFF_t;
+};
 
 /**	\brief	Forcefeedback for the first joystick
 
@@ -301,7 +305,7 @@ char *I_GetUserName(void);
 */
 INT32 I_mkdir(const char *dirname, INT32 unixright);
 
-typedef struct {
+struct CPUInfoFlags {
 	int FPU        : 1; ///< FPU availabile
 	int CPUID      : 1; ///< CPUID instruction
 	int RDTSC      : 1; ///< RDTSC instruction
@@ -327,7 +331,7 @@ typedef struct {
 	int ALPHAbyte  : 1; ///< ?
 	int PAE        : 1; ///< Physical Address Extension
 	int CPUs       : 8;
-} CPUInfoFlags;
+};
 
 
 /**	\brief Info about CPU
@@ -363,5 +367,9 @@ const char *I_ClipboardPaste(void);
 void I_RegisterSysCommands(void);
 
 void I_CursedWindowMovement(int xd, int yd);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

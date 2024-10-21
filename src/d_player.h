@@ -32,6 +32,10 @@
 // the player struct stores a waypoint for racing
 #include "k_waypoint.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Extra abilities/settings for skins (combinable stuff)
 typedef enum
 {
@@ -261,9 +265,20 @@ typedef enum
 // for kickstartaccel
 #define ACCEL_KICKSTART (TICRATE)
 
-// player_t struct for all bot variables
-typedef struct botvars_s
+typedef enum
 {
+	BOT_STYLE_NORMAL,
+	BOT_STYLE_STAY,
+	//BOT_STYLE_CHASE,
+	//BOT_STYLE_ESCAPE,
+	BOT_STYLE__MAX
+} botStyle_e;
+
+// player_t struct for all bot variables
+struct botvars_t
+{
+	botStyle_e style; // Training mode-style CPU mode
+
 	UINT8 difficulty; // Bot's difficulty setting
 	UINT8 diffincrease; // In GP: bot difficulty will increase this much next round
 	boolean rival; // If true, they're the GP rival
@@ -276,32 +291,35 @@ typedef struct botvars_s
 
 	SINT8 turnconfirm; // Confirm turn direction
 
-} botvars_t;
+};
 
-typedef struct {
+struct sonicloopcamvars_t
+{
 	tic_t enter_tic, exit_tic;
 	tic_t zoom_in_speed, zoom_out_speed;
 	fixed_t dist;
 	angle_t pan;
 	fixed_t pan_speed; // in degrees
 	tic_t pan_accel, pan_back;
-} sonicloopcamvars_t;
+};
 
 // player_t struct for loop state
-typedef struct {
+struct sonicloopvars_t 
+{
 	fixed_t radius;
 	fixed_t revolution, min_revolution, max_revolution;
 	angle_t yaw;
 	vector3_t origin;
+	vector2_t origin_shift;
 	vector2_t shift;
 	boolean flip;
 	sonicloopcamvars_t camera;
-} sonicloopvars_t;
+};
 
 // ========================================================================
 //                          PLAYER STRUCTURE
 // ========================================================================
-typedef struct player_s
+struct player_t
 {
 	mobj_t *mo;
 
@@ -416,6 +434,7 @@ typedef struct player_s
 	UINT8 pogospring;		// Pogo spring bounce effect
 	UINT8 brakestop;		// Wait until you've made a complete stop for a few tics before letting brake go in reverse.
 	UINT8 waterskip;		// Water skipping counter
+	UINT8 tiregrease;		// Adjusts friction
 
 	UINT8 dashpadcooldown;	// Separate the vanilla SA-style dash pads from using flashing
 	
@@ -544,6 +563,7 @@ typedef struct player_s
 
 	boolean spectator;
 	tic_t spectatewait;		// reimplementable as UINT8 queue - How long have you been waiting as a spectator
+	boolean enteredGame;
 
 	boolean bot;
 	botvars_t botvars;
@@ -569,9 +589,13 @@ typedef struct player_s
 #ifdef HWRENDER
 	fixed_t fovadd; // adjust FOV for hw rendering
 #endif
-} player_t;
+};
 
 // Value for infinite lives
 #define INFLIVES 0x7F
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

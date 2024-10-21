@@ -4,6 +4,10 @@
 #include "doomtype.h"
 #include "p_mobj.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 angle_t K_GetCollideAngle(mobj_t *t1, mobj_t *t2);
 
 boolean K_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2);
@@ -28,5 +32,9 @@ boolean K_FallingRockCollide(mobj_t *t1, mobj_t *t2);
 boolean K_SMKIceBlockCollide(mobj_t *t1, mobj_t *t2);
 
 boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

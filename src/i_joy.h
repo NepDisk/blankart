@@ -15,6 +15,10 @@
 
 #include "g_input.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!
   \brief	-JOYAXISRANGE to +JOYAXISRANGE for each axis
 
@@ -38,7 +42,7 @@
  actually, we need to know if it is a gamepad or analog controls
 */
 
-struct JoyType_s
+struct JoyType_t
 {
 	/*! if true, we MUST Poll() to get new joystick data,
 	that is: we NEED the DIRECTINPUTDEVICE2 ! (watchout NT compatibility) */
@@ -48,11 +52,14 @@ struct JoyType_s
 	INT32 bGamepadStyle;
 
 };
-typedef struct JoyType_s JoyType_t;
 /**	\brief Joystick info
 	for palyer[sic] 1-4's joystick/gamepad
 */
 
 extern JoyType_t Joystick[MAXSPLITSCREENPLAYERS];
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // __I_JOY_H__

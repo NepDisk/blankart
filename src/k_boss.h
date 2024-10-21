@@ -16,6 +16,10 @@
 #include "doomdef.h"
 #include "doomstat.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
 	SPOT_NONE = 0,
@@ -26,14 +30,14 @@ typedef enum
 #define NUMWEAKSPOTS 8
 #define WEAKSPOTANIMTIME (3*TICRATE)
 
-typedef struct weakspot_t
+struct weakspot_t
 {
 	mobj_t *spot;
 	spottype_t type;
 	tic_t time;
 	UINT16 color;
 	boolean minimap;
-} weakspot_t;
+};
 
 #define BOSSHEALTHBARLEN 110
 
@@ -111,5 +115,9 @@ void K_UpdateBossHealthBar(fixed_t magnitude, tic_t jitterlen);
 --------------------------------------------------*/
 
 void K_DeclareWeakspot(mobj_t *spot, spottype_t spottype, UINT16 color, boolean minimap);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

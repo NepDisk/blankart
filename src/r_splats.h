@@ -16,6 +16,10 @@
 #include "r_defs.h"
 #include "r_things.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // ==========================================================================
 // DEFINITIONS
 // ==========================================================================
@@ -28,7 +32,7 @@ struct rastery_s
 };
 extern struct rastery_s *prastertab; // for ASM code
 
-typedef struct floorsplat_s
+struct floorsplat_t
 {
 	UINT16 *pic;
 	INT32 width, height;
@@ -39,8 +43,12 @@ typedef struct floorsplat_s
 	vector3_t verts[4]; // (x,y,z) as viewed from above on map
 	fixed_t x, y, z; // position
 	mobj_t *mobj; // Mobj it is tied to
-} floorsplat_t;
+};
 
 void R_DrawFloorSplat(vissprite_t *spr);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif /*__R_SPLATS_H__*/

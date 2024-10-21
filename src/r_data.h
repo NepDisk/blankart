@@ -18,17 +18,21 @@
 #include "r_state.h"
 #include "p_setup.h" // levelflats
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef __GNUG__
 #pragma interface
 #endif
 
 // Store lists of lumps for F_START/F_END etc.
-typedef struct
+struct lumplist_t
 {
 	UINT16 wadfile;
 	UINT16 firstlump;
 	size_t numlumps;
-} lumplist_t;
+};
 
 UINT32 ASTBlendPixel(RGBA_t background, RGBA_t foreground, int style, UINT8 alpha);
 UINT32 ASTBlendTexturePixel(RGBA_t background, RGBA_t foreground, int style, UINT8 alpha);
@@ -120,5 +124,9 @@ const char *R_NameForColormap(extracolormap_t *extra_colormap);
 
 UINT8 NearestPaletteColor(UINT8 r, UINT8 g, UINT8 b, RGBA_t *palette);
 #define NearestColor(r, g, b) NearestPaletteColor(r, g, b, NULL)
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

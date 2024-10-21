@@ -18,6 +18,10 @@
 #include "info.h" // Mobj, state, sprite, etc constants
 #include "lua_script.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Free slot names
 // The crazy word-reading stuff uses these.
 extern char *FREE_STATES[NUMSTATEFREESLOTS];
@@ -41,11 +45,11 @@ struct flickytypes_s {
 
 /** Action pointer for reading actions from Dehacked lumps.
   */
-typedef struct
+struct actionpointer_t
 {
 	actionf_t action; ///< Function pointer corresponding to the actual action.
 	const char *name; ///< Name of the action in ALL CAPS.
-} actionpointer_t;
+};
 
 struct int_const_s {
 	const char *n;
@@ -79,5 +83,9 @@ extern struct int_const_s const INT_CONST[];
 
 // Moved to this file because it can't work compile-time otherwise
 void DEH_TableCheck(void);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

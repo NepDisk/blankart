@@ -18,11 +18,15 @@
 #include "r_textures.h"
 #include "r_plane.h" // visplanes
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** Portal structure for the software renderer.
  */
-typedef struct portal_s
+struct portal_t
 {
-	struct portal_s *next;
+	portal_t *next;
 
 	// Viewport.
 	fixed_t viewx;
@@ -39,7 +43,7 @@ typedef struct portal_s
 	INT16 *ceilingclip; /**< Temporary screen top clipping array. */
 	INT16 *floorclip;	/**< Temporary screen bottom clipping array. */
 	fixed_t *frontscale;/**< Temporary screen bottom clipping array. */
-} portal_t;
+};
 
 extern portal_t* portal_base;
 extern portal_t* portal_cap;
@@ -58,4 +62,9 @@ void Portal_ClipRange (portal_t* portal);
 void Portal_ClipApply (const portal_t* portal);
 
 void Portal_AddSkyboxPortals (void);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #endif

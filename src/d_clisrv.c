@@ -385,11 +385,13 @@ static UINT8* D_GetTextcmd(tic_t tic, INT32 playernum)
 	return textcmdplayer->cmd;
 }
 
-static void ExtraDataTicker(void)
+static boolean ExtraDataTicker(void)
 {
+	boolean anyNetCmd = false;
 	INT32 i;
 
 	for (i = 0; i < MAXPLAYERS; i++)
+	{
 		if (playeringame[i] || i == 0)
 		{
 			UINT8 *bufferstart = D_GetExistingTextcmd(gametic, i);
@@ -409,6 +411,7 @@ static void ExtraDataTicker(void)
 						DEBFILE(va("executing x_cmd %s ply %u ", netxcmdnames[id - 1], i));
 						(listnetxcmd[id])(&curpos, i);
 						DEBFILE("done\n");
+						anyNetCmd = true;
 					}
 					else
 					{
@@ -423,12 +426,16 @@ static void ExtraDataTicker(void)
 				}
 			}
 		}
+	}
 
 	// If you are a client, you can safely forget the net commands for this tic
 	// If you are the server, you need to remember them until every client has been acknowledged,
 	// because if you need to resend a PT_SERVERTICS packet, you will need to put the commands in it
 	if (client)
+	{
 		D_FreeTextcmd(gametic);
+	}
+	return anyNetCmd;
 }
 
 static void D_Clearticcmd(tic_t tic)
@@ -1134,9 +1141,6 @@ static boolean SV_SendServerConfig(INT32 node)
 	return waspacketsent;
 }
 
-#ifndef NONET
-#define SAVEGAMESIZE (768*1024)
-
 static boolean SV_ResendingSavegameToAnyone(void)
 {
 	INT32 i;
@@ -1150,28 +1154,29 @@ static boolean SV_ResendingSavegameToAnyone(void)
 static void SV_SendSaveGame(INT32 node, boolean resending)
 {
 	size_t length, compressedlen;
-	UINT8 *savebuffer;
+	savebuffer_t save;
 	UINT8 *compressedsave;
 	UINT8 *buffertosend;
 
 	// first save it in a malloced buffer
-	savebuffer = (UINT8 *)malloc(SAVEGAMESIZE);
-	if (!savebuffer)
+	save.size = NETSAVEGAMESIZE;
+	save.buffer = (UINT8 *)malloc(save.size);
+	if (!save.buffer)
 	{
 		CONS_Alert(CONS_ERROR, M_GetText("No more free memory for savegame\n"));
 		return;
 	}
 
 	// Leave room for the uncompressed length.
-	save_p = savebuffer + sizeof(UINT32);
+	save.p = save.buffer + sizeof(UINT32);
+	save.end = save.buffer + save.size;
 
-	P_SaveNetGame(resending);
+	P_SaveNetGame(&save, resending);
 
-	length = save_p - savebuffer;
-	if (length > SAVEGAMESIZE)
+	length = save.p - save.buffer;
+	if (length > NETSAVEGAMESIZE)
 	{
-		free(savebuffer);
-		save_p = NULL;
+		free(save.buffer);
 		I_Error("Savegame buffer overrun");
 	}
 
@@ -1185,11 +1190,10 @@ static void SV_SendSaveGame(INT32 node, boolean resending)
 	}
 
 	// Attempt to compress it.
-	if((compressedlen = lzf_compress(savebuffer + sizeof(UINT32), length - sizeof(UINT32), compressedsave + sizeof(UINT32), length - sizeof(UINT32) - 1)))
+	if ((compressedlen = lzf_compress(save.buffer + sizeof(UINT32), length - sizeof(UINT32), compressedsave + sizeof(UINT32), length - sizeof(UINT32) - 1)))
 	{
 		// Compressing succeeded; send compressed data
-
-		free(savebuffer);
+		free(save.buffer);
 
 		// State that we're compressed.
 		buffertosend = compressedsave;
@@ -1199,16 +1203,14 @@ static void SV_SendSaveGame(INT32 node, boolean resending)
 	else
 	{
 		// Compression failed to make it smaller; send original
-
 		free(compressedsave);
 
 		// State that we're not compressed
-		buffertosend = savebuffer;
-		WRITEUINT32(savebuffer, 0);
+		buffertosend = save.buffer;
+		WRITEUINT32(save.buffer, 0);
 	}
 
 	AddRamToSendQueue(node, buffertosend, length, SF_RAM, 0);
-	save_p = NULL;
 
 	// Remember when we started sending the savegame so we can handle timeouts
 	sendingsavegame[node] = true;
@@ -1222,7 +1224,7 @@ static consvar_t cv_dumpconsistency = CVAR_INIT ("dumpconsistency", "Off", CV_SA
 static void SV_SavedGame(void)
 {
 	size_t length;
-	UINT8 *savebuffer;
+	savebuffer_t save;
 	char tmpsave[256];
 
 	if (!cv_dumpconsistency.value)
@@ -1231,29 +1233,30 @@ static void SV_SavedGame(void)
 	sprintf(tmpsave, "%s" PATHSEP TMPSAVENAME, srb2home);
 
 	// first save it in a malloced buffer
-	save_p = savebuffer = (UINT8 *)malloc(SAVEGAMESIZE);
-	if (!save_p)
+	save.size = NETSAVEGAMESIZE;
+	save.p = save.buffer = (UINT8 *)malloc(save.size);
+	if (!save.p)
 	{
 		CONS_Alert(CONS_ERROR, M_GetText("No more free memory for savegame\n"));
 		return;
 	}
 
-	P_SaveNetGame(false);
+	save.end = save.buffer + save.size;
 
-	length = save_p - savebuffer;
-	if (length > SAVEGAMESIZE)
+	P_SaveNetGame(&save, false);
+
+	length = save.p - save.buffer;
+	if (length > NETSAVEGAMESIZE)
 	{
-		free(savebuffer);
-		save_p = NULL;
+		free(save.buffer);
 		I_Error("Savegame buffer overrun");
 	}
 
 	// then save it!
-	if (!FIL_WriteFile(tmpsave, savebuffer, length))
+	if (!FIL_WriteFile(tmpsave, save.buffer, length))
 		CONS_Printf(M_GetText("Didn't save %s for netgame"), tmpsave);
 
-	free(savebuffer);
-	save_p = NULL;
+	free(save.buffer);
 }
 
 #undef  TMPSAVENAME
@@ -1263,13 +1266,13 @@ static void SV_SavedGame(void)
 
 static void CL_LoadReceivedSavegame(boolean reloading)
 {
-	UINT8 *savebuffer = NULL;
+	savebuffer_t save;
 	size_t length, decompressedlen;
 	char tmpsave[256];
 
 	sprintf(tmpsave, "%s" PATHSEP TMPSAVENAME, srb2home);
 
-	length = FIL_ReadFile(tmpsave, &savebuffer);
+	length = FIL_ReadFile(tmpsave, &save.buffer);
 
 	CONS_Printf(M_GetText("Loading savegame length %s\n"), sizeu1(length));
 	if (!length)
@@ -1278,16 +1281,22 @@ static void CL_LoadReceivedSavegame(boolean reloading)
 		return;
 	}
 
-	save_p = savebuffer;
+	save.p = save.buffer;
+	save.size = length;
+	save.end = save.buffer + save.size;
 
 	// Decompress saved game if necessary.
-	decompressedlen = READUINT32(save_p);
+	decompressedlen = READUINT32(save.p);
 	if(decompressedlen > 0)
 	{
 		UINT8 *decompressedbuffer = Z_Malloc(decompressedlen, PU_STATIC, NULL);
-		lzf_decompress(save_p, length - sizeof(UINT32), decompressedbuffer, decompressedlen);
-		Z_Free(savebuffer);
-		save_p = savebuffer = decompressedbuffer;
+
+		lzf_decompress(save.p, length - sizeof(UINT32), decompressedbuffer, decompressedlen);
+		Z_Free(save.buffer);
+
+		save.p = save.buffer = decompressedbuffer;
+		save.size = decompressedlen;
+		save.end = save.buffer + decompressedlen;
 	}
 
 	paused = false;
@@ -1297,7 +1306,7 @@ static void CL_LoadReceivedSavegame(boolean reloading)
 	automapactive = false;
 
 	// load a base level
-	if (P_LoadNetGame(reloading))
+	if (P_LoadNetGame(&save, reloading))
 	{
 		if (!reloading)
 		{
@@ -1319,8 +1328,8 @@ static void CL_LoadReceivedSavegame(boolean reloading)
 	}
 
 	// done
-	Z_Free(savebuffer);
-	save_p = NULL;
+	Z_Free(save.buffer);
+	save.p = NULL;
 	if (unlink(tmpsave) == -1)
 		CONS_Alert(CONS_ERROR, M_GetText("Can't delete %s\n"), tmpsave);
 	consistancy[gametic%BACKUPTICS] = Consistancy();
@@ -1362,7 +1371,6 @@ static void CL_ReloadReceivedSavegame(void)
 
 	CONS_Printf(M_GetText("Game state reloaded\n"));
 }
-#endif
 
 #ifndef NONET
 static void SendAskInfo(INT32 node)
@@ -3687,6 +3695,7 @@ static void Got_AddBot(UINT8 **p, INT32 playernum)
 	INT16 newplayernum;
 	UINT8 skinnum = 0;
 	UINT8 difficulty = DIFFICULTBOT;
+	botStyle_e style = BOT_STYLE_NORMAL;
 
 	if (playernum != serverplayer && !IsPlayerAdmin(playernum))
 	{
@@ -3699,9 +3708,10 @@ static void Got_AddBot(UINT8 **p, INT32 playernum)
 		return;
 	}
 
-	newplayernum = (UINT8)READUINT8(*p);
-	skinnum = (UINT8)READUINT8(*p);
-	difficulty = (UINT8)READUINT8(*p);
+	newplayernum = READUINT8(*p);
+	skinnum = READUINT8(*p);
+	difficulty = READUINT8(*p);
+	style = READUINT8(*p);
 
 	CONS_Debug(DBG_NETPLAY, "addbot: %d\n", newplayernum);
 
@@ -3718,6 +3728,8 @@ static void Got_AddBot(UINT8 **p, INT32 playernum)
 	players[newplayernum].splitscreenindex = 0;
 	players[newplayernum].bot = true;
 	players[newplayernum].botvars.difficulty = difficulty;
+	players[newplayernum].botvars.style = style;
+	players[newplayernum].lives = 9;
 
 	players[newplayernum].skincolor = skins[skinnum].prefcolor;
 	sprintf(player_names[newplayernum], "%s", skins[skinnum].realname);
@@ -3979,9 +3991,27 @@ static void HandleConnect(SINT8 node)
 	UINT8 maxplayers = min((dedicated ? MAXPLAYERS-1 : MAXPLAYERS), cv_maxplayers.value);
 	UINT8 connectedplayers = 0;
 
-	for (UINT8 i = dedicated ? 1 : 0; i < MAXPLAYERS; i++)
-		if (playernode[i] != UINT8_MAX) // We use this to count players because it is affected by SV_AddWaitingPlayers when more than one client joins on the same tic, unlike playeringame and D_NumPlayers. UINT8_MAX denotes no node for that player
+	for (i = dedicated ? 1 : 0; i < MAXPLAYERS; i++)
+	{
+		// We use this to count players because it is affected by SV_AddWaitingPlayers when
+		// more than one client joins on the same tic, unlike playeringame and D_NumPlayers.
+		// UINT8_MAX denotes no node for that player.
+
+		if (playernode[i] != UINT8_MAX)
+		{
+			// Sal: This hack sucks, but it should be safe.
+			// playeringame is set for bots immediately; they are deterministic instead of a netxcmd.
+			// If a bot is added with netxcmd in the future, then the node check is still here too.
+			// So at worst, a theoretical netxcmd added bot will block real joiners for the time
+			// it takes for the command to process, but not cause any horrifying player overwriting.
+			if (playeringame[i] && players[i].bot)
+			{
+				continue;
+			}
+
 			connectedplayers++;
+		}
+	}
 
 	if (bannednode && bannednode[node].banid != SIZE_MAX)
 	{
@@ -4972,7 +5002,7 @@ static void GetPackets(void)
 
 		if (netbuffer->packettype == PT_CLIENTJOIN && server)
 		{
-			if (!levelloading) // Otherwise just ignore
+			if (levelloading == false) // Otherwise just ignore
 			{
 				HandleConnect(node);
 			}
@@ -5557,26 +5587,48 @@ boolean TryRunTics(tic_t realtics)
 			// run the count * tics
 			while (neededtic > gametic)
 			{
+				boolean dontRun = false;
+
 				DEBFILE(va("============ Running tic %d (local %d)\n", gametic, localgametic));
 
 				ps_tictime = I_GetPreciseTime();
 
-				G_Ticker((gametic % NEWTICRATERATIO) == 0);
-				if (gametic % TICRATE == 0)
+				dontRun = ExtraDataTicker();
+
+				if (levelloading == false
+					|| gametic > levelstarttic + 5) // Don't lock-up if a malicious client is sending tons of netxcmds
+				{
+					// During level load, we want to pause
+					// execution until we've finished loading
+					// all of the netxcmds in our buffer.
+					dontRun = false;
+				}
+
+				if (dontRun == false)
+				{
+					if (levelloading == true)
+					{
+						P_PostLoadLevel();
+					}
+
+					G_Ticker((gametic % NEWTICRATERATIO) == 0);
+				}
+
+				if (Playing() && netgame && (gametic % TICRATE == 0))
 				{
 					Schedule_Run();
 				}
 
-				ExtraDataTicker();
-
 				gametic++;
-				consistancy[gametic%BACKUPTICS] = Consistancy();
+				consistancy[gametic % BACKUPTICS] = Consistancy();
 
 				ps_tictime = I_GetPreciseTime() - ps_tictime;
 
 				// Leave a certain amount of tics present in the net buffer as long as we've ran at least one tic this frame.
-				if (client && gamestate == GS_LEVEL && neededtic <= gametic + cv_netticbuffer.value)
+				if (client && gamestate == GS_LEVEL && leveltime > 1 && neededtic <= gametic + cv_netticbuffer.value)
+				{
 					break;
+				}
 			}
 		}
 	}
@@ -5585,6 +5637,7 @@ boolean TryRunTics(tic_t realtics)
 		if (realtics)
 			hu_stopped = true;
 	}
+
 
 	return ticking;
 }
@@ -5831,6 +5884,9 @@ void NetKeepAlive(void)
 	FileSendTicker();
 }
 
+// If a tree falls in the forest but nobody is around to hear it, does it make a tic?
+#define DEDICATEDIDLETIME (10*TICRATE)
+
 void NetUpdate(void)
 {
 	static tic_t resptime = 0;
@@ -5843,6 +5899,7 @@ void NetUpdate(void)
 
 	if (realtics <= 0) // nothing new to update
 		return;
+
 	if (realtics > 5)
 	{
 		if (server)
@@ -5850,6 +5907,55 @@ void NetUpdate(void)
 		else
 			realtics = 5;
 	}
+
+#ifdef DEDICATEDIDLETIME
+	if (server && dedicated && gamestate == GS_LEVEL)
+	{
+		static tic_t dedicatedidle = 0;
+
+		for (i = 1; i < MAXNETNODES; ++i)
+			if (nodeingame[i])
+			{
+				if (dedicatedidle == DEDICATEDIDLETIME)
+				{
+					CONS_Printf("DEDICATED: Awakening from idle (Node %d detected...)\n", i);
+					dedicatedidle = 0;
+				}
+				break;
+			}
+
+		if (i == MAXNETNODES)
+		{
+			if (leveltime == 2)
+			{
+				// On next tick...
+				dedicatedidle = DEDICATEDIDLETIME-1;
+			}
+			else if (dedicatedidle == DEDICATEDIDLETIME)
+			{
+				if (D_GetExistingTextcmd(gametic, 0) || D_GetExistingTextcmd(gametic+1, 0))
+				{
+					CONS_Printf("DEDICATED: Awakening from idle (Netxcmd detected...)\n");
+					dedicatedidle = 0;
+				}
+				else
+				{
+					realtics = 0;
+				}
+			}
+			else if ((dedicatedidle += realtics) >= DEDICATEDIDLETIME)
+			{
+				const char *idlereason = "at round start";
+				if (leveltime > 3)
+					idlereason = va("for %d seconds", dedicatedidle/TICRATE);
+
+				CONS_Printf("DEDICATED: No nodes %s, idling...\n", idlereason);
+				realtics = 0;
+				dedicatedidle = DEDICATEDIDLETIME;
+			}
+		}
+	}
+#endif
 
 	gametime = nowtime;
 
@@ -5888,7 +5994,7 @@ void NetUpdate(void)
 	}
 	else
 	{
-		if (!demo.playback)
+		if (!demo.playback && realtics > 0)
 		{
 			INT32 counts;
 
@@ -5998,6 +6104,7 @@ void CL_ClearRewinds(void)
 
 rewind_t *CL_SaveRewindPoint(size_t demopos)
 {
+	savebuffer_t save;
 	rewind_t *rewind;
 
 	if (rewindhead && rewindhead->leveltime + REWIND_POINT_INTERVAL > leveltime)
@@ -6007,8 +6114,12 @@ rewind_t *CL_SaveRewindPoint(size_t demopos)
 	if (!rewind)
 		return NULL;
 
-	save_p = rewind->savebuffer;
-	P_SaveNetGame(false);
+	save.buffer = save.p = rewind->savebuffer;
+	save.size = NETSAVEGAMESIZE;
+	save.end = save.buffer + save.size;
+
+	P_SaveNetGame(&save, false);
+
 	rewind->leveltime = leveltime;
 	rewind->next = rewindhead;
 	rewind->demopos = demopos;
@@ -6019,6 +6130,7 @@ rewind_t *CL_SaveRewindPoint(size_t demopos)
 
 rewind_t *CL_RewindToTime(tic_t time)
 {
+	savebuffer_t save;
 	rewind_t *rewind;
 
 	while (rewindhead && rewindhead->leveltime > time)
@@ -6031,8 +6143,12 @@ rewind_t *CL_RewindToTime(tic_t time)
 	if (!rewindhead)
 		return NULL;
 
-	save_p = rewindhead->savebuffer;
-	P_LoadNetGame(false);
+	save.buffer = save.p = rewindhead->savebuffer;
+	save.size = NETSAVEGAMESIZE;
+	save.end = save.buffer + save.size;
+
+	P_LoadNetGame(&save, false);
+
 	wipegamestate = gamestate; // No fading back in!
 	timeinmap = leveltime;
 

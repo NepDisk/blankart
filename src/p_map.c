@@ -422,7 +422,7 @@ static void P_DoFanAndGasJet(mobj_t *spring, mobj_t *object)
 			if (spring->state != &states[S_STEAM1]) // Only when it bursts
 				break;
 
-			if (spring->spawnpoint && spring->spawnpoint->args[1])
+			if (spring->args[1])
 			{
 				if (object->eflags & MFE_SPRUNG)
 					break;

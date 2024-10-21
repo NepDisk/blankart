@@ -16,6 +16,10 @@
 
 #include "i_threads.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(_MSC_VER)
 #pragma pack(1)
 #endif
@@ -27,16 +31,16 @@ typedef union
 } ATTRPACK msg_header_t;
 
 // Keep this structure 8 bytes aligned (current size is 80)
-typedef struct
+struct msg_server_t
 {
 	msg_header_t header;
 	char ip[16];
 	char port[8];
 	char contact[32];
 	char version[8]; // format is: x.yy.z (like 1.30.2 or 1.31)
-} ATTRPACK msg_server_t;
+} ATTRPACK;
 
-typedef struct
+struct msg_ban_t
 {
 	msg_header_t header;
 	char ipstart[16];
@@ -44,7 +48,7 @@ typedef struct
 	char endstamp[32];
 	char reason[255];
 	INT32 hostonly;
-} ATTRPACK msg_ban_t;
+} ATTRPACK;
 
 #if defined(_MSC_VER)
 #pragma pack()
@@ -90,5 +94,9 @@ int  HMS_update (void);
 void HMS_list_servers (void);
 msg_server_t * HMS_fetch_servers (msg_server_t *list, int id);
 int  HMS_compare_mod_version (char *buffer, size_t size_of_buffer);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif
