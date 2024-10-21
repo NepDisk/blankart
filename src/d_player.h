@@ -450,8 +450,8 @@ typedef struct player_s
 	UINT8 bubblecool;	// Bubble Shield use cooldown
 	UINT8 bubbleblowup;	// Bubble Shield usage blowup
 	UINT16 flamedash;	// Flame Shield dash power
-	UINT16 flamemeter;	// Flame Shield dash meter left
-	UINT8 flamelength;	// Flame Shield dash meter, number of segments
+	INT32 flametimer;	// Flame Shield dash meter left
+	UINT8 flamestore;	// Flame Shield reserve boost
 
 	UINT16 hyudorotimer;	// Duration of the Hyudoro offroad effect itself
 	SINT8 stealingtimer;	// you are stealing

@@ -1170,6 +1170,17 @@ static void K_drawKartItem(void)
 			else
 				localpatch = kp_nodraw;
 		}
+		else if (stplyr->flametimer > 1)
+		{
+			itembar = stplyr->flametimer;
+			maxl = (itemtime*3) - barlength;
+			localbg = kp_itembg[offset+1];
+
+			if (leveltime & 1)
+				localpatch = kp_flameshield[offset];
+			else
+				localpatch = kp_nodraw;
+		}
 		else if (stplyr->growshrinktimer > 0)
 		{
 			if (stplyr->growcancel > 0)
@@ -1368,51 +1379,6 @@ static void K_drawKartItem(void)
 	// Quick Eggman numbers
 	if (stplyr->eggmanexplode > 1)
 		V_DrawScaledPatch(fx+17, fy+13-offset, V_HUDTRANS|fflags, kp_eggnum[min(3, G_TicsToSeconds(stplyr->eggmanexplode))]);
-
-	if (stplyr->itemtype == KITEM_FLAMESHIELD && stplyr->flamelength > 0)
-	{
-		INT32 numframes = 104;
-		INT32 absolutemax = 16 * flameseg;
-		INT32 flamemax = stplyr->flamelength * flameseg;
-		INT32 flamemeter = min(stplyr->flamemeter, flamemax);
-
-		INT32 bf = 16 - stplyr->flamelength;
-		INT32 ff = numframes - ((flamemeter * numframes) / absolutemax);
-		INT32 fmin = (8 * (bf-1));
-
-		INT32 xo = 6, yo = 4;
-		INT32 flip = 0;
-
-		if (offset)
-		{
-			xo++;
-
-			if (stplyr == &players[displayplayers[0]] || stplyr == &players[displayplayers[2]]) // Flip for P1 and P3 (yes, that's correct)
-			{
-				xo -= 62;
-				flip = V_FLIP;
-			}
-		}
-
-		if (ff < fmin)
-			ff = fmin;
-
-		if (bf >= 0 && bf < 16)
-			V_DrawScaledPatch(fx-xo, fy-yo, V_HUDTRANS|fflags|flip, kp_flameshieldmeter_bg[bf][offset]);
-
-		if (ff >= 0 && ff < numframes && stplyr->flamemeter > 0)
-		{
-			if ((stplyr->flamemeter > flamemax) && (leveltime & 1))
-			{
-				UINT8 *fsflash = R_GetTranslationColormap(TC_BLINK, SKINCOLOR_WHITE, GTC_CACHE);
-				V_DrawMappedPatch(fx-xo, fy-yo, V_HUDTRANS|fflags|flip, kp_flameshieldmeter[ff][offset], fsflash);
-			}
-			else
-			{
-				V_DrawScaledPatch(fx-xo, fy-yo, V_HUDTRANS|fflags|flip, kp_flameshieldmeter[ff][offset]);
-			}
-		}
-	}
 }
 
 void K_drawKartTimestamp(tic_t drawtime, INT32 TX, INT32 TY, INT16 emblemmap, UINT8 mode)
