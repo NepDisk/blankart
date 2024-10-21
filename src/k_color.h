@@ -20,7 +20,7 @@ extern "C" {
 #endif
 
 #define SKIN_RAMP_LENGTH 16
-#define DEFAULT_STARTTRANSCOLOR 96
+#define DEFAULT_STARTTRANSCOLOR 160
 #define NUM_PALETTE_ENTRIES 256
 
 /*--------------------------------------------------

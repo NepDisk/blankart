@@ -162,25 +162,25 @@ consvar_t cons_backcolor = CVAR_INIT ("con_backcolor", "Black", CV_CALL|CV_SAVE,
 
 static CV_PossibleValue_t menuhighlight_cons_t[] =
 {
-	{0, "Game type"},
-	{V_YELLOWMAP, "Always yellow"},
-	{V_PURPLEMAP, "Always purple"},
-	{V_GREENMAP, "Always green"},
-	{V_BLUEMAP, "Always blue"},
-	{V_REDMAP, "Always red"},
-	{V_GRAYMAP, "Always gray"},
-	{V_ORANGEMAP, "Always orange"},
-	{V_SKYMAP, "Always sky-blue"},
-	{V_GOLDMAP, "Always gold"},
-	{V_LAVENDERMAP, "Always lavender"},
-	{V_AQUAMAP, "Always aqua-green"},
-	{V_MAGENTAMAP, "Always magenta"},
-	{V_PINKMAP, "Always pink"},
-	{V_BROWNMAP, "Always brown"},
-	{V_TANMAP, "Always tan"},
+	{0, 			"Gametype Default"},
+	{V_YELLOWMAP, 	"Always Yellow"},
+	{V_PURPLEMAP, 	"Always Purple"},
+	{V_GREENMAP, 	"Always Green"},
+	{V_BLUEMAP, 	"Always Blue"},
+	{V_REDMAP, 		"Always Red"},
+	{V_GRAYMAP, 	"Always Gray"},
+	{V_ORANGEMAP, 	"Always Orange"},
+	{V_SKYMAP, 		"Always Sky-Blue"},
+	{V_GOLDMAP, 	"Always Gold"},
+	{V_LAVENDERMAP, "Always Lavender"},
+	{V_TEAMAP, 		"Always Tea-Green"},
+	{V_STEELMAP,	"Always Steel-Blue"},
+	{V_PINKMAP, 	"Always Pink"},
+	{V_BROWNMAP, 	"Always Brown"},
+	{V_PEACHMAP, 	"Always Peach"},
 	{0, NULL}
 };
-consvar_t cons_menuhighlight = CVAR_INIT ("menuhighlight", "Game type", CV_SAVE, menuhighlight_cons_t, NULL);
+consvar_t cons_menuhighlight = CVAR_INIT ("menuhighlight", "Gametype Default", CV_SAVE, menuhighlight_cons_t, NULL);
 
 static void CON_Print(char *msg);
 
@@ -365,10 +365,8 @@ static void CONS_ChooseWeighted_f(void)
 // Font colormap colors
 // TODO: This could probably be improved somehow...
 // These colormaps are 99% identical, with just a few changed bytes
-// This could EASILY be handled by modifying a centralised colormap
-// for software depending on the prior state - but yknow, OpenGL...
 UINT8 *yellowmap, *purplemap, *greenmap, *bluemap, *graymap, *redmap, *orangemap,\
- *skymap, *goldmap, *lavendermap, *aquamap, *magentamap, *pinkmap, *brownmap, *tanmap;
+ *skymap, *goldmap, *lavendermap, *teamap, *steelmap, *pinkmap, *brownmap, *peachmap;
 
 // Console BG color
 UINT8 *consolebgmap = NULL;
@@ -387,29 +385,30 @@ void CON_SetupBackColormapEx(INT32 color, boolean prompt)
 
 	shift = 6; // 12 colors -- shift of 7 means 6 colors
 
-	switch (color)
+	switch (cons_backcolor.value)
 	{
 		case 0:		palindex = 15; 	break; 	// White
-		case 1:		palindex = 31;	break; 	// Black
-		case 2:		palindex = 251;	break;	// Sepia
-		case 3:		palindex = 239;	break; 	// Brown
-		case 4:		palindex = 215; shift = 7; 	break; 	// Pink
-		case 5:		palindex = 37; shift = 7;	break; 	// Raspberry
-		case 6:		palindex = 47; shift = 7;	break; 	// Red
-		case 7:		palindex = 53;	shift = 7;	break;	// Creamsicle
-		case 8:		palindex = 63;	break; 	// Orange
-		case 9:		palindex = 56; shift = 7;	break; 	// Gold
-		case 10:	palindex = 79; shift = 7;	break; 	// Yellow
-		case 11:	palindex = 119; shift = 7; 	break; 	// Emerald
-		case 12:	palindex = 111;	break; 	// Green
-		case 13:	palindex = 136;	shift = 7; break; 	// Cyan
-		case 14:	palindex = 175; shift = 7;	break; 	// Steel
-		case 15:	palindex = 166;	shift = 7; 	break; 	// Periwinkle
-		case 16:	palindex = 159;	break; 	// Blue
-		case 17:	palindex = 187; shift = 7; 	break; 	// Purple
-		case 18:	palindex = 199; shift = 7; 	break; 	// Lavender
+		case 1:		palindex = 31;	break; 	// Gray
+		case 2:		palindex = 47;	break;	// Sepia
+		case 3:		palindex = 63;	break; 	// Brown
+		case 4:		palindex = 150; shift = 7; 	break; 	// Pink
+		case 5:		palindex = 127; shift = 7;	break; 	// Raspberry
+		case 6:		palindex = 143;	break; 	// Red
+		case 7:		palindex = 86;	shift = 7;	break;	// Creamsicle
+		case 8:		palindex = 95;	break; 	// Orange
+		case 9:		palindex = 119; shift = 7;	break; 	// Gold
+		case 10:	palindex = 111;	break; 	// Yellow
+		case 11:	palindex = 191; shift = 7; 	break; 	// Emerald
+		case 12:	palindex = 175;	break; 	// Green
+		case 13:	palindex = 219;	break; 	// Cyan
+		case 14:	palindex = 207; shift = 7;	break; 	// Steel
+		case 15:	palindex = 230;	shift = 7; 	break; 	// Periwinkle
+		case 16:	palindex = 239;	break; 	// Blue
+		case 17:	palindex = 199; shift = 7; 	break; 	// Purple
+		case 18:	palindex = 255; shift = 7; 	break; 	// Lavender
 		// Default green
-		default:	palindex = 111; break;
+		default:	palindex = 175; break;
+
 	}
 
 	if (prompt)
@@ -462,11 +461,11 @@ static void CON_SetupColormaps(void)
 	skymap      = (orangemap+256);
 	lavendermap = (skymap+256);
 	goldmap     = (lavendermap+256);
-	aquamap     = (goldmap+256);
-	magentamap  = (aquamap+256);
-	pinkmap     = (magentamap+256);
+	teamap      = (goldmap+256);
+	steelmap    = (teamap+256);
+	pinkmap     = (steelmap+256);
 	brownmap    = (pinkmap+256);
-	tanmap      = (brownmap+256);
+	peachmap    = (brownmap+256);
 
 	// setup the other colormaps, for console text
 
@@ -476,21 +475,21 @@ static void CON_SetupColormaps(void)
 	for (i = 0; i < (256*15); i++, ++memorysrc)
 		*memorysrc = (UINT8)(i & 0xFF); // remap each color to itself...
 
-	purplemap[0]   = (UINT8)163;
-	yellowmap[0]   = (UINT8)73;
-	greenmap[0]    = (UINT8)98;
-	bluemap[0]     = (UINT8)148;
-	redmap[0]      = (UINT8)34; // battle
-	graymap[0]     = (UINT8)10;
-	orangemap[0]   = (UINT8)52; // record attack
-	skymap[0]      = (UINT8)132; // race
-	lavendermap[0] = (UINT8)192;
-	goldmap[0]     = (UINT8)65;
-	aquamap[0]     = (UINT8)121;
-	magentamap[0]  = (UINT8)182;
-	pinkmap[0]     = (UINT8)210;
-	brownmap[0]    = (UINT8)224;
-	tanmap[0]      = (UINT8)217; // no longer nice :(
+	purplemap[120]   = (UINT8)194;
+	yellowmap[120]   = (UINT8)103;
+	greenmap[120]    = (UINT8)162;
+	bluemap[120]     = (UINT8)228;
+	redmap[120]      = (UINT8)126; // battle
+	graymap[120]     =  (UINT8)10;
+	orangemap[120]   =  (UINT8)85; // record attack
+	skymap[120]      = (UINT8)214; // race
+	lavendermap[120] = (UINT8)248;
+	goldmap[120]     = (UINT8)114;
+	teamap[120]      = (UINT8)177;
+	steelmap[120]    = (UINT8)201;
+	pinkmap[120]     = (UINT8)145;
+	brownmap[120]    =  (UINT8)48;
+	peachmap[120]    =  (UINT8)69; // nice
 
 	// Init back colormap
 	CON_SetupBackColormap();

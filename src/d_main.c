@@ -325,7 +325,7 @@ static void D_Display(void)
 		if (gamestate == GS_TITLESCREEN && wipegamestate != GS_INTRO)
 			wipedefindex = wipe_timeattack_toblack;
 
-		if (wipetypepre < 0 || !F_WipeExists(wipetypepre))
+		if (wipetypepre < 0)
 			wipetypepre = wipedefs[wipedefindex];
 
 		if (rendermode != render_none)
@@ -337,7 +337,7 @@ static void D_Display(void)
 				F_WipeStartScreen();
 				F_WipeColorFill(31);
 				F_WipeEndScreen();
-				F_RunWipe(wipetypepre, gamestate != GS_TIMEATTACK, "FADEMAP0", false, false);
+				F_RunWipe(wipetypepre, gamestate != GS_TIMEATTACK);
 			}
 
 			if (gamestate != GS_LEVEL && rendermode != render_none)
@@ -350,7 +350,7 @@ static void D_Display(void)
 		}
 		else //dedicated servers
 		{
-			F_RunWipe(wipedefs[wipedefindex], gamestate != GS_TIMEATTACK, "FADEMAP0", false, false);
+			F_RunWipe(wipedefs[wipedefindex], gamestate != GS_TIMEATTACK);
 			wipegamestate = gamestate;
 		}
 
@@ -591,7 +591,7 @@ static void D_Display(void)
 	}
 
 	if (demo.rewinding)
-		V_DrawFadeScreen(TC_RAINBOW, (leveltime & 0x20) ? SKINCOLOR_PASTEL : SKINCOLOR_MOONSET);
+		V_DrawFadeScreen(TC_RAINBOW, (leveltime & 0x20) ? SKINCOLOR_PASTEL : SKINCOLOR_MOONSLAM);
 
 	// vid size change is now finished if it was on...
 	vid.recalc = 0;
@@ -618,14 +618,14 @@ static void D_Display(void)
 		// and input during wipe tends to mess things up
 		wipedefindex += WIPEFINALSHIFT;
 
-		if (wipetypepost < 0 || !F_WipeExists(wipetypepost))
+		if (wipetypepost < 0)
 			wipetypepost = wipedefs[wipedefindex];
 
 		if (rendermode != render_none)
 		{
 			F_WipeEndScreen();
 
-			F_RunWipe(wipedefs[wipedefindex], gamestate != GS_TIMEATTACK && gamestate != GS_TITLESCREEN, "FADEMAP0", true, false);
+			F_RunWipe(wipedefs[wipedefindex], gamestate != GS_TIMEATTACK && gamestate != GS_TITLESCREEN);
 		}
 
 		// reset counters so timedemo doesn't count the wipe duration

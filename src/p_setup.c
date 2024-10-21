@@ -8146,67 +8146,53 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	// This is handled BEFORE sounds are stopped.
 	else if (encoremode && !prevencoremode && !demo.rewinding)
 	{
+		tic_t locstarttime, endtime, nowtime;
+
 		if (rendermode != render_none)
 		{
-			tic_t locstarttime, endtime, nowtime;
-
 			S_StopMusic(); // er, about that...
 
-			// Fade to an inverted screen, with a circle fade...
-			F_WipeStartScreen();
-
-			V_EncoreInvertScreen();
-			F_WipeEndScreen();
-
 			S_StartSound(NULL, sfx_ruby1);
-			F_RunWipe(wipedefs[wipe_encore_toinvert], false, NULL, false, false);
 
-			// Hold on invert for extra effect.
-			// (This define might be useful for other areas of code? Not sure)
-#define WAIT(timetowait) \
-	locstarttime = nowtime = lastwipetic; \
-	endtime = locstarttime + timetowait; \
-	while (nowtime < endtime) \
-	{ \
-		while (!((nowtime = I_GetTime()) - lastwipetic)) \
-		{ \
-			I_Sleep(cv_sleep.value); \
-			I_UpdateTime(cv_timescale.value); \
-		} \
-		lastwipetic = nowtime; \
-		if (moviemode) \
-			M_SaveFrame(); \
-		NetKeepAlive(); \
-	} \
-
-			WAIT((3*TICRATE)/2);
-			S_StartSound(NULL, sfx_ruby2);
-
-			// Then fade to a white screen
 			F_WipeStartScreen();
+			V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 122);
 
-			V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 0);
 			F_WipeEndScreen();
+			F_RunWipe(wipedefs[wipe_encore_towhite], false);
 
-			F_RunWipe(wipedefs[wipe_encore_towhite], false, "FADEMAP1", false, true); // wiggle the screen during this!
-
-			// THEN fade to a black screen.
 			F_WipeStartScreen();
+			V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 120);
 
-			V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 31);
 			F_WipeEndScreen();
-
-			F_RunWipe(wipedefs[wipe_level_toblack], false, "FADEMAP0", false, false);
-
-			// Wait a bit longer.
-			WAIT((3*TICRATE)/4);
+			F_RunWipe(wipedefs[wipe_level_final], false);
 		}
-		else
+		else //dedicated servers can call this now, to wait the appropriate amount of time for clients to wipe
 		{
-			// dedicated servers can call this now, to wait the appropriate amount of time for clients to wipe
-			F_RunWipe(wipedefs[wipe_encore_towhite], false, "FADEMAP1", false, true);
-			F_RunWipe(wipedefs[wipe_level_toblack], false, "FADEMAP0", false, false);
+			F_RunWipe(wipedefs[wipe_encore_towhite], false);
+			F_RunWipe(wipedefs[wipe_level_final], false);
 		}
+		
+		locstarttime = nowtime = lastwipetic;
+		endtime = locstarttime + (3*TICRATE)/2;
+
+		// Hold on white for extra effect.
+		while (nowtime < endtime)
+		{
+			// wait loop
+			while (!((nowtime = I_GetTime()) - lastwipetic))
+			{
+				I_Sleep(cv_sleep.value);
+				I_UpdateTime(cv_timescale.value);
+			}
+			lastwipetic = nowtime;
+			if (moviemode) // make sure we save frames for the white hold too
+				M_SaveFrame();
+
+			// Keep the network alive
+			NetKeepAlive();
+		}
+
+		ranspecialwipe = 1;
 	}
 
 	// Special stage & record attack retry fade to white
@@ -8236,13 +8222,6 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 	// But only if we didn't do the encore startup wipe
 	if (!demo.rewinding && !reloadinggamestate)
 	{
-
-		// Fade out music here. Deduct 2 tics so the fade volume actually reaches 0.
-		// But don't halt the music! S_Start will take care of that. This dodges a MIDI crash bug.
-		if (!(reloadinggamestate || titlemapinaction))
-			S_FadeMusic(0, FixedMul(
-				FixedDiv((F_GetWipeLength(wipedefs[wipe_level_toblack])-2)*NEWTICRATERATIO, NEWTICRATE), MUSICRATE));
-
 		// Reset the palette now all fades have been done
 		if (rendermode != render_none)
 			V_SetPaletteLump(GetPalette()); // Set the level palette
@@ -8261,7 +8240,7 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 		}
 	}
 
-	levelfadecol = (encoremode && !ranspecialwipe ? 209 : 0);
+	levelfadecol = (encoremode && !ranspecialwipe ? 122 : 120);
 
 	// Let's fade to white here
 	// But only if we didn't do the encore startup wipe
@@ -8273,11 +8252,11 @@ boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate)
 				V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, levelfadecol);
 
 				F_WipeEndScreen();
-				F_RunWipe(wipedefs[(encoremode ? wipe_level_final : wipe_level_toblack)], false,  "FADEMAP0", false, false);
+				F_RunWipe(wipedefs[(encoremode ? wipe_level_final : wipe_level_toblack)], false);
 			}
 			else //dedicated servers
 			{
-				F_RunWipe(wipedefs[(encoremode ? wipe_level_final : wipe_level_toblack)], false, "FADEMAP0", false, false);
+				F_RunWipe(wipedefs[(encoremode ? wipe_level_final : wipe_level_toblack)], false);
 			}
 	}
 	/*if (!titlemapinaction)

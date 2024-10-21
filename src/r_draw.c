@@ -149,10 +149,6 @@ UINT32 nflatxshift, nflatyshift, nflatshiftup, nflatmask;
 #define DASHMODE_TT_CACHE_INDEX (MAXSKINS + 6)
 #define TT_CACHE_SIZE (MAXSKINS + 8)
 
-#define SKIN_RAMP_LENGTH 16
-#define DEFAULT_STARTTRANSCOLOR 96
-#define NUM_PALETTE_ENTRIES 256
-
 static UINT8 **translationtablecache[TT_CACHE_SIZE] = {NULL};
 UINT8 skincolor_modified[MAXSKINCOLORS];
 

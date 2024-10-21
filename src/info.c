@@ -8145,7 +8145,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 		0,              // reactiontime
 		sfx_None,       // attacksound
 		S_NULL,         // painstate
-		SKINCOLOR_SUNSLAM, // painchance
+		SKINCOLOR_SUNSET, // painchance
 		sfx_s3kb1,      // painsound
 		S_NULL,         // meleestate
 		S_NULL,         // missilestate
@@ -27995,176 +27995,263 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] =
 };
 
 skincolor_t skincolors[MAXSKINCOLORS] = {
-	{"None",           {  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE,             0, 0,             false}, // SKINCOLOR_NONE
-
-	{"White",          {  0,   0,   0,   0,   1,   2,   5,   8,   9,  11,  14,  17,  20,  22,  25,  28}, SKINCOLOR_BLACK,            8, 0,              true}, // SKINCOLOR_WHITE
-	{"Silver",         {  0,   1,   2,   3,   5,   7,   9,  12,  13,  15,  18,  20,  23,  25,  27,  30}, SKINCOLOR_NICKEL,           8, 0,              true}, // SKINCOLOR_SILVER
-	{"Grey",           {  1,   3,   5,   7,   9,  11,  13,  15,  17,  19,  21,  23,  25,  27,  29,  31}, SKINCOLOR_GREY,             8, V_LAVENDERMAP,  true}, // SKINCOLOR_GREY
-	{"Nickel",         {  3,   5,   8,  11,  15,  17,  19,  21,  23,  24,  25,  26,  27,  29,  30,  31}, SKINCOLOR_SILVER,           8, V_GRAYMAP,      true}, // SKINCOLOR_NICKEL
-	{"Black",          {  4,   7,  11,  15,  20,  22,  24,  27,  28,  28,  28,  29,  29,  30,  30,  31}, SKINCOLOR_WHITE,            8, V_GRAYMAP,      true}, // SKINCOLOR_BLACK
-	{"Skunk",          {  0,   1,   2,   3,   4,  10,  16,  21,  23,  24,  25,  26,  27,  28,  29,  31}, SKINCOLOR_VOMIT,            8, V_GRAYMAP,      true}, // SKINCOLOR_SKUNK
-	{"Fairy",          {  0,   0, 252, 252, 200, 201, 211,  14,  16,  18,  20,  22,  24,  26,  28,  31}, SKINCOLOR_ARTICHOKE,       12, V_PINKMAP,      true}, // SKINCOLOR_FAIRY
-	{"Popcorn",        {  0,  80,  80,  81,  82, 218, 240,  11,  13,  16,  18,  21,  23,  26,  28,  31}, SKINCOLOR_PIGEON,          12, V_TANMAP,       true}, // SKINCOLOR_POPCORN
-	{"Artichoke",      { 80,  88,  89,  98,  99,  91,  12,  14,  16,  18,  20,  22,  24,  26,  28,  31}, SKINCOLOR_FAIRY,           12, V_GREENMAP,     true}, // SKINCOLOR_ARTICHOKE
-	{"Pigeon",         {  0, 128, 129, 130, 146, 170,  14,  15,  17,  19,  21,  23,  25,  27,  29,  31}, SKINCOLOR_POPCORN,         12, V_SKYMAP,       true}, // SKINCOLOR_PIGEON
-	{"Sepia",          {  0,   1,   3,   5,   7,   9, 241, 242, 243, 245, 247, 249, 236, 237, 238, 239}, SKINCOLOR_LEATHER,          6, V_TANMAP,       true}, // SKINCOLOR_SEPIA
-	{"Beige",          {  0, 208, 216, 217, 240, 241, 242, 243, 245, 247, 249, 250, 251, 237, 238, 239}, SKINCOLOR_BROWN,            2, V_BROWNMAP,     true}, // SKINCOLOR_BEIGE
-	{"Caramel",        {208,  48, 216, 217, 218, 220, 221, 223, 224, 226, 228, 230, 232, 234, 236, 239}, SKINCOLOR_CERULEAN,         8, V_TANMAP,       true}, // SKINCOLOR_CARAMEL
-	{"Peach",          {  0, 208,  48, 216, 218, 221, 212, 213, 214, 215, 206, 207, 197, 198, 199, 254}, SKINCOLOR_CYAN,             8, V_TANMAP,       true}, // SKINCOLOR_PEACH
-	{"Brown",          {216, 217, 219, 221, 224, 225, 227, 229, 230, 232, 234, 235, 237, 239,  29,  30}, SKINCOLOR_BEIGE,            8, V_BROWNMAP,     true}, // SKINCOLOR_BROWN
-	{"Leather",        {218, 221, 224, 227, 229, 231, 233, 235, 237, 239,  28,  28,  29,  29,  30,  31}, SKINCOLOR_SEPIA,            8, V_BROWNMAP,     true}, // SKINCOLOR_LEATHER
-	{"Pink",           {  0, 208, 208, 209, 209, 210, 211, 211, 212, 213, 214, 215,  41,  43,  45,  46}, SKINCOLOR_PISTACHIO,        8, V_PINKMAP,      true}, // SKINCOLOR_PINK
-	{"Rose",           {209, 210, 211, 211, 212, 213, 214, 215,  41,  42,  43,  44,  45,  71,  46,  47}, SKINCOLOR_MOSS,             8, V_PINKMAP,      true}, // SKINCOLOR_ROSE
-	{"Cinnamon",       {216, 221, 224, 226, 228,  60,  61,  43,  44,  45,  71,  46,  47,  29,  30,  31}, SKINCOLOR_WRISTWATCH,       6, V_REDMAP,       true}, // SKINCOLOR_CINNAMON
-	{"Ruby",           {  0, 208, 209, 210, 211, 213,  39,  40,  41,  43, 186, 186, 169, 169, 253, 254}, SKINCOLOR_SAPPHIRE,         8, V_REDMAP,       true}, // SKINCOLOR_RUBY
-	{"Raspberry",      {  0, 208, 209, 210,  32,  33,  34,  35,  37,  39,  41,  43,  44,  45,  46,  47}, SKINCOLOR_MINT,             8, V_REDMAP,       true}, // SKINCOLOR_RASPBERRY
-	{"Red",            {209, 210,  32,  34,  36,  38,  39,  40,  41,  42,  43,  44 , 45,  71,  46,  47}, SKINCOLOR_GREEN,            6, V_REDMAP,       true}, // SKINCOLOR_RED
-	{"Crimson",        {210,  33,  35,  38,  40,  42,  43,  45,  71,  71,  46,  46,  47,  47,  30,  31}, SKINCOLOR_PINETREE,         6, V_REDMAP,       true}, // SKINCOLOR_CRIMSON
-	{"Maroon",         { 32,  33,  35,  37,  39,  41,  43, 237,  26,  26,  27,  27,  28,  29,  30,  31}, SKINCOLOR_TOXIC,            8, V_REDMAP,       true}, // SKINCOLOR_MAROON
-	{"Lemonade",       {  0,  80,  81,  82,  83, 216, 210, 211, 212, 213, 214, 215,  43,  44,  71,  47}, SKINCOLOR_THUNDER,          8, V_PINKMAP,      true}, // SKINCOLOR_LEMONADE
-	{"Scarlet",        { 48,  49,  50,  51,  53,  34,  36,  38, 184, 185, 168, 168, 169, 169, 254,  31}, SKINCOLOR_ALGAE,           10, V_REDMAP,       true}, // SKINCOLOR_SCARLET
-	{"Ketchup",        { 72,  73,  64,  51,  52,  54,  34,  36,  38,  40,  42,  43,  44,  71,  46,  47}, SKINCOLOR_MUSTARD,         10, V_REDMAP,       true}, // SKINCOLOR_KETCHUP
-	{"Dawn",           {  0, 208, 216, 209, 210, 211, 212,  57,  58,  59,  60,  61,  63,  71,  47,  31}, SKINCOLOR_DUSK,             8, V_ORANGEMAP,    true}, // SKINCOLOR_DAWN
-	{"Sunslam",        { 82,  72,  73,  64,  51,  53,  55, 213, 214, 195, 195, 173, 174, 175, 253, 254}, SKINCOLOR_MOONSET,          8, V_ORANGEMAP,    true}, // SKINCOLOR_SUNSLAM
-	{"Creamsicle",     {  0,   0, 208, 208,  48,  49,  50,  52,  53,  54,  56,  57,  58,  60,  61,  63}, SKINCOLOR_PERIWINKLE,       8, V_ORANGEMAP,    true}, // SKINCOLOR_CREAMSICLE
-	{"Orange",         {208,  48,  49,  50,  51,  52,  53,  54,  55,  57,  59,  60,  62,  44,  71,  47}, SKINCOLOR_BLUE,             8, V_ORANGEMAP,    true}, // SKINCOLOR_ORANGE
-	{"Rosewood",       { 50,  52,  55,  56,  58,  59,  60,  61,  62,  63,  44,  45,  71,  46,  47,  30}, SKINCOLOR_MIDNIGHT,         6, V_ORANGEMAP,    true}, // SKINCOLOR_ROSEWOOD
-	{"Tangerine",      { 80,  81,  82,  83,  64,  51,  52,  54,  55,  57,  58,  60,  61,  63,  71,  47}, SKINCOLOR_LIME,             8, V_ORANGEMAP,    true}, // SKINCOLOR_TANGERINE
-	{"Tan",            {  0,  80,  81,  82,  83,  84,  85,  86,  87, 245, 246, 248, 249, 251, 237, 239}, SKINCOLOR_RUST,             8, V_TANMAP,       true}, // SKINCOLOR_TAN
-	{"Cream",          {  0,  80,  80,  81,  81,  49,  51, 222, 224, 227, 230, 233, 236, 239,  29,  31}, SKINCOLOR_COPPER,          10, V_TANMAP,       true}, // SKINCOLOR_CREAM
-	{"Gold",           {  0,  80,  81,  83,  64,  65,  66,  67,  68, 215,  69,  70,  44,  71,  46,  47}, SKINCOLOR_SLATE,            8, V_GOLDMAP,      true}, // SKINCOLOR_GOLD
-	{"Royal",          { 80,  81,  83,  64,  65, 223, 229, 196, 196, 197, 197, 198, 199,  29,  30,  31}, SKINCOLOR_PLATINUM,         6, V_GOLDMAP,      true}, // SKINCOLOR_ROYAL
-	{"Bronze",         { 83,  64,  65,  66,  67, 215,  69,  70,  44,  44,  45,  71,  46,  47,  29,  31}, SKINCOLOR_STEEL,            8, V_GOLDMAP,      true}, // SKINCOLOR_BRONZE
-	{"Copper",         {  0,  82,  64,  65,  67,  68,  70, 237, 239,  28,  28,  29,  29,  30,  30,  31}, SKINCOLOR_CREAM,            6, V_GOLDMAP,      true}, // SKINCOLOR_COPPER
-	{"Yellow",         {  0,  80,  81,  82,  83,  73,  84,  74,  64,  65,  66,  67,  68,  69,  70,  71}, SKINCOLOR_AQUAMARINE,       8, V_YELLOWMAP,    true}, // SKINCOLOR_YELLOW
-	{"Mustard",        { 80,  81,  82,  83,  64,  65,  65,  76,  76,  77,  77,  78,  79, 237, 239,  29}, SKINCOLOR_KETCHUP,          8, V_YELLOWMAP,    true}, // SKINCOLOR_MUSTARD
-	{"Banana",         { 80,  81,  83,  72,  73,  74,  75,  76,  77,  78,  79, 236, 237, 238, 239,  30}, SKINCOLOR_EMERALD,          8, V_YELLOWMAP,    true}, // SKINCOLOR_BANANA
-	{"Olive",          { 80,  82,  73,  74,  75,  76,  77,  78,  79, 236, 237, 238, 239,  28,  29,  31}, SKINCOLOR_TEAL,             8, V_YELLOWMAP,    true}, // SKINCOLOR_OLIVE
-	{"Crocodile",      {  0,  80,  81,  88,  88, 188, 189,  76,  76,  77,  78,  79, 236, 237, 238, 239}, SKINCOLOR_VIOLET,           8, V_YELLOWMAP,    true}, // SKINCOLOR_CROCODILE
-	{"Peridot",        {  0,  80,  81,  88, 188, 189, 190, 191,  94,  94,  95,  95, 109, 110, 111,  31}, SKINCOLOR_NAVY,             6, V_GREENMAP,     true}, // SKINCOLOR_PERIDOT
-	{"Vomit",          {  0, 208, 216, 209, 218,  51,  65,  76, 191, 191, 126, 143, 138, 175, 169, 254}, SKINCOLOR_SKUNK,            8, V_GREENMAP,     true}, // SKINCOLOR_VOMIT
-	{"Garden",         { 81,  82,  83,  73,  64,  65,  66,  92,  92,  93,  93,  94,  95, 109, 110, 111}, SKINCOLOR_LAVENDER,         6, V_GREENMAP,     true}, // SKINCOLOR_GARDEN
-	{"Lime",           {  0,  80,  81,  88, 188, 189, 114, 114, 115, 115, 116, 116, 117, 118, 119, 111}, SKINCOLOR_TANGERINE,        8, V_GREENMAP,     true}, // SKINCOLOR_LIME
-	{"Handheld",       { 83,  72,  73,  74,  75,  76, 102, 104, 105, 106, 107, 108, 109, 110, 111,  31}, SKINCOLOR_ULTRAMARINE,      8, V_GREENMAP,     true}, // SKINCOLOR_HANDHELD
-	{"Tea",            {  0,  80,  80,  81,  88,  89,  90,  91,  92,  93,  94,  95, 109, 110, 111,  31}, SKINCOLOR_BLOSSOM,          8, V_GREENMAP,     true}, // SKINCOLOR_TEA
-	{"Pistachio",      {  0,  80,  88,  88,  89,  90,  91, 102, 103, 104, 105, 106, 107, 108, 109, 110}, SKINCOLOR_PINK,             6, V_GREENMAP,     true}, // SKINCOLOR_PISTACHIO
-	{"Moss",           { 88,  89,  90,  91,  91,  92,  93,  94, 107, 107, 108, 108, 109, 109, 110, 111}, SKINCOLOR_ROSE,             8, V_GREENMAP,     true}, // SKINCOLOR_MOSS
-	{"Camouflage",     {208,  84,  85, 240, 241, 243, 245,  94, 107, 108, 108, 109, 109, 110, 110, 111}, SKINCOLOR_CAMOUFLAGE,       8, V_GREENMAP,     true}, // SKINCOLOR_CAMOUFLAGE
-	{"Mint",           {  0,  88,  88,  89,  89, 100, 101, 102, 125, 126, 143, 143, 138, 175, 169, 254}, SKINCOLOR_RASPBERRY,        8, V_GREENMAP,     true}, // SKINCOLOR_MINT
-	{"Green",          { 96,  97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111}, SKINCOLOR_RED,              8, V_GREENMAP,     true}, // SKINCOLOR_GREEN
-	{"Pinetree",       { 97,  99, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,  30,  30,  31}, SKINCOLOR_CRIMSON,          8, V_GREENMAP,     true}, // SKINCOLOR_PINETREE
-	{"Turtle",         { 96, 112, 112, 113, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 119, 111}, SKINCOLOR_MAGENTA,          8, V_GREENMAP,     true}, // SKINCOLOR_TURTLE
-	{"Swamp",          { 96, 112, 113, 114, 115, 116, 117, 118, 119, 119,  29,  29,  30,  30,  31,  31}, SKINCOLOR_BYZANTIUM,        8, V_GREENMAP,     true}, // SKINCOLOR_SWAMP
-	{"Dream",          {  0,   0, 208, 208,  48,  89,  98, 100, 148, 148, 172, 172, 173, 173, 174, 175}, SKINCOLOR_POMEGRANATE,      8, V_GREENMAP,     true}, // SKINCOLOR_DREAM
-	{"Plague",         { 80,  88,  96, 112, 113, 124, 142, 149, 149, 173, 174, 175, 169, 253, 254,  31}, SKINCOLOR_NOVA,             8, V_GREENMAP,     true}, // SKINCOLOR_PLAGUE
-	{"Emerald",        {  0, 120, 121, 112, 113, 114, 115, 125, 125, 126, 126, 127, 138, 175, 253, 254}, SKINCOLOR_BANANA,           8, V_GREENMAP,     true}, // SKINCOLOR_EMERALD
-	{"Algae",          {128, 129, 130, 131, 132, 133, 134, 115, 115, 116, 116, 117, 118, 119, 110, 111}, SKINCOLOR_SCARLET,         10, V_GREENMAP,     true}, // SKINCOLOR_ALGAE
-	{"Aquamarine",     {  0, 128, 120, 121, 122, 123, 124, 125, 126, 126, 127, 127, 118, 118, 119, 111}, SKINCOLOR_YELLOW,           8, V_AQUAMAP,      true}, // SKINCOLOR_AQUAMARINE
-	{"Turquoise",      {128, 120, 121, 122, 123, 141, 141, 142, 142, 143, 143, 138, 138, 139, 139,  31}, SKINCOLOR_MAUVE,           10, V_AQUAMAP,      true}, // SKINCOLOR_TURQUOISE
-	{"Teal",           {  0, 120, 120, 121, 140, 141, 142, 143, 143, 138, 138, 139, 139, 254, 254,  31}, SKINCOLOR_OLIVE,            8, V_AQUAMAP,      true}, // SKINCOLOR_TEAL
-	{"Robin",          {  0,  80,  81,  82,  83,  88, 121, 140, 133, 133, 134, 135, 136, 137, 138, 139}, SKINCOLOR_THISTLE,          8, V_SKYMAP,       true}, // SKINCOLOR_ROBIN
-	{"Cyan",           {  0,   0, 128, 128, 255, 131, 132, 134, 142, 142, 143, 127, 118, 119, 110, 111}, SKINCOLOR_PEACH,            8, V_SKYMAP,       true}, // SKINCOLOR_CYAN
-	{"Jawz",           {  0,   0, 128, 128, 129, 146, 133, 134, 135, 149, 149, 173, 173, 174, 175,  31}, SKINCOLOR_LILAC,           10, V_SKYMAP,       true}, // SKINCOLOR_JAWZ
-	{"Cerulean",       {  0, 128, 129, 130, 131, 132, 133, 135, 136, 136, 137, 137, 138, 138, 139,  31}, SKINCOLOR_CARAMEL,          8, V_SKYMAP,       true}, // SKINCOLOR_CERULEAN
-	{"Navy",           {128, 129, 130, 132, 134, 135, 136, 137, 137, 138, 138, 139, 139,  29,  30,  31}, SKINCOLOR_PERIDOT,          8, V_SKYMAP,       true}, // SKINCOLOR_NAVY
-	{"Platinum",       {  0,   0,   0, 144, 144, 145,   9,  11,  14, 142, 136, 137, 138, 138, 139,  31}, SKINCOLOR_ROYAL,            8, V_GRAYMAP,      true}, // SKINCOLOR_PLATINUM
-	{"Slate",          {  0,   0, 144, 144, 144, 145, 145, 145, 170, 170, 171, 171, 172, 173, 174, 175}, SKINCOLOR_GOLD,            10, 0,              true}, // SKINCOLOR_SLATE
-	{"Steel",          {  0, 144, 144, 145, 145, 170, 170, 171, 171, 172, 172, 173, 173, 174, 175,  31}, SKINCOLOR_BRONZE,          10, V_GRAYMAP,      true}, // SKINCOLOR_STEEL
-	{"Thunder",        { 80,  81,  82,  83,  64,  65,  11, 171, 172, 173, 173, 157, 158, 159, 254,  31}, SKINCOLOR_LEMONADE,         8, V_GOLDMAP,      true}, // SKINCOLOR_THUNDER
-	{"Nova",           {  0,  83,  49,  50,  51,  32, 192, 148, 148, 172, 173, 174, 175,  29,  30,  31}, SKINCOLOR_PLAGUE,          10, V_BLUEMAP,      true}, // SKINCOLOR_NOVA
-	{"Rust",           {208,  48, 216, 217, 240, 241, 242, 171, 172, 173,  24,  25,  26,  28,  29,  31}, SKINCOLOR_TAN,              8, V_BROWNMAP,     true}, // SKINCOLOR_RUST
-	{"Wristwatch",     { 48, 218, 221, 224, 227, 231, 196, 173, 173, 174, 159, 159, 253, 253, 254,  31}, SKINCOLOR_CINNAMON,         8, V_BROWNMAP,     true}, // SKINCOLOR_WRISTWATCH
-	{"Jet",            {145, 146, 147, 148, 149, 173, 173, 174, 175, 175,  28,  28,  29,  29,  30,  31}, SKINCOLOR_TAFFY,            8, V_GRAYMAP,      true}, // SKINCOLOR_JET
-	{"Sapphire",       {  0, 128, 129, 131, 133, 135, 149, 150, 152, 154, 156, 158, 159, 253, 254,  31}, SKINCOLOR_RUBY,             6, V_SKYMAP,       true}, // SKINCOLOR_SAPPHIRE
-	{"Ultramarine",    {  0,   0, 120, 120, 121, 133, 135, 149, 149, 166, 166, 167, 168, 169, 254,  31}, SKINCOLOR_HANDHELD,        10, V_SKYMAP,       true}, // SKINCOLOR_ULTRAMARINE
-	{"Periwinkle",     {  0,   0, 144, 144, 145, 146, 147, 149, 150, 152, 154, 155, 157, 159, 253, 254}, SKINCOLOR_CREAMSICLE,       8, V_BLUEMAP,      true}, // SKINCOLOR_PERIWINKLE
-	{"Blue",           {144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 155, 156, 158, 253, 254,  31}, SKINCOLOR_ORANGE,           8, V_BLUEMAP,      true}, // SKINCOLOR_BLUE
-	{"Midnight",       {146, 148, 149, 150, 152, 153, 155, 157, 159, 253, 253, 254, 254,  31,  31,  31}, SKINCOLOR_ROSEWOOD,         8, V_BLUEMAP,      true}, // SKINCOLOR_MIDNIGHT
-	{"Blueberry",      {  0, 144, 145, 146, 147, 171, 172, 166, 166, 167, 167, 168, 168, 175, 169, 253}, SKINCOLOR_PURPLE,           8, V_BLUEMAP,      true}, // SKINCOLOR_BLUEBERRY
-	{"Thistle",        {  0,   0,   0, 252, 252, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 254}, SKINCOLOR_ROBIN,            8, V_PURPLEMAP,    true}, // SKINCOLOR_THISTLE
-	{"Purple",         {  0, 252, 160, 161, 162, 163, 164, 165, 166, 167, 168, 168, 169, 169, 253, 254}, SKINCOLOR_BLUEBERRY,       10, V_PURPLEMAP,    true}, // SKINCOLOR_PURPLE
-	{"Pastel",         {  0, 128, 128, 129, 129, 146, 170, 162, 163, 164, 165, 166, 167, 168, 169, 254}, SKINCOLOR_FUCHSIA,         11, V_PURPLEMAP,    true}, // SKINCOLOR_PASTEL
-	{"Moonset",        {  0, 144, 145, 146, 170, 162, 163, 184, 184, 207, 207,  44,  45,  46,  47,  31}, SKINCOLOR_SUNSLAM,         10, V_MAGENTAMAP,   true}, // SKINCOLOR_MOONSET
-	{"Dusk",           {252, 200, 201, 192, 193, 194, 172, 172, 173, 173, 174, 174, 175, 169, 253, 254}, SKINCOLOR_DAWN,             6, V_MAGENTAMAP,   true}, // SKINCOLOR_DUSK
-	{"Violet",         {176, 177, 178, 179, 180, 181, 182, 183, 184, 165, 165, 166, 167, 168, 169, 254}, SKINCOLOR_CROCODILE,        8, V_MAGENTAMAP,   true}, // SKINCOLOR_VIOLET
-	{"Magenta",        {252, 200, 177, 177, 178, 179, 180, 181, 182, 183, 183, 184, 185, 186, 187,  31}, SKINCOLOR_TURTLE,           8, V_MAGENTAMAP,   true}, // SKINCOLOR_MAGENTA
-	{"Fuchsia",        {208, 209, 209,  32,  33, 182, 183, 184, 185, 185, 186, 186, 187, 253, 254,  31}, SKINCOLOR_PASTEL,          11, V_MAGENTAMAP,   true}, // SKINCOLOR_FUCHSIA
-	{"Toxic",          {  0,   0,  88,  88,  89,   6,   8,  10, 193, 194, 195, 184, 185, 186, 187,  31}, SKINCOLOR_MAROON,           8, V_LAVENDERMAP,  true}, // SKINCOLOR_TOXIC
-	{"Mauve",          { 80,  81,  82,  83,  64,  50, 201, 192, 193, 194, 195, 173, 174, 175, 253, 254}, SKINCOLOR_TURQUOISE,        8, V_LAVENDERMAP,  true}, // SKINCOLOR_MAUVE
-	{"Lavender",       {252, 177, 179, 192, 193, 194, 195, 196, 196, 197, 197, 198, 198, 199,  30,  31}, SKINCOLOR_GARDEN,           6, V_LAVENDERMAP,  true}, // SKINCOLOR_LAVENDER
-	{"Byzantium",      {145, 192, 193, 194, 195, 196, 197, 198, 199, 199,  29,  29,  30,  30,  31,  31}, SKINCOLOR_SWAMP,            8, V_LAVENDERMAP,  true}, // SKINCOLOR_BYZANTIUM
-	{"Pomegranate",    {208, 209, 210, 211, 212, 213, 214, 195, 195, 196, 196, 197, 198, 199,  29,  30}, SKINCOLOR_DREAM,            8, V_LAVENDERMAP,  true}, // SKINCOLOR_POMEGRANATE
-	{"Lilac",          {  0,   0,   0, 252, 252, 176, 200, 201, 179, 192, 193, 194, 195, 196, 197, 198}, SKINCOLOR_JAWZ,             6, V_PINKMAP,      true}, // SKINCOLOR_LILAC
-	{"Blossom",        {  0, 252, 252, 176, 200, 177, 201, 202, 202,  34,  36,  38,  40,  42,  45,  46}, SKINCOLOR_TEA,              8, V_PINKMAP,      true}, // SKINCOLOR_BLOSSOM
-	{"Taffy",          {  0, 252, 252, 200, 200, 201, 202, 203, 204, 204, 205, 206, 207,  43,  45,  47}, SKINCOLOR_JET,              8, V_PINKMAP,      true}, // SKINCOLOR_TAFFY
-
-	// super (todo: replace these with the kart ones)
-	{"Super Silver 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x02, 0x03}, SKINCOLOR_BLACK, 15, 0,         false}, // SKINCOLOR_SUPERSILVER1
-	{"Super Silver 2", {0x00, 0x01, 0x02, 0x02, 0x03, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07}, SKINCOLOR_BLACK, 6,  0,         false}, // SKINCOLOR_SUPERSILVER2
-	{"Super Silver 3", {0x01, 0x02, 0x02, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07, 0x09, 0x0b}, SKINCOLOR_BLACK, 5,  0,         false}, // SKINCOLOR_SUPERSILVER3
-	{"Super Silver 4", {0x02, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07, 0x09, 0x0b, 0x0d, 0x0f, 0x11}, SKINCOLOR_BLACK, 5,  V_GRAYMAP, false}, // SKINCOLOR_SUPERSILVER4
-	{"Super Silver 5", {0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x07, 0x09, 0x0b, 0x0d, 0x0f, 0x11, 0x13}, SKINCOLOR_BLACK, 5,  V_GRAYMAP, false}, // SKINCOLOR_SUPERSILVER5
-
-	{"Super Red 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0xd0, 0xd1, 0xd1, 0xd2, 0xd2}, SKINCOLOR_CYAN, 15, 0,         false}, // SKINCOLOR_SUPERRED1
-	{"Super Red 2", {0x00, 0x00, 0x00, 0xd0, 0xd0, 0xd0, 0xd1, 0xd1, 0xd1, 0xd2, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21}, SKINCOLOR_CYAN, 14, V_PINKMAP, false}, // SKINCOLOR_SUPERRED2
-	{"Super Red 3", {0x00, 0x00, 0xd0, 0xd0, 0xd1, 0xd1, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21, 0x22, 0x22, 0x23, 0x23}, SKINCOLOR_CYAN, 13, V_REDMAP,  false}, // SKINCOLOR_SUPERRED3
-	{"Super Red 4", {0x00, 0xd0, 0xd1, 0xd1, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21, 0x22, 0x22, 0x23, 0x23, 0x24, 0x24}, SKINCOLOR_CYAN, 11, V_REDMAP,  false}, // SKINCOLOR_SUPERRED4
-	{"Super Red 5", {0xd0, 0xd1, 0xd2, 0xd2, 0x20, 0x20, 0x21, 0x21, 0x22, 0x22, 0x23, 0x23, 0x24, 0x24, 0x25, 0x25}, SKINCOLOR_CYAN, 10, V_REDMAP,  false}, // SKINCOLOR_SUPERRED5
-
-	{"Super Orange 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0x30, 0x31, 0x32, 0x33, 0x34}, SKINCOLOR_SAPPHIRE, 15, 0,           false}, // SKINCOLOR_SUPERORANGE1
-	{"Super Orange 2", {0x00, 0x00, 0x00, 0x00, 0xd0, 0xd0, 0x30, 0x30, 0x31, 0x31, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34}, SKINCOLOR_SAPPHIRE, 12, V_ORANGEMAP, false}, // SKINCOLOR_SUPERORANGE2
-	{"Super Orange 3", {0x00, 0x00, 0xd0, 0xd0, 0x30, 0x30, 0x31, 0x31, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34, 0x35, 0x35}, SKINCOLOR_SAPPHIRE, 9,  V_ORANGEMAP, false}, // SKINCOLOR_SUPERORANGE3
-	{"Super Orange 4", {0x00, 0xd0, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x44, 0x45, 0x46}, SKINCOLOR_SAPPHIRE, 4,  V_ORANGEMAP, false}, // SKINCOLOR_SUPERORANGE4
-	{"Super Orange 5", {0xd0, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x44, 0x45, 0x46, 0x47}, SKINCOLOR_SAPPHIRE, 3,  V_ORANGEMAP, false}, // SKINCOLOR_SUPERORANGE5
-
-	{"Super Gold 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x50, 0x50, 0x51, 0x52, 0x53, 0x48}, SKINCOLOR_PERIWINKLE, 15, 0,           false}, // SKINCOLOR_SUPERGOLD1
-	{"Super Gold 2", {0x00, 0x50, 0x51, 0x52, 0x53, 0x53, 0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41}, SKINCOLOR_PERIWINKLE, 9,  V_YELLOWMAP, false}, // SKINCOLOR_SUPERGOLD2
-	{"Super Gold 3", {0x51, 0x52, 0x53, 0x53, 0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41, 0x42, 0x43}, SKINCOLOR_PERIWINKLE, 8,  V_YELLOWMAP, false}, // SKINCOLOR_SUPERGOLD3
-	{"Super Gold 4", {0x53, 0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46}, SKINCOLOR_PERIWINKLE, 8,  V_YELLOWMAP, false}, // SKINCOLOR_SUPERGOLD4
-	{"Super Gold 5", {0x48, 0x48, 0x49, 0x49, 0x49, 0x49, 0x49, 0x49, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47}, SKINCOLOR_PERIWINKLE, 8,  V_YELLOWMAP, false}, // SKINCOLOR_SUPERGOLD5
-
-	{"Super Peridot 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x58, 0x58, 0x58, 0xbc, 0xbc, 0xbc}, SKINCOLOR_BLUEBERRY, 15, 0,            false}, // SKINCOLOR_SUPERPERIDOT1
-	{"Super Peridot 2", {0x00, 0x58, 0x58, 0x58, 0xbc, 0xbc, 0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe}, SKINCOLOR_BLUEBERRY, 4,  V_GREENMAP, false}, // SKINCOLOR_SUPERPERIDOT2
-	{"Super Peridot 3", {0x58, 0x58, 0xbc, 0xbc, 0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe, 0xbf, 0xbf}, SKINCOLOR_BLUEBERRY, 3,  V_GREENMAP, false}, // SKINCOLOR_SUPERPERIDOT3
-	{"Super Peridot 4", {0x58, 0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe, 0xbf, 0xbf, 0x5e, 0x5e, 0x5f}, SKINCOLOR_BLUEBERRY, 3,  V_GREENMAP, false}, // SKINCOLOR_SUPERPERIDOT4
-	{"Super Peridot 5", {0xbc, 0xbc, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbd, 0xbe, 0xbe, 0xbf, 0xbf, 0x5e, 0x5e, 0x5f, 0x77}, SKINCOLOR_BLUEBERRY, 3,  V_GREENMAP, false}, // SKINCOLOR_SUPERPERIDOT5
-
-	{"Super Sky 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x80, 0x81, 0x82, 0x83, 0x84}, SKINCOLOR_RUST, 15, 0,        false}, // SKINCOLOR_SUPERSKY1
-	{"Super Sky 2", {0x00, 0x80, 0x81, 0x82, 0x83, 0x83, 0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86}, SKINCOLOR_RUST, 4,  V_SKYMAP, false}, // SKINCOLOR_SUPERSKY2
-	{"Super Sky 3", {0x81, 0x82, 0x83, 0x83, 0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86, 0x87, 0x87}, SKINCOLOR_RUST, 3,  V_SKYMAP, false}, // SKINCOLOR_SUPERSKY3
-	{"Super Sky 4", {0x83, 0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86, 0x87, 0x87, 0x88, 0x89, 0x8a}, SKINCOLOR_RUST, 3,  V_SKYMAP, false}, // SKINCOLOR_SUPERSKY4
-	{"Super Sky 5", {0x84, 0x84, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x86, 0x86, 0x87, 0x87, 0x88, 0x89, 0x8a, 0x8b}, SKINCOLOR_RUST, 3,  V_SKYMAP, false}, // SKINCOLOR_SUPERSKY5
-
-	{"Super Purple 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0xa0, 0xa0, 0xa1, 0xa2}, SKINCOLOR_EMERALD, 15, 0,           false}, // SKINCOLOR_SUPERPURPLE1
-	{"Super Purple 2", {0x00, 0x90, 0xa0, 0xa0, 0xa1, 0xa1, 0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5}, SKINCOLOR_EMERALD, 4,  V_PURPLEMAP, false}, // SKINCOLOR_SUPERPURPLE2
-	{"Super Purple 3", {0xa0, 0xa0, 0xa1, 0xa1, 0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5, 0xa6, 0xa6}, SKINCOLOR_EMERALD, 0,  V_PURPLEMAP, false}, // SKINCOLOR_SUPERPURPLE3
-	{"Super Purple 4", {0xa1, 0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5, 0xa6, 0xa6, 0xa7, 0xa8, 0xa9}, SKINCOLOR_EMERALD, 0,  V_PURPLEMAP, false}, // SKINCOLOR_SUPERPURPLE4
-	{"Super Purple 5", {0xa2, 0xa2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa4, 0xa4, 0xa5, 0xa5, 0xa6, 0xa6, 0xa7, 0xa8, 0xa9, 0xfd}, SKINCOLOR_EMERALD, 0,  V_PURPLEMAP, false}, // SKINCOLOR_SUPERPURPLE5
-
-	{"Super Rust 1", {0x00, 0xd0, 0xd0, 0xd0, 0x30, 0x30, 0x31, 0x32, 0x33, 0x37, 0x3a, 0x44, 0x45, 0x46, 0x47, 0x2e}, SKINCOLOR_CYAN, 14, V_ORANGEMAP, false}, // SKINCOLOR_SUPERRUST1
-	{"Super Rust 2", {0x30, 0x31, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x38, 0x3a, 0x44, 0x45, 0x46, 0x47, 0x47, 0x2e}, SKINCOLOR_CYAN, 10, V_ORANGEMAP, false}, // SKINCOLOR_SUPERRUST2
-	{"Super Rust 3", {0x31, 0x32, 0x33, 0x34, 0x36, 0x37, 0x38, 0x3a, 0x44, 0x45, 0x45, 0x46, 0x46, 0x47, 0x2e, 0x2e}, SKINCOLOR_CYAN, 9,  V_ORANGEMAP, false}, // SKINCOLOR_SUPERRUST3
-	{"Super Rust 4", {0x48, 0x40, 0x41, 0x42, 0x43, 0x44, 0x44, 0x45, 0x45, 0x46, 0x46, 0x47, 0x47, 0x2e, 0x2e, 0x2e}, SKINCOLOR_CYAN, 8,  V_ORANGEMAP, false}, // SKINCOLOR_SUPERRUST4
-	{"Super Rust 5", {0x41, 0x42, 0x43, 0x43, 0x44, 0x44, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xed, 0xee, 0xee, 0xef, 0xef}, SKINCOLOR_CYAN, 8,  V_ORANGEMAP, false}, // SKINCOLOR_SUPERRUST5
-
-	{"Super Tan 1", {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x50, 0x50, 0x51, 0x51, 0x52, 0x52}, SKINCOLOR_BROWN, 14, 0,          false}, // SKINCOLOR_SUPERTAN1
-	{"Super Tan 2", {0x00, 0x50, 0x50, 0x51, 0x51, 0x52, 0x52, 0x52, 0x54, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5}, SKINCOLOR_BROWN, 13, V_BROWNMAP, false}, // SKINCOLOR_SUPERTAN2
-	{"Super Tan 3", {0x50, 0x51, 0x51, 0x52, 0x52, 0x52, 0x54, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5, 0xf7, 0xf9}, SKINCOLOR_BROWN, 12, V_BROWNMAP, false}, // SKINCOLOR_SUPERTAN3
-	{"Super Tan 4", {0x51, 0x52, 0x52, 0x52, 0x52, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5, 0xf7, 0xf9, 0xfb, 0xed}, SKINCOLOR_BROWN, 11, V_BROWNMAP, false}, // SKINCOLOR_SUPERTAN4
-	{"Super Tan 5", {0x52, 0x52, 0x54, 0x54, 0x54, 0x55, 0x56, 0x57, 0xf5, 0xf7, 0xf9, 0xfb, 0xed, 0xee, 0xef, 0xef}, SKINCOLOR_BROWN, 10, V_BROWNMAP, false}, // SKINCOLOR_SUPERTAN5
-
-	{"Chaos Emerald 1", {  0,  88, 188,  98, 114, 116, 117, 119,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false}, // SKINCOLOR_CHAOSEMERALD1
-	{"Chaos Emerald 2", {  0,  80,  82,  74,  65,  52,  56,  60,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false}, // SKINCOLOR_CHAOSEMERALD2
-	{"Chaos Emerald 3", {  0, 252, 201, 179, 182, 183, 185, 187,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false}, // SKINCOLOR_CHAOSEMERALD3
-	{"Chaos Emerald 4", {  0, 144, 146, 147, 149, 165, 167, 169,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false}, // SKINCOLOR_CHAOSEMERALD4
-	{"Chaos Emerald 5", {  0,   1, 144,   4,   9, 170,  14,  21,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false}, // SKINCOLOR_CHAOSEMERALD5
-	{"Chaos Emerald 6", {  0, 208,  50,  32,  34,  37,  40,  44,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false}, // SKINCOLOR_CHAOSEMERALD6
-	{"Chaos Emerald 7", {  0, 120, 121, 140, 133, 135, 149, 156,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE, 0, 0, false}, // SKINCOLOR_CHAOSEMERALD7
-
-	{"Invinc Flash", {  0,   0,   0,   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12}, SKINCOLOR_NONE, 0, 0, false}  // SKINCOLOR_INVINCFLASH
-};
-
-/** Patches the mobjinfo, state, and skincolor tables.
+	{"None",            {  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0}, SKINCOLOR_NONE,            0, 0,             false}, // SKINCOLOR_NONE        
+	{"White",           {120, 120, 120, 120,   0,   2,   5,   8,   9,  11,  14,  17,  20,  22,  25,  28}, SKINCOLOR_BLACK,8,         V_GRAYMAP,        true}, // SKINCOLOR_WHITE      
+	{"Silver",          {  0,   1,   2,   3,   5,   7,   9,  12,  13,  15,  18,  20,  23,  25,  27,  30}, SKINCOLOR_NICKEL,8,        0,                true}, // SKINCOLOR_SILVER
+	{"Grey",            {  1,   3,   5,   7,   9,  11,  13,  15,  17,  19,  21,  23,  25,  27,  29,  31}, SKINCOLOR_GREY,8,          V_GRAYMAP,        true}, // SKINCOLOR_GREY
+	{"Nickel",          {  3,   5,   8,  11,  15,  17,  19,  21,  23,  24,  25,  26,  27,  29,  30,  31}, SKINCOLOR_SILVER,8,        V_GRAYMAP,        true}, // SKINCOLOR_NICKEL
+	{"Black",           {  4,   7,  11,  15,  20,  22,  24,  27,  28,  28,  28,  29,  29,  30,  30,  31}, SKINCOLOR_WHITE,8,         0,                true}, // SKINCOLOR_BLACK
+	{"Skunk",           {120, 120,   0,   2,   4,  10,  16,  22,  23,  24,  25,  26,  27,  28,  29,  31}, SKINCOLOR_SKUNK,8,         V_GRAYMAP,        true}, // SKINCOLOR_SKUNK
+	{"Fairy",           {120, 120, 121, 121, 122, 123,  10,  14,  16,  18,  20,  22,  24,  26,  28,  31}, SKINCOLOR_ARTICHOKE,12,    V_PINKMAP,        true}, // SKINCOLOR_FAIRY
+	{"Popcorn",         {120,  96,  97,  98,  99,  71,  32,  11,  13,  16,  18,  21,  23,  26,  28,  31}, SKINCOLOR_PIGEON,12,       V_YELLOWMAP,       true}, // SKINCOLOR_POPCORN
+	{"Artichoke",       { 97, 176, 177, 162, 163, 179,  12,  14,  16,  18,  20,  22,  24,  26,  28,  31}, SKINCOLOR_FAIRY,12,        V_TEAMAP,       true}, // SKINCOLOR_ARTICHOKE
+	{"Pigeon",          {  0, 208, 209, 211, 226, 202,  14,  15,  17,  19,  21,  23,  25,  27,  29,  31}, SKINCOLOR_POPCORN,12,      V_STEELMAP,     true}, // SKINCOLOR_PIGEON
+	{"Sepia",           {  0,   1,   3,   5,   7,   9,  34,  36,  38,  40,  42,  44,  60,  61,  62,  63}, SKINCOLOR_LEATHER,6,       V_BROWNMAP,       true}, // SKINCOLOR_SEPIA
+	{"Beige",           {120,  65,  67,  69,  32,  34,  36,  38,  40,  42,  44,  45,  46,  47,  62,  63}, SKINCOLOR_BROWN,2,         V_BROWNMAP,       true}, // SKINCOLOR_BEIGE
+	{"Walnut",          {  3,   6,  32,  33,  35,  37,  51,  52,  54,  55,  57,  58,  60,  61,  63,  30}, SKINCOLOR_CAMOUFLAGE,8,    V_BROWNMAP,       true}, // SKINCOLOR_WALNUT
+	{"Brown",           { 67,  70,  73,  76,  48,  49,  51,  53,  54,  56,  58,  59,  61,  63,  29,  30}, SKINCOLOR_BEIGE,8,         V_BROWNMAP,       true}, // SKINCOLOR_BROWN
+	{"Leather",          { 72,  76,  48,  51,  53,  55,  57,  59,  61,  63,  28,  28,  29,  29,  30,  31}, SKINCOLOR_SEPIA,8,        V_BROWNMAP,       true}, // SKINCOLOR_LEATHER
+	{"Salmon",          {120, 120, 120, 121, 121, 122, 123, 124, 126, 127, 129, 131, 133, 135, 137, 139}, SKINCOLOR_TEA,8,           V_PINKMAP,        true}, // SKINCOLOR_SALMON
+	{"Pink",            {120, 121, 121, 122, 144, 145, 146, 147, 148, 149, 150, 151, 134, 136, 138, 140}, SKINCOLOR_PISTACHIO,8,     V_PINKMAP,        true}, // SKINCOLOR_PINK
+	{"Rose",            {144, 145, 146, 147, 148, 149, 150, 151, 134, 135, 136, 137, 138, 139, 140, 141}, SKINCOLOR_MOSS,8,          V_PINKMAP,        true}, // SKINCOLOR_ROSE
+	{"Brick",           { 64,  67,  70,  73, 146, 147, 148, 150, 118, 118, 119, 119, 156, 159, 141, 143}, SKINCOLOR_RUST,8,          V_PINKMAP,        true}, // SKINCOLOR_BRICK
+	{"Cinnamon",        { 68,  75,  48,  50,  52,  94, 152, 136, 137, 138, 139, 140, 141, 142, 143,  31}, SKINCOLOR_WRISTWATCH,6,    V_REDMAP,         true}, // SKINCOLOR_CINNAMON
+	{"Ruby",            {120, 121, 144, 145, 147, 149, 132, 133, 134, 136, 198, 198, 199, 255,  30,  31}, SKINCOLOR_SAPPHIRE,8,      V_REDMAP,         true}, // SKINCOLOR_RUBY
+	{"Raspberry",       {120, 121, 122, 123, 124, 125, 126, 127, 128, 130, 131, 134, 136, 137, 139, 140}, SKINCOLOR_MINT,8,          V_REDMAP,         true}, // SKINCOLOR_RASPBERRY
+	{"Cherry",          {120,  65,  67,  69,  71, 124, 125, 127, 132, 133, 135, 136, 138, 139, 140, 141}, SKINCOLOR_HANDHELD,10,     V_REDMAP,         true}, // SKINCOLOR_CHERRY
+	{"Red",             {122, 123, 124, 126, 129, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142}, SKINCOLOR_GREEN,6,         V_REDMAP,         true}, // SKINCOLOR_RED
+	{"Crimson",         {123, 125, 128, 131, 133, 135, 136, 138, 140, 140, 141, 141, 142, 142, 143,  31}, SKINCOLOR_PINETREE,6,      V_REDMAP,         true}, // SKINCOLOR_CRIMSON
+	{"Maroon",          {123, 124, 126, 128, 132, 135, 137,  27,  28,  28,  28,  29,  29,  30,  30,  31}, SKINCOLOR_TOXIC,8,         V_REDMAP,         true}, // SKINCOLOR_MAROON
+	{"Lemonade",        {120,  96,  97,  98,  99,  65, 122, 144, 123, 124, 147, 149, 151, 153, 156, 159}, SKINCOLOR_THUNDER,8,       V_PINKMAP,        true}, // SKINCOLOR_LEMONADE
+	{"Flame",           {120,  97, 112, 113, 113,  85,  87, 126, 149, 150, 151, 252, 253, 254, 255,  29}, SKINCOLOR_CARIBBEAN,10,    V_REDMAP,         true}, // SKINCOLOR_FLAME
+	{"Scarlet",         { 99, 113, 113,  84,  85,  87, 126, 128, 130, 196, 197, 198, 199, 240, 243, 246}, SKINCOLOR_ALGAE,10,        V_REDMAP,         true}, // SKINCOLOR_SCARLET
+	{"Ketchup",         {103, 113, 113,  84,  85,  88, 127, 130, 131, 133, 134, 136, 138, 139, 141, 143}, SKINCOLOR_MUSTARD,10,      V_REDMAP,         true}, // SKINCOLOR_KETCHUP
+	{"Dawn",            {120, 121, 122, 123, 124, 147, 148,  91,  93,  95, 152, 154, 156, 159, 141, 143}, SKINCOLOR_DUSK,8,          V_ORANGEMAP,      true}, // SKINCOLOR_DAWN
+	{"Sunset",          { 98, 112, 113,  84,  85,  87,  89, 149, 150, 251, 251, 205, 206, 207,  29,  31}, SKINCOLOR_MOONSLAM,8,      V_ORANGEMAP,      true}, // SKINCOLOR_SUNSET
+	{"Creamsicle",      {120, 120,  80,  80,  81,  82,  83,  83,  84,  85,  86,  88,  89,  91,  93,  95}, SKINCOLOR_PERIWINKLE,8,    V_ORANGEMAP,      true}, // SKINCOLOR_CREAMSICLE
+	{"Orange",          { 80,  81,  82,  83,  84,  85,  86,  88,  89,  91,  94,  95, 154, 156, 158, 159}, SKINCOLOR_BLUE,8,          V_ORANGEMAP,      true}, // SKINCOLOR_ORANGE
+	{"Pumpkin",         { 82,  83,  84,  85,  87,  89,  90,  92,  94, 152, 153, 155, 157, 159, 141, 142}, SKINCOLOR_BLUEBERRY,8,     V_ORANGEMAP,      true}, // SKINCOLOR_PUMPKIN
+	{"Rosewood",        { 83,  85,  88,  90,  92,  94, 152, 153, 154, 156, 157, 159, 140, 141, 142, 143}, SKINCOLOR_NAVY,6,          V_ORANGEMAP,      true}, // SKINCOLOR_ROSEWOOD
+	{"Burgundy",        { 84,  86,  89,  91, 152, 154, 155, 157, 158, 159, 140, 141, 142, 143,  31,  31}, SKINCOLOR_JET,8,           V_ORANGEMAP,      true}, // SKINCOLOR_BURGUNDY
+	{"Tangerine",       { 98,  98, 112, 112, 113, 113,  84,  85,  87,  89,  91,  93,  95, 153, 156, 159}, SKINCOLOR_LIME,8,          V_ORANGEMAP,      true}, // SKINCOLOR_TANGERINE
+	{"Peach",           {120,  80,  66,  70,  72,  76, 148, 149, 150, 151, 153, 154, 156,  61,  62,  63}, SKINCOLOR_CYAN,8,          V_PEACHMAP,       true}, // SKINCOLOR_PEACH
+	{"Caramel",         { 64,  66,  68,  70,  72,  74,  76,  78,  48,  50,  52,  54,  56,  58,  60,  62}, SKINCOLOR_CERULEAN,8,      V_PEACHMAP,       true}, // SKINCOLOR_CARAMEL
+	{"Cream",           {120,  96,  96,  97,  98,  82,  84,  77,  50,  54,  57,  59,  61,  63,  29,  31}, SKINCOLOR_COPPER,10,       V_PEACHMAP,       true}, // SKINCOLOR_CREAM
+	{"Gold",            { 96,  97,  98, 112, 113, 114, 115, 116, 117, 151, 118, 119, 157, 159, 140, 143}, SKINCOLOR_SLATE,8,         V_GOLDMAP,		   true}, // SKINCOLOR_GOLD
+	{"Royal",           { 97, 112, 113, 113, 114,  78,  53, 252, 252, 253, 253, 254, 255,  29,  30,  31}, SKINCOLOR_PLATINUM,6,      V_GOLDMAP,        true}, // SKINCOLOR_ROYAL
+	{"Bronze",          {112, 113, 114, 115, 116, 117, 118, 119, 156, 157, 158, 159, 141, 141, 142, 143}, SKINCOLOR_STEEL,8,         V_GOLDMAP,        true}, // SKINCOLOR_BRONZE
+	{"Copper",          {120,  99, 113, 114, 116, 117, 119,  61,  63,  28,  28,  29,  29,  30,  30,  31}, SKINCOLOR_CREAM,6,         V_GOLDMAP,        true}, // SKINCOLOR_COPPER
+	{"Quarry",          { 96,  97,  98,  99, 104, 105, 106, 107, 117, 152, 154, 156, 159, 141, 142, 143}, SKINCOLOR_AZURE,8,         V_YELLOWMAP,      true}, // SKINCOLOR_QUARRY
+	{"Yellow",          { 96,  97,  98, 100, 101, 102, 104, 113, 114, 115, 116, 117, 118, 119, 156, 159}, SKINCOLOR_AQUA,8,          V_YELLOWMAP,      true}, // SKINCOLOR_YELLOW
+	{"Mustard",         { 96,  98,  99, 112, 113, 114, 114, 106, 106, 107, 107, 108, 108, 109, 110, 111}, SKINCOLOR_KETCHUP,8,       V_YELLOWMAP,      true}, // SKINCOLOR_MUSTARD
+	{"Crocodile",       {120,  96,  97,  98, 176, 113, 114, 106, 115, 107, 108, 109, 110, 174, 175,  31}, SKINCOLOR_BUBBLEGUM,8,     V_YELLOWMAP,      true}, // SKINCOLOR_CROCODILE
+	{"Olive",           { 98, 101, 104, 105, 106, 115, 107, 108, 182, 109, 183, 110, 174, 111,  30,  31}, SKINCOLOR_TEAL,8,          V_YELLOWMAP,      true}, // SKINCOLOR_OLIVE
+	{"Vomit",           {  0, 121, 122, 144,  71,  84, 114, 115, 107, 108, 109, 183, 223, 207,  30, 246}, SKINCOLOR_ROBOHOOD,8,      V_TEAMAP,          true}, // SKINCOLOR_VOMIT
+	{"Garden",          { 98,  99, 112, 101, 113, 114, 106, 179, 180, 180, 181, 182, 183, 173, 174, 175}, SKINCOLOR_LAVENDER,6,      V_TEAMAP,          true}, // SKINCOLOR_GARDEN
+	{"Lime",            {120,  96,  97,  98,  99, 176, 177, 163, 164, 166, 168, 170, 223, 207, 243,  31}, SKINCOLOR_TANGERINE,8,     V_GREENMAP,                  true}, // SKINCOLOR_LIME
+	{"Handheld",        { 98, 104, 105, 105, 106, 167, 168, 169, 170, 171, 172, 173, 174, 175,  30,  31}, SKINCOLOR_CHERRY,8,        V_GREENMAP,                  true}, // SKINCOLOR_HANDHELD
+	{"Tea",             {120, 120, 176, 176, 176, 177, 177, 178, 178, 179, 179, 180, 180, 181, 182, 183}, SKINCOLOR_SALMON,8,        V_TEAMAP,          true}, // SKINCOLOR_TEA
+	{"Pistachio",       {120, 120, 176, 176, 177, 177, 178, 179, 165, 166, 167, 168, 169, 170, 171, 172}, SKINCOLOR_PINK,6,          V_TEAMAP, 			true}, // SKINCOLOR_PISTACHIO
+	{"Moss",            {178, 178, 178, 179, 179, 180, 181, 182, 183, 172, 172, 173, 173, 174, 174, 175}, SKINCOLOR_ROSE,8,          V_GREENMAP,			       true}, // SKINCOLOR_MOSS
+	{"Camouflage",      { 64,  66,  69,  32,  34,  37,  40, 182, 171, 172, 172, 173, 173, 174, 174, 175}, SKINCOLOR_WALNUT,8,        V_GREENMAP,                  true}, // SKINCOLOR_CAMOUFLAGE
+	{"Robo-Hood",       {120, 176, 160, 165, 167, 168, 169, 182, 182, 171,  60,  61,  63,  29,  30,  31}, SKINCOLOR_VOMIT,8,         V_GREENMAP,                  true}, // SKINCOLOR_ROBOHOOD
+	{"Mint",            {120, 176, 176, 176, 177, 163, 164, 165, 167, 221, 221, 222, 223, 207, 207,  31}, SKINCOLOR_RASPBERRY,8,     V_GREENMAP,                  true}, // SKINCOLOR_MINT
+	{"Green",           {160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175}, SKINCOLOR_RED,8,           V_GREENMAP,                  true}, // SKINCOLOR_GREEN
+	{"Pinetree",        {161, 163, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175,  30,  30,  31}, SKINCOLOR_CRIMSON,8,       V_GREENMAP,                  true}, // SKINCOLOR_PINETREE
+	{"Emerald",         {160, 184, 184, 185, 185, 186, 186, 187, 187, 188, 188, 189, 189, 190, 191, 175}, SKINCOLOR_PURPLE,8,        V_GREENMAP,                  true}, // SKINCOLOR_EMERALD
+	{"Swamp",           {160, 184, 185, 186, 187, 188, 189, 190, 191, 191,  29,  29,  30,  30,  31,  31}, SKINCOLOR_BYZANTIUM,8,     V_GREENMAP,                  true}, // SKINCOLOR_SWAMP
+	{"Dream",           {120, 120,  80,  80,  81, 177, 162, 164, 228, 228, 204, 204, 205, 205, 206, 207}, SKINCOLOR_POMEGRANATE,8,   V_GREENMAP,                  true}, // SKINCOLOR_DREAM
+	{"Plague",          { 97, 176, 160, 184, 185, 186, 187, 229, 229, 205, 206, 207,  28,  29,  30,  31}, SKINCOLOR_NOVA,8,          V_GREENMAP,                  true}, // SKINCOLOR_PLAGUE
+	{"Algae",           {208, 209, 210, 211, 213, 220, 216, 167, 168, 188, 188, 189, 190, 191,  30,  31}, SKINCOLOR_SCARLET,10,      V_GREENMAP,                  true}, // SKINCOLOR_ALGAE
+	{"Caribbean",       {120, 176, 177, 160, 185, 220, 216, 217, 229, 229, 204, 205, 206, 254, 255,  31}, SKINCOLOR_FLAME,8,         V_SKYMAP,                  true}, // SKINCOLOR_CARIBBEAN
+	{"Azure",           {120,  96,  97,  98, 177, 220, 216, 217, 218, 204, 252, 253, 254, 255,  30,  31}, SKINCOLOR_QUARRY,8,        V_SKYMAP,                  true}, // SKINCOLOR_AZURE
+	{"Aqua",            {120, 208, 208, 210, 212, 214, 220, 220, 220, 221, 221, 222, 222, 223, 223, 191}, SKINCOLOR_YELLOW,8,        V_SKYMAP,                  true}, // SKINCOLOR_AQUA
+	{"Teal",            {210, 213, 220, 220, 220, 216, 216, 221, 221, 221, 222, 222, 223, 223, 191,  31}, SKINCOLOR_OLIVE,8,         V_SKYMAP,                  true}, // SKINCOLOR_TEAL
+	{"Cyan",            {120, 120, 208, 208, 209, 210, 211, 212, 213, 215, 216, 217, 218, 219, 222, 223}, SKINCOLOR_PEACH,8,         V_SKYMAP,                  true}, // SKINCOLOR_CYAN
+	{"Jawz",            {120, 120, 208, 209, 210, 226, 215, 216, 217, 229, 229, 205, 205, 206, 207,  31}, SKINCOLOR_LILAC,10,        V_SKYMAP,                  true}, // SKINCOLOR_JAWZ
+	{"Cerulean",        {208, 209, 211, 213, 215, 216, 216, 217, 217, 218, 218, 219, 205, 206, 207, 207}, SKINCOLOR_CARAMEL,8,       V_SKYMAP,                  true}, // SKINCOLOR_CERULEAN
+	{"Navy",            {211, 212, 213, 215, 216, 218, 219, 205, 206, 206, 207, 207,  28,  29,  30,  31}, SKINCOLOR_ROSEWOOD,8,      V_SKYMAP,                  true}, // SKINCOLOR_NAVY
+	{"Platinum",        {120,   0,   0, 200, 200, 201,  11,  14,  17, 218, 222, 223, 238, 240, 243, 246}, SKINCOLOR_ROYAL,8,         V_STEELMAP,                  true}, // SKINCOLOR_PLATINUM
+	{"Slate",           {120, 120, 200, 200, 200, 201, 201, 201, 202, 202, 202, 203, 204, 205, 206, 207}, SKINCOLOR_GOLD,10,         V_STEELMAP,                  true}, // SKINCOLOR_SLATE
+	{"Steel",           {120, 200, 200, 201, 201, 202, 202, 203, 203, 204, 204, 205, 205, 206, 207,  31}, SKINCOLOR_BRONZE,10,       V_STEELMAP,                  true}, // SKINCOLOR_STEEL
+	{"Thunder",         { 96,  97,  98, 112, 113, 114,  11, 203, 204, 205, 205, 237, 239, 241, 243, 246}, SKINCOLOR_LEMONADE,8,     V_GOLDMAP,         true}, // SKINCOLOR_THUNDER
+	{"Rust",            { 64,  66,  68,  70,  32,  34,  36, 203, 204, 205,  24,  25,  26,  28,  29,  31}, SKINCOLOR_BRICK,10,       V_BROWNMAP,        true}, // SKINCOLOR_RUST
+	{"Wristwatch",      { 81,  72,  76,  48,  51,  55, 252, 205, 205, 206, 240, 241, 242, 243, 244, 246}, SKINCOLOR_CINNAMON,8,     V_BROWNMAP,        true}, // SKINCOLOR_WRISTWATCH
+	{"Jet",             {225, 226, 227, 228, 229, 205, 205, 206, 207, 207,  28,  28,  29,  29,  30,  31}, SKINCOLOR_BURGUNDY,8,     V_GRAYMAP,         true}, // SKINCOLOR_JET
+	{"Sapphire",        {208, 209, 211, 213, 215, 217, 229, 230, 232, 234, 236, 238, 240, 242, 244, 246}, SKINCOLOR_RUBY,6,         V_SKYMAP,                   true}, // SKINCOLOR_SAPPHIRE
+	{"Periwinkle",      {120, 120, 224, 225, 226, 202, 227, 228, 229, 230, 231, 233, 235, 237, 239, 241}, SKINCOLOR_CREAMSICLE,8,   V_BLUEMAP,                   true}, // SKINCOLOR_PERIWINKLE
+	{"Blue",            {224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 235, 236, 238, 242, 244, 246}, SKINCOLOR_ORANGE,8,       V_BLUEMAP,                   true}, // SKINCOLOR_BLUE
+	{"Blueberry",       {226, 228, 229, 230, 232, 233, 235, 237, 239, 240, 242, 244, 246,  31,  31,  31}, SKINCOLOR_PUMPKIN,8,      V_BLUEMAP,                   true}, // SKINCOLOR_BLUEBERRY
+	{"Nova",            {120, 112,  82,  83,  84, 124, 248, 228, 228, 204, 205, 206, 207,  29,  30,  31}, SKINCOLOR_PLAGUE,10,      V_BLUEMAP,                   true}, // SKINCOLOR_NOVA
+	{"Pastel",          {120, 208, 209, 210, 211, 226, 202, 249, 194, 195, 196, 197, 198, 199, 255,  30}, SKINCOLOR_FUCHSIA,11,     V_LAVENDERMAP,                   true}, // SKINCOLOR_PASTEL
+	{"Moonslam",        {120, 224, 201, 226, 202, 249, 250, 196, 197, 198, 199, 140, 141, 142, 143,  31}, SKINCOLOR_SUNSET,10,      V_LAVENDERMAP,                   true}, // SKINCOLOR_MOONSLAM
+	{"Ultraviolet",     {120,  64,  81, 122, 192, 249, 203, 221, 221, 219, 219, 223, 223, 191, 191,  31}, SKINCOLOR_MAUVE,10,      V_PURPLEMAP,                    true}, // SKINCOLOR_ULTRAVIOLET
+	{"Dusk",            {121, 145, 192, 249, 250, 251, 204, 204, 205, 205, 206, 206, 207,  29,  30,  31}, SKINCOLOR_DAWN,6,         V_LAVENDERMAP,                   true}, // SKINCOLOR_DUSK
+	{"Bubblegum",       {120,  96,  64, 121,  67, 144, 123, 192, 193, 194, 195, 196, 197, 198, 199,  30}, SKINCOLOR_CROCODILE,8,    V_PINKMAP,         true}, // SKINCOLOR_BUBBLEGUM
+	{"Purple",          {121, 145, 192, 192, 193, 194, 195, 196, 196, 197, 197, 198, 198, 199,  30,  31}, SKINCOLOR_EMERALD,8,      V_PURPLEMAP,                   true}, // SKINCOLOR_PURPLE
+	{"Fuchsia",         {120, 122, 124, 125, 126, 150, 196, 197, 198, 198, 199, 199, 240, 242, 244, 246}, SKINCOLOR_PASTEL,11,      V_PURPLEMAP,                   true}, // SKINCOLOR_FUCHSIA
+	{"Toxic",           {120, 120, 176, 176, 177,   6,   8,  10, 249, 250, 196, 197, 198, 199, 143,  31}, SKINCOLOR_MAROON,8,       V_LAVENDERMAP,                   true}, // SKINCOLOR_TOXIC
+	{"Mauve",           { 96,  97,  98, 112, 113,  73, 146, 248, 249, 251, 205, 205, 206, 207,  29,  31}, SKINCOLOR_ULTRAVIOLET,8,  V_LAVENDERMAP,                   true}, // SKINCOLOR_MAUVE
+	{"Lavender",        {121, 145, 192, 248, 249, 250, 251, 252, 252, 253, 253, 254, 254, 255,  30,  31}, SKINCOLOR_GARDEN,6,       V_LAVENDERMAP,                   true}, // SKINCOLOR_LAVENDER
+	{"Byzantium",       {201, 248, 249, 250, 251, 252, 253, 254, 255, 255,  29,  29,  30,  30,  31,  31}, SKINCOLOR_SWAMP,8,        V_LAVENDERMAP,                   true}, // SKINCOLOR_BYZANTIUM
+	{"Pomegranate",     {144, 145, 146, 147, 148, 149, 150, 251, 251, 252, 252, 253, 254, 255,  29,  30}, SKINCOLOR_DREAM,8,        V_LAVENDERMAP,                   true}, // SKINCOLOR_POMEGRANATE
+	{"Lilac",           {120, 120, 120, 121, 121, 122, 122, 123, 192, 248, 249, 250, 251, 252, 253, 254}, SKINCOLOR_JAWZ,6,          V_PINKMAP,        true}, // SKINCOLOR_LILAC
+	{"Bone",            {120, 120,   0,   1,   3,   5,   7,  10,  12,  14,  16,  19,  22,  24,  26,  29}, SKINCOLOR_INK,8,           0-                true}, // SKINCOLOR_BONE
+	{"Carbon",          {  3,   6,  10,  13,  17,  20,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31}, SKINCOLOR_MARBLE,8,        V_GRAYMAP,         true}, // SKINCOLOR_CARBON
+	{"Ink",             {  0,   2,   5,  10,  15,  20,  25,  26,  27,  28,  30,  30,  30,  31,  31,  31}, SKINCOLOR_BONE,8,          V_GRAYMAP,         true}, // SKINCOLOR_INK
+	{"Ghost",           {120, 120,   0,   1,   1, 224, 225, 225, 226, 202, 203, 204, 205, 206, 207,  29}, SKINCOLOR_PEACHY,12,       0,                true}, // SKINCOLOR_GHOST
+	{"Marble",          {120,    1,  4,   6,    8, 10, 202, 202, 203, 203, 204, 204, 205, 205, 206, 207}, SKINCOLOR_CARBON,8,       V_STEELMAP,                   true}, // SKINCOLOR_MARBLE
+	{"Bluebell",        {224, 225, 226, 227, 228, 228, 229, 204, 204, 205, 205, 198, 198, 199, 241, 244}, SKINCOLOR_LANTERN,10,     V_STEELMAP,                   true}, // SKINCOLOR_BLUEBELL
+	{"Chocolate",       { 77,  48,  49,  52,  55,  57,  59,  60,  61,  25,  26,  27,  28,  29,  30,  31}, SKINCOLOR_TAN,8,          V_BROWNMAP,        true}, // SKINCOLOR_CHOCOLATE
+	{"Tan",             { 96,  98,  81,  82,  83,  75,  77,  37,  38,  40,  42,  44,  59,  60,  61,  62}, SKINCOLOR_CHOCOLATE,12,   V_BROWNMAP,        true}, // SKINCOLOR_TAN
+	{"Peachy",          { 64,  66,  68,  82,  83,  72,  74, 146, 147, 148, 149, 150, 151, 135, 137, 139}, SKINCOLOR_GHOST,8,        V_PEACHMAP,        true}, // SKINCOLOR_PEACHY
+	{"Quail",           { 68,  70,  72,  74,  76,  78, 148, 149, 251, 252, 253, 254, 255,  29,  30,  31}, SKINCOLOR_WAVE,8,         V_PEACHMAP,        true}, // SKINCOLOR_QUAIL
+	{"Lantern",         {  0, 176, 113,  84,  86,  89,  92,  94, 153, 154, 136, 137, 138, 199, 255,  31}, SKINCOLOR_BLUEBELL,8,     V_GOLDMAP,         true}, // SKINCOLOR_LANTERN
+	{"Apricot",         { 66,  68,  70,  71,  73,  84,  85,  86,  87,  88,  90,  92,  93,  94, 153, 155}, SKINCOLOR_FROST,10,       V_ORANGEMAP,       true}, // SKINCOLOR_APRICOT
+	{"Sandy",           {112, 113, 114, 115, 116,  54,  56,  57,  58,  59,  60, 254, 254, 255, 255, 244}, SKINCOLOR_PEACOCK,8,      V_GOLDMAP,         true}, // SKINCOLOR_SANDY
+	{"Banana",          { 96,  98,  99, 100, 102, 103, 113, 105, 106, 107, 108, 109, 183, 110,  63, 111}, SKINCOLOR_ICY,8,          V_YELLOWMAP,       true}, // SKINCOLOR_BANANA
+	{"Sunflower",       { 97,  98,  99, 112, 113, 105, 106, 107, 107, 108, 170, 171, 172, 173, 174, 175}, SKINCOLOR_MAGENTA,8,      V_TEAMAP,           true}, // SKINCOLOR_SUNFLOWER
+	{"Olivine",         {120,  97,  97, 176, 176, 160, 160, 184, 184, 185, 185, 186, 187, 188, 189, 190}, SKINCOLOR_VIOLET,8,       V_TEAMAP,			true}, // SKINCOLOR_OLIVINE
+	{"Peridot",         {176, 176, 177, 105 ,105, 106, 106, 107, 107, 108, 182, 182, 183, 183, 173, 191}, SKINCOLOR_VIOLET,8,       V_TEAMAP,                   true}, // SKINCOLOR_PERIDOT
+	{"Apple",           { 99, 101, 113, 105, 106, 107, 107, 168, 169, 170, 171, 171, 172, 173, 174, 175}, SKINCOLOR_GEMSTONE,8,     V_TEAMAP,                   true}, // SKINCOLOR_APPLE
+	{"Seafoam",         {120,  97, 176, 177, 178, 179, 180, 221, 222, 222, 223, 223, 240, 242, 244,  31}, SKINCOLOR_PLUM,10,        V_TEAMAP,                   true}, // SKINCOLOR_SEAFOAM
+	{"Forest",          {164, 166, 167, 168, 169, 170, 171, 172, 173, 174, 174, 175, 175,  31,  31,  31}, SKINCOLOR_NEON,8,         V_GREENMAP,                   true}, // SKINCOLOR_FOREST
+	{"Topaz",           {120, 208, 209, 211, 211, 161, 161, 162, 162, 163, 163, 165, 167, 169, 171, 173}, SKINCOLOR_APRICOT,8,      V_SKYMAP,                   true}, // SKINCOLOR_TOPAZ
+	{"Frost",           {120,   0, 208, 247, 247, 211, 213, 220, 216, 217, 221, 222, 223, 173, 174, 175}, SKINCOLOR_APRICOT,8,      V_SKYMAP,                   true}, // SKINCOLOR_FROST
+	{"Wave",            {120, 208, 210, 213, 215, 216, 217, 218, 219, 205, 198, 198, 199, 199, 207, 243}, SKINCOLOR_QUAIL,8,        V_SKYMAP,                   true}, // SKINCOLOR_WAVE
+	{"Icy",             {120, 120, 120, 120, 208, 210, 213, 214, 215, 216, 229, 229, 204, 205, 206, 207}, SKINCOLOR_BANANA,10,      V_SKYMAP,                   true}, // SKINCOLOR_ICY
+	{"Peacock",         {214, 215, 216, 217, 218, 219, 219, 223, 223, 173, 240, 241, 243, 244, 245, 246}, SKINCOLOR_SANDY,8,        V_BLUEMAP,                   true}, // SKINCOLOR_PEACOCK
+	{"Vapor",           {209, 211, 212, 213, 214, 215, 227, 228, 229, 204, 197, 197, 198, 198, 199, 255}, SKINCOLOR_THISTLE,8,      V_BLUEMAP,                   true}, // SKINCOLOR_VAPOR
+	{"Gemstone",        {224, 225, 226, 227, 228, 229, 204, 196, 197, 197, 198, 198, 199, 255, 142,  31}, SKINCOLOR_APPLE,8,        V_PURPLEMAP,                   true}, // SKINCOLOR_GEMSTONE
+	{"Neon",            {192, 193, 194, 195, 196, 197, 197, 198, 198, 199, 199, 255, 255,  29,  30,  31}, SKINCOLOR_FOREST,8,       V_PURPLEMAP,                   true}, // SKINCOLOR_NEON
+	{"Plum",            {145, 147, 148, 149, 150, 151, 197, 197, 198, 198, 199, 199, 140, 141, 142, 143}, SKINCOLOR_SEAFOAM,10,     V_PURPLEMAP,                    true}, // SKINCOLOR_PLUM
+	{"Violet",          { 64, 122, 123, 146, 147, 149, 151, 196, 197, 198, 198, 199, 199, 241, 243, 245}, SKINCOLOR_PERIDOT,8,      V_LAVENDERMAP,                   true}, // SKINCOLOR_VIOLET
+	{"Magenta",         {120, 121, 122, 123, 124, 125, 149, 150, 151, 197, 197, 198, 198, 199, 140, 141}, SKINCOLOR_SUNFLOWER,10,      V_PINKMAP,      true}, // SKINCOLOR_MAGENTA
+	{"Thistle",         { 64,  66, 122, 123, 146, 147, 249, 250, 250, 251, 252, 253, 254, 255, 244, 246}, SKINCOLOR_VAPOR,10,          V_PINKMAP,      true}, // SKINCOLOR_THISTLE
+	{"Diamond",         {120,   1,   2,   3, 225, 226, 202,  14,  16,  18,  20,  22,  24,  26,  28,  30}, SKINCOLOR_EARTHWORM,8,       0,              true}, // SKINCOLOR_DIAMOND
+	{"Raven",           {224, 225, 226, 202,  37,  39,  19,  21,  23,  25,  27,  28,  29,  29,  30,  31}, SKINCOLOR_CROW,8,            V_GRAYMAP,      true}, // SKINCOLOR_RAVEN
+	{"Mud",             { 34,  37,  39,  41,  43,  44,  45,  46,  47,  61,  62,  63,  28,  29,  30,  31}, SKINCOLOR_ONYX,8,            V_BROWNMAP,     true}, // SKINCOLOR_MUD
+	{"Earthworm",       {  0, 121, 122, 145, 146, 147,  37,  38,  40,  42,  44,  46,  47,  62,  63, 174}, SKINCOLOR_DIAMOND,8,         V_PINKMAP,      true}, // SKINCOLOR_EARTHWORM
+	{"Yogurt",          {  0,  80,  65,  66,  68,  70, 145, 124, 147, 148, 149, 150, 151, 152, 154, 156}, SKINCOLOR_CHARTEUSE,12,      V_PINKMAP,      true}, // SKINCOLOR_YOGURT
+	{"Pearl",           {120,   0,   0,  64,  64, 121,  67, 144, 145, 146, 147, 148, 149, 150, 151, 133}, SKINCOLOR_STORM,8,           V_PINKMAP,      true}, // SKINCOLOR_PEARL
+	{"Strawberry",      {120,  96,  97,  98, 176,  81, 144, 124, 126, 129, 132, 134, 136, 138, 139, 140}, SKINCOLOR_SLIME,8,           V_REDMAP,       true}, // SKINCOLOR_STRAWBERRY
+	{"Soda",            { 81,  82,  83,  74,  76,  88,  90, 130, 132, 134, 155, 158, 140, 141, 142, 143}, SKINCOLOR_LEAF,9,            V_REDMAP,       true}, // SKINCOLOR_SODA
+	{"Bloodcell",       {145, 146, 148, 149, 150, 151, 133, 134, 135, 136, 138, 139, 140, 141, 142, 143}, SKINCOLOR_INDIGO,8,          V_REDMAP,       true}, // SKINCOLOR_BLOODCELL
+	{"Mahogany",        {133, 134, 135, 136, 137, 138, 139, 139, 140, 141, 142, 142, 143, 143,  30,  31}, SKINCOLOR_JUNGLE,6,          V_REDMAP,       true}, // SKINCOLOR_MAHOGANY
+	{"Fiery",           { 80,  81,  83,  85,  86,  88,  90, 130, 132, 133, 135, 137, 138, 140, 141, 142}, SKINCOLOR_COMET,8,           V_ORANGEMAP,   true}, // SKINCOLOR_FIERY
+	{"Spice",           { 99, 101, 113, 114, 115, 116,  92,  93,  95, 153, 136, 138, 139, 140, 142, 143}, SKINCOLOR_DEPTHS,8,          V_GOLDMAP,      true}, // SKINCOLOR_SPICE
+	{"King",            { 96,  97,  99, 176, 113, 114,  77, 149, 151, 153, 155, 157, 159, 140, 142,  31}, SKINCOLOR_NEBULA,8,          V_GOLDMAP,      true}, // SKINCOLOR_KING
+	{"Hot Dog",         { 96,  97,  98, 100, 102, 113,  85,  87,  90, 130, 132, 134, 136, 138, 140, 142}, SKINCOLOR_LAPIS,8,           V_GOLDMAP,      true}, // SKINCOLOR_HOTDOG
+	{"Carnation",       { 96,  97,  98,  65, 122, 123, 124, 125, 148, 149, 251, 252, 253, 254, 255,  29}, SKINCOLOR_VACATION,8,       V_PINKMAP,       true}, // SKINCOLOR_CARNATION
+	{"Candy",           { 81, 122, 123, 124, 125, 149, 150, 151, 252, 253, 254, 199, 255, 243, 245,  31}, SKINCOLOR_DIANNE,8,         V_PINKMAP,       true}, // SKINCOLOR_CANDY
+	{"Nebula",          { 65, 122, 145, 248, 249, 250,  53,  55,  58,  60,  61, 199, 255,  29,  30,  31}, SKINCOLOR_KING,8,           V_LAVENDERMAP,                 true}, // SKINCOLOR_NEBULA
+	{"Steampunk",       {  2,   4,   7,  32,  34,  78,  48,  90,  92,  94,  95, 153, 155, 157, 159, 140}, SKINCOLOR_PLASMA,8,          V_BROWNMAP,     true}, // SKINCOLOR_STEAMPUNK
+	{"Amber",           { 68,  72,  85,  87,  89,  91, 117, 117, 118, 118, 119, 156, 159, 140, 141, 143}, SKINCOLOR_MIDNIGHT,8,        V_ORANGEMAP,    true}, // SKINCOLOR_AMBER
+	{"Carrot",          { 80,  67,  83,  84,  85,  77, 116, 108, 170, 171, 190, 173, 173, 174, 191, 175}, SKINCOLOR_GRAPE,8,           V_TEAMAP,       true}, // SKINCOLOR_CARROT
+	{"Cheese",          { 80,  81,  82,  83,  84,  75,  78,  49,  52,  55,  57,  59,  60,  61,  62,  63}, SKINCOLOR_LIGHTNING,8,       V_BROWNMAP,     true}, // SKINCOLOR_CHEESE
+	{"Dune",            {120,  96,  80,  81,  82,  70,  72,  75,  79,  91,  93, 152, 154, 156, 158, 140}, SKINCOLOR_PEPPERMINT,9,      V_BROWNMAP,     true}, // SKINCOLOR_DUNE
+	{"Brass",           { 96,  98, 112, 113, 114, 115, 116, 117, 118,  58,  59,  60,  61,  62,  63,  28}, SKINCOLOR_LUNAR,8,           V_GOLDMAP,      true}, // SKINCOLOR_BRASS
+	{"Citrine",         {120,  97,  97, 176, 176, 176, 105, 105, 105, 106, 106, 107, 107, 108, 108, 182}, SKINCOLOR_BYZANTIUM,8,       V_YELLOWMAP,    true}, // SKINCOLOR_CITRINE
+	{"Lemon",           {120, 120,  96,  96,  97,  98,  99, 100, 101, 113, 105, 106, 107, 108, 109, 110}, SKINCOLOR_ORCA,8,            V_YELLOWMAP,    true}, // SKINCOLOR_LEMON
+	{"Casket",          {104, 105, 106, 107, 107, 108, 108, 182, 109, 183, 110,  63, 191, 111,  30,  31}, SKINCOLOR_TURQUOISE,8,       V_GREENMAP,                true}, // SKINCOLOR_CASKET
+	{"Khaki",           { 65,  68,  70,  73,  32,  34,  36,  38, 108, 108, 182, 109, 183, 110, 174,  31}, SKINCOLOR_SNOW,8,            V_GREENMAP,              true}, // SKINCOLOR_KHAKI
+	{"Light",           {120,  96,  97,  98,  99, 100, 176, 177, 178, 179,  15,  18,  21,  24,  27,  29}, SKINCOLOR_COTTONCANDY,10,    V_TEAMAP,       true}, // SKINCOLOR_LIGHT
+	{"Peppermint",      {120, 120,  96,  96,  97, 176, 177, 178, 165, 167, 221, 222, 223, 173, 174, 175}, SKINCOLOR_DUNE,9,            V_TEAMAP,       true}, // SKINCOLOR_PEPPERMINT
+	{"Laser",           { 96,  98, 100, 102, 104, 160, 184, 185, 186, 187, 188, 222, 223, 239, 242, 244}, SKINCOLOR_MULBERRY,9,        V_GREENMAP,                true}, // SKINCOLOR_LASER
+	{"Asparagus",       { 98, 176, 177, 177, 178, 178, 179, 179, 180, 181, 182, 171, 172, 173, 174, 175}, SKINCOLOR_IRIS,8,            V_GREENMAP,                true}, // SKINCOLOR_ASPARAGUS
+	{"Army",            { 97,  98, 176, 177, 178, 179, 180, 181,  20,  22,  24,  25,  27,  29,  30,  31}, SKINCOLOR_AMETHYST,12,       V_TEAMAP,       true}, // SKINCOLOR_ARMY
+	{"Crow",            {  1,   4,   7, 179, 180, 181, 108,  42,  44,  23,  24,  26,  27,  28,  29,  31}, SKINCOLOR_RAVEN,8,           V_GREENMAP,                true}, // SKINCOLOR_CROW
+	{"Charteuse",       { 96,  97,  98, 176, 160, 161, 162, 164, 165, 167, 168, 170, 171, 172, 173, 174}, SKINCOLOR_YOGURT,10,         V_TEAMAP,       true}, // SKINCOLOR_CHARTEUSE
+	{"Slime",           {176, 160, 184, 185, 185, 186, 165, 107, 108, 108, 109, 109, 110,  63, 174, 111}, SKINCOLOR_STRAWBERRY,8,      V_GREENMAP,                true}, // SKINCOLOR_SLIME
+	{"Leaf",            {176, 160, 184, 184, 185, 186, 187, 168, 169, 170, 171, 172, 173, 174, 175,  31}, SKINCOLOR_SODA,9,            V_GREENMAP,                true}, // SKINCOLOR_LEAF
+	{"Jungle",          {184, 163, 165, 187, 168, 169, 182, 182, 109, 183, 254, 199, 255, 142, 143,  31}, SKINCOLOR_MAHOGANY,8,        V_GREENMAP,                true}, // SKINCOLOR_JUNGLE
+	{"Evergreen",       {  0, 200, 201, 226, 227, 217, 221, 189, 171, 190, 173, 174, 174, 175,  30,  31}, SKINCOLOR_PEGASUS,8,         V_SKYMAP,                true}, // SKINCOLOR_EVERGREEN
+	{"Tropic",          { 97, 176, 160, 184, 184, 185, 185, 220, 217, 221, 222, 223, 173, 191, 175,  31}, SKINCOLOR_DISCO,12,          V_GREENMAP,                true}, // SKINCOLOR_TROPIC
+	{"Iguana",          {177, 161, 163, 164, 165, 166, 221, 221, 219, 219, 206, 206, 240, 242, 244, 246}, SKINCOLOR_LAKESIDE,6,        V_GREENMAP,                true}, // SKINCOLOR_IGUANA
+	{"Spearmint",       {120,  96,  97, 176, 160, 162, 220, 216, 217, 221, 222, 171, 172, 173, 174, 175}, SKINCOLOR_CYBER,12,         V_TEAMAP,        true}, // SKINCOLOR_SPEARMINT
+	{"Patina",          {209, 210, 212, 214, 220, 220, 165, 166, 180, 181, 182, 109, 110, 191, 111,  30}, SKINCOLOR_MYSTIC,10,        V_SKYMAP,                 true}, // SKINCOLOR_PATINA
+	{"Lakeside",        { 96,  99, 177, 162, 220, 216, 217, 221, 222, 171,  46,  61,  62,  63,  28,  30}, SKINCOLOR_IGUANA,10,        V_BLUEMAP,                 true}, // SKINCOLOR_LAKESIDE
+	{"Electric",        {120, 120,   0,   0, 208, 208, 247, 247, 211, 213, 220, 217, 221, 222, 223, 174}, SKINCOLOR_SAKURA,10,        V_SKYMAP,                 true}, // SKINCOLOR_ELECTRIC
+	{"Turquoise",       {210, 214, 220, 217, 221, 221, 222, 222, 222, 223, 223, 173, 174, 174, 175,  31}, SKINCOLOR_CASKET,7,         V_BLUEMAP,                 true}, // SKINCOLOR_TURQUOISE
+	{"Pegasus",         {120, 120,   0,   1, 200, 200, 209, 211, 213, 215, 216, 217, 221, 222, 223, 207}, SKINCOLOR_EVERGREEN,8,      V_SKYMAP,                 true}, // SKINCOLOR_PEGASUS
+	{"Plasma",          {120,   0, 208, 247, 247, 212, 213, 215, 216, 229, 230, 233, 235, 237, 239, 241}, SKINCOLOR_STEAMPUNK,8,      V_SKYMAP,                 true}, // SKINCOLOR_PLASMA
+	{"Comet",           {120, 120,   0, 208, 247, 247, 213, 215, 216, 217, 218, 204, 205, 206, 207,  28}, SKINCOLOR_FIERY,8,          V_SKYMAP,                 true}, // SKINCOLOR_COMET
+	{"Lightning",       {120,  96,  97,  98, 176, 209, 212, 215, 216, 228, 229, 230, 233, 235, 237, 240}, SKINCOLOR_CHEESE,10,        V_SKYMAP,                 true}, // SKINCOLOR_LIGHTNING
+	{"Vacation",        { 97, 176, 160, 162, 220, 216, 217, 229, 230, 233, 235, 237, 239, 242, 244, 246}, SKINCOLOR_CARNATION,8,      V_GREENMAP,                 true}, // SKINCOLOR_VACATION
+	{"Ultramarine",     {224, 209, 211, 213, 215, 216, 228, 229, 204, 205, 205, 206, 239, 242, 244,  31}, SKINCOLOR_EXOTIC,8,         V_BLUEMAP,                 true}, // SKINCOLOR_ULTRAMARINE
+	{"Depths",          {247, 213, 215, 216, 217, 204, 205, 237, 238, 239, 240, 241, 243, 244, 245, 246}, SKINCOLOR_SPICE,8,          V_BLUEMAP,                 true}, // SKINCOLOR_DEPTHS
+	{"Dianne",          {  0,   3,   6,   9,  12, 203, 218, 222, 222, 223,  25,  26,  27,  28,  29,  30}, SKINCOLOR_CANDY,10,         V_STEELMAP,                 true}, // SKINCOLOR_DIANNE
+	{"Exotic",          { 80, 121,  67,  70,  73,  32,  35, 181, 222, 222, 223, 223, 207, 243, 245,  31}, SKINCOLOR_ULTRAMARINE,8,     V_PEACHMAP,     true}, // SKINCOLOR_EXOTIC
+	{"Snow",            {  0, 200, 208, 210, 225, 226, 226, 227, 228, 203, 204, 205, 206, 207,  29,  30}, SKINCOLOR_KHAKI,8,           0,                true}, // SKINCOLOR_SNOW
+	{"Moon",            {104, 113, 105, 106, 107, 108, 205, 206, 240, 241, 242, 243, 244, 245, 246,  31}, SKINCOLOR_BOYSENBERRY,8,     V_YELLOWMAP,    true}, // SKINCOLOR_MOON
+	{"Lunar",           {225, 226, 202, 203, 204, 205, 206, 238, 239, 241, 242, 243, 244, 245, 246,  31}, SKINCOLOR_BRASS,10,          V_STEELMAP,                true}, // SKINCOLOR_LUNAR
+	{"Onyx",            {200, 201, 202, 203, 204, 205, 205, 206, 206, 207, 207, 243, 243, 244, 245, 246}, SKINCOLOR_MUD,6,             V_STEELMAP,                true}, // SKINCOLOR_ONYX
+	{"Lapis",           {210, 212, 214, 216, 229, 230, 231, 233, 234, 235, 236, 238, 240, 242, 244, 246}, SKINCOLOR_HOTDOG,8,          V_BLUEMAP,                true}, // SKINCOLOR_LAPIS
+	{"Orca",            {120, 120,   0,   0,   1, 200, 224, 225, 226, 227, 228, 229, 204, 205, 206, 207}, SKINCOLOR_LEMON,10,          0,                true}, // SKINCOLOR_ORCA
+	{"Storm",           {  0,   1,   2,   4, 201, 202, 202, 228, 229, 230, 232, 234, 236, 238, 240, 242}, SKINCOLOR_PEARL,8,          V_STEELMAP,                 true}, // SKINCOLOR_STORM
+	{"Midnight",        {231, 232, 233, 234, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246,  31}, SKINCOLOR_AMBER,6,          V_BLUEMAP,                 true}, // SKINCOLOR_MIDNIGHT
+	{"Cotton Candy",    {120,  80, 121,  67, 122, 201, 201, 215, 215, 216, 217, 218, 205, 206, 240, 243}, SKINCOLOR_LIGHT,10,         V_SKYMAP,                 true}, // SKINCOLOR_COTTONCANDY
+	{"Cyber",           { 64,  81,  70, 145, 192, 248, 228, 229, 230, 231, 233, 234, 236, 238, 240, 242}, SKINCOLOR_SPEARMINT,12,     V_LAVENDERMAP,                 true}, // SKINCOLOR_CYBER
+	{"Amethyst",        {121, 122, 123, 192, 248, 249, 203, 229, 230, 233, 235, 236, 238, 239, 241, 243}, SKINCOLOR_ARMY,10,          V_LAVENDERMAP,                 true}, // SKINCOLOR_AMETHYST
+	{"Iris",            {0,   208, 210, 225, 226, 202, 249, 250, 251, 252, 253, 254, 199, 255, 29,   31}, SKINCOLOR_ASPARAGUS,12,     V_LAVENDERMAP,                 true}, // SKINCOLOR_IRIS
+	{"Gothic",          {208, 209, 225, 227, 203, 204, 252, 253, 137, 139, 140, 255, 255, 244, 245, 246}, SKINCOLOR_WICKED,8,         V_STEELMAP,                 true}, // SKINCOLOR_GOTHIC
+	{"Grape",           { 65, 122, 192, 193, 194, 195, 196, 197, 198, 238, 239, 241, 242, 243, 245,  31}, SKINCOLOR_CARROT,10,        V_PURPLEMAP,                 true}, // SKINCOLOR_GRAPE
+	{"Indigo",          {192, 194, 195, 196, 197, 198, 199, 239, 240, 241, 242, 243, 244, 245, 246,  31}, SKINCOLOR_BLOODCELL,10,     V_PURPLEMAP,                 true}, // SKINCOLOR_INDIGO
+	{"Sakura",          { 64,  66, 122, 123, 192, 193, 193, 194, 130, 131, 133, 134, 136, 137, 199, 255}, SKINCOLOR_ELECTRIC,9,       V_PINKMAP,       true}, // SKINCOLOR_SAKURA
+	{"Disco",           {192, 193, 194, 195, 196, 197, 136, 137, 138, 139, 140, 141, 142, 143,  30,  31}, SKINCOLOR_TROPIC,8,         V_PURPLEMAP,                 true}, // SKINCOLOR_DISCO
+	{"Mulberry",        {121, 123, 124, 125, 126, 127, 130, 196, 197, 197, 198, 199, 140, 141, 142, 143}, SKINCOLOR_LASER,8,          V_PINKMAP,       true}, // SKINCOLOR_MULBERRY
+	{"Boysenberry",     {123, 125, 127, 130, 132, 134, 198, 198, 199, 199, 255, 255, 244, 245, 246,  31}, SKINCOLOR_MOON,10,          V_REDMAP,         true}, // SKINCOLOR_BOYSENBERRY
+	{"Mystic",          {122, 145, 248, 249, 250, 251, 197, 197, 198, 198, 199, 199, 255, 255,  29,  31}, SKINCOLOR_PATINA,8,         V_PURPLEMAP,                 true}, // SKINCOLOR_MYSTIC
+	{"Wicked",           {121,   5,  10,  15,  20, 253, 254, 254, 255, 255,  29, 245, 245, 246, 246,  31}, SKINCOLOR_GOTHIC,10,         V_STEELMAP,                 true}, // SKINCOLOR_WICKED
+																																		   
+	{"SUPER1",		   {120, 120, 120, 120, 120, 120, 120, 120, 120, 120,  96, 100, 104, 113, 116, 119}, SKINCOLOR_PERIWINKLE,8,       0,                                       false}, // SKINCOLOR_SUPER1
+    {"SUPER2",	       {120, 120, 120, 120, 120, 120, 120, 120,  96,  98, 101, 104, 113, 115, 117, 119}, SKINCOLOR_PERIWINKLE,8,      0,                                       false}, // SKINCOLOR_SUPER2
+    {"SUPER3",	       {120, 120, 120, 120, 120, 120,  96,  98, 100, 102, 104, 113, 114, 116, 117, 119}, SKINCOLOR_PERIWINKLE,8,      0,                                       false}, // SKINCOLOR_SUPER3
+    {"SUPER4",	       {120, 120, 120, 120,  96,  97,  99, 100, 102, 104, 113, 114, 115, 116, 117, 119}, SKINCOLOR_PERIWINKLE,8,       0,                                       false}, // SKINCOLOR_SUPER4
+    {"SUPER5",	       {120, 120,  96, 120, 120, 120, 120, 120, 104, 113, 114, 115, 116, 117, 118, 119}, SKINCOLOR_PERIWINKLE,8,       0,                                       false}, // SKINCOLOR_SUPER5
+    {"TSUPER1",	       {120, 120, 120, 120, 120, 120, 120, 120, 120, 120,  80,  82,  85, 115, 117, 119}, SKINCOLOR_SAPPHIRE,8,         0,                                     false}, // SKINCOLOR_TSUPER1
+    {"TSUPER2",	       {120, 120, 120, 120, 120, 120, 120, 120,  80,  81,  83,  85, 115, 116, 117, 119}, SKINCOLOR_SAPPHIRE,8,         0,                                     false}, // SKINCOLOR_TSUPER2
+    {"TSUPER3",	       {120, 120, 120, 120, 120, 120,  80,  81,  82,  83,  85, 115, 116, 117, 118, 119}, SKINCOLOR_SAPPHIRE,8,         0,                                     false}, // SKINCOLOR_TSUPER3
+    {"TSUPER4",	       {120, 120, 120, 120,  80,  81,  82,  83,  84,  85, 115, 115, 116, 117, 118, 119}, SKINCOLOR_SAPPHIRE,8,         0,                                     false}, // SKINCOLOR_TSUPER4
+    {"TSUPER5",	       {120, 120,  80,  80,  81,  82,  83,  84,  85, 115, 115, 116, 117, 117, 118, 119}, SKINCOLOR_SAPPHIRE,8,         0,                                     false}, // SKINCOLOR_TSUPER5
+    {"KSUPER1",	       {120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 121, 123, 125, 127, 129, 132}, SKINCOLOR_CYAN,8,             0,                                 false}, // SKINCOLOR_KSUPER1
+    {"KSUPER2",	       {120, 120, 120, 120, 120, 120, 120, 120, 121, 122, 124, 125, 127, 128, 130, 132}, SKINCOLOR_CYAN,8,             0,                                 false}, // SKINCOLOR_KSUPER2
+    {"KSUPER3",	       {120, 120, 120, 120, 120, 120, 121, 122, 123, 124, 125, 127, 128, 129, 130, 132}, SKINCOLOR_CYAN,8,             0,                                 false}, // SKINCOLOR_KSUPER3
+    {"KSUPER4",	       {120, 120, 120, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132}, SKINCOLOR_CYAN,8,             0,                                 false}, // SKINCOLOR_KSUPER4
+    {"KSUPER5",	       {120, 120, 121, 121, 122, 123, 124, 125, 126, 126, 127, 128, 129, 130, 131, 132}, SKINCOLOR_CYAN,8,             0,                                 false}, // SKINCOLOR_KSUPER5
+    {"PSUPER1",	       {120, 120, 120, 120, 120, 120, 120, 120, 120, 120,   0, 122, 124, 248, 251, 255}, SKINCOLOR_CYAN,8,             0,                                 false}, // SKINCOLOR_PSUPER1
+    {"PSUPER2",	       {120, 120, 120, 120, 120, 120, 120, 120,   0, 121, 122, 124, 248, 250, 252, 255}, SKINCOLOR_CYAN,8,             0,                                 false}, // SKINCOLOR_PSUPER2
+    {"PSUPER3",	       {120, 120, 120, 120, 120, 120,   0, 121, 122, 123, 124, 248, 249, 251, 253, 255}, SKINCOLOR_CYAN,8,             0,                                 false}, // SKINCOLOR_PSUPER3
+    {"PSUPER4",	       {120, 120, 120, 120,   0, 121, 122, 123, 124, 248, 249, 250, 251, 252, 253, 255}, SKINCOLOR_CYAN,8,             0,                                 false}, // SKINCOLOR_PSUPER4
+    {"PSUPER5",	       {120, 120,   0, 121, 122, 123, 124, 248, 248, 249, 250, 251, 252, 253, 254, 255}, SKINCOLOR_CYAN,8,            0,                                false}, // SKINCOLOR_PSUPER5
+    {"BSUPER1",	       {120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 224, 225, 227, 228, 230, 232}, SKINCOLOR_NONE,8,             0,                                 false}, // SKINCOLOR_BSUPER1
+    {"BSUPER2",	       {120, 120, 120, 120, 120, 120, 120, 120, 224, 225, 226, 227, 228, 229, 230, 232}, SKINCOLOR_NONE,8,             0,                                 false}, // SKINCOLOR_BSUPER2
+    {"BSUPER3",	       {120, 120, 120, 120, 120, 120, 224, 224, 225, 226, 227, 228, 229, 230, 231, 232}, SKINCOLOR_NONE,8,             0,                                 false}, // SKINCOLOR_BSUPER3
+    {"BSUPER4",	       {120, 120, 120, 120, 224, 224, 225, 226, 226, 227, 228, 229, 229, 230, 231, 232}, SKINCOLOR_NONE,8,             0,                                 false}, // SKINCOLOR_BSUPER4
+    {"BSUPER5",	       {120, 120, 224, 224, 225, 225, 226, 227, 227, 228, 228, 229, 230, 230, 231, 232}, SKINCOLOR_NONE,8,             0,                                 false}, // SKINCOLOR_BSUPER5
+    {"ASUPER1",	       {120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 208, 210, 212, 215, 220, 222}, SKINCOLOR_RUST,8,             0,                                 false}, // SKINCOLOR_ASUPER1
+    {"ASUPER2",	       {120, 120, 120, 120, 120, 120, 120, 120, 208, 209, 211, 213, 215, 220, 221, 223}, SKINCOLOR_RUST,8,             0,                                 false}, // SKINCOLOR_ASUPER2
+    {"ASUPER3",	       {120, 120, 120, 120, 120, 120, 208, 209, 210, 211, 212, 213, 215, 220, 221, 223}, SKINCOLOR_RUST,8,             0,                                 false}, // SKINCOLOR_ASUPER3
+    {"ASUPER4",	       {120, 120, 120, 120, 208, 209, 210, 211, 212, 213, 214, 215, 220, 221, 222, 223}, SKINCOLOR_RUST,8,             0,                                 false}, // SKINCOLOR_ASUPER4
+    {"ASUPER5",	       {120, 120, 208, 208, 209, 210, 211, 211, 212, 213, 214, 215, 220, 221, 222, 223}, SKINCOLOR_RUST,8,             0,                                 false}, // SKINCOLOR_ASUPER5
+    {"GSUPER1",	       {120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 176, 160, 163, 167, 171, 175}, SKINCOLOR_BLUEBERRY,8,        0,                                      false}, // SKINCOLOR_GSUPER1
+    {"GSUPER2",	       {120, 120, 120, 120, 120, 120, 120, 120, 176, 176, 160, 163, 166, 169, 172, 175}, SKINCOLOR_BLUEBERRY,8,        0,                                      false}, // SKINCOLOR_GSUPER2
+    {"GSUPER3",	       {120, 120, 120, 120, 120, 120, 176, 176, 160, 162, 164, 166, 168, 170, 172, 175}, SKINCOLOR_BLUEBERRY,8,        0,                                      false}, // SKINCOLOR_GSUPER3
+    {"GSUPER4",	       {120, 120, 120, 120, 176, 176, 176, 160, 161, 163, 165, 167, 169, 171, 173, 175}, SKINCOLOR_BLUEBERRY,8,        0,                                      false}, // SKINCOLOR_GSUPER4
+    {"GSUPER5",	       {120, 120, 176, 176, 176, 160, 161, 163, 164, 166, 167, 169, 170, 172, 173, 175}, SKINCOLOR_BLUEBERRY,8,        0,                                      false}, // SKINCOLOR_GSUPER5
+    {"WSUPER1",	       {120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120}, SKINCOLOR_NONE,8,             0,                                 false}, // SKINCOLOR_WSUPER1
+    {"WSUPER2",	       {120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120,   0,   4,   9}, SKINCOLOR_NONE,8,             0,                                 false}, // SKINCOLOR_WSUPER2
+    {"WSUPER3",	       {120, 120, 120, 120, 120, 120, 120, 120, 120, 120,   0,   2,   4,   6,   8,  11}, SKINCOLOR_NONE,8,             0,                                 false}, // SKINCOLOR_WSUPER3
+    {"WSUPER4",	       {120, 120, 120, 120, 120, 120, 120,   0,   1,   3,   4,   6,   8,   9,  11,  13}, SKINCOLOR_NONE,8,             0,                                 false}, // SKINCOLOR_WSUPER4
+	{"WSUPER5",	       {120, 120, 120, 120,   0,   1,   2,   4,   5,   6,   8,   9,  10,  12,  13,  15}, SKINCOLOR_NONE,8,             0,                                 false}, // SKINCOLOR_WSUPER5
+	{ "CSUPER1",	       {120, 120, 120, 120, 120, 120, 120, 120, 120, 120,  96,  98,  99,  81,  73,  79}, SKINCOLOR_NONE,8,         0,                                     false}, // SKINCOLOR_CSUPER1
+	{"CSUPER2",	       {120, 120, 120, 120, 120, 120, 120, 120,  96,  97,  98,  81,  81,  71,  75,  79}, SKINCOLOR_NONE,8,             0,                                false}, // SKINCOLOR_CSUPER2
+	{"CSUPER3",	       {120, 120, 120, 120, 120, 120,  96,  97,  98,  99,  81,  81,  70,  73,  76,  79}, SKINCOLOR_NONE,8,             0,                                 false}, // SKINCOLOR_CSUPER3
+	{"CSUPER4",	       {120, 120, 120, 120,  96,  96,  97,  98,  99,  81,  81,  70,  72,  74,  76,  79}, SKINCOLOR_NONE,8,             0,                                false}, // SKINCOLOR_CSUPER4
+	{"CSUPER5",         {120, 120,  96,  96,  97,  98,  98,  99,  81,  81,  69,  71,  73,  75,  77,  79}, SKINCOLOR_NONE,8,            0,                                  false}, // SKINCOLOR_CSUPER5
+};                                                                                                  
+                                                                                                    
+/** Patches the mobjinfo, state, and skincolor tables.                                                                                          
   * Free slots are emptied out and set to initial values.
   */
 void P_PatchInfoTables(void)

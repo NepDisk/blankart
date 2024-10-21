@@ -18,7 +18,7 @@
 [BITS 32]
 
 %define FRACBITS 16
-%define TRANSPARENTPIXEL 255
+%define TRANSPARENTPIXEL 247
 
 %ifdef LINUX
 %macro cextern 1

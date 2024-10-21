@@ -231,25 +231,25 @@ mobj_t *K_SpawnChaosEmerald(fixed_t x, fixed_t y, fixed_t z, angle_t angle, SINT
 	switch (emeraldType)
 	{
 		case EMERALD_CHAOS1:
-			emerald->color = SKINCOLOR_CHAOSEMERALD1;
+			emerald->color = SKINCOLOR_PERIDOT;
 			break;
 		case EMERALD_CHAOS2:
-			emerald->color = SKINCOLOR_CHAOSEMERALD2;
+			emerald->color = SKINCOLOR_RED;
 			break;
 		case EMERALD_CHAOS3:
-			emerald->color = SKINCOLOR_CHAOSEMERALD3;
+			emerald->color = SKINCOLOR_BLUE;
 			break;
 		case EMERALD_CHAOS4:
-			emerald->color = SKINCOLOR_CHAOSEMERALD4;
+			emerald->color = SKINCOLOR_YELLOW;
 			break;
 		case EMERALD_CHAOS5:
-			emerald->color = SKINCOLOR_CHAOSEMERALD5;
+			emerald->color = SKINCOLOR_PURPLE;
 			break;
 		case EMERALD_CHAOS6:
-			emerald->color = SKINCOLOR_CHAOSEMERALD6;
+			emerald->color = SKINCOLOR_CYAN;
 			break;
 		case EMERALD_CHAOS7:
-			emerald->color = SKINCOLOR_CHAOSEMERALD7;
+			emerald->color = SKINCOLOR_WHITE;
 			break;
 		default:
 			CONS_Printf("Invalid emerald type %d\n", emeraldType);
