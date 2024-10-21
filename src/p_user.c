@@ -2443,9 +2443,6 @@ static void P_DoZoomTube(player_t *player)
 		player->mo->angle = R_PointToAngle2(player->mo->x, player->mo->y, player->mo->tracer->x, player->mo->tracer->y);
 		P_SetPlayerAngle(player, player->mo->angle);
 	}
-
-	P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
-	player->drawangle -= ANGLE_22h;
 }
 
 #if 0

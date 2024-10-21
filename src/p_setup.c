@@ -4812,8 +4812,8 @@ static void P_ConvertBinaryLinedefTypes(void)
 				lines[i].args[1] |= TMEF_EMERALDCHECK;
 			break;
 		case 3: //Zoom tube parameters
-			lines[i].args[0] = sides[lines[i].sidenum[0]].textureoffset >> FRACBITS;
-			lines[i].args[1] = sides[lines[i].sidenum[0]].rowoffset >> FRACBITS;
+			lines[i].args[0] = lines[i].dx;
+			lines[i].args[1] = lines[i].dy;
 			lines[i].args[2] = !!(lines[i].flags & ML_MIDSOLID);
 			break;
 		case 4: //Speed pad parameters

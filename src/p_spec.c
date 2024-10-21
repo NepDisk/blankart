@@ -4981,10 +4981,20 @@ static void P_ProcessZoomTube(player_t *player, mtag_t sectag, boolean end)
 	}
 
 	// Grab speed and sequence values
-	speed = abs(lines[lineindex].args[0])<<(FRACBITS-3);
+	if (!udmf)
+	{
+		speed = abs(lines[lineindex].args[0])/8;
+		sequence = abs(lines[lineindex].args[1])>>FRACBITS;
+		
+	}
+	else
+	{
+		speed = abs(lines[lineindex].args[0])<<(FRACBITS-3);
+		sequence = abs(lines[lineindex].args[1]);
+	}
 	if (end)
 		speed *= -1;
-	sequence = abs(lines[lineindex].args[1]);
+	
 
 	if (speed == 0)
 	{
@@ -5010,12 +5020,6 @@ static void P_ProcessZoomTube(player_t *player, mtag_t sectag, boolean end)
 	P_SetTarget(&player->mo->tracer, waypoint);
 	player->carry = CR_ZOOMTUBE;
 	player->speed = speed;
-
-	if (player->mo->state-states != S_KART_SPINOUT)
-	{
-		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
-		S_StartSound(player->mo, sfx_spin);
-	}
 }
 
 static boolean P_SectorHasSpecial(sector_t *sec)
