@@ -191,7 +191,7 @@ static fademask_t *F_GetFadeMask(UINT8 masknum, UINT8 scrnnum) {
   *
   * \param	fademask	pixels to change
   */
-static void F_DoWipe(fademask_t *fademask, lighttable_t *fadecolormap, boolean reverse)
+static void F_DoWipe(fademask_t *fademask)
 {
 	// Software mask wipe -- optimized; though it might not look like it!
 	// Okay, to save you wondering *how* this is more optimized than the simpler
@@ -209,10 +209,6 @@ static void F_DoWipe(fademask_t *fademask, lighttable_t *fadecolormap, boolean r
 	// look a little messy; sorry!) but it simultaneously runs at twice the speed.
 	// In addition, we precalculate all the X and Y positions that we need to draw
 	// from and to, so it uses a little extra memory, but again, helps it run faster.
-	// ---
-	// Sal: I kinda destroyed some of this code by introducing Genesis-style fades.
-	// A colormap can be provided in F_RunWipe, which the white/black values will be
-	// remapped to the appropriate entry in the fade colormap.
 	{
 		// wipe screen, start, end
 		UINT8       *w = wipe_scr;
@@ -256,8 +252,6 @@ static void F_DoWipe(fademask_t *fademask, lighttable_t *fadecolormap, boolean r
 		maskx = masky = 0;
 		do
 		{
-			UINT8 m = *mask;
-
 			draw_rowstart = scrxpos[maskx];
 			draw_rowend   = scrxpos[maskx + 1];
 			draw_linestart = scrypos[masky];
@@ -266,31 +260,28 @@ static void F_DoWipe(fademask_t *fademask, lighttable_t *fadecolormap, boolean r
 			relativepos = (draw_linestart * vid.width) + draw_rowstart;
 			draw_linestogo = draw_lineend - draw_linestart;
 
-			if (reverse)
-				m = ((pallen-1) - m);
-
-			if (m == 0)
+			if (*mask == 0)
 			{
 				// shortcut - memcpy source to work
 				while (draw_linestogo--)
 				{
-					M_Memcpy(w_base+relativepos, (reverse ? e_base : s_base)+relativepos, draw_rowend-draw_rowstart);
+					M_Memcpy(w_base+relativepos, s_base+relativepos, draw_rowend-draw_rowstart);
 					relativepos += vid.width;
 				}
 			}
-			else if (m >= (pallen-1))
+			else if (*mask == 10)
 			{
 				// shortcut - memcpy target to work
 				while (draw_linestogo--)
 				{
-					M_Memcpy(w_base+relativepos, (reverse ? s_base : e_base)+relativepos, draw_rowend-draw_rowstart);
+					M_Memcpy(w_base+relativepos, e_base+relativepos, draw_rowend-draw_rowstart);
 					relativepos += vid.width;
 				}
 			}
 			else
 			{
 				// pointer to transtable that this mask would use
-				transtbl = transtables + ((9 - m)<<FF_TRANSSHIFT);
+				transtbl = transtables + ((9 - *mask)<<FF_TRANSSHIFT);
 
 				// DRAWING LOOP
 				while (draw_linestogo--)
@@ -300,25 +291,8 @@ static void F_DoWipe(fademask_t *fademask, lighttable_t *fadecolormap, boolean r
 					e = e_base + relativepos;
 					draw_rowstogo = draw_rowend - draw_rowstart;
 
-					if (fadecolormap)
-					{
-						if (reverse)
-							s = e;
-						while (draw_rowstogo--)
-							*w++ = fadecolormap[ ( m << 8 ) + *s++ ];
-					}
-					else while (draw_rowstogo--)
-					{
-						/*if (fadecolormap != NULL)
-						{
-							if (reverse)
-								*w++ = fadecolormap[ ( m << 8 ) + *e++ ];
-							else
-								*w++ = fadecolormap[ ( m << 8 ) + *s++ ];
-						}
-						else*/
-							*w++ = transtbl[ ( *e++ << 8 ) + *s++ ];
-					}
+					while (draw_rowstogo--)
+						*w++ = transtbl[ ( *e++ << 8 ) + *s++ ];
 
 					relativepos += vid.width;
 				}
@@ -430,38 +404,17 @@ void F_WipeStageTitle(void)
 /** After setting up the screens you want to wipe,
   * calling this will do a 'typical' wipe.
   */
-void F_RunWipe(UINT8 wipetype, boolean drawMenu, const char *colormap, boolean reverse, boolean encorewiggle)
+void F_RunWipe(UINT8 wipetype, boolean drawMenu)
 {
 #ifdef NOWIPE
 	(void)wipetype;
 	(void)drawMenu;
-	(void)colormap;
-	(void)reverse;
-	(void)encorewiggle;
 #else
 	tic_t nowtime;
 	UINT8 wipeframe = 0;
 	fademask_t *fmask;
 
-	lumpnum_t clump = LUMPERROR;
-	lighttable_t *fcolor = NULL;
-
-	if (colormap != NULL)
-		clump = W_GetNumForName(colormap);
-
-	if (clump != LUMPERROR && wipetype != UINT8_MAX)
-	{
-		pallen = 32;
-		fcolor = Z_MallocAlign((256 * pallen), PU_STATIC, NULL, 8);
-		W_ReadLump(clump, fcolor);
-	}
-	else
-	{
-		pallen = 11;
-		reverse = false;
-	}
-
-	paldiv = FixedDiv(257<<FRACBITS, pallen<<FRACBITS);
+	paldiv = FixedDiv(257<<FRACBITS, 11<<FRACBITS);
 
 	// Init the wipe
 	WipeInAction = true;
@@ -489,24 +442,13 @@ void F_RunWipe(UINT8 wipetype, boolean drawMenu, const char *colormap, boolean r
 			HWR_DoWipe(wipetype, wipeframe-1); // send in the wipe type and wipeframe because we need to cache the graphic
 		else
 #endif
-
 		if (rendermode != render_none) //this allows F_RunWipe to be called in dedicated servers
-		{
-			F_DoWipe(fmask, fcolor, reverse);
-
-			if (encorewiggle)
-			{
-#ifdef HWRENDER
-				if (rendermode != render_opengl)
-#endif
-					F_DoEncoreWiggle(wipeframe);
-			}
-		}
+			F_DoWipe(fmask);
 
 		I_OsPolling();
 		I_UpdateNoBlit();
 
-		if (drawMenu)
+		if (rendermode != render_none && drawMenu)
 		{
 #ifdef HAVE_THREADS
 			I_lock_mutex(&m_menu_mutex);
@@ -524,62 +466,6 @@ void F_RunWipe(UINT8 wipetype, boolean drawMenu, const char *colormap, boolean r
 
 		NetKeepAlive(); // Update the network so we don't cause timeouts
 	}
-
 	WipeInAction = false;
-
-	if (fcolor)
-	{
-		Z_Free(fcolor);
-		fcolor = NULL;
-	}
-#endif
-}
-
-/** Returns tic length of wipe
-  * One lump equals one tic
-  */
-tic_t F_GetWipeLength(UINT8 wipetype)
-{
-#ifdef NOWIPE
-	(void)wipetype;
-	return 0;
-#else
-	static char lumpname[10] = "FADEmmss";
-	lumpnum_t lumpnum;
-	UINT8 wipeframe;
-
-	if (wipetype > 99)
-		return 0;
-
-	for (wipeframe = 0; wipeframe < 100; wipeframe++)
-	{
-		sprintf(&lumpname[4], "%.2hu%.2hu", (UINT16)wipetype, (UINT16)wipeframe);
-
-		lumpnum = W_CheckNumForName(lumpname);
-		if (lumpnum == LUMPERROR)
-			return --wipeframe;
-	}
-	return --wipeframe;
-#endif
-}
-
-/** Does the specified wipe exist?
-  */
-boolean F_WipeExists(UINT8 wipetype)
-{
-#ifdef NOWIPE
-	(void)wipetype;
-	return false;
-#else
-	static char lumpname[10] = "FADEmm00";
-	lumpnum_t lumpnum;
-
-	if (wipetype > 99)
-		return false;
-
-	sprintf(&lumpname[4], "%.2hu00", (UINT16)wipetype);
-
-	lumpnum = W_CheckNumForName(lumpname);
-	return !(lumpnum == LUMPERROR);
 #endif
 }

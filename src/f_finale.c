@@ -303,7 +303,7 @@ void F_StartIntro(void)
 		F_WipeStartScreen();
 		V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, 31);
 		F_WipeEndScreen();
-		F_RunWipe(wipedefs[wipe_intro_toblack], false, "FADEMAP0", false, false);
+		F_RunWipe(wipedefs[wipe_intro_toblack], false);
 	}
 
 	S_StopMusic();
@@ -399,7 +399,7 @@ void F_IntroTicker(void)
 				F_WipeStartScreen();
 				F_WipeColorFill(31);
 				F_WipeEndScreen();
-				F_RunWipe(99, true, "FADEMAP0", false, false);
+				F_RunWipe(99, true);
 			}
 
 			// Stay on black for a bit. =)
@@ -965,7 +965,7 @@ void F_GameEvaluationDrawer(void)
 		V_DrawFixedPatch(x, y, scale, 0, rockpat, colormap[0]);
 		if (trans < 10)
 		{
-			colormap[1] = R_GetTranslationColormap(TC_BLINK, SKINCOLOR_AQUAMARINE, GTC_CACHE);
+			colormap[1] = R_GetTranslationColormap(TC_BLINK, SKINCOLOR_ULTRAMARINE, GTC_CACHE);
 			V_DrawFixedPatch(x, y, scale, trans<<V_ALPHASHIFT, rockpat, colormap[1]);
 		}
 		if (goodending)
@@ -982,7 +982,7 @@ void F_GameEvaluationDrawer(void)
 					//         2 -                   2 and not rendered
 					V_DrawFixedPatch(x+sparkloffs[j-1][0], y+sparkloffs[j-1][1], FRACUNIT, 0,
 						W_CachePatchName(va("ENDSPKL%.1d", (j - ((sparklloop & 1) ? 0 : 1))), PU_PATCH),
-						R_GetTranslationColormap(TC_DEFAULT, SKINCOLOR_AQUAMARINE, GTC_CACHE));
+						R_GetTranslationColormap(TC_DEFAULT, SKINCOLOR_ULTRAMARINE, GTC_CACHE));
 				}
 				j--;
 			}
@@ -1424,7 +1424,7 @@ void F_EndingDrawer(void)
 					trans = -trans;
 				if (trans < 10)
 					V_DrawFixedPatch(x, y, scale, trans<<V_ALPHASHIFT, rockpat,
-						R_GetTranslationColormap(TC_BLINK, SKINCOLOR_AQUAMARINE, GTC_CACHE));
+						R_GetTranslationColormap(TC_BLINK, SKINCOLOR_ULTRAMARINE, GTC_CACHE));
 			}
 
 			if (goodending && finalecount > INFLECTIONPOINT)
@@ -2403,7 +2403,7 @@ void F_CutsceneDrawer(void)
 			V_DrawFill(0, 0, BASEVIDWIDTH, BASEVIDHEIGHT, cutscenes[cutnum]->scene[scenenum].fadecolor);
 
 			F_WipeEndScreen();
-			F_RunWipe(cutscenes[cutnum]->scene[scenenum].fadeinid, true, NULL, false, false);
+			F_RunWipe(cutscenes[cutnum]->scene[scenenum].fadeinid, true);
 
 			F_WipeStartScreen();
 		}
@@ -2423,7 +2423,7 @@ void F_CutsceneDrawer(void)
 	if (dofadenow && rendermode != render_none)
 	{
 		F_WipeEndScreen();
-		F_RunWipe(cutscenes[cutnum]->scene[scenenum].fadeoutid, true, NULL, false, false);
+		F_RunWipe(cutscenes[cutnum]->scene[scenenum].fadeoutid, true);
 	}
 
 	V_DrawString(textxpos, textypos, V_ALLOWLOWERCASE, cutscene_disptext);

@@ -3383,15 +3383,15 @@ UINT8 G_GetGametypeColor(INT16 gt)
 {
 	if (modeattacking // == ATTACKING_TIME
 	|| gamestate == GS_TIMEATTACK)
-		return orangemap[0];
+		return orangemap[120];
 
 	if (gt == GT_BATTLE)
-		return redmap[0];
+		return redmap[120];
 
 	if (gt == GT_RACE)
-		return skymap[0];
+		return skymap[120];
 
-	return 255; // FALLBACK
+	return 247; // FALLBACK
 }
 
 /** Get the typeoflevel flag needed to indicate support of a gametype.

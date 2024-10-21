@@ -169,7 +169,7 @@ void R_FillBackScreen(void);
 void R_DrawViewBorder(void);
 #endif
 
-#define TRANSPARENTPIXEL 255
+#define TRANSPARENTPIXEL 247
 #define BRIGHTPIXEL 0
 
 // -----------------
