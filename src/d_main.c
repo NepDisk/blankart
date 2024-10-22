@@ -1412,6 +1412,9 @@ void D_SRB2Main(void)
 
 	// Make backups of some SOCcable tables.
 	P_BackupTables();
+	
+	// Setup default unlockable conditions
+	M_SetupDefaultConditionSets();
 
 	// Setup character tables
 	// Have to be done here before files are loaded
