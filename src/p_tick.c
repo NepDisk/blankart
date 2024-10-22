@@ -685,11 +685,17 @@ void P_Ticker(boolean run)
 					S_StartSound(NULL, sfx_s3kad); // GO!
 				}
 			}
-			if (leveltime == (starttime + (TICRATE/2)))
+			
+			if (leveltime < starttime) // SRB2Kart
+				S_ChangeMusicInternal((encoremode ? "estart" : "kstart"), false); // yes this will be spammed otherwise encore and some stuff WILL overwrite it
+			else if (leveltime == starttime) // The GO! sound stops the level start ambience
+				S_StopMusic();
+			else if (leveltime == starttime + (TICRATE/2)) // Plays the music after the starting countdown.
 			{
 				S_ChangeMusicEx(mapmusname, mapmusflags, true, mapmusposition, 0, 0);
 				S_ShowMusicCredit();
 			}
+			
 		}
 
 		ps_lua_thinkframe_time = I_GetPreciseTime();
