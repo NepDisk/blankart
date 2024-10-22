@@ -931,6 +931,8 @@ static int ticcmd_get(lua_State *L)
 		lua_pushinteger(L, cmd->sidemove);
 	else if (fastcmp(field,"turning"))
 		lua_pushinteger(L, cmd->turning);
+	else if (fastcmp(field,"angle"))
+		lua_pushinteger(L, cmd->angle);
 	else if (fastcmp(field,"throwdir"))
 		lua_pushinteger(L, cmd->throwdir);
 	else if (fastcmp(field,"aiming"))
@@ -961,6 +963,8 @@ static int ticcmd_set(lua_State *L)
 		cmd->forwardmove = (SINT8)luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"turning"))
 		cmd->turning = (INT16)luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"angle"))
+		cmd->angle = (INT16)luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"throwdir"))
 		cmd->throwdir = (INT16)luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"aiming"))
