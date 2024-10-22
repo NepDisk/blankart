@@ -331,7 +331,7 @@ static int player_get(lua_State *L)
 	else if (fastcmp(field,"sneakertimer"))
 		lua_pushinteger(L, plr->sneakertimer);
 	else if (fastcmp(field,"floorboost"))
-		lua_pushboolean(L, plr->floorboost);
+		lua_pushinteger(L, plr->floorboost);
 	else if (fastcmp(field,"waterrun"))
 		lua_pushinteger(L, plr->waterrun);
 	else if (fastcmp(field,"growshrinktimer"))
