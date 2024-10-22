@@ -2521,7 +2521,12 @@ void S_InitLevelMusic(boolean fromnetsave)
 					mapmusrng = 0;
 			}
 		}
-		strncpy(mapmusname, mapheaderinfo[gamemap-1]->musname[mapmusrng], 7);
+		
+		if (mapheaderinfo[gamemap-1]->musname[0][0] == 0)
+			strncpy(mapmusname, va("%sM", G_BuildMapName(gamemap)), 7);
+		else
+			strncpy(mapmusname, mapheaderinfo[gamemap-1]->musname[mapmusrng], 7);
+		
 		mapmusname[6] = 0;
 		mapmusflags = (mapheaderinfo[gamemap-1]->mustrack & MUSIC_TRACKMASK);
 		mapmusposition = mapheaderinfo[gamemap-1]->muspos;
