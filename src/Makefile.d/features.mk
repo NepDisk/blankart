@@ -67,9 +67,6 @@ opts+=-DUSE_STUN
 sources+=discord.c stun.c
 endif
 
-$(eval $(call Propogate_flags,ACSVM))
-libs+=-lacsvm -lacsvm-capi -lacsvm-util
-
 # (Valgrind is a memory debugger.)
 ifdef VALGRIND
 VALGRIND_PKGCONFIG?=valgrind
