@@ -2562,16 +2562,11 @@ static int lib_sStopSound(lua_State *L)
 
 static int lib_sStopSoundByID(lua_State *L)
 {
-	void *origin = NULL;
+	void *origin = *((mobj_t **)luaL_checkudata(L, 1, META_MOBJ));
 	sfxenum_t sound_id = luaL_checkinteger(L, 2);
-	//NOHUD
-
-	if (sound_id >= NUMSFX)
-		return luaL_error(L, "sfx %d out of range (0 - %d)", sound_id, NUMSFX-1);
-	if (!lua_isnil(L, 1))
-		if (!GetValidSoundOrigin(L, &origin))
-			return LUA_ErrInvalid(L, "mobj_t/sector_t");
-
+	NOHUD
+	if (!origin)
+		return LUA_ErrInvalid(L, "mobj_t");
 	S_StopSoundByID(origin, sound_id);
 	return 0;
 }
