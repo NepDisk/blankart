@@ -38,7 +38,7 @@
 --------------------------------------------------*/
 boolean K_AddBot(UINT8 skin, UINT8 difficulty, botStyle_e style, UINT8 *p)
 {
-	UINT8 buf[3];
+	UINT8 buf[4];
 	UINT8 *buf_p = buf;
 	UINT8 newplayernum = *p;
 

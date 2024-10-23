@@ -5052,7 +5052,7 @@ static void P_NetArchiveMisc(savebuffer_t *save, boolean resending)
 	}
 }
 
-static inline boolean P_NetUnArchiveMisc(savebuffer_t *save, boolean reloading)
+FUNCINLINE static ATTRINLINE boolean P_NetUnArchiveMisc(savebuffer_t *save, boolean reloading)
 {
 	size_t i;
 	size_t numTasks;
