@@ -197,6 +197,21 @@ static char returnWadPath[256];
 // TODO - move this to some header file instead
 extern struct backtrace_state *bt_state;
 
+typedef struct bt_crash_reason_s {
+	enum {
+		BTCRASH_SIGNAL,
+		BTCRASH_ERRORMSG,
+	} type;
+
+	union {
+		INT32 signal;
+		const char *errormsg;
+	} value;
+} bt_crash_reason_t;
+
+#define BT_CRASH_REASON_SIGNAL(num) (bt_crash_reason_t){ .type = BTCRASH_SIGNAL, .value = { .signal = num } }
+#define BT_CRASH_REASON_ERRORMSG(msg) (bt_crash_reason_t){ .type = BTCRASH_ERRORMSG, .value = { .errormsg = msg } }
+
 static void printsignal(FILE *fp, INT32 num)
 {
 	switch (num)
@@ -287,7 +302,7 @@ static void bt_error_cb(void *data, const char *msg, int errnum)
 		buf->error = true;
 }
 
-static void write_backtrace(INT32 num)
+static void write_backtrace(bt_crash_reason_t reason)
 {
 	FILE *out = fopen(va("%s" PATHSEP "%s", srb2home, "srb2kart-crash-log.txt"), "a");
 
@@ -323,7 +338,16 @@ static void write_backtrace(INT32 num)
 	fprintf(out, "Time of crash: %s\n", asctime(timeinfo));
 
 	fprintf(out, "Caused by: ");
-	printsignal(out, num);
+	
+	switch (reason.type)
+	{
+		case BTCRASH_SIGNAL:
+			printsignal(out, reason.value.signal);
+		break;
+		case BTCRASH_ERRORMSG:
+			fprintf(out, "%s", reason.value.errormsg);
+		break;
+	}
 
 	fprintf(out, "\nBacktrace:\n");
 
@@ -379,6 +403,78 @@ SDL_bool framebuffer = SDL_FALSE;
 UINT8 keyboard_started = false;
 boolean g_in_exiting_signal_handler = false;
 
+static void I_ShowErrorMessageBox(const char *messagefordevelopers, boolean dumpmade)
+{
+	static char finalmessage[1024];
+	size_t firstimpressionsline = 3; // "Dr Robotnik's Ring Racers" has encountered...
+
+	if (M_CheckParm("-dedicated"))
+		return;
+
+	snprintf(
+		finalmessage,
+		sizeof(finalmessage),
+			"\"SRB2Kart V2\" has encountered an unrecoverable error and needs to close.\n"
+			"\n"
+			"\n"
+			"%s",
+		messagefordevelopers);
+
+	// Rudementary word wrapping.
+	// Simple and effective. Does not handle nonuniform letter sizes, etc. but who cares.
+	{
+		size_t max = 0, maxatstart = 0, start = 0, width = 0, i;
+
+		for (i = 0; finalmessage[i]; i++)
+		{
+			if (finalmessage[i] == ' ')
+			{
+				start = i;
+				max += 4;
+				maxatstart = max;
+			}
+			else if (finalmessage[i] == '\n')
+			{
+				if (firstimpressionsline > 0)
+				{
+					firstimpressionsline--;
+					if (firstimpressionsline == 0)
+					{
+						width = max;
+					}
+				}
+				start = 0;
+				max = 0;
+				maxatstart = 0;
+				continue;
+			}
+			else
+				max += 8;
+
+			// Start trying to wrap if presumed length exceeds the space we want.
+			if (width > 0 && max >= width && start > 0)
+			{
+				finalmessage[start] = '\n';
+				max -= maxatstart;
+				start = 0;
+			}
+		}
+	}
+
+	// Implement message box with SDL_ShowSimpleMessageBox,
+	// which should fail gracefully if it can't put a message box up
+	// on the target system
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+		"SRB2Kart "VERSIONSTRING" Error",
+		finalmessage, NULL);
+
+	// Note that SDL_ShowSimpleMessageBox does *not* require SDL to be
+	// initialized at the time, so calling it after SDL_Quit() is
+	// perfectly okay! In addition, we do this on purpose so the
+	// fullscreen window is closed before displaying the error message
+	// in case the fullscreen window blocks it for some absurd reason.
+}
+
 static void I_ReportSignal(int num, int coredumped)
 {
 	//static char msg[] = "oh no! back to reality!\r\n";
@@ -428,12 +524,10 @@ static void I_ReportSignal(int num, int coredumped)
 	I_OutputMsg("\nProcess killed by signal: %s\n\n", sigmsg);
 
 	I_ShowErrorMessageBox(sigmsg,
-#if defined (UNIXBACKTRACE)
-		true
-#elif defined (_WIN32)
+#if defined (DRMINGW)
 		!M_CheckParm("-noexchndl")
 #else
-		false
+		true
 #endif
 	);
 }
@@ -446,7 +540,7 @@ FUNCNORETURN static ATTRNORETURN void signal_handler(INT32 num)
 	CL_AbortDownloadResume();
 
 #ifdef HAVE_LIBBACKTRACE
-	write_backtrace(num);
+	write_backtrace(BT_CRASH_REASON_SIGNAL(num));
 #endif
 
 	I_ReportSignal(num, 0);
@@ -842,7 +936,7 @@ static void signal_handler_child(INT32 num)
 {
 
 #ifdef HAVE_LIBBACKTRACE
-	write_backtrace(num);
+	write_backtrace(BT_CRASH_REASON_SIGNAL(num));
 #endif
 
 	signal(num, SIG_DFL);               //default signal action
@@ -2057,6 +2151,10 @@ void I_Error(const char *error, ...)
 	vsprintf(buffer, error, argptr);
 	va_end(argptr);
 	I_OutputMsg("\nI_Error(): %s\n", buffer);
+
+#ifdef HAVE_LIBBACKTRACE
+	write_backtrace(BT_CRASH_REASON_ERRORMSG(buffer));
+#endif
 	// ---
 
 	M_SaveConfig(NULL); // save game config, cvars..

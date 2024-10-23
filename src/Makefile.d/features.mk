@@ -67,6 +67,11 @@ opts+=-DUSE_STUN
 sources+=discord.c stun.c
 endif
 
+ifndef NOLIBBACKTRACE
+$(eval $(call Propogate_flags,LIBBACKTRACE))
+opts+=-DHAVE_LIBBACKTRACE
+endif
+
 # (Valgrind is a memory debugger.)
 ifdef VALGRIND
 VALGRIND_PKGCONFIG?=valgrind

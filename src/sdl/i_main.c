@@ -71,8 +71,11 @@ char logfilename[1024];
 #endif
 #endif
 
-#if defined (_WIN32)
+#ifdef _WIN32
+#ifndef _AMD64_
 #include "exchndl.h"
+#define DRMINGW
+#endif
 #endif
 
 #if defined (_WIN32)
@@ -278,7 +281,9 @@ int main(int argc, char **argv)
 			)
 #endif
 		{
+#ifdef DRMINGW
 			ExcHndlInit();
+#endif
 		}
 	}
 #ifndef __MINGW32__

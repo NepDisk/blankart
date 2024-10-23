@@ -46,15 +46,6 @@ opts+=-DHAVE_THREADS
 sources+=sdl/i_threads.c
 endif
 
-ifndef NOLIBBACKTRACE
-opts+=-DHAVE_LIBBACKTRACE
-	ifdef MINGW64
-	CPPFLAGS+=-I../libs/libbacktrace/include
-	LDFLAGS+=-L../libs/libbacktrace/lib/x86_64
-	endif
-libs+=-lbacktrace
-endif
-
 ifdef SDL_PKGCONFIG
 $(eval $(call Use_pkg_config,SDL))
 else

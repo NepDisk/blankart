@@ -79,6 +79,15 @@ LIBOPENMPT_opts:=-I$(lib)/inc
 LIBOPENMPT_libs:=-L$(lib)/lib/$(x86)/mingw -lopenmpt
 $(eval $(call _set,LIBOPENMPT))
 
+ifdef MINGW64
+ifndef NOLIBBACKTRACE
+lib:=../libs/libbacktrace
+LIBBACKTRACE_opts:=-I$(lib)/include
+LIBBACKTRACE_libs:=-L$(lib)/lib/$(x86) -lbacktrace
+$(eval $(call _set,LIBBACKTRACE))
+endif
+endif
+
 ifndef NOMIXERX
 HAVE_MIXERX=1
 lib:=../libs/SDLMixerX/$(mingw)
