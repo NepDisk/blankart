@@ -127,7 +127,7 @@ FUNCINLINE static ATTRINLINE UINT32 readulong(void *ptr)
 #define READANGLE(p)        readulong(&((angle_t*)(p = (void*)&((angle_t*)p)[1]))[-1])
 #endif //SRB2_BIG_ENDIAN
 
-#define WRITESTRINGN(p, s, n) {                             \
+#define WRITESTRINGN(p, s, n) do {                          \
 	size_t tmp_i;                                           \
                                                             \
 	for (tmp_i = 0; tmp_i < n && s[tmp_i] != '\0'; tmp_i++) \
