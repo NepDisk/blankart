@@ -275,15 +275,15 @@ void Portal_AddSkybox (const visplane_t* plane)
 	portal->viewz = skyboxmo[0]->z;
 	portal->viewangle = viewangle + skyboxmo[0]->angle;
 
-    if (!udmf)
-    {
-        if (skyboxmo[0]->spawnpoint)
-            portal->viewz = ((fixed_t)skyboxmo[0]->spawnpoint->angle)<<FRACBITS;
-        else
-            portal->viewz = 0;
-    }
-    else
-        portal->viewz = skyboxmo[0]->z; // 26/04/17: use actual Z position instead of spawnpoint angle!
+	if (!udmf)
+	{
+		if (skyboxmo[0]->spawnpoint)
+			portal->viewz = ((fixed_t)skyboxmo[0]->spawnpoint->angle)<<FRACBITS;
+		else
+			portal->viewz = 0;
+	}
+	else
+		portal->viewz = skyboxmo[0]->z; // 26/04/17: use actual Z position instead of spawnpoint angle!
 
 	mh = mapheaderinfo[gamemap-1];
 

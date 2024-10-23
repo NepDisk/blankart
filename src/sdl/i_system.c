@@ -296,7 +296,7 @@ static void write_backtrace(INT32 signal)
 
 static void I_ShowErrorMessageBox(const char *messagefordevelopers, boolean dumpmade)
 {
-	static char finalmessage[1024];
+	static char finalmessage[2048];
 	size_t firstimpressionsline = 3; // "Dr Robotnik's Ring Racers" has encountered...
 
 	if (M_CheckParm("-dedicated"))
@@ -621,7 +621,7 @@ static void I_StartupConsole(void)
 void I_GetConsoleEvents(void)
 {
 	// we use this when sending back commands
-	event_t ev = {0,0,0,0};
+	event_t ev = {0,0,0,0,0};
 	char key = 0;
 	ssize_t d;
 
@@ -1155,7 +1155,7 @@ void I_ShutdownJoystick(UINT8 index)
 
 void I_GetJoystickEvents(UINT8 index)
 {
-	static event_t event = {0,0,0,0};
+	static event_t event = {0,0,0,0,0};
 	INT32 i = 0;
 	UINT64 joyhats = 0;
 #if 0

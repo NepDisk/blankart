@@ -3820,8 +3820,6 @@ void A_AttractChase(mobj_t *actor)
 
 			if (actor->extravalue1 >= 21)
 			{
-				mobj_t *sparkle;
-				angle_t offset = FixedAngle(18<<FRACBITS);
 
 				// Base add is 3 tics for 9,9, adds 1 tic for each point closer to the 1,1 end
 				actor->target->player->ringboost += K_GetKartRingPower(actor->target->player, true) + 3;
@@ -3907,8 +3905,8 @@ void A_AttractChase(mobj_t *actor)
 			actor->cusval = 1;
 
 			if (
-				actor->tracer->player && actor->tracer->health
-				&& (gametyperules & GTR_SPHERES)
+				(actor->tracer->player && actor->tracer->health
+				&& (gametyperules & GTR_SPHERES))
 					|| (actor->tracer->player->itemtype == KITEM_LIGHTNINGSHIELD
 					&& RINGTOTAL(actor->tracer->player) < 20
 					&& !(actor->tracer->player->pflags & PF_RINGLOCK))
@@ -13298,24 +13296,6 @@ void A_JawzExplode(mobj_t *actor)
 	}
 
 	return;
-}
-
-static void SpawnSPBTrailRings(mobj_t *actor)
-{
-	I_Assert(actor != NULL);
-
-	if (leveltime % 6 == 0)
-	{
-		if (leveltime % (actor->extravalue1 == 2 ? 6 : 3) == 0)	// Extravalue1 == 2 is seeking mode. Because the SPB is about twice as fast as normal in that mode, also spawn the rings twice as often to make up for it!
-		{
-			mobj_t *ring = P_SpawnMobj(actor->x - actor->momx, actor->y - actor->momy,
-				actor->z - actor->momz + (24*mapobjectscale), MT_RING);
-			ring->threshold = 10;
-			ring->fuse = 35*TICRATE;
-			ring->colorized = true;
-			ring->color = SKINCOLOR_RED;
-		}
-	}
 }
 
 void A_SPBChase(mobj_t *actor)

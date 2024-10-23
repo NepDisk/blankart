@@ -68,14 +68,7 @@ static patch_t *kp_splitspheresticker;
 static patch_t *kp_splitkarmabomb;
 static patch_t *kp_timeoutsticker;
 
-static patch_t *kp_prestartbulb[15];
-static patch_t *kp_prestartletters[7];
-
-static patch_t *kp_prestartbulb_split[15];
-static patch_t *kp_prestartletters_split[7];
-
 static patch_t *kp_startcountdown[20];
-static patch_t *kp_racefault[6];
 static patch_t *kp_racefinish[6];
 
 static patch_t *kp_positionnum[NUMPOSNUMS][NUMPOSFRAMES];
@@ -1738,7 +1731,7 @@ static boolean K_drawKartPositionFaces(void)
 	INT32 i, j, ranklines, strank = -1;
 	boolean completed[MAXPLAYERS];
 	INT32 rankplayer[MAXPLAYERS];
-	INT32 bumperx, emeraldx, numplayersingame = 0;
+	INT32 bumperx, /*emeraldx,*/ numplayersingame = 0;
 	UINT8 *colormap;
 
 	ranklines = 0;
@@ -1822,7 +1815,7 @@ static boolean K_drawKartPositionFaces(void)
 		if (!players[rankplayer[i]].mo) continue;
 
 		bumperx = FACE_X+19;
-		emeraldx = FACE_X+16;
+		//emeraldx = FACE_X+16;
 
 		if (players[rankplayer[i]].mo->color)
 		{
@@ -2007,7 +2000,7 @@ static void K_drawBossHealthBar(void)
 
 static void K_drawKartEmeralds(void)
 {
-	static const INT32 emeraldOffsets[7][3] = {
+	/*static const INT32 emeraldOffsets[7][3] = {
 		{34, 0, 15},
 		{25, 8, 11},
 		{43, 8, 19},
@@ -2015,12 +2008,12 @@ static void K_drawKartEmeralds(void)
 		{52, 0, 23},
 		{ 7, 8,  3},
 		{61, 8, 27}
-	};
+	};*/
 
 	INT32 splitflags = V_SNAPTOBOTTOM|V_SNAPTORIGHT|V_SPLITSCREEN;
 	INT32 startx = BASEVIDWIDTH - 77;
 	INT32 starty = BASEVIDHEIGHT - 29;
-	INT32 i = 0, xindex = 0;
+	//INT32 i = 0, xindex = 0;
 
 	{
 		if (r_splitscreen)
@@ -2040,7 +2033,7 @@ static void K_drawKartEmeralds(void)
 		}
 		else
 		{
-			xindex = 2;
+			//xindex = 2;
 			starty -= 15;
 			if (stplyr == &players[displayplayers[0]] || stplyr == &players[displayplayers[2]])	// If we are P1 or P3...
 			{

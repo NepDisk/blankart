@@ -745,7 +745,6 @@ void K_ProcessTerrainEffect(mobj_t *mo)
 		fixed_t minspeed = terrain->pogoSpringMin*hscale;
 		fixed_t maxspeed = terrain->pogoSpringMax*hscale;
 		angle_t pushangle = FixedHypot(player->mo->momx, player->mo->momy) ? R_PointToAngle2(0, 0, player->mo->momx, player->mo->momy) : player->mo->angle;
-		sector_t *sector = player->mo->subsector->sector;
 
 		if (terrain->pogoSpring == 2)
 			player->pogospring = 2;
@@ -1278,7 +1277,7 @@ void K_UpdateTerrainOverlay(mobj_t *mo)
 		fixed_t speedDiv = FRACUNIT + FixedMul(FixedDiv(speed, maxSpeed), o->speed);
 		tic_t animSpeed = max(FixedDiv(mo->state->tics, speedDiv), 1);
 
-		mo->tics = min(mo->tics, animSpeed);
+		mo->tics = min(mo->tics, (INT32)animSpeed);
 	}
 }
 

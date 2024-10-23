@@ -500,7 +500,7 @@ static void P_SetupAnchoredSlopes (void) {
 
 			if (plane == 0)
 			{
-				CONS_Alert(CONS_WARNING, "Slope anchor linedef %u has no planes set.\n", i);
+				CONS_Alert(CONS_WARNING, "Slope anchor linedef %lu has no planes set.\n", i);
 				continue;
 			}
 

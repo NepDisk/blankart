@@ -2183,9 +2183,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	UINT16 followercolor;
 	
 	mobj_t *follower; // old follower, will probably be removed by the time we're dead but you never know.
-	mobj_t *skyboxviewpoint;
-	mobj_t *skyboxcenterpoint;
-
 	
 	INT32 charflags;
 	UINT32 followitem;
@@ -2381,7 +2378,6 @@ void G_PlayerReborn(INT32 player, boolean betweenmaps)
 	else
 	{
 		follower = NULL;
-		skyboxviewpoint = skyboxcenterpoint = NULL;
 	}
 	
 	spectatorreentry = players[player].spectatorreentry;

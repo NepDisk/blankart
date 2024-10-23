@@ -4115,9 +4115,7 @@ static void P_RefreshItemCapsuleParts(mobj_t *mobj)
 	INT32 count = 0;
 	INT32 itemType = mobj->threshold;
 	mobj_t *part;
-	skincolornum_t color;
 	UINT32 newRenderFlags = 0;
-	boolean colorized;
 
 	if (itemType < 1 || itemType >= NUMKARTITEMS)
 		itemType = KITEM_SAD;
@@ -4126,8 +4124,6 @@ static void P_RefreshItemCapsuleParts(mobj_t *mobj)
 	while (!P_MobjWasRemoved(part->hnext))
 	{
 		part = part->hnext;
-		part->color = color;
-		part->colorized = colorized;
 		part->renderflags = (part->renderflags & ~RF_BRIGHTMASK) | newRenderFlags;
 	}
 
@@ -4213,7 +4209,6 @@ static void P_RefreshItemCapsuleParts(mobj_t *mobj)
 #define ROTATIONSPEED (2*ANG2)
 static void P_SpawnItemCapsuleParts(mobj_t *mobj)
 {
-	UINT8 i;
 	mobj_t *part;
 
 	// inside item
@@ -11150,7 +11145,7 @@ fixed_t P_GetMobjSpawnHeight(
                     M_AATreeIteratorNext(it);
             }
 
-            fixed_t result = M_AATreeIteratorKey(it) + finalZOffset;
+            //fixed_t result = M_AATreeIteratorKey(it) + finalZOffset;
 
             M_AATreeIteratorClose(it);
             M_AATreeFree(heights);
@@ -11283,6 +11278,7 @@ static boolean P_AllowMobjSpawn(mapthing_t* mthing, mobjtype_t i)
 		case MT_RING:
 			if (ringsdisabled)
 				return false;
+			break;
 		case MT_ITEMCAPSULE:
 			{
 				boolean isRingCapsule = (mthing->args[0] < 1 || mthing->args[0] == KITEM_SUPERRING || mthing->args[0] >= NUMKARTITEMS);
@@ -12301,6 +12297,7 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 
 		P_RemoveMobj(mobj); // Don't need this helper obj anymore
 		return false;
+		break;
 	}
 	case MT_BATTLECAPSULE:
 	{
@@ -12424,6 +12421,7 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 
 		// Increment no. of capsules on the map counter
 		maptargets++;
+		break;
 	}
 	case MT_LOOPCENTERPOINT:
 	{

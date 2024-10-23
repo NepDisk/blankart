@@ -96,7 +96,6 @@ static void K_UpdateDirectorPositions(void)
 
 static boolean K_CanSwitchDirector(void)
 {
-	INT32 *displayplayerp = &displayplayers[0];
 
 	if (directorinfo.cooldown > 0)
 	{

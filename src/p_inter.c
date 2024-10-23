@@ -1368,7 +1368,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 					P_InstaThrust(kart, kartFlingAngle, 1 * kart->scale);
 					P_SetObjectMomZ(kart, 10*FRACUNIT, false);
 
-					const fixed_t tireOffset = 32;
 					const angle_t aOffset = ANGLE_22h;
 
 					UINT8 i;
@@ -1422,11 +1421,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 
 		case MT_ITEMCAPSULE:
 		{
-			UINT8 i;
-			mobj_t *attacker = inflictor ? inflictor : source;
-			mobj_t *part = target->hnext;
-			angle_t angle = FixedAngle(360*P_RandomFixed());
-			INT16 spacing = (target->radius >> 1) / target->scale;
 
 			// set respawn fuse
 			if (modeattacking) // no respawns
@@ -1827,7 +1821,8 @@ static boolean P_PlayerHitsPlayer(mobj_t *target, mobj_t *inflictor, mobj_t *sou
 static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source, UINT8 type)
 {
 	(void)source;
-
+	(void)inflictor;
+	
 	if (player->respawn)
 	{
 		K_DoInstashield(player);

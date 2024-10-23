@@ -1048,6 +1048,7 @@ static void R_DrawVisSprite(vissprite_t *vis)
 			if (bmpatch)
 				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
 #else
+			texturecolumn = CLAMP(frac >> FRACBITS, 0, patch->width - 1);
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[frac>>FRACBITS]));
 			if (bmpatch)
 				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
@@ -1073,6 +1074,7 @@ static void R_DrawVisSprite(vissprite_t *vis)
 			if (bmpatch)
 				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));
 #else
+			texturecolumn = CLAMP(frac >> FRACBITS, 0, patch->width - 1);
 			column = (column_t *)((UINT8 *)patch->columns + (patch->columnofs[frac>>FRACBITS]));
 			if (bmpatch)
 				bmcol = (column_t *)((UINT8 *)bmpatch->columns + (bmpatch->columnofs[texturecolumn]));

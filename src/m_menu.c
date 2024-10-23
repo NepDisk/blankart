@@ -5414,7 +5414,7 @@ static void PrepReplayList(void)
 		else
 		{
 			demolist[i].type = MD_NOTLOADED;
-			snprintf(demolist[i].filepath, 255, "%s%s", menupath, dirmenu[i] + DIR_STRING);
+			snprintf(demolist[i].filepath, 1024, "%s%s", menupath, dirmenu[i] + DIR_STRING);
 			sprintf(demolist[i].title, ".....");
 		}
 	}

@@ -610,7 +610,7 @@ static INT32 R_GetTwoSidedMidTexture(seg_t *line)
 	return R_GetTextureNum(texture);
 }
 
-static boolean R_CheckBlendMode(const line_t *ldef, boolean brightmapped)
+/*static boolean R_CheckBlendMode(const line_t *ldef, boolean brightmapped)
 {
 	transnum_t transtable = NUMTRANSMAPS;
 	patchalphastyle_t blendmode = AST_COPY;
@@ -655,13 +655,13 @@ static boolean R_CheckBlendMode(const line_t *ldef, boolean brightmapped)
 	}
 
 	return true;
-}
+}*/
 
 void R_RenderMaskedSegRange(drawseg_t *ds, INT32 x1, INT32 x2)
 {
 	INT32 texnum;
 	void (*colfunc_2s)(column_t *, column_t *, INT32);
-	line_t *ldef;
+	//line_t *ldef;
 	// Calculate light table.
 	// Use different light tables
 	//   for horizontal / vertical / diagonal. Diagonal?
@@ -673,7 +673,7 @@ void R_RenderMaskedSegRange(drawseg_t *ds, INT32 x1, INT32 x2)
 	texnum = R_GetTwoSidedMidTexture(curline);
 	windowbottom = windowtop = sprbotscreen = INT32_MAX;
 
-	ldef = curline->linedef;
+	//ldef = curline->linedef;
 
 	rw_scalestep = ds->scalestep;
 	spryscale = ds->scale1 + (x1 - ds->x1)*rw_scalestep;
@@ -790,7 +790,7 @@ void R_RenderThickSideRange(drawseg_t *ds, INT32 x1, INT32 x2, ffloor_t *pfloor)
 
 	if (pfloor->master->flags & ML_TFERLINE)
 	{
-		size_t linenum = min(curline->linedef-backsector->lines[0], pfloor->master->frontsector->linecount);
+		size_t linenum = min(curline->linedef-backsector->lines[0], (long int)pfloor->master->frontsector->linecount);
 		newline = pfloor->master->frontsector->lines[0] + linenum;
 		texnum = R_GetTextureNum(sides[newline->sidenum[0]].midtexture);
 	}
@@ -1746,7 +1746,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 	vertex_t segleft, segright;
 	fixed_t ceilingfrontslide, floorfrontslide, ceilingbackslide, floorbackslide;
 	static size_t maxdrawsegs = 0;
-	const INT32 twosidedmidtexture = R_GetTwoSidedMidTexture(curline);
+	//const INT32 twosidedmidtexture = R_GetTwoSidedMidTexture(curline);
 	const boolean wantremap = encoremap && !(curline->linedef->flags & ML_TFERLINE);
 
 	maskedtextureheight = NULL;
@@ -2089,9 +2089,9 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 		//SoM: 3/25/2000: This code fixes an automap bug that didn't check
 		// frontsector->ceiling and backsector->floor to see if a door was closed.
 		// Without the following code, sprites get displayed behind closed doors.
-		if (!bothceilingssky && !bothfloorssky || !udmf)
+		if ((!bothceilingssky && !bothfloorssky) || !udmf)
 		{
-			if (udmf || !udmf && viewsector != frontsector && viewsector != backsector)
+			if (udmf || (!udmf && viewsector != frontsector && viewsector != backsector))
 			{
 				if (doorclosed || (worldhigh <= worldbottom && worldhighslope <= worldbottomslope))
 				{
@@ -2174,7 +2174,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 			markceiling = false;
 		}
 
-		if (!bothceilingssky && !bothfloorssky || !udmf)
+		if ((!bothceilingssky && !bothfloorssky) || !udmf)
 		{
 			if (((worldhigh <= worldbottom && worldhighslope <= worldbottomslope)
 				|| (worldlow >= worldtop && worldlowslope >= worldtopslope)) || (!udmf && (backsector->ceilingheight <= frontsector->floorheight ||
@@ -2276,7 +2276,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 				{
 					if (!(rover->fofflags & FOF_RENDERSIDES) || !(rover->fofflags & FOF_EXISTS))
 						continue;
-					if (udmf && !(rover->fofflags & FOF_ALLSIDES) && rover->fofflags & FOF_INVERTSIDES || !udmf && rover->fofflags & FOF_INVERTSIDES)
+					if ((udmf && !(rover->fofflags & FOF_ALLSIDES) && rover->fofflags & FOF_INVERTSIDES) || (!udmf && rover->fofflags & FOF_INVERTSIDES))
 						continue;
 
 					if (rover->norender == leveltime)
@@ -2334,7 +2334,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 				{
 					if (!(rover->fofflags & FOF_RENDERSIDES) || !(rover->fofflags & FOF_EXISTS))
 						continue;
-					if (udmf && !(rover->fofflags & FOF_ALLSIDES) && rover->fofflags & FOF_INVERTSIDES || !udmf && rover->fofflags & FOF_INVERTSIDES)
+					if ((udmf && !(rover->fofflags & FOF_ALLSIDES) && rover->fofflags & FOF_INVERTSIDES) || (!udmf && rover->fofflags & FOF_INVERTSIDES))
 						continue;
 
 					if (rover->norender == leveltime)
@@ -2394,7 +2394,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 				{
 					if (!(rover->fofflags & FOF_RENDERSIDES) || !(rover->fofflags & FOF_EXISTS))
 						continue;
-					if (udmf && !(rover->fofflags & FOF_ALLSIDES) && rover->fofflags & FOF_INVERTSIDES || !udmf && rover->fofflags & FOF_INVERTSIDES)
+					if ((udmf && !(rover->fofflags & FOF_ALLSIDES) && rover->fofflags & FOF_INVERTSIDES) || (!udmf && rover->fofflags & FOF_INVERTSIDES))
 						continue;
 					if (rover->norender == leveltime)
 						continue;
@@ -2416,7 +2416,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 				{
 					if (!(rover->fofflags & FOF_RENDERSIDES) || !(rover->fofflags & FOF_EXISTS))
 						continue;
-					if (udmf && !(rover->fofflags & FOF_ALLSIDES) && rover->fofflags & FOF_INVERTSIDES || !udmf && rover->fofflags & FOF_INVERTSIDES)
+					if ((udmf && !(rover->fofflags & FOF_ALLSIDES) && rover->fofflags & FOF_INVERTSIDES) || (!udmf && rover->fofflags & FOF_INVERTSIDES))
 						continue;
 					if (rover->norender == leveltime)
 						continue;
@@ -2738,7 +2738,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 
 					if ((roverleft>>4 <= worldhigh || roverright>>4 <= worldhighslope) &&
 					    (roverleft>>4 >= worldlow || roverright>>4 >= worldlowslope) &&
-					    ((viewz < planevistest && (udmf && rover->fofflags & FOF_BOTHPLANES || !(rover->fofflags & FOF_INVERTPLANES))) ||
+					    ((viewz < planevistest && ((udmf && rover->fofflags & FOF_BOTHPLANES) || !(rover->fofflags & FOF_INVERTPLANES))) ||
 					     (viewz > planevistest && (rover->fofflags & FOF_BOTHPLANES || rover->fofflags & FOF_INVERTPLANES))))
 					{
 						//ffloor[i].slope = *rover->b_slope;
@@ -2761,7 +2761,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 
 					if ((roverleft>>4 <= worldhigh || roverright>>4 <= worldhighslope) &&
 					    (roverleft>>4 >= worldlow || roverright>>4 >= worldlowslope) &&
-					    ((viewz > planevistest && (udmf && rover->fofflags & FOF_BOTHPLANES || !(rover->fofflags & FOF_INVERTPLANES))) ||
+					    ((viewz > planevistest && ((udmf && rover->fofflags & FOF_BOTHPLANES) || !(rover->fofflags & FOF_INVERTPLANES))) ||
 					     (viewz < planevistest && (rover->fofflags & FOF_BOTHPLANES || rover->fofflags & FOF_INVERTPLANES))))
 					{
 						//ffloor[i].slope = *rover->t_slope;
@@ -2795,7 +2795,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 
 					if ((roverleft>>4 <= worldhigh || roverright>>4 <= worldhighslope) &&
 					    (roverleft>>4 >= worldlow || roverright>>4 >= worldlowslope) &&
-					    ((viewz < planevistest && (udmf && rover->fofflags & FOF_BOTHPLANES || !(rover->fofflags & FOF_INVERTPLANES))) ||
+					    ((viewz < planevistest && ((udmf && rover->fofflags & FOF_BOTHPLANES) || !(rover->fofflags & FOF_INVERTPLANES))) ||
 					     (viewz > planevistest && (rover->fofflags & FOF_BOTHPLANES || rover->fofflags & FOF_INVERTPLANES))))
 					{
 						//ffloor[i].slope = *rover->b_slope;
@@ -2818,7 +2818,7 @@ void R_StoreWallRange(INT32 start, INT32 stop)
 
 					if ((roverleft>>4 <= worldhigh || roverright>>4 <= worldhighslope) &&
 					    (roverleft>>4 >= worldlow || roverright>>4 >= worldlowslope) &&
-					    ((viewz > planevistest && (udmf && rover->fofflags & FOF_BOTHPLANES || !(rover->fofflags & FOF_INVERTPLANES))) ||
+					    ((viewz > planevistest && ((udmf && rover->fofflags & FOF_BOTHPLANES) || !(rover->fofflags & FOF_INVERTPLANES))) ||
 					     (viewz < planevistest && (rover->fofflags & FOF_BOTHPLANES || rover->fofflags & FOF_INVERTPLANES))))
 					{
 						//ffloor[i].slope = *rover->t_slope;

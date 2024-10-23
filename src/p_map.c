@@ -293,8 +293,8 @@ P_DoSpringEx
 //
 boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 {
-	const fixed_t hscale = mapobjectscale + (mapobjectscale - object->scale);
-	const fixed_t vscale = mapobjectscale + (object->scale - mapobjectscale);
+	//const fixed_t hscale = mapobjectscale + (mapobjectscale - object->scale);
+	//const fixed_t vscale = mapobjectscale + (object->scale - mapobjectscale);
 	fixed_t offx, offy;
 	fixed_t vertispeed = spring->info->mass;
 	fixed_t horizspeed = spring->info->damage;

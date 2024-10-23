@@ -366,7 +366,7 @@ static INT32 SCR(INT32 r)
 
 // Devmode information
 
-static void ST_pushDebugString(INT32 *height, const char *string)
+/*static void ST_pushDebugString(INT32 *height, const char *string)
 {
 	V_DrawRightAlignedString(320, *height, V_MONOSPACE, string);
 	*height -= 8;
@@ -418,7 +418,7 @@ static void ST_drawMusicDebug(INT32 *height)
 	}
 
 	ST_pushDebugString(height, va("    Song: %8s", mname));
-}
+}*/
 
 static void ST_drawDebugInfo(void)
 {
@@ -494,8 +494,8 @@ tic_t lt_exitticker = 0, lt_endtime = 0;
 //
 static void ST_cacheLevelTitle(void)
 {
-	UINT8 i;
-	char buf[9];
+	//UINT8 i;
+	//char buf[9];
 
 }
 
@@ -534,7 +534,7 @@ void ST_preDrawTitleCard(void)
 void ST_runTitleCard(void)
 {
 	boolean run = !(paused || P_AutoPause());
-	boolean gp = (marathonmode || (grandprixinfo.gp && grandprixinfo.roundnum));
+	//boolean gp = (marathonmode || (grandprixinfo.gp && grandprixinfo.roundnum));
 
 	if (!G_IsTitleCardAvailable())
 		return;

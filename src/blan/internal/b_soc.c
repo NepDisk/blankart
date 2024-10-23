@@ -12,10 +12,10 @@
 // Map header toggle for wall transfering.
 boolean B_UseWallTransfer(void)
 {
-    const mapheader_t *mapheader = mapheaderinfo[gamemap - 1];
+	const mapheader_t *mapheader = mapheaderinfo[gamemap - 1];
 
-    if (cv_kartwalltransfer.value)
-        return true;
+	if (cv_kartwalltransfer.value)
+		return true;
     
 	if (mapheader->use_walltransfer == true)
 		return true;

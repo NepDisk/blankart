@@ -444,7 +444,7 @@ struct precipmobj_t
 	// Info for drawing: position.
 	fixed_t x, y, z;
 	// --- Please make sure you keep the fields up to this
-	// --- point in sync with degenmobj_t.\
+	// --- point in sync with degenmobj_t.
 
 	fixed_t old_x, old_y, old_z; // position interpolation
 	fixed_t old_x2, old_y2, old_z2;

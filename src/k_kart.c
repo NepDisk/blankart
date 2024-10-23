@@ -1977,7 +1977,7 @@ static SINT8 K_GlanceAtPlayers(player_t *glancePlayer)
 
 	\return	void
 */
-void K_RespawnChecker(player_t *player)
+static void K_RespawnChecker(player_t *player)
 {
 	ticcmd_t *cmd = &player->cmd;
 
@@ -6915,8 +6915,6 @@ void K_KartResetPlayerColor(player_t *player)
 
 	if (player->invincibilitytimer) // You're gonna kiiiiill
 	{
-		const tic_t defaultTime = itemtime+(2*TICRATE);
-		tic_t flicker = 2;
 		boolean skip = false;
 
 		fullbright = true;
@@ -7448,7 +7446,7 @@ static void K_UpdateDistanceFromFinishLine(player_t *player)
 				// left after this one. This will give us the total distance to the finish line, and allow item
 				// distance calculation to work easily
 				const mapheader_t *mapheader = mapheaderinfo[gamemap - 1];
-				if ((mapheaderinfo[gamemap - 1]->levelflags & LF_SECTIONRACE) == 0U)
+				if ((mapheader->levelflags & LF_SECTIONRACE) == 0U)
 				{
 					const UINT8 numfulllapsleft = ((UINT8)numlaps - player->laps);
 					player->distancetofinish += numfulllapsleft * K_GetCircuitLength();
@@ -8172,7 +8170,6 @@ static void K_AirFailsafe(player_t *player)
 static void K_AdjustPlayerFriction(player_t *player)
 {
 	boolean onground = P_IsObjectOnGround(player->mo);
-	fixed_t basefriction = ORIG_FRICTION;
 	// JugadorXEI: Do *not* calculate friction when a player is pogo'd
 	// because they'll be in the air and friction will not reset!
 	if (onground && !player->pogospring)

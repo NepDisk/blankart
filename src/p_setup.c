@@ -1287,7 +1287,7 @@ static void P_WriteDuplicateText(const char *text, char **target)
 	M_Memcpy(*target, text, len);
 }
 
-static void P_WriteSkincolor(INT32 constant, char **target)
+/*static void P_WriteSkincolor(INT32 constant, char **target)
 {
 	if (constant <= SKINCOLOR_NONE
 	|| constant >= (INT32)numskincolors)
@@ -1297,7 +1297,7 @@ static void P_WriteSkincolor(INT32 constant, char **target)
 		va("SKINCOLOR_%s", skincolors[constant].name),
 		target
 	);
-}
+}*/
 
 static void P_WriteSfx(INT32 constant, char **target)
 {

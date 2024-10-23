@@ -2020,7 +2020,7 @@ static void K_HandleLapIncrement(player_t *player, boolean fromsector)
 			
 
 				{
-					UINT8 prevLowest = lowestLap;
+					//UINT8 prevLowest = lowestLap;
 
 					lowestLap = P_FindLowestLap();
 				}
@@ -6388,6 +6388,7 @@ static void P_AddRaiseThinker(sector_t *sec, INT16 tag, fixed_t speed, fixed_t c
 
 static void P_AddAirbob(sector_t *sec, INT16 tag, fixed_t dist, boolean raise, boolean spindash, boolean dynamic)
 {
+	(void)spindash;
 	raise_t *airbob;
 
 	airbob = Z_Calloc(sizeof (*airbob), PU_LEVSPEC, NULL);
@@ -6683,7 +6684,7 @@ static boolean P_IsLineDisabled (const line_t * line)
 {
 	if (line->special != 7) // This is a hack. I can at least hope nobody wants to prevent flat alignment in netgames...
 	{
-		const INT16 NETONLY = udmf ? ML_NETONLY : ML_NETONLY_OLD;
+		const UINT32 NETONLY = udmf ? ML_NETONLY : ML_NETONLY_OLD;
 
 		if (netgame)
 		{

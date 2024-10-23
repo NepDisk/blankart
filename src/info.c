@@ -28096,7 +28096,7 @@ skincolor_t skincolors[MAXSKINCOLORS] = {
 	{"Byzantium",       {201, 248, 249, 250, 251, 252, 253, 254, 255, 255,  29,  29,  30,  30,  31,  31}, SKINCOLOR_SWAMP,8,        V_LAVENDERMAP,                   true}, // SKINCOLOR_BYZANTIUM
 	{"Pomegranate",     {144, 145, 146, 147, 148, 149, 150, 251, 251, 252, 252, 253, 254, 255,  29,  30}, SKINCOLOR_DREAM,8,        V_LAVENDERMAP,                   true}, // SKINCOLOR_POMEGRANATE
 	{"Lilac",           {120, 120, 120, 121, 121, 122, 122, 123, 192, 248, 249, 250, 251, 252, 253, 254}, SKINCOLOR_JAWZ,6,          V_PINKMAP,        true}, // SKINCOLOR_LILAC
-	{"Bone",            {120, 120,   0,   1,   3,   5,   7,  10,  12,  14,  16,  19,  22,  24,  26,  29}, SKINCOLOR_INK,8,           0-                true}, // SKINCOLOR_BONE
+	{"Bone",            {120, 120,   0,   1,   3,   5,   7,  10,  12,  14,  16,  19,  22,  24,  26,  29}, SKINCOLOR_INK,8,           0,                true}, // SKINCOLOR_BONE
 	{"Carbon",          {  3,   6,  10,  13,  17,  20,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31}, SKINCOLOR_MARBLE,8,        V_GRAYMAP,         true}, // SKINCOLOR_CARBON
 	{"Ink",             {  0,   2,   5,  10,  15,  20,  25,  26,  27,  28,  30,  30,  30,  31,  31,  31}, SKINCOLOR_BONE,8,          V_GRAYMAP,         true}, // SKINCOLOR_INK
 	{"Ghost",           {120, 120,   0,   1,   1, 224, 225, 225, 226, 202, 203, 204, 205, 206, 207,  29}, SKINCOLOR_PEACHY,12,       0,                true}, // SKINCOLOR_GHOST

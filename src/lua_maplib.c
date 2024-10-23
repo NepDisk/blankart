@@ -2518,12 +2518,12 @@ static int mapheaderinfo_get(lua_State *L)
 		lua_pushstring(L, header->keywords);
 	else if (fastcmp(field,"musname")) // we create a table here because it saves us from a userdata nightmare
 	{
-		UINT8 i;
+		UINT8 j;
 		lua_createtable(L, header->musname_size, 0);
-		for (i = 0; i < header->musname_size; i++)
+		for (j = 0; j < header->musname_size; j++)
 		{
-			lua_pushstring(L, header->musname[i]);
-			lua_rawseti(L, -2, 1 + i);
+			lua_pushstring(L, header->musname[j]);
+			lua_rawseti(L, -2, 1 + j);
 		}
 	}
 	else if (fastcmp(field,"mustrack"))

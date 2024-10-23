@@ -143,21 +143,13 @@ static CV_PossibleValue_t maxportals_cons_t[] = {{0, "MIN"}, {12, "MAX"}, {0, NU
 static CV_PossibleValue_t homremoval_cons_t[] = {{0, "No"}, {1, "Yes"}, {2, "Flash"}, {0, NULL}};
 
 static void Fov_OnChange(void);
-static void ChaseCam_OnChange(void);
-static void ChaseCam2_OnChange(void);
-static void ChaseCam3_OnChange(void);
-static void ChaseCam4_OnChange(void);
-static void FlipCam_OnChange(void);
-static void FlipCam2_OnChange(void);
-static void FlipCam3_OnChange(void);
-static void FlipCam4_OnChange(void);
 
 consvar_t cv_tailspickup = CVAR_INIT ("tailspickup", "On", CV_NETVAR|CV_NOSHOWHELP, CV_OnOff, NULL);
 consvar_t cv_chasecam[MAXSPLITSCREENPLAYERS] = {
-	CVAR_INIT ("chasecam", "On", CV_CALL, CV_OnOff, ChaseCam_OnChange),
-	CVAR_INIT ("chasecam2", "On", CV_CALL, CV_OnOff, ChaseCam2_OnChange),
-	CVAR_INIT ("chasecam3", "On", CV_CALL, CV_OnOff, ChaseCam3_OnChange),
-	CVAR_INIT ("chasecam4", "On", CV_CALL, CV_OnOff, ChaseCam4_OnChange)
+	CVAR_INIT ("chasecam", "On", 0, CV_OnOff, NULL),
+	CVAR_INIT ("chasecam2", "On", 0, CV_OnOff, NULL),
+	CVAR_INIT ("chasecam3", "On", 0, CV_OnOff, NULL),
+	CVAR_INIT ("chasecam4", "On", 0, CV_OnOff, NULL)
 };
 
 consvar_t cv_flipcam[MAXSPLITSCREENPLAYERS] = {
@@ -245,26 +237,6 @@ void SplitScreen_OnChange(void)
 static void Fov_OnChange(void)
 {
 	R_SetViewSize();
-}
-
-static void ChaseCam_OnChange(void)
-{
-	;
-}
-
-static void ChaseCam2_OnChange(void)
-{
-	;
-}
-
-static void ChaseCam3_OnChange(void)
-{
-	;
-}
-
-static void ChaseCam4_OnChange(void)
-{
-	;
 }
 
 //
@@ -1384,13 +1356,13 @@ void R_SkyboxFrame(int s)
 	newview->y = r_viewmobj->y;
 	if (!udmf)
     {
-        if (r_viewmobj->spawnpoint)
-            newview->z = ((fixed_t)r_viewmobj->spawnpoint->angle)<<FRACBITS;
-        else
-            newview->z = 0;
+		if (r_viewmobj->spawnpoint)
+			newview->z = ((fixed_t)r_viewmobj->spawnpoint->angle)<<FRACBITS;
+		else
+			newview->z = 0;
     }
-    else
-        newview->z = r_viewmobj->z; // 26/04/17: use actual Z position instead of spawnpoint angle!
+	else
+		newview->z = r_viewmobj->z; // 26/04/17: use actual Z position instead of spawnpoint angle!
 
 	if (mapheaderinfo[gamemap-1])
 	{

@@ -430,9 +430,9 @@ P_GetMidtextureTopBottom
 	fixed_t textop, texbottom, texheight;
 	INT32 texnum = R_GetTextureNum(side->midtexture); // make sure the texture is actually valid
 
-	sector_t *front = linedef->frontsector;
-	sector_t *back = linedef->backsector;
-	fixed_t z;
+	//sector_t *front = linedef->frontsector;
+	//sector_t *back = linedef->backsector;
+	//fixed_t z;
 
 	if (!texnum)
 		return false;

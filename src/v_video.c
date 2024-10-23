@@ -866,7 +866,7 @@ void V_DrawFill(INT32 x, INT32 y, INT32 w, INT32 h, INT32 c)
 	const UINT8 *deststop;
 	UINT32 alphalevel = ((c & V_ALPHAMASK) >> V_ALPHASHIFT);
 	UINT32 blendmode = ((c & V_BLENDMASK) >> V_BLENDSHIFT);
-	INT32 u;
+	//INT32 u;
 
 	if (rendermode == render_none)
 		return;
@@ -2051,7 +2051,7 @@ void V_DrawStringScaled(
 	boolean uppercase;
 	boolean notcolored;
 
-	const UINT8 *colormap;
+	const UINT8 *colormap = NULL;
 	boolean   dance;
 	boolean nodanceoverride;
 	INT32     dancecounter;

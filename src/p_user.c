@@ -1426,6 +1426,7 @@ static boolean P_PlayerCanBust(player_t *player, ffloor_t *rover)
 	// TODO: Make these act like the Lua SA2 boxes.
 	// (void)player;
 	(void)rover;
+	(void)player;
 
 	if (!(rover->fofflags & FOF_EXISTS))
 		return false;
@@ -1982,11 +1983,10 @@ static void P_UpdatePlayerAngle(player_t *player)
 {
 	INT16 angle_diff, max_left_turn, max_right_turn;
 	boolean add_delta = true;
-	fixed_t currentSpeed = 0;
 	ticcmd_t *cmd = &player->cmd;
 	angle_t anglechange = player->angleturn;
 	int i;
-	UINT8 p = UINT8_MAX;
+	//UINT8 p = UINT8_MAX;
 
 	// Kart: store the current turn range for later use
 	if (((player->mo && player->speed > 0) // Moving
@@ -2789,7 +2789,7 @@ static ticcmd_t *P_CameraCmd(camera_t *cam)
 		turnright = turnright || (axis > 0);
 		turnleft = turnleft || (axis < 0);
 	}
-	forward = 0;
+	forward = side = 0;
 
 	cmd->turning = 0;
 

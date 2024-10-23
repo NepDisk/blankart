@@ -358,7 +358,7 @@ void K_HandleFollower(player_t *player)
 			break;
 	}
 
-	if (color == 0 || color > MAXSKINCOLORS+2) // Make sure this isn't garbage
+	if (color == 0 || color > numskincolors+2) // Make sure this isn't garbage
 	{
 		color = player->skincolor; // "Match" as fallback.
 	}
