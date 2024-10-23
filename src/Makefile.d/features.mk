@@ -69,6 +69,7 @@ endif
 
 ifndef NOLIBBACKTRACE
 $(eval $(call Propogate_flags,LIBBACKTRACE))
+libs+=-lbacktrace
 opts+=-DHAVE_LIBBACKTRACE
 endif
 
