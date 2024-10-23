@@ -1184,22 +1184,23 @@ static void K_BotItemBubble(player_t *player, ticcmd_t *cmd)
 --------------------------------------------------*/
 static void K_BotItemFlame(player_t *player, ticcmd_t *cmd)
 {
-	if (player->botvars.itemconfirm > 0)
+	if (P_IsObjectOnGround(player->mo) == false)
 	{
-		player->botvars.itemconfirm--;
+		// Don't use while mid-air.
+		return;
 	}
-	else if (player->pflags & PF_HOLDREADY)
-	{
-		INT32 flamemax = player->flamelength * flameseg;
 
-		if (player->flamemeter < flamemax || flamemax == 0)
+	if (player->botvars.itemconfirm > TICRATE)
+	{
+		if (player->flametimer > 0)
 		{
 			cmd->buttons |= BT_ATTACK;
+			player->botvars.itemconfirm = 0;
 		}
-		else
-		{
-			player->botvars.itemconfirm = 3*flamemax/4;
-		}
+	}
+	else
+	{
+		player->botvars.itemconfirm++;
 	}
 }
 
@@ -1320,6 +1321,10 @@ void K_BotItemUsage(player_t *player, ticcmd_t *cmd, INT16 turnamt)
 			{
 				K_BotItemRocketSneaker(player, cmd);
 			}
+			else if (player->flametimer > 0)
+			{
+				K_BotItemFlame(player, cmd);
+			}
 			else
 			{
 				switch (player->itemtype)
@@ -1342,6 +1347,12 @@ void K_BotItemUsage(player_t *player, ticcmd_t *cmd, INT16 turnamt)
 						break;
 					case KITEM_ROCKETSNEAKER:
 						if (player->rocketsneakertimer <= 0)
+						{
+							K_BotItemGenericTap(player, cmd);
+						}
+						break;
+				case KITEM_FLAMESHIELD:
+						if (player->flametimer <= 0)
 						{
 							K_BotItemGenericTap(player, cmd);
 						}
@@ -1412,9 +1423,6 @@ void K_BotItemUsage(player_t *player, ticcmd_t *cmd, INT16 turnamt)
 						break;
 					case KITEM_BUBBLESHIELD:
 						K_BotItemBubble(player, cmd);
-						break;
-					case KITEM_FLAMESHIELD:
-						K_BotItemFlame(player, cmd);
 						break;
 				}
 			}
