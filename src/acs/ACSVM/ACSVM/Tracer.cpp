@@ -249,15 +249,30 @@ namespace ACSVM
          case CodeACS0::CallSpec_3L:
          case CodeACS0::CallSpec_4L:
          case CodeACS0::CallSpec_5L:
+         case CodeACS0::CallSpec_6L:
+         case CodeACS0::CallSpec_7L:
+         case CodeACS0::CallSpec_8L:
+         case CodeACS0::CallSpec_9L:
+         case CodeACS0::CallSpec_10L:
          case CodeACS0::CallSpec_1LB:
          case CodeACS0::CallSpec_2LB:
          case CodeACS0::CallSpec_3LB:
          case CodeACS0::CallSpec_4LB:
          case CodeACS0::CallSpec_5LB:
+         case CodeACS0::CallSpec_6LB:
+         case CodeACS0::CallSpec_7LB:
+         case CodeACS0::CallSpec_8LB:
+         case CodeACS0::CallSpec_9LB:
+         case CodeACS0::CallSpec_10LB:
          case CodeACS0::Push_Lit2B:
          case CodeACS0::Push_Lit3B:
          case CodeACS0::Push_Lit4B:
          case CodeACS0::Push_Lit5B:
+         case CodeACS0::Push_Lit6B:
+         case CodeACS0::Push_Lit7B:
+         case CodeACS0::Push_Lit8B:
+         case CodeACS0::Push_Lit9B:
+         case CodeACS0::Push_Lit10B:
             codeC += opData->argc + 2;
             break;
 
@@ -285,7 +300,6 @@ namespace ACSVM
 
                opTran = env->getCodeData(opFunc->getTransCode(argc));
             }
-            [[fallthrough]];
 
          default:
             if(opTran->code == Code::CallFunc_Lit)
@@ -416,7 +430,13 @@ namespace ACSVM
          case CodeACS0::CallSpec_3:
          case CodeACS0::CallSpec_4:
          case CodeACS0::CallSpec_5:
+         case CodeACS0::CallSpec_6:
+         case CodeACS0::CallSpec_7:
+         case CodeACS0::CallSpec_8:
+         case CodeACS0::CallSpec_9:
+         case CodeACS0::CallSpec_10:
          case CodeACS0::CallSpec_5R1:
+         case CodeACS0::CallSpec_10R1:
             *codeItr++ = static_cast<Word>(opData->transCode);
             *codeItr++ = opData->stackArgC;
             goto trans_args;
@@ -431,6 +451,16 @@ namespace ACSVM
          case CodeACS0::CallSpec_4LB:
          case CodeACS0::CallSpec_5L:
          case CodeACS0::CallSpec_5LB:
+         case CodeACS0::CallSpec_6L:
+         case CodeACS0::CallSpec_6LB:
+         case CodeACS0::CallSpec_7L:
+         case CodeACS0::CallSpec_7LB:
+         case CodeACS0::CallSpec_8L:
+         case CodeACS0::CallSpec_8LB:
+         case CodeACS0::CallSpec_9L:
+         case CodeACS0::CallSpec_9LB:
+         case CodeACS0::CallSpec_10L:
+         case CodeACS0::CallSpec_10LB:
             *codeItr++ = static_cast<Word>(opData->transCode);
             *codeItr++ = opData->argc - 1;
             goto trans_args;
@@ -460,6 +490,11 @@ namespace ACSVM
          case CodeACS0::Push_Lit3B:
          case CodeACS0::Push_Lit4B:
          case CodeACS0::Push_Lit5B:
+         case CodeACS0::Push_Lit6B:
+         case CodeACS0::Push_Lit7B:
+         case CodeACS0::Push_Lit8B:
+         case CodeACS0::Push_Lit9B:
+         case CodeACS0::Push_Lit10B:
             *codeItr++ = static_cast<Word>(opData->transCode);
             *codeItr++ = opData->argc;
             goto trans_args;

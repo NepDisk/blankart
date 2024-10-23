@@ -358,6 +358,28 @@ ACSVM_CodeListACS0(PrintLocArr,  378, "",       CallFunc,     2, PrintLocArr)
 ACSVM_CodeListACS0(PrintLocArrR, 379, "",       CallFunc,     4, PrintLocArr)
 ACSVM_CodeListACS0(StrCpyLocArr, 380, "",       CallFunc,     6, StrCpyLocArr)
 
+ACSVM_CodeListACS0(CallSpec_6,   500, "b",      CallSpec,     6, None)
+ACSVM_CodeListACS0(CallSpec_7,   501, "b",      CallSpec,     7, None)
+ACSVM_CodeListACS0(CallSpec_8,   502, "b",      CallSpec,     8, None)
+ACSVM_CodeListACS0(CallSpec_9,   503, "b",      CallSpec,     9, None)
+ACSVM_CodeListACS0(CallSpec_10,  504, "b",      CallSpec,    10, None)
+ACSVM_CodeListACS0(CallSpec_6L,  505, "bWWWWWW",      CallSpec_Lit, 0, None)
+ACSVM_CodeListACS0(CallSpec_7L,  506, "bWWWWWWWW",    CallSpec_Lit, 0, None)
+ACSVM_CodeListACS0(CallSpec_8L,  507, "bWWWWWWWWW",   CallSpec_Lit, 0, None)
+ACSVM_CodeListACS0(CallSpec_9L,  508, "bWWWWWWWWWW",  CallSpec_Lit, 0, None)
+ACSVM_CodeListACS0(CallSpec_10L, 509, "bWWWWWWWWWWW", CallSpec_Lit, 0, None)
+ACSVM_CodeListACS0(CallSpec_6LB, 510, "BBBBBBB",     CallSpec_Lit, 0, None)
+ACSVM_CodeListACS0(CallSpec_7LB, 511, "BBBBBBBB",    CallSpec_Lit, 0, None)
+ACSVM_CodeListACS0(CallSpec_8LB, 512, "BBBBBBBBB",   CallSpec_Lit, 0, None)
+ACSVM_CodeListACS0(CallSpec_9LB, 513, "BBBBBBBBBB",  CallSpec_Lit, 0, None)
+ACSVM_CodeListACS0(CallSpec_10LB,514, "BBBBBBBBBBB", CallSpec_Lit, 0, None)
+ACSVM_CodeListACS0(Push_Lit6B,   515, "BBBBBB",     Push_LitArr, 0, None)
+ACSVM_CodeListACS0(Push_Lit7B,   516, "BBBBBBB",    Push_LitArr, 0, None)
+ACSVM_CodeListACS0(Push_Lit8B,   517, "BBBBBBBB",   Push_LitArr, 0, None)
+ACSVM_CodeListACS0(Push_Lit9B,   518, "BBBBBBBBB",  Push_LitArr, 0, None)
+ACSVM_CodeListACS0(Push_Lit10B,  519, "BBBBBBBBBB", Push_LitArr, 0, None)
+ACSVM_CodeListACS0(CallSpec_10R1,520, "b",      CallSpec_R1, 10, None)
+
 #undef ACSVM_CodeListACS0
 #endif
 
