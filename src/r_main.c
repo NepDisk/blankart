@@ -289,7 +289,7 @@ INT32 R_PointOnSideUDMF(fixed_t x, fixed_t y, const node_t *node)
 	// Try to quickly decide by looking at sign bits.
 	INT32 mask = (node->dy ^ node->dx ^ dx ^ dy) >> 31;
 	return (mask & ((node->dy ^ dx) < 0)) |  // (left is negative)
-		(~mask & (FixedMul(dy, node->dx>>FRACBITS) >= FixedMul(node->dy>>FRACBITS, dx)));
+		   (~mask & (FixedMul(dy, node->dx>>FRACBITS) >= FixedMul(node->dy>>FRACBITS, dx)));
 }
 
 INT32 R_PointOnSideKart(fixed_t x, fixed_t y, const node_t *restrict node)
@@ -307,7 +307,7 @@ INT32 R_PointOnSideKart(fixed_t x, fixed_t y, const node_t *restrict node)
 	// also use a mask to avoid branch prediction
 	INT32 mask = (node->dy ^ node->dx ^ x ^ y) >> 31;
 	return (mask & ((node->dy ^ x) < 0)) |  // (left is negative)
-		(~mask & (FixedMul(y, node->dx>>FRACBITS) >= FixedMul(node->dy>>FRACBITS, x)));
+		   (~mask & (FixedMul(y, node->dx>>FRACBITS) >= FixedMul(node->dy>>FRACBITS, x)));
 }
 
 // killough 5/2/98: reformatted
@@ -331,24 +331,6 @@ INT32 R_PointOnSegSide(fixed_t x, fixed_t y, const seg_t *line)
 	if ((ldy ^ ldx ^ dx ^ dy) < 0)
 		return (ldy ^ dx) < 0;          // (left is negative)
 	return FixedMul(dy, ldx>>FRACBITS) >= FixedMul(ldy>>FRACBITS, dx);
-}
-
-//
-// R_PointToAngle
-// To get a global angle from cartesian coordinates,
-//  the coordinates are flipped until they are in
-//  the first octant of the coordinate system, then
-//  the y (<=x) is scaled and divided by x to get a
-//  tangent (slope) value which is looked up in the
-//  tantoangle[] table. The +1 size of tantoangle[]
-//  is to handle the case when x==y without additional
-//  checking.
-//
-// killough 5/2/98: reformatted, cleaned up
-
-angle_t R_PointToAngle(fixed_t x, fixed_t y)
-{
-	return R_PointToAngle2(viewx, viewy, x, y);
 }
 
 // Similar to R_PointToAngle, but requires an additional player_t argument.
@@ -410,40 +392,6 @@ angle_t R_PointToAngle2(fixed_t pviewx, fixed_t pviewy, fixed_t x, fixed_t y)
 		ANGLE_90 + tantoangle[SlopeDiv(x,y)] :                         // octant 2
 		(x = -x) > (y = -y) ? ANGLE_180+tantoangle[SlopeDiv(y,x)] :    // octant 4
 		ANGLE_270-tantoangle[SlopeDiv(x,y)] :                          // octant 5
-		0;
-}
-
-fixed_t R_PointToDist2(fixed_t px2, fixed_t py2, fixed_t px1, fixed_t py1)
-{
-	return FixedHypot(px1 - px2, py1 - py2);
-}
-
-// Little extra utility. Works in the same way as R_PointToAngle2
-fixed_t R_PointToDist(fixed_t x, fixed_t y)
-{
-	return R_PointToDist2(viewx, viewy, x, y);
-}
-
-angle_t R_PointToAngleEx(INT32 x2, INT32 y2, INT32 x1, INT32 y1)
-{
-	INT64 dx = x1-x2;
-	INT64 dy = y1-y2;
-	if (dx < INT32_MIN || dx > INT32_MAX || dy < INT32_MIN || dy > INT32_MAX)
-	{
-		x1 = (int)(dx / 2 + x2);
-		y1 = (int)(dy / 2 + y2);
-	}
-	return (y1 -= y2, (x1 -= x2) || y1) ?
-	x1 >= 0 ?
-	y1 >= 0 ?
-		(x1 > y1) ? tantoangle[SlopeDivEx(y1,x1)] :                            // octant 0
-		ANGLE_90-tantoangle[SlopeDivEx(x1,y1)] :                               // octant 1
-		x1 > (y1 = -y1) ? 0-tantoangle[SlopeDivEx(y1,x1)] :                    // octant 8
-		ANGLE_270+tantoangle[SlopeDivEx(x1,y1)] :                              // octant 7
-		y1 >= 0 ? (x1 = -x1) > y1 ? ANGLE_180-tantoangle[SlopeDivEx(y1,x1)] :  // octant 3
-		ANGLE_90 + tantoangle[SlopeDivEx(x1,y1)] :                             // octant 2
-		(x1 = -x1) > (y1 = -y1) ? ANGLE_180+tantoangle[SlopeDivEx(y1,x1)] :    // octant 4
-		ANGLE_270-tantoangle[SlopeDivEx(x1,y1)] :                              // octant 5
 		0;
 }
 
