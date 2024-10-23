@@ -144,9 +144,9 @@ endif
 
 OBJDUMP_OPTS?=--wide --source --line-numbers
 
-OBJCOPY:=$(call Prefix,objcopy)
-OBJDUMP:=$(call Prefix,objdump)
-WINDRES:=$(call Prefix,windres)
+OBJCOPY?=$(call Prefix,objcopy)
+OBJDUMP?=$(call Prefix,objdump)
+WINDRES?=$(call Prefix,windres)
 
 ifdef YASM
 NASM?=yasm
