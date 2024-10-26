@@ -932,14 +932,57 @@ static int thingstringargs_len(lua_State *L)
 	return 1;
 }
 
+
+
+enum mapthing_e {
+	mapthing_valid = 0,
+	mapthing_x,
+	mapthing_y,
+	mapthing_angle,
+	mapthing_pitch,
+	mapthing_roll,
+	mapthing_type,
+	mapthing_options,
+	mapthing_scale,
+	mapthing_spritexscale,
+	mapthing_spriteyscale,
+	mapthing_z,
+	mapthing_extrainfo,
+	mapthing_tid,
+	mapthing_args,
+	mapthing_stringargs,
+	mapthing_mobj,
+};
+
+const char *const mapthing_opt[] = {
+	"valid",
+	"x",
+	"y",
+	"angle",
+	"pitch",
+	"roll",
+	"type",
+	"options",
+	"scale",
+	"spritexscale",
+	"spriteyscale",
+	"z",
+	"extrainfo",
+	"tid",
+	"args",
+	"stringargs",
+	"mobj",
+	NULL,
+};
+
 static int mapthing_get(lua_State *L)
 {
 	mapthing_t *mt = *((mapthing_t **)luaL_checkudata(L, 1, META_MAPTHING));
-	const char *field = luaL_checkstring(L, 2);
-	lua_Integer number;
+	enum mapthing_e field = Lua_optoption(L, 2, NULL, mapthing_opt);
+	lua_settop(L, 2);
 
 	if (!mt) {
-		if (fastcmp(field,"valid")) {
+		if (field == mapthing_valid) {
 			lua_pushboolean(L, false);
 			return 1;
 		}
@@ -948,55 +991,137 @@ static int mapthing_get(lua_State *L)
 		return 0;
 	}
 
-	if (fastcmp(field,"valid")) {
-		lua_pushboolean(L, true);
-		return 1;
-	} else if(fastcmp(field,"x"))
-		number = mt->x;
-	else if(fastcmp(field,"y"))
-		number = mt->y;
-	else if(fastcmp(field,"angle"))
-		number = mt->angle;
-	else if(fastcmp(field,"pitch"))
-		number = mt->pitch;
-	else if(fastcmp(field,"roll"))
-		number = mt->roll;
-	else if(fastcmp(field,"type"))
-		number = mt->type;
-	else if(fastcmp(field,"options"))
-		number = mt->options;
-	else if(fastcmp(field,"scale"))
-		number = mt->scale;
-	else if(fastcmp(field,"spritexscale"))
-		number = mt->spritexscale;
-	else if(fastcmp(field,"spriteyscale"))
-		number = mt->spriteyscale;
-	else if(fastcmp(field,"z"))
-		number = mt->z;
-	else if(fastcmp(field,"extrainfo"))
-		number = mt->extrainfo;
-	else if(fastcmp(field,"tid"))
-		number = mt->tid;
-	else if(fastcmp(field,"args"))
+	switch (field)
 	{
-		LUA_PushUserdata(L, mt->args, META_THINGARGS);
-		return 1;
+		case mapthing_valid:
+			lua_pushboolean(L, true);
+			break;
+		case mapthing_x:
+			lua_pushinteger(L, mt->x);
+			break;
+		case mapthing_y:
+			lua_pushinteger(L, mt->y);
+			break;
+		case mapthing_angle:
+			lua_pushinteger(L, mt->angle);
+			break;
+		case mapthing_pitch:
+			lua_pushinteger(L, mt->pitch);
+			break;
+		case mapthing_roll:
+			lua_pushinteger(L, mt->roll);
+			break;
+		case mapthing_type:
+			lua_pushinteger(L, mt->type);
+			break;
+		case mapthing_options:
+			lua_pushinteger(L, mt->options);
+			break;
+		case mapthing_scale:
+			lua_pushfixed(L, mt->scale);
+			break;
+		case mapthing_spritexscale:
+			lua_pushfixed(L, mt->spritexscale);
+			break;
+		case mapthing_spriteyscale:
+			lua_pushfixed(L, mt->spriteyscale);
+			break;
+		case mapthing_z:
+			lua_pushinteger(L, mt->z);
+			break;
+		case mapthing_extrainfo:
+			lua_pushinteger(L, mt->extrainfo);
+			break;
+		case mapthing_tid:
+			lua_pushinteger(L, mt->tid);
+			break;
+		case mapthing_args:
+			LUA_PushUserdata(L, mt->args, META_THINGARGS);
+			break;
+		case mapthing_stringargs:
+			LUA_PushUserdata(L, mt->stringargs, META_THINGSTRINGARGS);
+			break;
+		case mapthing_mobj:
+			LUA_PushUserdata(L, mt->mobj, META_MOBJ);
+			break;
+		default:
+			if (devparm)
+				return luaL_error(L, LUA_QL("mapthing_t") " has no field named " LUA_QS, field);
+			else
+				return 0;
 	}
-	else if(fastcmp(field,"stringargs"))
-	{
-		LUA_PushUserdata(L, mt->stringargs, META_THINGSTRINGARGS);
-		return 1;
-	}
-	else if(fastcmp(field,"mobj")) {
-		LUA_PushUserdata(L, mt->mobj, META_MOBJ);
-		return 1;
-	} else if (devparm)
-		return luaL_error(L, LUA_QL("mapthing_t") " has no field named " LUA_QS, field);
-	else
-		return 0;
 
-	lua_pushinteger(L, number);
 	return 1;
+}
+
+static int mapthing_set(lua_State *L)
+{
+	mapthing_t *mt = *((mapthing_t **)luaL_checkudata(L, 1, META_MAPTHING));
+	enum mapthing_e field = Lua_optoption(L, 2, mapthing_opt[0], mapthing_opt);
+	lua_settop(L, 3);
+
+	if (!mt)
+		return luaL_error(L, "accessed mapthing_t doesn't exist anymore.");
+
+	if (hud_running)
+		return luaL_error(L, "Do not alter mapthing_t in HUD rendering code!");
+	if (hook_cmd_running)
+		return luaL_error(L, "Do not alter mapthing_t in CMD building code!");
+
+	switch (field)
+	{
+		case mapthing_x:
+			mt->x = (INT16)luaL_checkinteger(L, 3);
+			break;
+		case mapthing_y:
+			mt->y = (INT16)luaL_checkinteger(L, 3);
+			break;
+		case mapthing_angle:
+			mt->angle = (INT16)luaL_checkinteger(L, 3);
+			break;
+		case mapthing_pitch:
+			mt->pitch = (INT16)luaL_checkinteger(L, 3);
+			break;
+		case mapthing_roll:
+			mt->roll = (INT16)luaL_checkinteger(L, 3);
+			break;
+		case mapthing_type:
+			mt->type = (UINT16)luaL_checkinteger(L, 3);
+			break;
+		case mapthing_options:
+			mt->options = (UINT16)luaL_checkinteger(L, 3);
+			break;
+		case mapthing_scale:
+			mt->scale = luaL_checkfixed(L, 3);
+			break;
+		case mapthing_spritexscale:
+			mt->spritexscale = luaL_checkfixed(L, 3);
+			break;
+		case mapthing_spriteyscale:
+			mt->spriteyscale = luaL_checkfixed(L, 3);
+			break;
+		case mapthing_z:
+			mt->z = (INT16)luaL_checkinteger(L, 3);
+			break;
+		case mapthing_extrainfo:
+		{
+			INT32 extrainfo = luaL_checkinteger(L, 3);
+			if (extrainfo & ~15)
+				return luaL_error(L, "mapthing_t extrainfo set %d out of range (%d - %d)", extrainfo, 0, 15);
+			mt->extrainfo = (UINT8)extrainfo;
+			break;
+		}
+		case mapthing_tid:
+			luaL_error(L, LUA_QL("mapthing_t") " field " LUA_QS " should not be set directly.", mapthing_opt[field]);
+			break;
+		case mapthing_mobj:
+			mt->mobj = *((mobj_t **)luaL_checkudata(L, 3, META_MOBJ));
+			break;
+		default:
+			return luaL_error(L, LUA_QL("mapthing_t") " has no field named " LUA_QS, field);
+	}
+
+	return 0;
 }
 
 static int mapthing_num(lua_State *L)
@@ -1028,7 +1153,6 @@ static int lib_iterateMapthings(lua_State *L)
 
 static int lib_getMapthing(lua_State *L)
 {
-	const char *field;
 	INLEVEL
 	if (lua_isnumber(L, 2))
 	{
@@ -1039,8 +1163,7 @@ static int lib_getMapthing(lua_State *L)
 		return 1;
 	}
 	
-	field = luaL_checkstring(L, 2);
-	if (fastcmp(field,"iterate"))
+	if (fastcmp(luaL_checkstring(L, 2),"iterate"))
 	{
 		lua_pushcfunction(L, lib_iterateMapthings);
 		return 1;
@@ -1084,6 +1207,9 @@ int LUA_MobjLib(lua_State *L)
 	luaL_newmetatable(L, META_MAPTHING);
 		lua_pushcfunction(L, mapthing_get);
 		lua_setfield(L, -2, "__index");
+
+		lua_pushcfunction(L, mapthing_set);
+		lua_setfield(L, -2, "__newindex");
 
 		lua_pushcfunction(L, mapthing_num);
 		lua_setfield(L, -2, "__len");

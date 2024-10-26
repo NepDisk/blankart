@@ -3868,6 +3868,13 @@ static int lib_getTimeMicros(lua_State *L)
 	return 1;
 }
 
+static int lib_iGetPreciseTime(lua_State *L)
+{
+	lua_pushinteger(L, I_GetPreciseTime());
+	return 1;
+}
+
+
 static luaL_Reg lib[] = {
 	{"print", lib_print},
 	{"chatprint", lib_chatprint},
@@ -4151,6 +4158,9 @@ static luaL_Reg lib[] = {
 	{"K_InitBossHealthBar", lib_kInitBossHealthBar},
 	{"K_UpdateBossHealthBar", lib_kUpdateBossHealthBar},
 	{"K_DeclareWeakspot", lib_kDeclareWeakspot},
+	
+	// I_System
+	{"I_GetPreciseTime",lib_iGetPreciseTime},
 
 	{NULL, NULL}
 };
