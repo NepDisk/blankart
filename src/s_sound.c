@@ -1464,6 +1464,7 @@ ReadMusicDefFields
 
 				def->numtracks = i;
 				def->volume = DEFAULT_MUSICDEF_VOLUME;
+				def->legacy = true;
 
 				def->next = musicdefstart;
 				musicdefstart = def;
@@ -1511,11 +1512,13 @@ ReadMusicDefFields
 			{
 				Z_Free(def->title);
 				def->title = Z_StrDup(textline);
+				def->legacy = false;
 			}
 			else if (!stricmp(stoken, "author"))
 			{
 				Z_Free(def->author);
 				def->author = Z_StrDup(textline);
+				def->legacy = false;
 			}
 			else if (!stricmp(stoken, "source"))
 			{
@@ -1526,15 +1529,22 @@ ReadMusicDefFields
 			{
 				Z_Free(def->composers);
 				def->composers = Z_StrDup(textline);
+				def->legacy = false;
 			}
 			else if (!stricmp(stoken, "volume"))
 			{
 				def->volume = atoi(textline);
+				def->legacy = false;
 			}
 			else if (!stricmp(stoken, "contentidunsafe"))
 			{
 				textline[0] = toupper(textline[0]);
 				def->contentidunsafe = (textline[0] == 'Y' || textline[0] == 'T' || textline[0] == '1');
+				def->legacy = false;
+			}
+			else if (!stricmp(stoken, "usage"))
+			{
+				// This does absolutely nothing, just a way to ignore this
 			}
 			else
 			{
@@ -1546,6 +1556,16 @@ ReadMusicDefFields
 	}
 
 	return true;
+}
+
+static char* replacechar(char* str, char find, char replace)
+{
+	char *current_pos = strchr(str,find);
+    while (current_pos) {
+        *current_pos = replace;
+        current_pos = strchr(current_pos,find);
+    }
+    return str;
 }
 
 static void S_LoadMusicDefLump(lumpnum_t lumpnum)
@@ -1610,6 +1630,19 @@ static void S_LoadMusicDefLump(lumpnum_t lumpnum)
 		}
 		else
 			break;/* EOF */
+	}
+	
+	musicdef_t *df;
+	// Replace all _ with spaces on legacy musicdefs
+	for (df = musicdefstart; df; df = df->next)
+	{
+		if (df->legacy && df->source)
+		{
+			df->source = replacechar(df->source, '_', ' ');
+			df->title = Z_StrDup(df->source);
+			memset(df->source, 0, strlen(df->source));
+			df->source = NULL;
+		}
 	}
 
 	free(musdeftext);

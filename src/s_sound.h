@@ -179,6 +179,7 @@ typedef struct musicdef_s
 	char *composers;
 	int volume;
 	boolean contentidunsafe;
+	boolean legacy;
 	struct musicdef_s *next;
 } musicdef_t;
 
