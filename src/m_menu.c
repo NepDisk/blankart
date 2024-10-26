@@ -1584,7 +1584,7 @@ static menuitem_t OP_AdvServerOptionsMenu[] =
 	{IT_STRING | IT_CVAR, NULL, "Karma Comeback",        &cv_kartcomeback,     66},
 };*/
 
-//#define ITEMTOGGLEBOTTOMRIGHT
+#define ITEMTOGGLEBOTTOMRIGHT
 
 static menuitem_t OP_MonitorToggleMenu[] =
 {
@@ -1602,6 +1602,7 @@ static menuitem_t OP_MonitorToggleMenu[] =
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Orbinauts x3",			{.routine = M_HandleMonitorToggles}, KRITEM_TRIPLEORBINAUT},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Orbinauts x4",			{.routine = M_HandleMonitorToggles}, KRITEM_QUADORBINAUT},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Mines",					{.routine = M_HandleMonitorToggles}, KITEM_MINE},
+	{IT_KEYHANDLER | IT_NOTHING, NULL, "Land Mines",			{.routine = M_HandleMonitorToggles}, KITEM_LANDMINE},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Jawz",					{.routine = M_HandleMonitorToggles}, KITEM_JAWZ},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Jawz x2",				{.routine = M_HandleMonitorToggles}, KRITEM_DUALJAWZ},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Ballhogs",				{.routine = M_HandleMonitorToggles}, KITEM_BALLHOG},
@@ -1610,6 +1611,8 @@ static menuitem_t OP_MonitorToggleMenu[] =
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Grow",					{.routine = M_HandleMonitorToggles}, KITEM_GROW},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Shrink",				{.routine = M_HandleMonitorToggles}, KITEM_SHRINK},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Lightning Shields",		{.routine = M_HandleMonitorToggles}, KITEM_LIGHTNINGSHIELD},
+	{IT_KEYHANDLER | IT_NOTHING, NULL, "Bubble Shields",		{.routine = M_HandleMonitorToggles}, KITEM_BUBBLESHIELD},
+	{IT_KEYHANDLER | IT_NOTHING, NULL, "Flame Shields",			{.routine = M_HandleMonitorToggles}, KITEM_FLAMESHIELD},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Hyudoros",				{.routine = M_HandleMonitorToggles}, KITEM_HYUDORO},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Pogo Springs",		 	{.routine = M_HandleMonitorToggles}, KITEM_POGOSPRING},
 	{IT_KEYHANDLER | IT_NOTHING, NULL, "Super Rings",			{.routine = M_HandleMonitorToggles}, KITEM_SUPERRING},
@@ -2078,7 +2081,7 @@ menu_t OP_MonitorToggleDef =
 	&OP_GameOptionsDef,
 	OP_MonitorToggleMenu,
 	M_DrawMonitorToggles,
-	47, 30,
+	30, 30,
 	0,
 	NULL
 };
