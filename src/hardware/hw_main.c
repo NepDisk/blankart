@@ -6097,7 +6097,7 @@ void HWR_RenderPlayerView(void)
 	}
 
 	// note: sets viewangle, viewx, viewy, viewz
-	R_SetupFrame(viewssnum);
+	R_SetupFrame(viewssnum, false);
 	framecount++; // timedemo
 
 	// copy view cam position for local use

@@ -20,6 +20,7 @@
 #include "p_setup.h" // levelflats
 #include "p_slopes.h"
 #include "r_data.h"
+#include "r_fps.h"
 #include "r_textures.h"
 #include "r_local.h"
 #include "r_state.h"
@@ -630,6 +631,15 @@ static void R_DrawSkyPlane(visplane_t *pl)
 {
 	INT32 x;
 	INT32 angle;
+
+	if (!udmf)
+	{
+		if (!newview->sky)
+		{
+			skyVisible = true;
+			return;
+		}
+	}
 
 	// Reset column drawer function (note: couldn't we just call walldrawerfunc directly?)
 	// (that is, unless we'll need to switch drawers in future for some reason)

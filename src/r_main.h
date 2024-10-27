@@ -139,7 +139,7 @@ void R_SetViewSize(void);
 // do it (sometimes explicitly called)
 void R_ExecuteSetViewSize(void);
 
-void R_SetupFrame(int split);
+void R_SetupFrame(int split, boolean skybox);
 void R_SkyboxFrame(int split);
 
 boolean R_ViewpointHasChasecam(player_t *player);

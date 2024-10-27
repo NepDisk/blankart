@@ -917,14 +917,18 @@ void P_Ticker(boolean run)
 			for (i = 0; i <= r_splitscreen; i++)
 			{
 				player_t *player = &players[displayplayers[i]];
+
 				if (!player->mo)
 					continue;
+
+				const boolean isSkyVisibleForPlayer = skyVisiblePerPlayer[i];
 				const boolean skybox = (skyboxmo[0] && cv_skybox.value); // True if there's a skybox object and skyboxes are on
-				if (skybox)
+
+				if ((!udmf && isSkyVisibleForPlayer && skybox) || (udmf && skybox))
 				{
 					R_SkyboxFrame(i);
 				}
-				R_SetupFrame(i);
+				R_SetupFrame(i, skybox);
 			}
 		}
 	}
