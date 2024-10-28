@@ -2942,7 +2942,10 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 
 		case 423: // Change Sky
 			if ((mo && mo->player && P_IsLocalPlayer(mo->player)) || args[1])
-				P_SetupLevelSky(stringargs[0], args[1]);
+				if (udmf)
+					P_SetupLevelSky(stringargs[0], args[1]);
+				else
+					P_SetupLevelSky(va("SKY%d", args[0]), args[1]);
 			break;
 
 		case 424: // Change Weather

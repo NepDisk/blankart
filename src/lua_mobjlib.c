@@ -540,9 +540,65 @@ static int mobj_set(lua_State *L)
 		break;
 	case mobj_sprite:
 		mo->sprite = luaL_checkinteger(L, 3);
+		if (mo->sprite == SPR_PLAY)
+			mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_STIN, mo->player);
 		break;
 	case mobj_frame:
-		mo->frame = (UINT32)luaL_checkinteger(L, 3);
+		// Check for SPR2
+		if (mo->sprite == SPR_PLAY)
+		{
+			UINT32 frame = (UINT32)luaL_checkinteger(L, 3);
+			switch (frame)
+			{
+				case 0:
+				case 1:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_STIN, mo->player);
+					break;
+				case 2:
+				case 3:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_STIL, mo->player);
+					break;
+				case 4:
+				case 5:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_STIR, mo->player);
+					break;
+				case 6:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_SLWN, mo->player);
+					break;
+				case 7:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_SLWL, mo->player);
+					break;
+				case 8:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_SLWR, mo->player);
+					break;
+				case 9:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_FSTN, mo->player);
+					break;
+				case 10:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_FSTL, mo->player);
+					break;
+				case 11:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_FSTR, mo->player);
+					break;
+				case 12:
+				case 13:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_DRLN, mo->player);
+					break;
+				case 14:
+				case 15:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_DRRN, mo->player);
+					break;
+				case 16:
+				case 17: // squish technically doesnt really exist
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_SPIN, mo->player);
+					break;
+				case 18:
+					mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), SPR2_SIGN, mo->player);
+					break;
+			}
+		}
+		else
+			mo->frame = (UINT32)luaL_checkinteger(L, 3);
 		break;
 	case mobj_sprite2:
 		mo->sprite2 = P_GetSkinSprite2(((skin_t *)mo->skin), (UINT8)luaL_checkinteger(L, 3), mo->player);
