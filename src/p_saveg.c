@@ -265,7 +265,7 @@ static void P_NetArchivePlayers(savebuffer_t *save)
 		WRITEINT32(save->p, players[i].underwatertilt);
 
 		WRITEFIXED(save->p, players[i].offroad);
-		WRITEUINT8(save->p, players[i].tiregrease);
+		WRITEFIXED(save->p, players[i].tiregrease);
 		WRITEUINT8(save->p, players[i].pogospring);
 		WRITEUINT8(save->p, players[i].brakestop);
 		WRITEUINT8(save->p, players[i].waterskip);
