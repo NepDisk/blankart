@@ -3553,7 +3553,7 @@ static thinker_t* LoadMobjThinker(savebuffer_t *save, actionf_p1 thinker)
 	}
 	else
 	{
-		mobj->spritexoffset = mobj->spriteyoffset = 0;
+		mobj->spritexscale = mobj->spriteyscale = FRACUNIT;
 	}
 	if (diff2 & MD2_SPRITEOFFSET)
 	{
