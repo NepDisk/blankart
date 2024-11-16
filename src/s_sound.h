@@ -186,6 +186,7 @@ struct musicdef_t
 	char *composers;
 	int volume;
 	boolean contentidunsafe;
+	boolean legacy;
 	musicdef_t *next;
 };
 
