@@ -289,12 +289,11 @@ P_DoSpringEx
 // mass = vertical speed
 // damage = horizontal speed
 // raisestate = state to change spring to on collision
-// painchance = star effect color
 //
 boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 {
-	//const fixed_t hscale = mapobjectscale + (mapobjectscale - object->scale);
-	//const fixed_t vscale = mapobjectscale + (object->scale - mapobjectscale);
+	const fixed_t hscale = mapobjectscale + (mapobjectscale - object->scale);
+	const fixed_t vscale = mapobjectscale + (object->scale - mapobjectscale);
 	fixed_t offx, offy;
 	fixed_t vertispeed = spring->info->mass;
 	fixed_t horizspeed = spring->info->damage;
@@ -348,7 +347,25 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 		P_TryMove(object, spring->x + offx, spring->y + offy, true, NULL);
 	}
 
-	P_DoSpringEx(object, mapobjectscale, vertispeed, horizspeed, spring->angle);
+	if (vertispeed)
+		object->momz = FixedMul(vertispeed,FixedSqrt(FixedMul(vscale, spring->scale)));
+
+	if (horizspeed)
+	{
+		if (!object->player)
+			P_InstaThrust(object, spring->angle, FixedMul(horizspeed,FixedSqrt(FixedMul(hscale, spring->scale))));
+		else
+		{
+			fixed_t finalSpeed = FixedDiv(horizspeed, hscale);
+			fixed_t pSpeed = object->player->speed;
+
+			if (pSpeed > finalSpeed)
+				finalSpeed = pSpeed;
+
+			P_InstaThrust(object, spring->angle, FixedMul(finalSpeed,FixedSqrt(FixedMul(hscale, spring->scale))));
+		}
+	}
+	
 	// Re-solidify
 	spring->flags |= (spring->info->flags & (MF_SPECIAL|MF_SOLID));
 
@@ -373,7 +390,6 @@ boolean P_DoSpring(mobj_t *spring, mobj_t *object)
 	}
 	return true;
 }
-
 
 static void P_DoFanAndGasJet(mobj_t *spring, mobj_t *object)
 {
