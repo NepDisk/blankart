@@ -1883,7 +1883,7 @@ static void ParseTextmapSectorParameter(UINT32 i, const char *param, const char 
 		sectors[i].specialflags |= SSF_DOUBLESTEPUP;
 	else if (fastcmp(param, "nostepdown") && fastcmp("true", val))
 		sectors[i].specialflags |= SSF_NOSTEPDOWN;
-	else if (fastcmp(param, "starpostactivator") && fastcmp("true", val))
+	else if  ((fastcmp(param, "cheatcheckactivator") || fastcmp(param, "starpostactivator")) && fastcmp("true", val))
 		sectors[i].specialflags |= SSF_STARPOSTACTIVATOR;
 	else if (fastcmp(param, "exit") && fastcmp("true", val))
 		sectors[i].specialflags |= SSF_EXIT;
