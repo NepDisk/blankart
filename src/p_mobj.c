@@ -12490,9 +12490,15 @@ static mobj_t *P_SpawnMobjFromMapThing(mapthing_t *mthing, fixed_t x, fixed_t y,
 	mobj->pitch = FixedAngle(mthing->pitch << FRACBITS);
 	mobj->roll = FixedAngle(mthing->roll << FRACBITS);
 
+	P_SetScale(mobj, FixedMul(mobj->scale, mthing->scale));
+	mobj->destscale = FixedMul(mobj->destscale, mthing->scale);
+
+	mobj->spritexscale = mthing->spritexscale;
+	mobj->spriteyscale = mthing->spriteyscale;
+
 	P_SetThingTID(mobj, mthing->tid);
-	
-	//mobj->special = mthing->special;
+
+	mobj->special = mthing->special;
 
 	for (arg = 0; arg < NUM_MAPTHING_ARGS; arg++)
 	{
