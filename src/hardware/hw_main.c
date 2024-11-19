@@ -5901,6 +5901,16 @@ static void HWR_SetShaderState(void)
 	HWD.pfnSetShader(SHADER_DEFAULT);
 }
 
+static void HWR_ClearClipper(void)
+{
+	angle_t a1 = gld_FrustumAngle(gl_aimingangle);
+	gld_clipper_Clear();
+	gld_clipper_SafeAddClipRange(viewangle + a1, viewangle - a1);
+#ifdef HAVE_SPHEREFRUSTRUM
+	gld_FrustrumSetup();
+#endif
+}
+
 // ==========================================================================
 // Same as rendering the player view, but from the skybox object
 // ==========================================================================
@@ -5985,18 +5995,11 @@ void HWR_RenderSkyboxView(player_t *player)
 
 	drawcount = 0;
 
-	{
-		angle_t a1 = gld_FrustumAngle(fpov, gl_aimingangle);
-		gld_clipper_Clear();
-		gld_clipper_SafeAddClipRange(viewangle + a1, viewangle - a1);
-#ifdef HAVE_SPHEREFRUSTRUM
-		gld_FrustrumSetup();
-#endif
-	}
-
 	//04/01/2000: Hurdler: added for T&L
 	//                     Actually it only works on Walls and Planes
 	HWD.pfnSetTransform(&atransform);
+
+	HWR_ClearClipper();
 
 	// Reset the shader state.
 	HWR_SetShaderState();
@@ -6167,17 +6170,11 @@ void HWR_RenderPlayerView(void)
 
 	drawcount = 0;
 
-	{
-		angle_t a1 = gld_FrustumAngle(fpov, gl_aimingangle);
-		gld_clipper_Clear();
-		gld_clipper_SafeAddClipRange(viewangle + a1, viewangle - a1);
-#ifdef HAVE_SPHEREFRUSTRUM
-		gld_FrustrumSetup();
-#endif
-	}
 	//04/01/2000: Hurdler: added for T&L
 	//                     Actually it only works on Walls and Planes
 	HWD.pfnSetTransform(&atransform);
+
+	HWR_ClearClipper();
 
 	// Reset the shader state.
 	HWR_SetShaderState();

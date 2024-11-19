@@ -79,12 +79,6 @@
 #include "r_opengl/r_opengl.h"
 #include "../r_main.h"	// for cv_fov
 
-#ifdef HAVE_SPHEREFRUSTRUM
-static GLdouble viewMatrix[16];
-static GLdouble projMatrix[16];
-float frustum[6][4];
-#endif
-
 typedef struct clipnode_s
 	{
 		struct clipnode_s *prev, *next;
@@ -322,15 +316,13 @@ void gld_clipper_Clear(void)
 
 #define RMUL (1.6f/1.333333f)
 
-angle_t gld_FrustumAngle(float render_fov, angle_t tiltangle)
+angle_t gld_FrustumAngle(angle_t tiltangle)
 {
+	double clipfov;
 	double floatangle;
 	angle_t a1;
 
 	float tilt = (float)fabs(((double)(int)tiltangle) / ANG1);
-
-	float render_fovratio = (float)BASEVIDWIDTH / (float)BASEVIDHEIGHT; // SRB2CBTODO: NEWCLIPTODO: Is this right?
-	float render_multiplier = 64.0f / render_fovratio / RMUL;
 
 	if (tilt > 90.0f)
 		tilt = 90.0f;
@@ -341,10 +333,11 @@ angle_t gld_FrustumAngle(float render_fov, angle_t tiltangle)
 
 	// ok, this is a gross hack that barely works...
 	// but at least it doesn't overestimate too much...
-	floatangle = 2.0f + (45.0f + (tilt / 1.9f)) * (float)render_fov * 48.0f / render_multiplier / 90.0f;
-	a1 = ANG1 * (int)floatangle;
-	if (a1 >= ANGLE_180)
+	clipfov = atan(1 / projMatrix[0]) * 360 / M_PI; // use the actual view of the scene
+	floatangle = 2.0f + (45.0f + (tilt / 1.9f)) * clipfov / 90.0f;
+	if (floatangle >= ANGLE_180)
 		return 0xffffffff;
+	a1 = (angle_t)(ANG1 * (int)floatangle);
 	return a1;
 }
 
@@ -356,6 +349,10 @@ angle_t gld_FrustumAngle(float render_fov, angle_t tiltangle)
 //
 // gld_FrustrumSetup
 //
+
+static GLdouble viewMatrix[16];
+static GLdouble projMatrix[16];
+float frustum[6][4];
 
 #define CALCMATRIX(a, b, c, d, e, f, g, h)\
 (float)(viewMatrix[a] * projMatrix[b] + \
