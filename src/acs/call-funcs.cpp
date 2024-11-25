@@ -29,6 +29,7 @@
 #include "../d_player.h"
 #include "../r_defs.h"
 #include "../r_state.h"
+#include "../r_main.h"
 #include "../p_polyobj.h"
 #include "../taglist.h"
 #include "../p_local.h"
@@ -48,6 +49,7 @@
 #include "../k_hud.h"
 #include "../r_fps.h"
 #include "../m_misc.h"
+#include "../f_finale.h"
 
 #include "call-funcs.hpp"
 
@@ -56,6 +58,9 @@
 #include "../cxxutil.hpp"
 
 using namespace srb2::acs;
+
+#define NO_RETURN(thread) thread->dataStk.push(0)
+
 
 /*--------------------------------------------------
 	static bool ACS_GetMobjTypeFromString(const char *word, mobjtype_t *type)
@@ -310,6 +315,90 @@ static bool ACS_GetColorFromString(const char *word, skincolornum_t *type)
 }
 
 /*--------------------------------------------------
+	static bool ACS_CheckActorFlag(mobj_t *mobj, mobjtype_t type)
+
+		Helper function for CallFunc_SetObjectFlag and CallFunc_CheckObjectFlag.
+
+	Input Arguments:-
+		flag: The name of the flag to check.
+		result: Which flag to give to the actor.
+		type: Variable to store which flag set the actor flag was found it.
+
+	Return:-
+		true if the flag exists, otherwise false.
+--------------------------------------------------*/
+static bool ACS_CheckActorFlag(const char *flag, UINT32 *result, unsigned *type)
+{
+	if (result)
+		*result = 0;
+	if (type)
+		*type = 0;
+
+	// Could be optimized but I don't care right now. First check regular flags
+	for (unsigned i = 0; MOBJFLAG_LIST[i]; i++)
+	{
+		if (fastcmp(flag, MOBJFLAG_LIST[i]))
+		{
+			if (result)
+				*result = (1 << i);
+			if (type)
+				*type = 1;
+			return true;
+		}
+	}
+
+	// Now check flags2
+	for (unsigned i = 0; MOBJFLAG2_LIST[i]; i++)
+	{
+		if (fastcmp(flag, MOBJFLAG2_LIST[i]))
+		{
+			if (result)
+				*result = (1 << i);
+			if (type)
+				*type = 2;
+			return true;
+		}
+	}
+
+	// Finally, check extra flags
+	for (unsigned i = 0; MOBJEFLAG_LIST[i]; i++)
+	{
+		if (fastcmp(flag, MOBJEFLAG_LIST[i]))
+		{
+			if (result)
+				*result = (1 << i);
+			if (type)
+				*type = 3;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+/*--------------------------------------------------
+	static angle_t ACS_FixedToAngle(int angle)
+
+		Converts a fixed-point angle to a Doom angle.
+--------------------------------------------------*/
+static angle_t ACS_FixedToAngle(fixed_t angle)
+{
+	return FixedAngle(angle * 360);
+}
+
+/*--------------------------------------------------
+	static void ACS_AngleToFixed(ACSVM::Thread *thread, angle_t angle)
+
+		Converts a Doom angle to a fixed-point angle.
+--------------------------------------------------*/
+static fixed_t ACS_AngleToFixed(angle_t angle)
+{
+	return FixedDiv(AngleFixed(angle), 360*FRACUNIT);
+}
+
+
+/*--------------------------------------------------
 	static bool ACS_CountThing(mobj_t *mobj, mobjtype_t type)
 
 		Helper function for CallFunc_ThingCount.
@@ -470,6 +559,28 @@ static UINT32 ACS_SectorIterateThingCounter(sector_t *sec, mtag_t thingTag, bool
 
 	return count;
 }
+
+/*--------------------------------------------------
+	static bool ACS_IsLocationValid(mobj_t *mobj, fixed_t x, fixed_t y, fixed_t z)
+
+		Helper function for CallFunc_SpawnObject and CallFunc_SetObjectPosition.
+		Checks if the given coordinates are valid for an actor to exist in.
+--------------------------------------------------*/
+static bool ACS_IsLocationValid(mobj_t *mobj, fixed_t x, fixed_t y, fixed_t z)
+{
+	if (P_CheckPosition(mobj, x, y, NULL) == true)
+	{
+		fixed_t floorz = P_FloorzAtPos(x, y, z, mobj->height);
+		fixed_t ceilingz = P_CeilingzAtPos(x, y, z, mobj->height);
+		if (z >= floorz && (z + mobj->height) <= ceilingz)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 static UINT32 ACS_SectorTagThingCounter(mtag_t sectorTag, sector_t *activator, mtag_t thingTag, bool (*filter)(mobj_t *))
 {
@@ -1280,6 +1391,48 @@ bool CallFunc_PlayerScore(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM:
 	return false;
 }
 
+bool CallFunc_PlayerNumber(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	auto info = &static_cast<Thread *>(thread)->info;
+	INT16 playerID = -1;
+
+	(void)argV;
+	(void)argC;
+
+	if ((info != NULL)
+		&& (info->mo != NULL && P_MobjWasRemoved(info->mo) == false)
+		&& (info->mo->player != NULL))
+	{
+		playerID = (info->mo->player - players);
+	}
+
+	thread->dataStk.push(playerID);
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_ActivatorTID(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the activating object's TID.
+--------------------------------------------------*/
+bool CallFunc_ActivatorTID(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	auto info = &static_cast<Thread *>(thread)->info;
+	INT16 tid = 0;
+
+	(void)argV;
+	(void)argC;
+
+	if ((info != NULL)
+		&& (info->mo != NULL && P_MobjWasRemoved(info->mo) == false))
+	{
+		tid = info->mo->tid;
+	}
+
+	thread->dataStk.push(tid);
+	return false;
+}
+
 /*--------------------------------------------------
 	bool CallFunc_EndLog(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
 
@@ -1590,6 +1743,1029 @@ bool CallFunc_PlayerExiting(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSV
 }
 
 /*--------------------------------------------------
+	bool CallFunc_Teleport(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Teleports the activating actor.
+--------------------------------------------------*/
+bool CallFunc_Teleport(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, NULL);
+	mobj_t *dest = P_FindMobjFromTID(argV[1], NULL, NULL);
+
+	if (mobj != NULL && dest != mobj)
+	{
+		boolean silent = argC >= 3 ? (argV[2] != 0) : false;
+
+		P_Teleport(mobj, dest->x, dest->y, dest->z, dest->angle, !silent, false);
+
+		if (!silent)
+			S_StartSound(dest, sfx_mixup); // Play the 'bowrwoosh!' sound
+	}
+
+	NO_RETURN(thread);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SetViewpoint(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Switches the current viewpoint to another actor.
+--------------------------------------------------*/
+bool CallFunc_SetViewpoint(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	if ((info != NULL) && (info->mo != NULL && P_MobjWasRemoved(info->mo) == false))
+	{
+		mobj_t *altview = P_FindMobjFromTID(argV[0], NULL, info->mo);
+		if (!altview)
+		{
+			NO_RETURN(thread);
+
+			return false;
+		}
+
+		// If titlemap, set the camera ref for title's thinker
+		// This is not revoked until overwritten; awayviewtics is ignored
+		if (titlemapinaction)
+		{
+			titlemapcameraref = altview;
+			titlemapcameraref->cusval = altview->pitch;
+		}
+		else
+		{
+			player_t *player = info->mo->player;
+			if (!player)
+			{
+				NO_RETURN(thread);
+
+				return false;
+			}
+
+			if (!player->awayviewtics || player->awayviewmobj != altview)
+			{
+				P_SetTarget(&player->awayviewmobj, altview);
+
+				for (int i = splitscreen; i >= 0; i--)
+					P_ResetCamera(&players[displayplayers[i]], &camera[i]);
+			}
+
+			player->awayviewaiming = altview->pitch;
+			player->awayviewtics = argC > 1 ? argV[1] : -1;
+		}
+	}
+
+	NO_RETURN(thread);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	static bool ACS_SpawnObject(player_t *player, INT32 property, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Helper function for CallFunc_SpawnObject and CallFunc_SpawnObjectForced.
+--------------------------------------------------*/
+static bool ACS_SpawnObject(mobjtype_t mobjType, bool forceSpawn, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	fixed_t x = argV[1];
+	fixed_t y = argV[2];
+	fixed_t z = argV[3];
+
+	mobj_t *mobj = P_SpawnMobj(x, y, z, mobjType);
+
+	if (P_MobjWasRemoved(mobj))
+	{
+		return false;
+	}
+	else if (!forceSpawn && ACS_IsLocationValid(mobj, x, y, z) == false)
+	{
+		P_RemoveMobj(mobj);
+
+		return false;
+	}
+	else
+	{
+		// Spawned successfully
+		if (argC >= 5)
+			P_SetThingTID(mobj, argV[4]);
+
+		if (argC >= 6)
+			mobj->angle = ACS_FixedToAngle(argV[5]);
+	}
+
+	return true;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SpawnObject(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Spawns an actor.
+--------------------------------------------------*/
+bool CallFunc_SpawnObject(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	ACSVM::String *str = thread->scopeMap->getString( argV[0] );
+	if (!str->str || str->len == 0)
+	{
+		CONS_Alert(CONS_WARNING, "Spawn actor class was not provided.\n");
+
+		thread->dataStk.push(0);
+
+		return false;
+	}
+
+	const char *className = str->str;
+
+	mobjtype_t mobjType = MT_NULL;
+
+	int numSpawned = 0;
+
+	if (ACS_GetMobjTypeFromString(className, &mobjType) == false)
+	{
+		CONS_Alert(CONS_WARNING,
+			"Couldn't find actor class \"%s\" for Spawn.\n",
+			className
+		);
+	}
+	else
+	{
+		if (ACS_SpawnObject(mobjType, false, argV, argC) == true)
+			numSpawned = 1;
+	}
+
+	thread->dataStk.push(numSpawned);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SpawnObjectForced(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Spawns an actor, even in locations where it would not normally be able to exist.
+--------------------------------------------------*/
+bool CallFunc_SpawnObjectForced(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	ACSVM::String *str = thread->scopeMap->getString( argV[0] );
+	if (!str->str || str->len == 0)
+	{
+		CONS_Alert(CONS_WARNING, "SpawnForced actor class was not provided.\n");
+
+		thread->dataStk.push(0);
+
+		return false;
+	}
+
+	const char *className = str->str;
+
+	mobjtype_t mobjType = MT_NULL;
+
+	int numSpawned = 0;
+
+	if (ACS_GetMobjTypeFromString(className, &mobjType) == false)
+	{
+		CONS_Alert(CONS_WARNING,
+			"Couldn't find actor class \"%s\" for SpawnForced.\n",
+			className
+		);
+	}
+	else
+	{
+		if (ACS_SpawnObject(mobjType, true, argV, argC) == true)
+			numSpawned = 1;
+	}
+
+	thread->dataStk.push(numSpawned);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectX(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the X position of an actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectX(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t value = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		value = mobj->x;
+	}
+
+	thread->dataStk.push(value);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectY(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the Y position of an actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectY(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t value = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		value = mobj->y;
+	}
+
+	thread->dataStk.push(value);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectZ(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the Z position of an actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectZ(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t value = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		value = mobj->z;
+	}
+
+	thread->dataStk.push(value);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectVelX(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the X velocity of an actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectVelX(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t value = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		value = mobj->momx;
+	}
+
+	thread->dataStk.push(value);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectVelY(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the Y velocity of an actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectVelY(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t value = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		value = mobj->momy;
+	}
+
+	thread->dataStk.push(value);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectVelZ(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the Z velocity of an actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectVelZ(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t value = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		value = mobj->momz;
+	}
+
+	thread->dataStk.push(value);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectAngle(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the yaw of an actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectAngle(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t value = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		value = ACS_AngleToFixed(mobj->angle);
+	}
+
+	thread->dataStk.push(value);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectRoll(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the roll of an actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectRoll(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t value = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		value = ACS_AngleToFixed(mobj->roll);
+	}
+
+	thread->dataStk.push(value);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectPitch(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the pitch of an actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectPitch(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t value = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		value = ACS_AngleToFixed(mobj->pitch);
+	}
+
+	thread->dataStk.push(value);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectFloorZ(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the highest floor point underneath the actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectFloorZ(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t value = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		value = ACS_AngleToFixed(mobj->pitch);
+	}
+
+	thread->dataStk.push(value);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectCeilingZ(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the lowest ceiling point above the actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectCeilingZ(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t value = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		value = mobj->ceilingz;
+	}
+
+	thread->dataStk.push(value);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectFloorTexture(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the texture of the floor where the actor is currently on.
+--------------------------------------------------*/
+bool CallFunc_GetObjectFloorTexture(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	Environment *env = &ACSEnv;
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	INT32 floorpic = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		INT32 picnum = P_FloorPicAtPos(mobj->x, mobj->y, mobj->z, mobj->height);
+		if (picnum != -1)
+		{
+			floorpic = ~env->getString( levelflats[picnum].name )->idx;
+		}
+	}
+
+	thread->dataStk.push(floorpic);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectLightLevel(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the light level of the place where the actor is currently in.
+--------------------------------------------------*/
+/*bool CallFunc_GetObjectLightLevel(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	INT32 lightlevel = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		lightlevel = P_GetLightLevelFromSectorAt(mobj->subsector->sector, mobj->x, mobj->y, mobj->z);
+	}
+
+	thread->dataStk.push(lightlevel);
+
+	return false;
+}*/
+
+/*--------------------------------------------------
+	bool CallFunc_CheckObjectState(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Checks if the actor with the matching TID is in the specified state. If said TID is zero, this checks the activator.
+--------------------------------------------------*/
+bool CallFunc_CheckObjectState(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	bool inState = false;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		statenum_t stateNum = S_NULL;
+		bool success = ACS_GetStateFromString(thread->scopeMap->getString( argV[1] )->str, &stateNum);
+		if (success == true)
+		{
+			if (mobj->state == &states[stateNum])
+			{
+				inState = true;
+			}
+		}
+	}
+
+	thread->dataStk.push(inState);
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_CheckObjectFlag(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Checks if the actor with the matching TID has a specific flag. If said TID is zero, this checks the activator.
+--------------------------------------------------*/
+bool CallFunc_CheckObjectFlag(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	(void)argC;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+
+	const char *flagName = thread->scopeMap->getString( argV[1] )->str;
+
+	bool hasFlag = false;
+
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		if (ACS_CheckActorFlag(flagName, NULL, NULL) == true)
+		{
+			hasFlag = true;
+		}
+		else
+		{
+			CONS_Alert(CONS_WARNING, "CheckActorFlag: no actor flag named \"%s\".\n", flagName);
+		}
+	}
+
+	thread->dataStk.push(hasFlag);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_GetObjectClass(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the class name of the actor.
+--------------------------------------------------*/
+bool CallFunc_GetObjectClass(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	Environment *env = &ACSEnv;
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	INT32 mobjClass = 0;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		if (mobj->type >= MT_FIRSTFREESLOT)
+		{
+			std::string	prefix = "MT_";
+			std::string	full = prefix + FREE_MOBJS[mobj->type - MT_FIRSTFREESLOT];
+			mobjClass = static_cast<INT32>( ~env->getString( full.c_str() )->idx );
+		}
+		else
+		{
+			mobjClass = static_cast<INT32>( ~env->getString( MOBJTYPE_LIST[ mobj->type ] )->idx );
+		}
+	}
+
+	thread->dataStk.push(mobjClass);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SetObjectPosition(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Sets the position of the actor with the matching TID. If said TID is zero, this affects the activator.
+--------------------------------------------------*/
+bool CallFunc_SetObjectPosition(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	// SetActorPosition's signature makes the 'fog' parameter required. Sad!
+	// So we just ignore it.
+	auto info = &static_cast<Thread *>(thread)->info;
+	bool success = false;
+
+	(void)argC;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+
+	fixed_t x = argV[1];
+	fixed_t y = argV[2];
+	fixed_t z = argV[3];
+
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		if (ACS_IsLocationValid(mobj, x, y, z))
+		{
+			P_SetOrigin(mobj, x, y, z);
+			success = true;
+		}
+	}
+
+	thread->dataStk.push(success);
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SetObjectVelocity(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Sets the velocity of every actor with the matching TID. If said TID is zero, this affects the activator.
+--------------------------------------------------*/
+bool CallFunc_SetObjectVelocity(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	fixed_t velX = argV[1];
+	fixed_t velY = argV[2];
+	fixed_t velZ = argV[3];
+
+	bool add = argC >= 5 ? (argV[4] != 0) : false;
+
+	mobj_t *mobj = nullptr;
+
+	while ((mobj = P_FindMobjFromTID(argV[0], mobj, info->mo)) != nullptr)
+	{
+		if (add)
+		{
+			mobj->momx += velX;
+			mobj->momy += velY;
+			mobj->momz += velZ;
+		}
+		else
+		{
+			mobj->momx = velX;
+			mobj->momy = velY;
+			mobj->momz = velZ;
+		}
+	}
+
+	NO_RETURN(thread);
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SetObjectAngle(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Sets the angle of every actor with the matching TID. If said TID is zero, this affects the activator.
+--------------------------------------------------*/
+bool CallFunc_SetObjectAngle(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	(void)argC;
+
+	angle_t angle = ACS_FixedToAngle(argV[1]);
+
+	mobj_t *mobj = nullptr;
+
+	while ((mobj = P_FindMobjFromTID(argV[0], mobj, info->mo)) != nullptr)
+	{
+		mobj->angle = angle;
+	}
+
+	NO_RETURN(thread);
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SetObjectRoll(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Sets the roll of every actor with the matching TID. If said TID is zero, this affects the activator.
+--------------------------------------------------*/
+bool CallFunc_SetObjectRoll(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	(void)argC;
+
+	angle_t roll = ACS_FixedToAngle(argV[1]);
+
+	mobj_t *mobj = nullptr;
+
+	while ((mobj = P_FindMobjFromTID(argV[0], mobj, info->mo)) != nullptr)
+	{
+		mobj->roll = roll;
+	}
+
+	NO_RETURN(thread);
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SetObjectPitch(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Sets the pitch of every actor with the matching TID. If said TID is zero, this affects the activator.
+--------------------------------------------------*/
+bool CallFunc_SetObjectPitch(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	(void)argC;
+
+	angle_t pitch = ACS_FixedToAngle(argV[1]);
+
+	mobj_t *mobj = nullptr;
+
+	while ((mobj = P_FindMobjFromTID(argV[0], mobj, info->mo)) != nullptr)
+	{
+		mobj->pitch = pitch;
+	}
+
+	NO_RETURN(thread);
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SetObjectState(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Sets the state of every actor with the matching TID. If said TID is zero, this affects the activator.
+--------------------------------------------------*/
+bool CallFunc_SetObjectState(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	(void)argC;
+
+	int count = 0;
+
+	mobj_t *mobj = nullptr;
+
+	while ((mobj = P_FindMobjFromTID(argV[0], mobj, info->mo)) != nullptr)
+	{
+		statenum_t newState = S_NULL;
+		bool success = ACS_GetStateFromString(thread->scopeMap->getString( argV[1] )->str, &newState);
+		if (success == true)
+		{
+			P_SetMobjState(mobj, newState);
+			count++;
+		}
+	}
+
+	thread->dataStk.push(count);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SetObjectFlag(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Toggles a flag for every actor with the matching TID. If said TID is zero, this affects the activator.
+--------------------------------------------------*/
+bool CallFunc_SetObjectFlag(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	(void)argC;
+
+	int count = 0;
+
+	mobj_t *mobj = nullptr;
+
+	const char *flagName = thread->scopeMap->getString( argV[1] )->str;
+
+	bool add = !!argV[2];
+
+	while ((mobj = P_FindMobjFromTID(argV[0], mobj, info->mo)) != nullptr)
+	{
+		UINT32 flags = 0;
+		unsigned type = 0;
+
+		if (ACS_CheckActorFlag(flagName, &flags, &type) == false)
+		{
+			CONS_Alert(CONS_WARNING, "SetActorFlag: no actor flag named \"%s\".\n", flagName);
+			break;
+		}
+
+		// flags
+		if (type == 1)
+		{
+			if (add)
+			{
+				if ((flags & (MF_NOBLOCKMAP|MF_NOSECTOR)) != (mobj->flags & (MF_NOBLOCKMAP|MF_NOSECTOR)))
+				{
+					P_UnsetThingPosition(mobj);
+					mobj->flags |= static_cast<mobjflag_t>(flags);
+					if ((flags & MF_NOSECTOR) && sector_list)
+					{
+						P_DelSeclist(sector_list);
+						sector_list = NULL;
+					}
+					mobj->snext = NULL, mobj->sprev = NULL;
+					P_SetThingPosition(mobj);
+				}
+				else
+				{
+					mobj->flags |= static_cast<mobjflag_t>(flags);
+				}
+			}
+			else
+			{
+				mobj->flags &= static_cast<mobjflag_t>(~flags);
+			}
+		}
+		// flags2
+		else if (type == 2)
+		{
+			if (add)
+				mobj->flags2 |= static_cast<mobjflag2_t>(flags);
+			else
+				mobj->flags2 &= static_cast<mobjflag2_t>(~flags);
+		}
+		// eflags
+		else if (type == 3)
+		{
+			if (add)
+				mobj->eflags |= static_cast<mobjeflag_t>(flags);
+			else
+				mobj->eflags &= static_cast<mobjeflag_t>(~flags);
+		}
+
+		count++;
+	}
+
+	thread->dataStk.push(count);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SetObjectClass(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Sets the class of the actor with the matching TID. If said TID is zero, this affects the activator.
+--------------------------------------------------*/
+bool CallFunc_SetObjectClass(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	(void)argC;
+
+	ACSVM::String *str = thread->scopeMap->getString( argV[1] );
+	if (!str->str || str->len == 0)
+	{
+		CONS_Alert(CONS_WARNING, "SetActorClass actor class was not provided.\n");
+
+		NO_RETURN(thread);
+
+		return false;
+	}
+
+	const char *className = str->str;
+
+	mobjtype_t mobjType = MT_NULL;
+
+	mobj_t *mobj = P_FindMobjFromTID(argV[0], NULL, info->mo);
+
+	if (mobj != NULL && P_MobjWasRemoved(mobj) == false)
+	{
+		bool success = ACS_GetMobjTypeFromString(className, &mobjType);
+
+		if (success == false)
+		{
+			// Exit early.
+			CONS_Alert(CONS_WARNING,
+				"Couldn't find actor class \"%s\" for SetActorClass.\n",
+				className
+			);
+
+			NO_RETURN(thread);
+
+			return false;
+		}
+
+		mobj->type = mobjType;
+		mobj->info = &mobjinfo[mobjType];
+	}
+
+	NO_RETURN(thread);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SetObjectDye(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Dyes every actor with the matching TID. If said TID is zero, this affects the activator.
+--------------------------------------------------*/
+bool CallFunc_SetObjectDye(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	ACSVM::String *str = thread->scopeMap->getString(argV[1]);
+
+	skincolornum_t colorToSet = SKINCOLOR_NONE;
+
+	if (str->len > 0)
+	{
+		const char *colorName = str->str;
+
+		bool success = ACS_GetColorFromString(colorName, &colorToSet);
+
+		if (success == false)
+		{
+			// Exit early.
+			CONS_Alert(CONS_WARNING,
+				"Couldn't find color \"%s\" for SetActorDye.\n",
+				colorName
+			);
+
+			NO_RETURN(thread);
+
+			return false;
+		}
+	}
+	else
+	{
+		CONS_Alert(CONS_WARNING, "SetActorDye color was not provided.\n");
+
+		NO_RETURN(thread);
+
+		return false;
+	}
+
+	mobj_t *mobj = nullptr;
+
+	while ((mobj = P_FindMobjFromTID(argV[0], mobj, info->mo)) != nullptr)
+	{
+		var1 = 0;
+		var2 = colorToSet;
+		A_Dye(info->mo);
+	}
+
+	NO_RETURN(thread);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_SetObjectSpecial(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Sets the special and arguments of every actor with the matching TID. If said TID is zero, this affects the activator.
+--------------------------------------------------*/
+bool CallFunc_SetObjectSpecial(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	ACSVM::MapScope *map = thread->scopeMap;
+
+	auto info = &static_cast<Thread *>(thread)->info;
+
+	mobj_t *mobj = nullptr;
+
+	while ((mobj = P_FindMobjFromTID(argV[0], mobj, info->mo)) != nullptr)
+	{
+		mobj->special = argV[1];
+
+		for (int i = 0; i < std::min((int)(argC - 2), NUM_SCRIPT_ARGS); i++)
+		{
+			mobj->script_args[i] = (INT32)argV[i + 2];
+		}
+
+		for (int i = 0; i < std::min((int)(argC - 2), NUM_SCRIPT_STRINGARGS); i++)
+		{
+			ACSVM::String *strPtr = map->getString(argV[i + 2]);
+
+			size_t len = strPtr->len;
+
+			if (len == 0)
+			{
+				Z_Free(mobj->script_stringargs[i]);
+				mobj->script_stringargs[i] = NULL;
+				continue;
+			}
+
+			mobj->script_stringargs[i] = static_cast<char *>(Z_Realloc(mobj->script_stringargs[i], len + 1, PU_STATIC, nullptr));
+			M_Memcpy(mobj->script_stringargs[i], strPtr->str, len + 1);
+		}
+	}
+
+	NO_RETURN(thread);
+
+	return false;
+}
+
+/*--------------------------------------------------
 	bool CallFunc_GetObjectDye(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
 
 		Returns the activating object's current dye.
@@ -1861,6 +3037,8 @@ bool CallFunc_SetLineRenderStyle(ACSVM::Thread *thread, const ACSVM::Word *argV,
 	return false;
 }
 
+
+
 /*--------------------------------------------------
 	bool CallFunc_MapWarp(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
 
@@ -2076,6 +3254,204 @@ bool CallFunc_MusicRemap(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::
 	
 	S_ChangeMusicEx(map->getString(argV[1])->str, 0, false, mapmusposition, 0, 0);
 
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_Sin(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the sine of a fixed-point number.
+--------------------------------------------------*/
+bool CallFunc_Sin(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+	thread->dataStk.push(ACS_AngleToFixed(FINESINE((ACS_FixedToAngle(argV[0])>>ANGLETOFINESHIFT) & FINEMASK)));
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_Cos(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the cosine of a fixed-point number.
+--------------------------------------------------*/
+bool CallFunc_Cos(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+	thread->dataStk.push(ACS_AngleToFixed(FINECOSINE((ACS_FixedToAngle(argV[0])>>ANGLETOFINESHIFT) & FINEMASK)));
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_Tan(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the tangent of a fixed-point number.
+--------------------------------------------------*/
+bool CallFunc_Tan(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+	thread->dataStk.push(ACS_AngleToFixed(FINETANGENT(((ACS_FixedToAngle(argV[0])+ANGLE_90)>>ANGLETOFINESHIFT) & 4095)));
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_Asin(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns arcsin(x), where x is a fixed-point number.
+--------------------------------------------------*/
+bool CallFunc_Arcsin(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+	thread->dataStk.push(ACS_AngleToFixed(-FixedAcos(argV[0]) + ANGLE_90));
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_Acos(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns arccos(x), where x is a fixed-point number.
+--------------------------------------------------*/
+bool CallFunc_Arccos(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+	thread->dataStk.push(ACS_AngleToFixed(FixedAcos(argV[0])));
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_Hypot(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns hypot(x, y), where x and y are fixed-point numbers.
+--------------------------------------------------*/
+bool CallFunc_Hypot(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+	thread->dataStk.push(R_PointToDist2(0, 0, argV[0], argV[1]));
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_Sqrt(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the square root of a fixed-point number.
+--------------------------------------------------*/
+bool CallFunc_Sqrt(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	int x = argV[0];
+
+	fixed_t result = 0;
+
+	if (x < 0)
+	{
+		CONS_Alert(CONS_WARNING, "Sqrt: square root domain error\n");
+	}
+	else
+	{
+		result = FixedSqrt(x);
+	}
+
+	thread->dataStk.push(result);
+
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_Floor(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns floor(x), where x is a fixed-point number.
+--------------------------------------------------*/
+bool CallFunc_Floor(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+	thread->dataStk.push(FixedFloor(argV[0]));
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_Ceil(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns ceil(x), where x is a fixed-point number.
+--------------------------------------------------*/
+bool CallFunc_Ceil(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+	thread->dataStk.push(FixedCeil(argV[0]));
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_Round(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns round(x), where x is a fixed-point number.
+--------------------------------------------------*/
+bool CallFunc_Round(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+	thread->dataStk.push(FixedRound(argV[0]));
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_InvAngle(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the inverse of an angle.
+--------------------------------------------------*/
+bool CallFunc_InvAngle(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+	thread->dataStk.push(ACS_AngleToFixed(InvAngle(ACS_FixedToAngle(argV[0]))));
+	return false;
+}
+
+/*--------------------------------------------------
+	bool CallFunc_OppositeColor(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+
+		Returns the opposite of a color.
+--------------------------------------------------*/
+bool CallFunc_OppositeColor(ACSVM::Thread *thread, const ACSVM::Word *argV, ACSVM::Word argC)
+{
+	(void)argC;
+
+	Environment *env = &ACSEnv;
+
+	ACSVM::String *str = thread->scopeMap->getString(argV[0]);
+
+	skincolornum_t invColor = SKINCOLOR_NONE;
+
+	if (str->len > 0)
+	{
+		skincolornum_t color = SKINCOLOR_NONE;
+
+		const char *colorName = str->str;
+
+		bool success = ACS_GetColorFromString(colorName, &color);
+
+		if (success == false)
+		{
+			// Exit early.
+			CONS_Alert(CONS_WARNING,
+				"Couldn't find color \"%s\" for OppositeColor.\n",
+				colorName
+			);
+
+			NO_RETURN(thread);
+
+			return false;
+		}
+
+		invColor = static_cast<skincolornum_t>(skincolors[color].invcolor);
+	}
+	else
+	{
+		CONS_Alert(CONS_WARNING, "OppositeColor color was not provided.\n");
+
+		NO_RETURN(thread);
+
+		return false;
+	}
+
+	thread->dataStk.push(~env->getString( skincolors[invColor].name )->idx);
 	return false;
 }
 

@@ -427,7 +427,7 @@ void A_SetTics();
 void A_SetRandomTics();
 void A_ChangeColorRelative();
 void A_ChangeColorAbsolute();
-void A_Dye();
+void A_Dye(mobj_t *actor);
 void A_MoveRelative();
 void A_MoveAbsolute();
 void A_Thrust();

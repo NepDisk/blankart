@@ -99,6 +99,7 @@ Environment::Environment()
 	addCodeDataACS0(122, {"",        0, addCallFunc(CallFunc_PlayerScore)});
 
 	// 136 to 137: Implemented by ACSVM
+	addCodeDataACS0(149, {"",        6, addCallFunc(CallFunc_SpawnObject)});
 
 	// 157: Implemented by ACSVM
 
@@ -107,23 +108,56 @@ Environment::Environment()
 	// 175 to 179: Implemented by ACSVM
 
 	// 181 to 189: Implemented by ACSVM
+	addCodeDataACS0(196, {"",        1, addCallFunc(CallFunc_GetObjectX)});
+	addCodeDataACS0(197, {"",        1, addCallFunc(CallFunc_GetObjectY)});
+	addCodeDataACS0(198, {"",        1, addCallFunc(CallFunc_GetObjectZ)});
+	
+	addFuncDataACS0( 200, addCallFunc(CallFunc_GetObjectVelX));
+	addFuncDataACS0( 201, addCallFunc(CallFunc_GetObjectVelY));
+	addFuncDataACS0( 202, addCallFunc(CallFunc_GetObjectVelZ));
+	addFuncDataACS0( 203, addCallFunc(CallFunc_GetObjectRoll));
+	addFuncDataACS0( 204, addCallFunc(CallFunc_GetObjectFloorTexture));
+	addFuncDataACS0( 205, addCallFunc(CallFunc_CheckObjectState));
+	addFuncDataACS0( 206, addCallFunc(CallFunc_CheckObjectFlag));
+	addFuncDataACS0( 207, addCallFunc(CallFunc_GetObjectClass));
+	addFuncDataACS0( 208, addCallFunc(CallFunc_GetObjectDye));
+
+	addFuncDataACS0( 209, addCallFunc(CallFunc_SetObjectVelocity));
+	addFuncDataACS0( 210, addCallFunc(CallFunc_SetObjectRoll));
+	addFuncDataACS0( 211, addCallFunc(CallFunc_SetObjectFlag));
+	addFuncDataACS0( 212, addCallFunc(CallFunc_SetObjectClass));
+	addFuncDataACS0( 213, addCallFunc(CallFunc_SetObjectDye));
+	addFuncDataACS0( 214, addCallFunc(CallFunc_SpawnObjectForced));
 
 	// 203 to 217: Implemented by ACSVM
+	addCodeDataACS0(220, {"",        2, addCallFunc(CallFunc_Sin)});
+	addCodeDataACS0(221, {"",        2, addCallFunc(CallFunc_Cos)});
 
 	// 225 to 243: Implemented by ACSVM
+	addCodeDataACS0(247, {"",        0, addCallFunc(CallFunc_PlayerNumber)});
+	addCodeDataACS0(248, {"",        0, addCallFunc(CallFunc_ActivatorTID)});
+
 
 	// 253: Implemented by ACSVM
 
 	// 256 to 257: Implemented by ACSVM
+	addCodeDataACS0(259, {"",        1, addCallFunc(CallFunc_GetObjectFloorZ)});
 
 	// 263: Implemented by ACSVM
+	addCodeDataACS0(260, {"",        1, addCallFunc(CallFunc_GetObjectAngle)});
 	addCodeDataACS0(270, {"",        0, addCallFunc(CallFunc_EndLog)});
 	// 273 to 275: Implemented by ACSVM
+	addCodeDataACS0(276, {"",        2, addCallFunc(CallFunc_SetObjectAngle)});
+	addCodeDataACS0(282, {"",        1, addCallFunc(CallFunc_GetObjectCeilingZ)});
 
 	// 291 to 325: Implemented by ACSVM
 
 	// 330: Implemented by ACSVM
-
+	addCodeDataACS0(331, {"",        1, addCallFunc(CallFunc_GetObjectPitch)});
+	addCodeDataACS0(332, {"",        1, addCallFunc(CallFunc_SetObjectPitch)});
+	addCodeDataACS0(334, {"",        1, addCallFunc(CallFunc_SetObjectState)});
+	//addCodeDataACS0(340, {"",        1, addCallFunc(CallFunc_GetObjectLightLevel)});
+	
 	// 349 to 361: Implemented by ACSVM
 
 	// 363 to 380: Implemented by ACSVM
@@ -179,6 +213,9 @@ Environment::Environment()
 	
 	addFuncDataACS0( 319, addCallFunc(CallFunc_PlayerLosing));
 	addFuncDataACS0( 320, addCallFunc(CallFunc_PlayerExiting));
+	
+	addFuncDataACS0( 322, addCallFunc(CallFunc_Teleport));
+	addFuncDataACS0( 323, addCallFunc(CallFunc_SetViewpoint));
 
 	addFuncDataACS0( 500, addCallFunc(CallFunc_CameraWait));
 	addFuncDataACS0( 501, addCallFunc(CallFunc_PodiumPosition));
@@ -200,11 +237,19 @@ Environment::Environment()
 	addFuncDataACS0( 603, addCallFunc(CallFunc_PlaceHolder));
 	addFuncDataACS0( 604, addCallFunc(CallFunc_PlaceHolder));
 	addFuncDataACS0( 605, addCallFunc(CallFunc_PlaceHolder));
+	*/
 
-	addFuncDataACS0( 700, addCallFunc(CallFunc_PlaceHolder));
-	addFuncDataACS0( 701, addCallFunc(CallFunc_PlaceHolder));
-	addFuncDataACS0( 702, addCallFunc(CallFunc_PlaceHolder));
-	addFuncDataACS0( 703, addCallFunc(CallFunc_PlaceHolder));*/
+	addFuncDataACS0( 700, addCallFunc(CallFunc_Tan));
+	addFuncDataACS0( 701, addCallFunc(CallFunc_Arcsin));
+	addFuncDataACS0( 702, addCallFunc(CallFunc_Arccos));
+	addFuncDataACS0( 703, addCallFunc(CallFunc_Hypot));
+	addFuncDataACS0( 704, addCallFunc(CallFunc_Sqrt));
+	addFuncDataACS0( 705, addCallFunc(CallFunc_Floor));
+	addFuncDataACS0( 706, addCallFunc(CallFunc_Ceil));
+	addFuncDataACS0( 707, addCallFunc(CallFunc_Round));
+	addFuncDataACS0( 710, addCallFunc(CallFunc_InvAngle));
+	addFuncDataACS0( 711, addCallFunc(CallFunc_OppositeColor));
+
 }
 
 ACSVM::Thread *Environment::allocThread()
