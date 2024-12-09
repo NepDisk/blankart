@@ -2364,7 +2364,11 @@ static void K_drawKartLapsAndRings(void)
 	{
 		// Laps
 		V_DrawScaledPatch(LAPS_X, LAPS_Y, V_HUDTRANS|splitflags, kp_lapsticker);
-		V_DrawKartString(LAPS_X+33, LAPS_Y+3, V_HUDTRANS|splitflags, va("%d/%d", min(stplyr->laps+1, numlaps), numlaps));
+
+		if (stplyr->exiting)
+			V_DrawKartString(LAPS_X+33, LAPS_Y+3, V_HUDTRANS|V_SLIDEIN|splitflags, "FIN");
+		else
+			V_DrawKartString(LAPS_X+33, LAPS_Y+3, V_HUDTRANS|V_SLIDEIN|splitflags, va("%d/%d", stplyr->laps, cv_numlaps.value));
 
 		if (!ringsdisabled)
 		{
