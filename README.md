@@ -1,7 +1,6 @@
-# SRB2Kart
+# Notice: This repository has moved to [Codeberg](https://codeberg.org/NepDisk/blankart/)
 
-## Notice: This repository has moved to [Codeberg](https://codeberg.org/NepDisk/blankart/)
-
+## SRB2Kart
 [SRB2Kart](https://srb2.org/mods/) is a kart racing mod based on the 3D Sonic the Hedgehog fangame [Sonic Robo Blast 2](https://srb2.org/), based on a modified version of [Doom Legacy](http://doomlegacy.sourceforge.net/).
 
 ## Dependencies
