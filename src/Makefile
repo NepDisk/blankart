@@ -377,7 +377,11 @@ comptime.c ::
 ifdef WINDOWSHELL
 	$(.)..\comptime.bat .
 else
+ifeq ($(OS),Windows_NT)
+	$(.)..\comptime.bat .
+else
 	$(.)../comptime.sh .
+endif
 endif
 
 # I wish I could make dependencies out of rc files :(

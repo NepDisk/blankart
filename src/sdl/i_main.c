@@ -44,6 +44,12 @@
 //#define SDLMAIN
 #endif
 
+#ifdef HAVE_LIBBACKTRACE
+#include <backtrace.h>
+
+struct backtrace_state *bt_state = NULL;
+#endif
+
 #ifdef SDLMAIN
 #include "SDL_main.h"
 #elif defined(FORCESDLMAIN)
@@ -65,8 +71,11 @@ char logfilename[1024];
 #endif
 #endif
 
-#if defined (_WIN32)
+#ifdef _WIN32
+#ifndef _AMD64_
 #include "exchndl.h"
+#define DRMINGW
+#endif
 #endif
 
 #if defined (_WIN32)
@@ -229,6 +238,19 @@ int main(int argc, char **argv)
 	myargc = argc;
 	myargv = argv; /// \todo pull out path to exe from this string
 
+#ifdef HAVE_LIBBACKTRACE
+	bt_state = backtrace_create_state(
+		argv[0],
+#ifdef HAVE_THREADS
+		1,
+#else
+		0,
+#endif
+		NULL,
+		NULL
+	);
+#endif
+
 #ifdef HAVE_TTF
 #ifdef _WIN32
 	I_StartupTTF(FONTPOINTSIZE, SDL_INIT_VIDEO|SDL_INIT_AUDIO, SDL_SWSURFACE);
@@ -259,7 +281,9 @@ int main(int argc, char **argv)
 			)
 #endif
 		{
+#ifdef DRMINGW
 			ExcHndlInit();
+#endif
 		}
 	}
 #ifndef __MINGW32__
