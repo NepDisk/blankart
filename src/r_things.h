@@ -21,6 +21,10 @@
 #include "r_defs.h"
 #include "r_skins.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // --------------
 // SPRITE LOADING
 // --------------
@@ -99,13 +103,13 @@ INT32 R_ThingLightLevel(mobj_t *thing);
  * per portal to later group them in separate
  * drawnode lists.
  */
-typedef struct
+struct maskcount_t
 {
 	size_t drawsegs[2];
 	size_t vissprites[2];
 	fixed_t viewx, viewy, viewz;			/**< View z stored at the time of the BSP traversal for the view/portal. Masked sorting/drawing needs it. */
 	sector_t* viewsector;
-} maskcount_t;
+};
 
 void R_DrawMasked(maskcount_t* masks, INT32 nummasks);
 
@@ -149,14 +153,14 @@ typedef enum
 
 // A vissprite_t is a thing that will be drawn during a refresh,
 // i.e. a sprite object that is partly visible.
-typedef struct vissprite_s
+struct vissprite_t
 {
 	// Doubly linked list.
-	struct vissprite_s *prev;
-	struct vissprite_s *next;
+	vissprite_t *prev;
+	vissprite_t *next;
 
 	// Bonus linkdraw pointer.
-	struct vissprite_s *linkdraw;
+	vissprite_t *linkdraw;
 
 	mobj_t *mobj; // for easy access
 
@@ -225,7 +229,7 @@ typedef struct vissprite_s
 	INT32 dispoffset; // copy of info->dispoffset, affects ordering but not drawing
 
 	fixed_t floorclip; // Cut off your tires in tall grass
-} vissprite_t;
+};
 
 extern UINT32 visspritecount;
 
@@ -242,7 +246,7 @@ UINT8 *R_GetSpriteTranslation(vissprite_t *vis);
 
 // A drawnode is something that points to a 3D floor, 3D side, or masked
 // middle texture. This is used for sorting with sprites.
-typedef struct drawnode_s
+struct drawnode_t
 {
 	visplane_t *plane;
 	drawseg_t *seg;
@@ -250,9 +254,9 @@ typedef struct drawnode_s
 	ffloor_t *ffloor;
 	vissprite_t *sprite;
 
-	struct drawnode_s *next;
-	struct drawnode_s *prev;
-} drawnode_t;
+	drawnode_t *next;
+	drawnode_t *prev;
+};
 
 void R_InitDrawNodes(void);
 
@@ -317,5 +321,9 @@ FUNCMATH FUNCINLINE static ATTRINLINE UINT8 R_Char2Rotation(char cn)
 	if (cn == 'R') return ROT_R;
 	return 255;
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif //__R_THINGS__

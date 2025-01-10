@@ -17,6 +17,10 @@
 #include "r_defs.h"
 #include "doomdef.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
 	PICFMT_NONE = 0,
@@ -92,19 +96,19 @@ typedef enum
 	ROTAXIS_Z  // Yaw
 } rotaxis_t;
 
-typedef struct
+struct spriteframepivot_t
 {
 	INT32 x, y;
 	rotaxis_t rotaxis;
-} spriteframepivot_t;
+};
 
-typedef struct
+struct spriteinfo_t
 {
 	spriteframepivot_t pivot[64 + 1];
 #define SPRINFO_DEFAULT_PIVOT (64)
 	UINT8 available[BIT_ARRAY_SIZE(64 + 1)]; // 1 extra for default_pivot
 	char *bright[64 + 1]; // brightmap lump name
-} spriteinfo_t;
+};
 
 // Portable Network Graphics
 #define PNG_HEADER_SIZE (8)
@@ -127,5 +131,9 @@ boolean Picture_PNGDimensions(UINT8 *png, INT32 *width, INT32 *height, INT16 *to
 extern spriteinfo_t spriteinfo[NUMSPRITES];
 void R_LoadSpriteInfoLumps(UINT16 wadnum, UINT16 numlumps);
 void R_ParseSPRTINFOLump(UINT16 wadNum, UINT16 lumpNum);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // __R_PICFORMATS__

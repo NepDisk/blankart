@@ -18,6 +18,10 @@
 #include "r_data.h"
 #include "r_textures.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //
 // POV related.
 //
@@ -146,4 +150,9 @@ void R_RenderPlayerView(void);
 
 // add commands related to engine, at game startup
 void R_RegisterEngineStuff(void);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #endif

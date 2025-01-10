@@ -170,7 +170,6 @@ static player_t *K_PlayerPredictThrow(player_t *player, UINT8 extra)
 	const fixed_t dist = (30 + (extra * 10)) * player->mo->scale;
 	const UINT32 airtime = FixedDiv(dist + player->mo->momz, gravity);
 	fixed_t throwspeed;
-	UINT8 gsv;
 	fixed_t estx;
 	fixed_t esty;
 	

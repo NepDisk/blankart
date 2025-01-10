@@ -15,6 +15,10 @@
 
 #include "m_fixed.h" // for get_number
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
 	UNDO_NONE    = 0x00,
@@ -57,17 +61,20 @@ extern UINT8 superstack;
 
 // the code was first write for a file
 // converted to use memory with this functions
-typedef struct
+struct MYFILE
 {
 	char *data;
 	char *curpos;
 	size_t size;
 	UINT16 wad;
-} MYFILE;
+};
 #define myfeof(a) (a->data + a->size <= a->curpos)
 char *myfgets(char *buf, size_t bufsize, MYFILE *f);
 char *myhashfgets(char *buf, size_t bufsize, MYFILE *f);
 
 
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

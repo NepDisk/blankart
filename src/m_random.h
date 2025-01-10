@@ -18,6 +18,10 @@
 #include "doomtype.h"
 #include "m_fixed.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //#define DEBUGRANDOM
 
 // M_Random functions pull random numbers of various types that aren't network synced.
@@ -70,5 +74,9 @@ UINT32 P_GetInitSeed(void);
 void P_SetRandSeed(UINT32 seed);
 #endif
 UINT32 M_RandomizedSeed(void);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

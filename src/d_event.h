@@ -17,6 +17,10 @@
 #include "doomtype.h"
 #include "g_state.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Input event types.
 typedef enum
 {
@@ -31,13 +35,14 @@ typedef enum
 } evtype_t;
 
 // Event structure.
-typedef struct
+struct event_t
 {
 	evtype_t type;
 	INT32 data1; // keys / mouse/joystick buttons
 	INT32 data2; // mouse/joystick x move
 	INT32 data3; // mouse/joystick y move
-} event_t;
+	INT32 device; // which player's device it belongs to
+};
 
 //
 // GLOBAL VARIABLES
@@ -46,5 +51,9 @@ typedef struct
 
 extern event_t events[MAXEVENTS];
 extern INT32 eventhead, eventtail;
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

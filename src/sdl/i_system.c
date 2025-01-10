@@ -296,7 +296,7 @@ static void write_backtrace(INT32 signal)
 
 static void I_ShowErrorMessageBox(const char *messagefordevelopers, boolean dumpmade)
 {
-	static char finalmessage[1024];
+	static char finalmessage[2048];
 	size_t firstimpressionsline = 3; // "Dr Robotnik's Ring Racers" has encountered...
 
 	if (M_CheckParm("-dedicated"))
@@ -364,9 +364,10 @@ static void I_ShowErrorMessageBox(const char *messagefordevelopers, boolean dump
 	// Implement message box with SDL_ShowSimpleMessageBox,
 	// which should fail gracefully if it can't put a message box up
 	// on the target system
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-		"Dr. Robotnik's Ring Racers "VERSIONSTRING" Error",
-		finalmessage, NULL);
+	if (!M_CheckParm("-dedicated"))
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+			"Dr. Robotnik's Ring Racers "VERSIONSTRING" Error",
+			finalmessage, NULL);
 
 	// Note that SDL_ShowSimpleMessageBox does *not* require SDL to be
 	// initialized at the time, so calling it after SDL_Quit() is
@@ -620,7 +621,7 @@ static void I_StartupConsole(void)
 void I_GetConsoleEvents(void)
 {
 	// we use this when sending back commands
-	event_t ev = {0,0,0,0};
+	event_t ev = {0,0,0,0,0};
 	char key = 0;
 	ssize_t d;
 
@@ -1154,7 +1155,7 @@ void I_ShutdownJoystick(UINT8 index)
 
 void I_GetJoystickEvents(UINT8 index)
 {
-	static event_t event = {0,0,0,0};
+	static event_t event = {0,0,0,0,0};
 	INT32 i = 0;
 	UINT64 joyhats = 0;
 #if 0
@@ -2464,18 +2465,6 @@ static const char *locateWad(void)
 		if (isWadPathOk(returnWadPath))
 			return returnWadPath;
 	}
-#endif
-
-
-#ifdef CMAKECONFIG
-#ifndef NDEBUG
-	I_OutputMsg(","CMAKE_ASSETS_DIR);
-	strcpy(returnWadPath, CMAKE_ASSETS_DIR);
-	if (isWadPathOk(returnWadPath))
-	{
-		return returnWadPath;
-	}
-#endif
 #endif
 
 #ifdef __APPLE__

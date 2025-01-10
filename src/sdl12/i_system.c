@@ -539,7 +539,7 @@ static void I_StartupConsole(void)
 void I_GetConsoleEvents(void)
 {
 	// we use this when sending back commands
-	event_t ev = {0,0,0,0};
+	event_t ev = {0,0,0,0,0};
 	char key = 0;
 	ssize_t d;
 
@@ -601,7 +601,7 @@ static boolean entering_con_command = false;
 
 void I_GetConsoleEvents(void)
 {
-	event_t ev = {0,0,0,0};
+	event_t ev = {0,0,0,0,0};
 	HANDLE ci = GetStdHandle(STD_INPUT_HANDLE);
 	HANDLE co = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO CSBI;
@@ -1033,7 +1033,7 @@ static void I_ShutdownJoystick(void)
 
 void I_GetJoystickEvents(void)
 {
-	static event_t event = {0,0,0,0};
+	static event_t event = {0,0,0,0,0};
 	INT32 i = 0;
 	UINT64 joyhats = 0;
 #if 0
@@ -1328,7 +1328,7 @@ static void I_ShutdownJoystick2(void)
 
 void I_GetJoystick2Events(void)
 {
-	static event_t event = {0,0,0,0};
+	static event_t event = {0,0,0,0,0};
 	INT32 i = 0;
 	UINT64 joyhats = 0;
 #if 0
@@ -1621,7 +1621,7 @@ static void I_ShutdownJoystick3(void)
 
 void I_GetJoystick3Events(void)
 {
-	static event_t event = {0,0,0,0};
+	static event_t event = {0,0,0,0,0};
 	INT32 i = 0;
 	UINT64 joyhats = 0;
 #if 0
@@ -1914,7 +1914,7 @@ static void I_ShutdownJoystick4(void)
 
 void I_GetJoystick4Events(void)
 {
-	static event_t event = {0,0,0,0};
+	static event_t event = {0,0,0,0,0};
 	INT32 i = 0;
 	UINT64 joyhats = 0;
 #if 0

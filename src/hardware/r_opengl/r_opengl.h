@@ -46,6 +46,10 @@
 #include "../../doomdef.h"
 #include "../hw_drv.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // ==========================================================================
 //                                                                DEFINITIONS
 // ==========================================================================
@@ -68,6 +72,8 @@
 #ifdef DEBUG_TO_FILE
 extern FILE             *gllogstream;
 #endif
+
+extern GLfloat projMatrix[16];
 
 // ==========================================================================
 //                                                                     PROTOS
@@ -137,5 +143,9 @@ typedef enum
 	GLF_NOZBUFREAD = 0x01,
 	GLF_NOTEXENV   = 0x02,
 } oglflags_t;
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

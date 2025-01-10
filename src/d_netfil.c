@@ -65,7 +65,7 @@ static boolean AddFileToSendQueue(INT32 node, const char *filename, UINT8 fileid
 
 #ifdef HAVE_CURL
 size_t curlwrite_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
-int curlprogress_callback(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow);
+int curlprogress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow);
 #endif
 
 // Sender structure
@@ -103,7 +103,6 @@ static filetran_t transfer[MAXNETNODES];
 INT32 fileneedednum; // Number of files needed to join the server
 fileneeded_t fileneeded[MAX_WADFILES]; // List of needed files
 static tic_t lasttimeackpacketsent = 0;
-char downloaddir[512] = "DOWNLOAD";
 
 // For resuming failed downloads
 typedef struct
@@ -130,8 +129,8 @@ static CURL *http_handle;
 static CURLM *multi_handle;
 boolean curl_running = false;
 boolean curl_failedwebdownload = false;
-static double curl_dlnow;
-static double curl_dltotal;
+static curl_off_t curl_dlnow;
+static curl_off_t curl_dltotal;
 static time_t curl_starttime;
 INT32 curl_transfers = 0;
 static int curl_runninghandles = 0;
@@ -1677,7 +1676,7 @@ size_t curlwrite_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
     return written;
 }
 
-int curlprogress_callback(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow)
+int curlprogress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
 {
 	(void)clientp;
 	(void)ultotal;
@@ -1716,7 +1715,11 @@ void CURLPrepareFile(const char* url, int dfilenum)
 		curl_easy_setopt(http_handle, CURLOPT_URL, va("%s/%s", url, curl_realname));
 
 		// Only allow HTTP and HTTPS
-		curl_easy_setopt(http_handle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
+#if LIBCURL_VERSION_MAJOR > 7 || (LIBCURL_VERSION_MAJOR == 7 && LIBCURL_VERSION_MINOR >= 85)
+		curl_easy_setopt(http_handle, CURLOPT_PROTOCOLS_STR, "http,https");
+#else
+		curl_easy_setopt(http_handle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS); // deprecated in 7.85.0
+#endif
 
 		curl_easy_setopt(http_handle, CURLOPT_USERAGENT, va("SRB2Kart/v%d.%d", VERSION, SUBVERSION)); // Set user agent as some servers won't accept invalid user agents.
 
@@ -1740,7 +1743,7 @@ void CURLPrepareFile(const char* url, int dfilenum)
 		curl_easy_setopt(http_handle, CURLOPT_WRITEDATA, curl_curfile->file);
 		curl_easy_setopt(http_handle, CURLOPT_WRITEFUNCTION, curlwrite_data);
 		curl_easy_setopt(http_handle, CURLOPT_NOPROGRESS, 0L);
-		curl_easy_setopt(http_handle, CURLOPT_PROGRESSFUNCTION, curlprogress_callback);
+		curl_easy_setopt(http_handle, CURLOPT_XFERINFOFUNCTION, curlprogress_callback);
 
 		curl_curfile->status = FS_DOWNLOADING;
 		lastfilenum = dfilenum;
@@ -1762,6 +1765,7 @@ void CURLGetFile(void)
 	int msgs_left; /* how many messages are left */
 	const char *easy_handle_error;
 	long response_code = 0;
+	static char *filename;
 
     if (curl_runninghandles)
     {
@@ -1786,6 +1790,8 @@ void CURLGetFile(void)
 		{
 			e = m->easy_handle;
 			easyres = m->data.result;
+			filename = Z_StrDup(curl_realname);
+			nameonly(filename);
 			if (easyres != CURLE_OK)
 			{
 				if (easyres == CURLE_HTTP_RETURNED_ERROR)
@@ -1798,21 +1804,30 @@ void CURLGetFile(void)
 				curl_failedwebdownload = true;
 				fclose(curl_curfile->file);
 				remove(curl_curfile->filename);
-				curl_curfile->file = NULL;
-				//nameonly(curl_curfile->filename);
-				nameonly(curl_realname);
-				CONS_Printf(M_GetText("Failed to download %s (%s)\n"), curl_realname, easy_handle_error);
+				CONS_Printf(M_GetText("Failed to download %s (%s)\n"), filename, easy_handle_error);
 			}
 			else
 			{
-				nameonly(curl_realname);
-				CONS_Printf(M_GetText("Finished downloading %s\n"), curl_realname);
-				downloadcompletednum++;
-				downloadcompletedsize += curl_curfile->totalsize;
-				curl_curfile->status = FS_FOUND;
 				fclose(curl_curfile->file);
+
+				if (checkfilemd5(curl_curfile->filename, curl_curfile->md5sum) == FS_MD5SUMBAD)
+				{
+					CONS_Alert(CONS_ERROR, M_GetText("HTTP Download of %s finished but is corrupt or has been modified\n"), filename);
+					curl_curfile->status = FS_FALLBACK;
+					curl_failedwebdownload = true;
+				}
+				else
+				{
+					CONS_Printf(M_GetText("Finished HTTP download of %s\n"), filename);
+					downloadcompletednum++;
+					downloadcompletedsize += curl_curfile->totalsize;
+					curl_curfile->status = FS_FOUND;
+				}
 			}
 
+
+			Z_Free(filename);
+			curl_curfile->file = NULL;
 			curl_running = false;
 			curl_transfers--;
 			curl_multi_remove_handle(multi_handle, e);

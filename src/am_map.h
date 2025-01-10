@@ -16,15 +16,19 @@
 
 #include "d_event.h"
 
-typedef struct
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct fpoint_t
 {
 	INT32 x, y;
-} fpoint_t;
+};
 
-typedef struct
+struct fline_t
 {
 	fpoint_t a, b;
-} fline_t;
+};
 
 extern boolean am_recalc; // true if screen size changes
 extern boolean automapactive; // In AutoMap mode?
@@ -43,5 +47,9 @@ void AM_Start(void);
 
 // Called to force the automap to quit if the level is completed while it is up.
 void AM_Stop(void);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

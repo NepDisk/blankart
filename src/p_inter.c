@@ -38,6 +38,7 @@
 #include "k_boss.h"
 #include "p_spec.h"
 #include "k_objects.h"
+#include "acs/interface.h"
 
 // CTF player names
 #define CTFTEAMCODE(pl) pl->ctfteam ? (pl->ctfteam == 1 ? "\x85" : "\x84") : ""
@@ -556,7 +557,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			return;
 
 		case MT_STARPOST:
-			P_TouchStarPost(special, player, special->spawnpoint && special->spawnpoint->args[1]);
+			P_TouchStarPost(special, player, special->args[1]);
 			return;
 
 		case MT_BIGTUMBLEWEED:
@@ -1053,6 +1054,10 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 	if (LUA_HookMobjDeath(target, inflictor, source, damagetype) || P_MobjWasRemoved(target))
 		return;
 
+	P_ActivateThingSpecial(target, source);
+
+	//K_SetHitLagForObjects(target, inflictor, MAXHITLAGTICS, true);
+
 	// SRB2kart
 	// I wish I knew a better way to do this
 	if (target->target && target->target->player && target->target->player->mo)
@@ -1158,6 +1163,8 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 			K_CheckBumpers();
 
 		target->player->pogospring = 0;
+
+		ACS_RunPlayerDeathScript(target->player);
 	}
 
 	if (source && target && target->player && source->player)
@@ -1361,7 +1368,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 					P_InstaThrust(kart, kartFlingAngle, 1 * kart->scale);
 					P_SetObjectMomZ(kart, 10*FRACUNIT, false);
 
-					const fixed_t tireOffset = 32;
 					const angle_t aOffset = ANGLE_22h;
 
 					UINT8 i;
@@ -1415,11 +1421,6 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 
 		case MT_ITEMCAPSULE:
 		{
-			UINT8 i;
-			mobj_t *attacker = inflictor ? inflictor : source;
-			mobj_t *part = target->hnext;
-			angle_t angle = FixedAngle(360*P_RandomFixed());
-			INT16 spacing = (target->radius >> 1) / target->scale;
 
 			// set respawn fuse
 			if (modeattacking) // no respawns
@@ -1820,7 +1821,8 @@ static boolean P_PlayerHitsPlayer(mobj_t *target, mobj_t *inflictor, mobj_t *sou
 static boolean P_KillPlayer(player_t *player, mobj_t *inflictor, mobj_t *source, UINT8 type)
 {
 	(void)source;
-
+	(void)inflictor;
+	
 	if (player->respawn)
 	{
 		K_DoInstashield(player);

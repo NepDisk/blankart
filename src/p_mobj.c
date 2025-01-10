@@ -15,6 +15,7 @@
 #include "d_netcmd.h"
 #include "dehacked.h"
 #include "doomdef.h"
+#include "doomstat.h"
 #include "doomtype.h"
 #include "g_game.h"
 #include "g_input.h"
@@ -1040,6 +1041,42 @@ fixed_t P_CameraCeilingZ(camera_t *mobj, sector_t *sector, sector_t *boundsec, f
 	} else // Well, that makes it easy. Just get the ceiling height
 		return sector->ceilingheight;
 }
+
+
+INT32 P_FloorPicAtPos(fixed_t x, fixed_t y, fixed_t z, fixed_t height)
+{
+	sector_t *sector = R_PointInSubsector(x, y)->sector;
+
+	INT32 floorpic = sector->floorpic;
+
+	if (sector->ffloors)
+	{
+		ffloor_t *best = NULL;
+		fixed_t thingtop = z + height;
+
+		for (ffloor_t *rover = sector->ffloors; rover; rover = rover->next)
+		{
+			if (!(rover->fofflags & FOF_EXISTS))
+				continue;
+
+			fixed_t topheight = P_GetFFloorTopZAt(rover, x, y);
+			fixed_t bottomheight = P_GetFFloorBottomZAt(rover, x, y);
+
+			fixed_t delta1 = z - (bottomheight + ((topheight - bottomheight)/2));
+			fixed_t delta2 = thingtop - (bottomheight + ((topheight - bottomheight)/2));
+			if (topheight > P_GetFFloorTopZAt(best, x, y) && abs(delta1) < abs(delta2))
+			{
+				best = rover;
+			}
+		}
+
+		if (best)
+			floorpic = *best->toppic;
+	}
+
+	return floorpic;
+}
+
 static void P_PlayerFlip(mobj_t *mo)
 {
 	if (!mo->player)
@@ -1199,6 +1236,7 @@ fixed_t P_GetMobjGravity(mobj_t *mo)
 					}
 					break;
 				case MT_WATERDROP:
+				case MT_CYBRAKDEMON:
 				case MT_BATTLEBUMPER:
 					gravityadd /= 2;
 					break;
@@ -2421,6 +2459,10 @@ boolean P_ZMovement(mobj_t *mo)
 						if (abs(mom.z) < mo->scale)
 						{
 							mom.x = mom.y = mom.z = 0;
+
+							// Napalm hack
+							if (mo->type == MT_CYBRAKDEMON_NAPALM_BOMB_LARGE && mo->fuse)
+								mo->fuse = 1;
 						}
 						// Otherwise bounce up at half speed.
 						else
@@ -3202,11 +3244,11 @@ void P_MobjCheckWater(mobj_t *mobj)
 	if (!!(mobj->eflags & MFE_UNDERWATER) == wasinwater)
 		return;
 
-	if (p && !p->waterskip &&
+	/*if (p && !p->waterskip &&
 			p->curshield != KSHIELD_BUBBLE && wasinwater)
 	{
 		S_StartSound(mobj, sfx_s3k38);
-	}
+	}*/
 
 	if ((p) // Players
 	 || (mobj->flags & MF_PUSHABLE) // Pushables
@@ -4115,9 +4157,7 @@ static void P_RefreshItemCapsuleParts(mobj_t *mobj)
 	INT32 count = 0;
 	INT32 itemType = mobj->threshold;
 	mobj_t *part;
-	skincolornum_t color;
 	UINT32 newRenderFlags = 0;
-	boolean colorized;
 
 	if (itemType < 1 || itemType >= NUMKARTITEMS)
 		itemType = KITEM_SAD;
@@ -4126,8 +4166,6 @@ static void P_RefreshItemCapsuleParts(mobj_t *mobj)
 	while (!P_MobjWasRemoved(part->hnext))
 	{
 		part = part->hnext;
-		part->color = color;
-		part->colorized = colorized;
 		part->renderflags = (part->renderflags & ~RF_BRIGHTMASK) | newRenderFlags;
 	}
 
@@ -4213,7 +4251,6 @@ static void P_RefreshItemCapsuleParts(mobj_t *mobj)
 #define ROTATIONSPEED (2*ANG2)
 static void P_SpawnItemCapsuleParts(mobj_t *mobj)
 {
-	UINT8 i;
 	mobj_t *part;
 
 	// inside item
@@ -6245,7 +6282,7 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 		if (!(leveltime % 10))
 		{
 			mobj_t *smok = P_SpawnMobj(mobj->x, mobj->y, mobj->z, MT_PETSMOKE);
-			if (mobj->spawnpoint && mobj->spawnpoint->args[0])
+			if (mobj->args[0])
 				P_SetMobjStateNF(smok, smok->info->painstate); // same function, diff sprite
 		}
 		break;
@@ -6264,6 +6301,49 @@ static void P_MobjSceneryThink(mobj_t *mobj)
 		if (mobj->tics > 0)
 			mobj->renderflags ^= RF_DONTDRAW;
 		break;
+	case MT_SCRIPT_THING:
+	{
+		if (mobj->spawnpoint->args[2] != 0)
+		{
+			// turned off
+			break;
+		}
+
+		UINT8 i;
+		for (i = 0; i < MAXPLAYERS; i++)
+		{
+			if (playeringame[i] == false)
+			{
+				continue;
+			}
+
+			player_t *player = &players[i];
+			if (P_MobjWasRemoved(player->mo) == true)
+			{
+				continue;
+			}
+
+			fixed_t dist = R_PointToDist2(
+				mobj->x, mobj->y,
+				player->mo->x, player->mo->y
+			);
+
+			if (dist < mobj->spawnpoint->args[0] * FRACUNIT)
+			{
+				P_ActivateThingSpecial(mobj, player->mo);
+
+				if (mobj->spawnpoint->args[1] == 0)
+				{
+					P_RemoveMobj(mobj);
+					return;
+				}
+
+				break;
+			}
+		}
+
+		break;
+	}
 	case MT_VWREF:
 	case MT_VWREB:
 	{
@@ -6496,12 +6576,8 @@ static void P_TracerAngleThink(mobj_t *mobj)
 	if (!mobj->tracer)
 		return;
 
-	if (!mobj->extravalue2)
-		return;
-
 	// mobj->lastlook - Don't disable behavior after first failure
 	// mobj->extravalue1 - Angle tolerance
-	// mobj->extravalue2 - Exec tag upon failure
 	// mobj->cvval - Allowable failure delay
 	// mobj->cvmem - Failure timer
 
@@ -6524,8 +6600,6 @@ static void P_TracerAngleThink(mobj_t *mobj)
 			mobj->cvmem--;
 		else
 		{
-			INT32 exectag = mobj->extravalue2; // remember this before we erase the values
-
 			if (mobj->lastlook)
 				mobj->cvmem = mobj->cusval; // reset timer for next failure
 			else
@@ -6535,7 +6609,7 @@ static void P_TracerAngleThink(mobj_t *mobj)
 				mobj->lastlook = mobj->extravalue1 = mobj->extravalue2 = mobj->cvmem = mobj->cusval = 0;
 			}
 
-			P_LinedefExecute(exectag, mobj, NULL);
+			P_ActivateThingSpecial(mobj->tracer, mobj);
 		}
 	}
 	else
@@ -6847,92 +6921,102 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 		break;
 	}
 	case MT_JAWZ:
-	{
-		mobj_t *ghost = P_SpawnGhostMobj(mobj);
-
-		if (mobj->target && !P_MobjWasRemoved(mobj->target) && mobj->target->player)
 		{
-			ghost->color = mobj->target->player->skincolor;
-			ghost->colorized = true;
-		}
+			sector_t *sec2;
+			fixed_t topspeed = mobj->movefactor;
+			fixed_t distbarrier = 512*mapobjectscale;
+			fixed_t distaway;
 
-		if (mobj->threshold > 0)
-			mobj->threshold--;
-		if (leveltime % TICRATE == 0)
-			S_StartSound(mobj, mobj->info->activesound);
-
-		// Movement handling has ALL been moved to A_JawzChase
-
-		K_DriftDustHandling(mobj);
-
-		if (P_MobjTouchingSectorSpecial(mobj, 3, 1))
-			K_DoPogoSpring(mobj, 0, 1);
-
-		if (!(gametyperules & GTR_CIRCUIT))
-			mobj->friction = max(0, 3 * mobj->friction / 4);
-
-		break;
-	}
-	case MT_JAWZ_DUD:
-	{
-		boolean grounded = P_IsObjectOnGround(mobj);
-
-		if (mobj->flags2 & MF2_AMBUSH)
-		{
-			if (grounded && (mobj->flags & MF_NOCLIPTHING))
-			{
-				mobj->momx = 1;
-				mobj->momy = 0;
-				S_StartSound(mobj, mobj->info->deathsound);
-				mobj->flags &= ~MF_NOCLIPTHING;
-			}
-		}
-		else
-		{
-			mobj_t *ghost = P_SpawnGhostMobj(mobj);
-			const fixed_t currentspeed = R_PointToDist2(0, 0, mobj->momx, mobj->momy);
-			fixed_t frictionsafety = (mobj->friction == 0) ? 1 : mobj->friction;
-			fixed_t thrustamount = 0;
-
-			if (mobj->target && !P_MobjWasRemoved(mobj->target) && mobj->target->player)
-			{
-				ghost->color = mobj->target->player->skincolor;
-				ghost->colorized = true;
-			}
-
-			if (!grounded)
-			{
-				// No friction in the air
-				frictionsafety = FRACUNIT;
-			}
-
-			if (currentspeed >= mobj->movefactor)
-			{
-				// Thrust as if you were at top speed, slow down naturally
-				thrustamount = FixedDiv(mobj->movefactor, frictionsafety) - mobj->movefactor;
-			}
-			else
-			{
-				const fixed_t beatfriction = FixedDiv(currentspeed, frictionsafety) - currentspeed;
-				// Thrust to immediately get to top speed
-				thrustamount = beatfriction + FixedDiv(mobj->movefactor - currentspeed, frictionsafety);
-			}
-
-			mobj->angle = K_MomentumAngle(mobj);
-			P_Thrust(mobj, mobj->angle, thrustamount);
-
-			if (P_MobjTouchingSectorSpecial(mobj, 3, 1))
-				K_DoPogoSpring(mobj, 0, 1);
+			P_SpawnGhostMobj(mobj);
 
 			if (mobj->threshold > 0)
 				mobj->threshold--;
-
 			if (leveltime % TICRATE == 0)
 				S_StartSound(mobj, mobj->info->activesound);
-		}
 
-		break;
-	}
+			if (gamespeed == 0)
+				distbarrier = FixedMul(distbarrier, FRACUNIT-FRACUNIT/4);
+			//expert speed
+			else if (gamespeed == 2 || gamespeed == 3)
+				distbarrier = FixedMul(distbarrier, FRACUNIT+FRACUNIT/4);
+
+			if ((gametyperules & GTR_CIRCUIT) && mobj->tracer)
+			{
+				distaway = P_AproxDistance(mobj->tracer->x - mobj->x, mobj->tracer->y - mobj->y);
+				if (distaway < distbarrier)
+				{
+					if (mobj->tracer->player)
+					{
+						fixed_t speeddifference = abs(topspeed - min(mobj->tracer->player->speed, K_GetKartSpeed(mobj->tracer->player, false,false)));
+						topspeed = topspeed - FixedMul(speeddifference, FRACUNIT-FixedDiv(distaway, distbarrier));
+					}
+				}
+			}
+
+			if (gametype == GT_BATTLE)
+			{
+				mobj->friction -= 1228;
+				if (mobj->friction > FRACUNIT)
+					mobj->friction = FRACUNIT;
+				if (mobj->friction < 0)
+					mobj->friction = 0;
+			}
+
+			mobj->angle = R_PointToAngle2(0, 0, mobj->momx, mobj->momy);
+			P_InstaThrust(mobj, mobj->angle, topspeed);
+
+			if (mobj->tracer)
+				mobj->angle = R_PointToAngle2(mobj->x, mobj->y, mobj->tracer->x, mobj->tracer->y);
+			else
+				mobj->angle = R_PointToAngle2(0, 0, mobj->momx, mobj->momy);
+
+			K_DriftDustHandling(mobj);
+
+			sec2 = P_ThingOnSpecial3DFloor(mobj);
+			if ((sec2 && GETSECSPECIAL(sec2->special, 3) == 1)
+				|| (P_IsObjectOnRealGround(mobj, mobj->subsector->sector)
+				&& GETSECSPECIAL(mobj->subsector->sector->special, 3) == 1))
+				K_DoPogoSpring(mobj, 0, 1);
+
+			break;
+		}
+		case MT_JAWZ_DUD:
+		{
+			boolean grounded = P_IsObjectOnGround(mobj);
+			if (mobj->flags2 & MF2_AMBUSH)
+			{
+				if (grounded && (mobj->flags & MF_NOCLIPTHING))
+				{
+					mobj->momx = 1;
+					mobj->momy = 0;
+					S_StartSound(mobj, mobj->info->deathsound);
+					mobj->flags &= ~MF_NOCLIPTHING;
+				}
+			}
+			else
+			{
+				P_SpawnGhostMobj(mobj);
+				mobj->angle = R_PointToAngle2(0, 0, mobj->momx, mobj->momy);
+				P_InstaThrust(mobj, mobj->angle, mobj->movefactor);
+
+				if (grounded)
+				{
+					sector_t *sec2 = P_ThingOnSpecial3DFloor(mobj);
+					if ((sec2 && GETSECSPECIAL(sec2->special, 3) == 1)
+						|| (P_IsObjectOnRealGround(mobj, mobj->subsector->sector)
+						&& GETSECSPECIAL(mobj->subsector->sector->special, 3) == 1))
+						K_DoPogoSpring(mobj, 0, 1);
+				}
+
+				if (mobj->threshold > 0)
+					mobj->threshold--;
+
+				if (leveltime % TICRATE == 0)
+					S_StartSound(mobj, mobj->info->activesound);
+			}
+
+			break;
+		}
 	case MT_EGGMANITEM:
 		/* FALLTHRU */
 	case MT_BANANA:
@@ -8697,7 +8781,7 @@ static boolean P_FuseThink(mobj_t *mobj)
 	case MT_SPIKE:
 	case MT_WALLSPIKE:
 		P_SetMobjState(mobj, mobj->state->nextstate);
-		mobj->fuse = mobj->spawnpoint ? mobj->spawnpoint->args[0] : mobj->info->speed;
+		mobj->fuse = mobj->args[0];
 		break;
 	case MT_LAVAFALL:
 		if (mobj->state - states == S_LAVAFALL_DORMANT)
@@ -8818,7 +8902,7 @@ void P_MobjThinker(mobj_t *mobj)
 	if (mobj->flags & MF_NOTHINK)
 		return;
 
-	if ((mobj->flags & MF_BOSS) && mobj->spawnpoint && (bossdisabled & (1<<mobj->spawnpoint->args[0])))
+	if ((mobj->flags & MF_BOSS) && (bossdisabled & (1 << mobj->args[0])))
 		return;
 
 	mobj->eflags &= ~(MFE_PUSHED|MFE_SPRUNG|MFE_JUSTBOUNCEDWALL|MFE_SLOPELAUNCHED);
@@ -8827,8 +8911,16 @@ void P_MobjThinker(mobj_t *mobj)
 	P_SetTarget(&tm.floorthing, NULL);
 	P_SetTarget(&tm.hitthing, NULL);
 
-	// Check for sector special actions
-	P_CheckMobjTouchingSectorActions(mobj);
+	if (udmf)
+	{
+		// Check for continuous sector special actions
+		P_CheckMobjTouchingSectorActions(mobj, true);
+	}
+	else
+	{
+		// Sector flag MSF_TRIGGERLINE_MOBJ allows ANY mobj to trigger a linedef exec
+		P_CheckMobjTrigger(mobj, false);
+	}
 
 	// Sector flag MSF_TRIGGERLINE_MOBJ allows ANY mobj to trigger a linedef exec
 	P_CheckMobjTrigger(mobj, false);
@@ -9461,6 +9553,9 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 	// Set shadowscale here, before spawn hook so that Lua can change it
 	P_DefaultMobjShadowScale(mobj);
 
+	if (!(mobj->flags & MF_NOTHINK))
+		P_AddThinker(THINK_MOBJ, &mobj->thinker);
+
 	// DANGER! This can cause P_SpawnMobj to return NULL!
 	// Avoid using P_RemoveMobj on the newly created mobj in "MobjSpawn" Lua hooks!
 	if (LUA_HookMobj(mobj, MOBJ_HOOK(MobjSpawn)))
@@ -9478,6 +9573,17 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 			break;
 		case MT_LOCKONINF:
 			P_SetScale(mobj, (mobj->destscale = 3*mobj->scale));
+			break;
+		case MT_CYBRAKDEMON_NAPALM_BOMB_LARGE:
+			mobj->fuse = mobj->info->painchance;
+			break;
+		case MT_BLACKEGGMAN:
+			{
+				mobj_t *spawn = P_SpawnMobj(mobj->x, mobj->z, mobj->z+mobj->height-16*FRACUNIT, MT_BLACKEGGMAN_HELPER);
+				spawn->destscale = mobj->scale;
+				P_SetScale(spawn, mobj->scale);
+				P_SetTarget(&spawn->target, mobj);
+			}
 			break;
 		case MT_FAKEMOBILE:
 		case MT_EGGSHIELD:
@@ -9917,9 +10023,6 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 		}
 	}
 
-	if (!(mobj->flags & MF_NOTHINK))
-		P_AddThinker(THINK_MOBJ, &mobj->thinker);
-
 	if (mobj->skin) // correct inadequecies above.
 	{
 		mobj->sprite2 = P_GetSkinSprite2(mobj->skin, (mobj->frame & FF_FRAMEMASK), NULL);
@@ -9929,7 +10032,7 @@ mobj_t *P_SpawnMobj(fixed_t x, fixed_t y, fixed_t z, mobjtype_t type)
 	// Call action functions when the state is set
 	if (st->action.acp1 && (mobj->flags & MF_RUNSPAWNFUNC))
 	{
-		if (levelloading)
+		if (levelloading == true)
 		{
 			// Cache actions in a linked list
 			// with function pointer, and
@@ -10156,6 +10259,7 @@ void P_RemoveMobj(mobj_t *mobj)
 #endif
 
 	P_RemoveThingTID(mobj);
+	P_DeleteMobjStringArgs(mobj);
 	R_RemoveMobjInterpolator(mobj);
 
 	// free block
@@ -10176,6 +10280,12 @@ void P_RemoveMobj(mobj_t *mobj)
 	}
 
 	P_RemoveThinker((thinker_t *)mobj);
+
+#ifdef PARANOIA
+	// Saved to avoid being scrambled like below...
+	mobj->thinker.debug_mobjtype = mobj->type;
+#endif
+
 }
 
 // This does not need to be added to Lua.
@@ -10234,6 +10344,7 @@ void P_RemoveSavegameMobj(mobj_t *mobj)
 
 	// stop any playing sound
 	S_StopSound(mobj);
+	P_DeleteMobjStringArgs(mobj);
 
 	// free block
 	P_UnlinkThinker((thinker_t*)mobj);
@@ -11097,7 +11208,7 @@ fixed_t P_GetMobjSpawnHeight(
                     M_AATreeIteratorNext(it);
             }
 
-            fixed_t result = M_AATreeIteratorKey(it) + finalZOffset;
+            //fixed_t result = M_AATreeIteratorKey(it) + finalZOffset;
 
             M_AATreeIteratorClose(it);
             M_AATreeFree(heights);
@@ -11230,6 +11341,7 @@ static boolean P_AllowMobjSpawn(mapthing_t* mthing, mobjtype_t i)
 		case MT_RING:
 			if (ringsdisabled)
 				return false;
+			break;
 		case MT_ITEMCAPSULE:
 			{
 				boolean isRingCapsule = (mthing->args[0] < 1 || mthing->args[0] == KITEM_SUPERRING || mthing->args[0] >= NUMKARTITEMS);
@@ -11281,10 +11393,11 @@ static boolean P_SetupEmblem(mapthing_t *mthing, mobj_t *mobj)
 	INT32 j;
 	emblem_t* emblem = M_GetLevelEmblems(gamemap);
 	skincolornum_t emcolor;
+	INT16 tagnum = mthing->tid;
 
 	while (emblem)
 	{
-		if (emblem->type == ET_GLOBAL && emblem->tag == Tag_FGet(&mthing->tags))
+		if (emblem->type == ET_GLOBAL && emblem->tag == tagnum)
 			break;
 
 		emblem = M_GetLevelEmblems(-1);
@@ -11292,7 +11405,7 @@ static boolean P_SetupEmblem(mapthing_t *mthing, mobj_t *mobj)
 
 	if (!emblem)
 	{
-		CONS_Debug(DBG_GAMELOGIC, "No map emblem for map %d with tag %d found!\n", gamemap, Tag_FGet(&mthing->tags));
+		CONS_Debug(DBG_GAMELOGIC, "No map emblem for map %d with tag %d found!\n", gamemap, tagnum);
 		return false;
 	}
 
@@ -11734,7 +11847,7 @@ static mobj_t *P_MakeSoftwareCorona(mobj_t *mo, INT32 height)
 
 void P_InitSkyboxPoint(mobj_t *mobj, mapthing_t *mthing)
 {
-	mtag_t tag = Tag_FGet(&mthing->tags);
+	mtag_t tag = mthing->tid;
 	if (tag < 0 || tag > 15)
 	{
 		CONS_Debug(DBG_GAMELOGIC, "P_InitSkyboxPoint: Skybox ID %d of mapthing %s is not between 0 and 15!\n", tag, sizeu1((size_t)(mthing - mapthings)));
@@ -11887,10 +12000,6 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 	case MT_PARTICLEGEN:
 		if (!P_SetupParticleGen(mthing, mobj))
 			return false;
-		break;
-	case MT_ROCKSPAWNER:
-		mobj->threshold = mthing->angle;
-		mobj->movecount = mthing->extrainfo;
 		break;
 	case MT_TUBEWAYPOINT:
 	{
@@ -12057,20 +12166,12 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 			mobj->flags2 |= MF2_AMBUSH;
 		}
 		break;
-	case MT_REDFLAG:
-		redflag = mobj;
-		rflagpoint = mobj->spawnpoint;
-		break;
-	case MT_BLUEFLAG:
-		blueflag = mobj;
-		bflagpoint = mobj->spawnpoint;
-		break;
 	// SRB2Kart
 	case MT_WAYPOINT:
 	{
 		const fixed_t mobjscale =
 			mapheaderinfo[gamemap-1]->default_waypoint_radius;
-		mtag_t tag = Tag_FGet(&mthing->tags);
+		mtag_t tag = mthing->tid;
 
 		if (mthing->args[1] > 0)
 			mobj->radius = (mthing->args[1]) * FRACUNIT;
@@ -12226,8 +12327,8 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 	{
 		fixed_t top = mobj->z;
 		UINT8 i;
-		UINT8 locnumsegs = (mthing->extrainfo)+2;
-		UINT8 numleaves = max(3, (abs(mthing->angle+1) % 6) + 3);
+		UINT8 locnumsegs = abs(mthing->args[0])+2;
+		UINT8 numleaves = max(3, (abs(mthing->args[1])+1 % 6) + 3);
 		mobj_t *coconut;
 
 		// Spawn tree segments
@@ -12259,6 +12360,7 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 
 		P_RemoveMobj(mobj); // Don't need this helper obj anymore
 		return false;
+		break;
 	}
 	case MT_BATTLECAPSULE:
 	{
@@ -12382,6 +12484,7 @@ static boolean P_SetupSpawnedMapThing(mapthing_t *mthing, mobj_t *mobj, boolean 
 
 		// Increment no. of capsules on the map counter
 		maptargets++;
+		break;
 	}
 	case MT_LOOPCENTERPOINT:
 	{
@@ -12408,15 +12511,10 @@ static mobj_t *P_SpawnMobjFromMapThing(mapthing_t *mthing, fixed_t x, fixed_t y,
 {
 	mobj_t *mobj = NULL;
 	boolean doangle = true;
+	size_t arg = SIZE_MAX;
 
 	mobj = P_SpawnMobj(x, y, z, i);
 	mobj->spawnpoint = mthing;
-
-	P_SetScale(mobj, FixedMul(mobj->scale, mthing->scale));
-	mobj->destscale = FixedMul(mobj->destscale, mthing->scale);
-	
-	mobj->spritexscale = mthing->spritexscale;
-	mobj->spriteyscale = mthing->spriteyscale;
 
 	if (!P_SetupSpawnedMapThing(mthing, mobj, &doangle))
 	{
@@ -12444,7 +12542,65 @@ static mobj_t *P_SpawnMobjFromMapThing(mapthing_t *mthing, fixed_t x, fixed_t y,
 	mobj->pitch = FixedAngle(mthing->pitch << FRACBITS);
 	mobj->roll = FixedAngle(mthing->roll << FRACBITS);
 
-	P_SetThingTID(mobj, Tag_FGet(&mthing->tags));
+	P_SetScale(mobj, FixedMul(mobj->scale, mthing->scale));
+	mobj->destscale = FixedMul(mobj->destscale, mthing->scale);
+
+	mobj->spritexscale = mthing->spritexscale;
+	mobj->spriteyscale = mthing->spriteyscale;
+
+	P_SetThingTID(mobj, mthing->tid);
+
+	mobj->special = mthing->special;
+
+	for (arg = 0; arg < NUM_MAPTHING_ARGS; arg++)
+	{
+		mobj->args[arg] = mthing->args[arg];
+	}
+
+	for (arg = 0; arg < NUM_MAPTHING_STRINGARGS; arg++)
+	{
+		size_t len = 0;
+
+		if (mthing->stringargs[arg])
+		{
+			len = strlen(mthing->stringargs[arg]);
+		}
+
+		if (len == 0)
+		{
+			Z_Free(mobj->stringargs[arg]);
+			mobj->stringargs[arg] = NULL;
+			continue;
+		}
+
+		mobj->stringargs[arg] = Z_Realloc(mobj->stringargs[arg], len + 1, PU_LEVEL, NULL);
+		M_Memcpy(mobj->stringargs[arg], mthing->stringargs[arg], len + 1);
+	}
+
+	for (arg = 0; arg < NUM_SCRIPT_ARGS; arg++)
+	{
+		mobj->script_args[arg] = mthing->args[arg];
+	}
+
+	for (arg = 0; arg < NUM_SCRIPT_STRINGARGS; arg++)
+	{
+		size_t len = 0;
+
+		if (mthing->script_stringargs[arg])
+		{
+			len = strlen(mthing->script_stringargs[arg]);
+		}
+
+		if (len == 0)
+		{
+			Z_Free(mobj->script_stringargs[arg]);
+			mobj->script_stringargs[arg] = NULL;
+			continue;
+		}
+
+		mobj->script_stringargs[arg] = Z_Realloc(mobj->script_stringargs[arg], len + 1, PU_LEVEL, NULL);
+		M_Memcpy(mobj->script_stringargs[arg], mthing->script_stringargs[arg], len + 1);
+	}
 
 	mthing->mobj = mobj;
 
@@ -12644,7 +12800,7 @@ static void P_SpawnItemRow(mapthing_t *mthing, mobjtype_t *itemtypes, UINT8 numi
 	{
 		const fixed_t length = (numitems - 1) * horizontalspacing / 2;
 
-		mobj_t *loopcenter = Obj_FindLoopCenter(Tag_FGet(&mthing->tags));
+		mobj_t *loopcenter = Obj_FindLoopCenter(mthing->tid);
 
 		// Spawn the anchor at the middle point of the line
 		loopanchor = P_SpawnMobjFromMapThing(&dummything,
@@ -13529,4 +13685,21 @@ mobj_t *P_FindMobjFromTID(mtag_t tid, mobj_t *i, mobj_t *activator)
 	}
 
 	return i;
+}
+
+void P_DeleteMobjStringArgs(mobj_t *mobj)
+{
+	size_t i = SIZE_MAX;
+
+	for (i = 0; i < NUM_MAPTHING_STRINGARGS; i++)
+	{
+		Z_Free(mobj->stringargs[i]);
+		mobj->stringargs[i] = NULL;
+	}
+
+	for (i = 0; i < NUM_SCRIPT_STRINGARGS; i++)
+	{
+		Z_Free(mobj->script_stringargs[i]);
+		mobj->script_stringargs[i] = NULL;
+	}
 }

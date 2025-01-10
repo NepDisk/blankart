@@ -15,7 +15,11 @@
 
 #ifdef HAVE_DISCORDRPC
 
-#include "discord_rpc.h"
+#include <discord_rpc.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern consvar_t cv_discordrp;
 extern consvar_t cv_discordstreamer;
@@ -27,7 +31,7 @@ extern struct discordInfo_s {
 	boolean everyoneCanInvite;
 } discordInfo;
 
-typedef struct discordRequest_s {
+struct discordRequest_t {
 	char *username; // Discord user name.
 	char *discriminator; // Discord discriminator (The little hashtag thing after the username). Separated for a "hide discriminators" cvar.
 	char *userID; // The ID of the Discord user, gets used with Discord_Respond()
@@ -38,9 +42,9 @@ typedef struct discordRequest_s {
 	// Hey, wanna add ImageMagick as a dependency? :dying:
 	//patch_t *avatar;
 
-	struct discordRequest_s *next; // Next request in the list.
-	struct discordRequest_s *prev; // Previous request in the list. Not used normally, but just in case something funky happens, this should repair the list.
-} discordRequest_t;
+	discordRequest_t *next; // Next request in the list.
+	discordRequest_t *prev; // Previous request in the list. Not used normally, but just in case something funky happens, this should repair the list.
+};
 
 extern discordRequest_t *discordRequestList;
 
@@ -76,5 +80,9 @@ void DRPC_UpdatePresence(void);
 
 
 #endif // HAVE_DISCORDRPC
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // __DISCORD__

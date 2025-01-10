@@ -18,19 +18,23 @@
 #include "p_mobj.h"
 #include "k_pathfind.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define DEFAULT_WAYPOINT_RADIUS (384)
 
-typedef struct waypoint_s
+struct waypoint_t
 {
 	mobj_t             *mobj;
 	boolean             onaline;
-	struct waypoint_s **nextwaypoints;
-	struct waypoint_s **prevwaypoints;
+	waypoint_t        **nextwaypoints;
+	waypoint_t        **prevwaypoints;
 	UINT32             *nextwaypointdistances;
 	UINT32             *prevwaypointdistances;
 	size_t              numnextwaypoints;
 	size_t              numprevwaypoints;
-} waypoint_t;
+};
 
 
 // AVAILABLE FOR LUA
@@ -49,6 +53,21 @@ typedef struct waypoint_s
 --------------------------------------------------*/
 
 waypoint_t *K_GetFinishLineWaypoint(void);
+
+
+/*--------------------------------------------------
+	waypoint_t *K_GetStartingWaypoint(void);
+
+		Return the waypoint farthest from the finish line.
+
+	Input Arguments:-
+		None
+
+	Return:-
+		The waypoint that is being used as the startingwaypoint.
+--------------------------------------------------*/
+
+waypoint_t *K_GetStartingWaypoint(void);
 
 
 /*--------------------------------------------------
@@ -139,6 +158,19 @@ INT32 K_GetWaypointNextID(waypoint_t *waypoint);
 --------------------------------------------------*/
 INT32 K_GetWaypointID(waypoint_t *waypoint);
 
+/*--------------------------------------------------
+	waypoint_t *K_GetWaypointFromID(INT32 waypointID)
+
+		Returns the first waypoint with the specified ID.
+
+	Input Arguments:-
+		waypointID - The ID of the waypoint to get
+
+	Return:-
+		The first waypoint with this ID, NULL if the ID doesn't exist at all in the map
+--------------------------------------------------*/
+
+waypoint_t *K_GetWaypointFromID(INT32 waypointID);
 
 /*--------------------------------------------------
 	UINT32 K_GetCircuitLength(void)
@@ -151,6 +183,22 @@ INT32 K_GetWaypointID(waypoint_t *waypoint);
 		The circuit length.
 --------------------------------------------------*/
 UINT32 K_GetCircuitLength(void);
+
+
+/*--------------------------------------------------
+	INT32 K_GetTrackComplexity(void)
+
+		Returns the track complexity values. This depends
+		on how many turns the map has, and is used for
+		bot code to determine their rubberbanding.
+
+	Input Arguments:-
+
+	Return:-
+		The track complexity value.
+--------------------------------------------------*/
+
+INT32 K_GetTrackComplexity(void);
 
 
 /*--------------------------------------------------
@@ -239,6 +287,36 @@ boolean K_PathfindToWaypoint(
 --------------------------------------------------*/
 
 boolean K_PathfindThruCircuit(
+	waypoint_t *const sourcewaypoint,
+	const UINT32      traveldistance,
+	path_t *const     returnpath,
+	const boolean     useshortcuts,
+	const boolean     huntbackwards);
+
+
+/*--------------------------------------------------
+	boolean K_PathfindThruCircuitSpawnable(
+		waypoint_t *const sourcewaypoint,
+		const UINT32      traveldistance,
+		path_t *const     returnpath,
+		const boolean     useshortcuts,
+		const boolean     huntbackwards)
+
+		The same as K_PathfindThruCircuit, but continues until hitting a waypoint that
+		can be respawned at.
+
+	Input Arguments:-
+		sourcewaypoint      - The waypoint to start searching from
+		traveldistance      - How far along the circuit it will try to pathfind.
+		returnpath          - The path_t that will contain the final found path
+		useshortcuts        - Whether to use waypoints that are marked as being shortcuts in the search
+		huntbackwards       - Goes through the waypoints backwards if true
+
+	Return:-
+		True if a circuit path could be constructed, false if it couldn't.
+--------------------------------------------------*/
+
+boolean K_PathfindThruCircuitSpawnable(
 	waypoint_t *const sourcewaypoint,
 	const UINT32      traveldistance,
 	path_t *const     returnpath,
@@ -389,5 +467,9 @@ void K_ClearWaypoints(void);
 --------------------------------------------------*/
 
 void K_AdjustWaypointsParameters (void);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

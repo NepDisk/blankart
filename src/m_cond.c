@@ -152,11 +152,11 @@ emblem_t emblemlocations[MAXEMBLEMS] =
 // Default Extra Emblems
 extraemblem_t extraemblems[MAXEXTRAEMBLEMS] =
 {
-	{"Novice",    "Play 100 matches",  10, 'C', SKINCOLOR_RED, 0},
-	{"Standard",  "Play 250 matches",  11, 'C', SKINCOLOR_RED, 0},
-	{"Expert",    "Play 500 matches",  12, 'C', SKINCOLOR_RED, 0},
-	{"Master",    "Play 750 matches",  13, 'C', SKINCOLOR_RED, 0},
-	{"Nightmare", "Play 1000 matches", 14, 'C', SKINCOLOR_RED, 0},
+	{"Novice",    "Play 100 matches",  10, 'C', 0,SKINCOLOR_RED, 0},
+	{"Standard",  "Play 250 matches",  11, 'C', 0,SKINCOLOR_RED, 0},
+	{"Expert",    "Play 500 matches",  12, 'C', 0,SKINCOLOR_RED, 0},
+	{"Master",    "Play 750 matches",  13, 'C', 0,SKINCOLOR_RED, 0},
+	{"Nightmare", "Play 1000 matches", 14, 'C', 0,SKINCOLOR_RED, 0},
 };
 
 // Unlockables

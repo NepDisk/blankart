@@ -18,6 +18,10 @@
 #include "keys.h"
 #include "command.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // number of total 'button' inputs, include keyboard keys, plus virtual
 // keys (mousebuttons and joybuttons becomes keys)
 #define NUMKEYS 256
@@ -162,5 +166,9 @@ INT32 G_GetControlScheme(INT32 (*fromcontrols)[2], const INT32 *gclist, INT32 gc
 void G_CopyControls(INT32 (*setupcontrols)[2], INT32 (*fromcontrols)[2], const INT32 *gclist, INT32 gclen);
 void G_SaveKeySetting(FILE *f, INT32 (*fromcontrolsa)[2], INT32 (*fromcontrolsb)[2], INT32 (*fromcontrolsc)[2], INT32 (*fromcontrolsd)[2]);
 INT32 G_CheckDoubleUsage(INT32 keynum, boolean modify);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

@@ -145,6 +145,7 @@ void A_RingExplode(mobj_t *actor);
 void A_OldRingExplode(mobj_t *actor);
 void A_MixUp(mobj_t *actor);
 void A_Boss2TakeDamage(mobj_t *actor);
+void A_Boss7Chase(mobj_t *actor);
 void A_GoopSplat(mobj_t *actor);
 void A_Boss2PogoSFX(mobj_t *actor);
 void A_Boss2PogoTarget(mobj_t *actor);
@@ -2492,15 +2493,26 @@ void A_LobShot(mobj_t *actor)
 	if (actor->eflags & MFE_VERTICALFLIP)
 	{
 		z = actor->z + actor->height - FixedMul(locvar2*FRACUNIT, actor->scale);
-		z -= FixedMul(mobjinfo[locvar1].height, actor->scale);
+		if (actor->type == MT_BLACKEGGMAN)
+			z -= FixedMul(mobjinfo[locvar1].height, actor->scale/2);
+		else
+			z -= FixedMul(mobjinfo[locvar1].height, actor->scale);
 	}
 	else
 		z = actor->z + FixedMul(locvar2*FRACUNIT, actor->scale);
 
 	shot = P_SpawnMobj(actor->x, actor->y, z, locvar1);
 
-	shot->destscale = actor->scale;
-	P_SetScale(shot, actor->scale);
+	if (actor->type == MT_BLACKEGGMAN)
+	{
+		shot->destscale = actor->scale/2;
+		P_SetScale(shot, actor->scale/2);
+	}
+	else
+	{
+		shot->destscale = actor->scale;
+		P_SetScale(shot, actor->scale);
+	}
 
 	P_SetTarget(&shot->target, actor); // where it came from
 
@@ -3434,8 +3446,7 @@ static void P_DoBossVictory(mobj_t *mo)
 	}
 
 	// victory!
-	if (mo->spawnpoint)
-		P_LinedefExecute(mo->spawnpoint->args[3], mo, NULL);
+	P_LinedefExecute(mo->spawnpoint->args[3], mo, NULL);
 
 	if (stoppedclock && modeattacking) // if you're just time attacking, skip making the capsule appear since you don't need to step on it anyways.
 		return;
@@ -3464,7 +3475,7 @@ static void P_DoBossVictory(mobj_t *mo)
 
 static void P_DoBossDefaultDeath(mobj_t *mo)
 {
-	INT32 bossid = (mo->spawnpoint ? mo->spawnpoint->args[0] : 0);
+	INT32 bossid = mo->args[0];
 
 	// Stop exploding and prepare to run.
 	P_SetMobjState(mo, mo->info->xdeathstate);
@@ -3509,8 +3520,7 @@ void A_BossDeath(mobj_t *mo)
 	if (LUA_CallAction(A_BOSSDEATH, mo))
 		return;
 
-	if (mo->spawnpoint)
-		P_LinedefExecute(mo->spawnpoint->args[2], mo, NULL);
+	P_LinedefExecute(mo->spawnpoint->args[2], mo, NULL);
 	mo->health = 0;
 
 	// Boss is dead (but not necessarily fleeing...)
@@ -3536,6 +3546,28 @@ void A_BossDeath(mobj_t *mo)
 	// now do another switch case for escaping
 	switch (mo->type)
 	{
+		case MT_BLACKEGGMAN:
+		{
+			mo->flags |= MF_NOCLIP;
+			mo->flags &= ~MF_SPECIAL;
+
+			S_StartSound(NULL, sfx_befall);
+			break;
+		}
+		case MT_CYBRAKDEMON:
+		{
+			mo->flags |= MF_NOCLIP;
+			mo->flags &= ~(MF_SPECIAL|MF_NOGRAVITY|MF_NOCLIPHEIGHT);
+
+			S_StartSound(NULL, sfx_bedie2);
+			P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_CYBRAKDEMON_VILE_EXPLOSION);
+			mo->z += P_MobjFlip(mo);
+			P_SetObjectMomZ(mo, 12*FRACUNIT, false);
+			S_StartSound(mo, sfx_bgxpld);
+			if (mo->spawnpoint && !(mo->spawnpoint->options & MTF_EXTRA))
+				P_InstaThrust(mo, R_PointToAngle2(0, 0, mo->x, mo->y), 14*FRACUNIT);
+			break;
+		}
 		default: //eggmobiles
 			P_DoBossDefaultDeath(mo);
 			break;
@@ -3822,8 +3854,6 @@ void A_AttractChase(mobj_t *actor)
 
 			if (actor->extravalue1 >= 21)
 			{
-				mobj_t *sparkle;
-				angle_t offset = FixedAngle(18<<FRACBITS);
 
 				// Base add is 3 tics for 9,9, adds 1 tic for each point closer to the 1,1 end
 				actor->target->player->ringboost += K_GetKartRingPower(actor->target->player, true) + 3;
@@ -3909,8 +3939,8 @@ void A_AttractChase(mobj_t *actor)
 			actor->cusval = 1;
 
 			if (
-				actor->tracer->player && actor->tracer->health
-				&& (gametyperules & GTR_SPHERES)
+				(actor->tracer->player && actor->tracer->health
+				&& (gametyperules & GTR_SPHERES))
 					|| (actor->tracer->player->itemtype == KITEM_LIGHTNINGSHIELD
 					&& RINGTOTAL(actor->tracer->player) < 20
 					&& !(actor->tracer->player->pflags & PF_RINGLOCK))
@@ -4074,8 +4104,8 @@ void A_FishJump(mobj_t *actor)
 			jumpval = locvar1;
 		else
 		{
-			if (actor->spawnpoint && actor->spawnpoint->args[0])
-				jumpval = actor->spawnpoint->args[0];
+			if (actor->args[0])
+				jumpval = actor->args[0];
 			else
 				jumpval = 44;
 		}
@@ -5114,29 +5144,26 @@ void A_RockSpawn(mobj_t *actor)
 	if (LUA_CallAction(A_ROCKSPAWN, actor))
 		return;
 
-	if (!actor->spawnpoint)
-		return;
-
-	type = actor->spawnpoint->stringargs[0] ? get_number(actor->spawnpoint->stringargs[0]) : MT_ROCKCRUMBLE1;
+	type = actor->stringargs[0] ? get_number(actor->stringargs[0]) : MT_ROCKCRUMBLE1;
 
 	if (type < MT_NULL || type >= NUMMOBJTYPES)
 	{
-		CONS_Debug(DBG_GAMELOGIC, "A_RockSpawn: Invalid mobj type %s!\n", actor->spawnpoint->stringargs[0]);
+		CONS_Debug(DBG_GAMELOGIC, "A_RockSpawn: Invalid mobj type %s!\n", actor->stringargs[0]);
 		return;
 	}
 
-	dist = max(actor->spawnpoint->args[0] << (FRACBITS - 4), 1);
-	if (actor->spawnpoint->args[2])
+	dist = max(actor->args[0] << (FRACBITS - 4), 1);
+	if (actor->args[2])
 		dist += P_RandomByte() * (FRACUNIT/32); // random oomph
 
 	mo = P_SpawnMobj(actor->x, actor->y, actor->z, MT_FALLINGROCK);
 	P_SetMobjState(mo, mobjinfo[type].spawnstate);
-	mo->angle = FixedAngle(actor->spawnpoint->angle << FRACBITS);
+	mo->angle = actor->angle;
 
 	P_InstaThrust(mo, mo->angle, dist);
 	mo->momz = dist;
 
-	var1 = actor->spawnpoint->args[1];
+	var1 = actor->args[1];
 	A_SetTics(actor);
 }
 
@@ -5798,8 +5825,7 @@ void A_Boss1Chase(mobj_t *actor)
 		}
 		else
 		{
-			if (actor->spawnpoint)
-				P_LinedefExecute(actor->spawnpoint->args[4], actor, NULL);
+			P_LinedefExecute(actor->args[4], actor, NULL);
 			P_SetMobjState(actor, actor->info->raisestate);
 		}
 
@@ -6049,6 +6075,128 @@ void A_Boss2TakeDamage(mobj_t *actor)
 		actor->movecount = TICRATE;
 	else
 		actor->movecount = locvar1; // become flashing invulnerable for this long.
+}
+
+// Function: A_Boss7Chase
+//
+// Description: Like A_Chase, but for Black Eggman
+//
+// var1 = unused
+// var2 = unused
+//
+void A_Boss7Chase(mobj_t *actor)
+{
+	INT32 delta;
+	INT32 i;
+
+	if (LUA_CallAction(A_BOSS7CHASE, actor))
+		return;
+
+	if (actor->z != actor->floorz)
+		return;
+
+	// Self-adjust if stuck on the edge
+	if (actor->tracer)
+	{
+		if (P_AproxDistance(actor->x - actor->tracer->x, actor->y - actor->tracer->y) > 128*FRACUNIT - actor->radius)
+			P_InstaThrust(actor, R_PointToAngle2(actor->x, actor->y, actor->tracer->x, actor->tracer->y), FRACUNIT);
+	}
+
+	if (actor->flags2 & MF2_FRET)
+	{
+		P_SetMobjState(actor, S_BLACKEGG_DESTROYPLAT1);
+		S_StartSound(0, sfx_s3k53);
+		actor->flags2 &= ~MF2_FRET;
+		return;
+	}
+
+	// turn towards movement direction if not there yet
+	if (actor->movedir < NUMDIRS)
+	{
+		actor->angle &= (7<<29);
+		delta = actor->angle - (actor->movedir << 29);
+
+		if (delta > 0)
+			actor->angle -= ANGLE_45;
+		else if (delta < 0)
+			actor->angle += ANGLE_45;
+	}
+
+	// Is a player on top of us?
+	for (i = 0; i < MAXPLAYERS; i++)
+	{
+		if (!playeringame[i] || players[i].spectator)
+			continue;
+
+		if (!players[i].mo)
+			continue;
+
+		if (players[i].mo->health <= 0)
+			continue;
+
+		if (P_AproxDistance(players[i].mo->x - actor->x, players[i].mo->y - actor->y) > actor->radius)
+			continue;
+
+		if (players[i].mo->z > actor->z + actor->height - 2*FRACUNIT
+			&& players[i].mo->z < actor->z + actor->height + 32*FRACUNIT)
+		{
+			// Punch him!
+			P_SetMobjState(actor, actor->info->meleestate);
+			S_StartSound(0, sfx_begrnd); // warning sound
+			return;
+		}
+	}
+
+	if (actor->reactiontime)
+		actor->reactiontime--;
+
+	if (actor->reactiontime <= 0 && actor->z == actor->floorz)
+	{
+		// Here, we'll call P_RandomByte() and decide what kind of attack to do
+		switch(actor->threshold)
+		{
+			case 0: // Lob cannon balls
+				if (actor->z < 1056*FRACUNIT)
+				{
+					A_FaceTarget(actor);
+					P_SetMobjState(actor, actor->info->xdeathstate);
+					actor->movecount = 7*TICRATE + P_RandomByte();
+					break;
+				}
+				actor->threshold++;
+				/* FALLTHRU */
+			case 1: // Chaingun Goop
+				A_FaceTarget(actor);
+				P_SetMobjState(actor, S_BLACKEGG_SHOOT1);
+
+				if (actor->health > actor->info->damage)
+					actor->movecount = TICRATE + P_RandomByte()/3;
+				else
+					actor->movecount = TICRATE + P_RandomByte()/2;
+				break;
+			case 2: // Homing Missile
+				A_FaceTarget(actor);
+				P_SetMobjState(actor, actor->info->missilestate);
+				S_StartSound(0, sfx_beflap);
+				break;
+		}
+
+		actor->threshold++;
+		actor->threshold %= 3;
+		return;
+	}
+
+	// possibly choose another target
+	if (multiplayer && (actor->target->health <= 0 || !P_CheckSight(actor, actor->target))
+		&& P_BossTargetPlayer(actor, false))
+		return; // got a new target
+
+	if (leveltime & 1)
+	{
+		// chase towards player
+		if (--actor->movecount < 0 || !P_Move(actor, actor->info->speed))
+			P_NewChaseDir(actor);
+	}
 }
 
 // Function: A_GoopSplat
@@ -6496,7 +6644,7 @@ void A_GuardChase(mobj_t *actor)
 			false, NULL)
 		&& speed > 0) // can't be the same check as previous so that P_TryMove gets to happen.
 		{
-			INT32 direction = actor->spawnpoint ? actor->spawnpoint->args[0] : TMGD_BACK;
+			INT32 direction = actor->args[0];
 
 			switch (direction)
 			{
@@ -6931,16 +7079,13 @@ void A_LinedefExecuteFromArg(mobj_t *actor)
 	if (LUA_CallAction(A_LINEDEFEXECUTEFROMARG, actor))
 		return;
 
-	if (!actor->spawnpoint)
-		return;
-
-	if (locvar1 < 0 || locvar1 > NUMMAPTHINGARGS)
+	if (locvar1 < 0 || locvar1 > NUM_MAPTHING_ARGS)
 	{
 		CONS_Debug(DBG_GAMELOGIC, "A_LinedefExecuteFromArg: Invalid mapthing arg %d\n", locvar1);
 		return;
 	}
 
-	tagnum = actor->spawnpoint->args[locvar1];
+	tagnum = actor->args[locvar1];
 
 	CONS_Debug(DBG_GAMELOGIC, "A_LinedefExecuteFromArg: Running mobjtype %d's sector with tag %d\n", actor->type, tagnum);
 
@@ -7937,15 +8082,34 @@ void A_StateRangeByParameter(mobj_t *actor)
 {
 	INT32 locvar1 = var1;
 	INT32 locvar2 = var2;
-	UINT8 parameter = (actor->spawnpoint ? actor->spawnpoint->extrainfo : 0);
+	UINT8 parameter = 0;
+	INT32 range = 0;
 
 	if (LUA_CallAction(A_STATERANGEBYPARAMETER, actor))
 		return;
 
 	if (locvar2 - locvar1 < 0)
 		return; // invalid range
+		
+	if (udmf)
+	{
+		parameter = actor->args[0];
+	}
+	else if (actor->spawnpoint != NULL)
+	{
+		// binary format backwards compatibility
+		parameter = actor->spawnpoint->extrainfo;
+	}
 
-	P_SetMobjState(actor, locvar1 + (parameter % (1 + locvar2 - locvar1)));
+	range = locvar2 - locvar1;
+	if (range < 0)
+	{
+		CONS_Debug(DBG_GAMELOGIC, "A_StateRangeByParameter: invalid range %d (var1: %d, var2: %d)\n", range, locvar1, locvar2);
+		return;
+	}
+
+	P_SetMobjState(actor, locvar1 + (parameter % (range + 1)));
+
 }
 
 // Function: A_DualAction
@@ -9615,7 +9779,7 @@ void A_VileTarget(mobj_t *actor)
 
 	// Determine object to spawn
 	if (locvar1 <= 0 || locvar1 >= NUMMOBJTYPES)
-		return;
+		fogtype = MT_CYBRAKDEMON_TARGET_RETICULE;
 	else
 		fogtype = (mobjtype_t)locvar1;
 
@@ -9911,6 +10075,8 @@ void A_BrakChase(mobj_t *actor)
 	if (actor->reactiontime)
 	{
 		actor->reactiontime--;
+		if (actor->reactiontime == 0 && actor->type == MT_CYBRAKDEMON)
+			S_StartSound(0, sfx_bewar1 + P_RandomKey(4));
 	}
 
 	// modify target threshold
@@ -9989,7 +10155,7 @@ void A_BrakChase(mobj_t *actor)
 		S_StartSound(actor, (sfxenum_t)locvar2);
 
 	// make active sound
-	if (actor->info->activesound && P_RandomChance(3*FRACUNIT/256))
+	if (actor->type != MT_CYBRAKDEMON && actor->info->activesound && P_RandomChance(3*FRACUNIT/256))
 	{
 		S_StartSound(actor, actor->info->activesound);
 	}
@@ -10346,16 +10512,12 @@ void P_InternalFlickySetColor(mobj_t *actor, UINT8 color)
 //
 // Description: Place flickies in-level.
 //
-// var1:
-//        Lower 16 bits = if 0, spawns random flicky based on level header. Else, spawns the designated thing type.
-//        Bits 17-20 = Flicky color, up to 15. Applies to fish.
-//        Bit 21 = Flag TMFF_AIMLESS (see below)
-//        Bit 22 = Flag TMFF_STATIONARY (see below)
-//        Bit 23 = Flag TMFF_HOP (see below)
-//
-//        If actor is placed from a spawnpoint (map Thing), the Thing's properties take precedence.
-//
+// var1 = if 0, spawns random flicky based on level header. Else, spawns the designated thing type.
 // var2 = maximum default distance away from spawn the flickies are allowed to travel. If args[0] != 0, then that's the radius.
+//
+// args[0] = Flicky radius
+// args[1] = Behavior flags (see the list below)
+// args[2] = Flicky color, up to 15. Applies to fish.
 //
 // If TMFF_AIMLESS (MF_SLIDEME): is flagged, Flickies move aimlessly. Else, orbit around the target.
 // If TMFF_STATIONARY (MF_GRENADEBOUNCE): Flickies stand in-place without gravity (unless they hop, then gravity is applied.)
@@ -10365,51 +10527,31 @@ void A_FlickyCenter(mobj_t *actor)
 {
 	INT32 locvar1 = var1;
 	INT32 locvar2 = var2;
-	UINT16 flickytype = (locvar1 & 0xFFFF);
-	UINT8 flickycolor = ((locvar1 >> 16) & 0xFF);
-	UINT8 flickyflags = ((locvar1 >> 20) & 0xF);
+	fixed_t homeRadius = INT32_MAX;
 
 	if (LUA_CallAction(A_FLICKYCENTER, actor))
 		return;
 
+	homeRadius = locvar2 ? FixedMul(abs(locvar2), actor->scale) : 384*actor->scale;
+	
 	if (!actor->tracer)
 	{
 		mobj_t *flicky = P_InternalFlickySpawn(actor, locvar1, 1, false, 0);
 		P_SetTarget(&flicky->target, actor);
 		P_SetTarget(&actor->tracer, flicky);
 
-		if (actor->spawnpoint)
-		{
-			actor->flags &= ~(MF_SLIDEME|MF_GRENADEBOUNCE|MF_NOCLIPTHING);
-			if (actor->spawnpoint->args[1] & TMFF_AIMLESS)
-				actor->flags |= MF_SLIDEME;
-			if (actor->spawnpoint->args[1] & TMFF_STATIONARY)
-				actor->flags |= MF_GRENADEBOUNCE;
-			if (actor->spawnpoint->args[1] & TMFF_HOP)
-				actor->flags |= MF_NOCLIPTHING;
-			actor->extravalue1 = actor->spawnpoint->args[0] ? abs(actor->spawnpoint->args[0])*FRACUNIT
-				: locvar2 ? abs(locvar2) : 384*FRACUNIT;
-			actor->extravalue2 = actor->spawnpoint->args[2];
-			actor->friction = actor->spawnpoint->x*FRACUNIT;
-			actor->movefactor = actor->spawnpoint->y*FRACUNIT;
-			actor->watertop = actor->spawnpoint->z*FRACUNIT;
-		}
-		else
-		{
-			actor->flags &= ~(MF_SLIDEME|MF_GRENADEBOUNCE|MF_NOCLIPTHING);
-			if (flickyflags & TMFF_AIMLESS)
-				actor->flags |= MF_SLIDEME;
-			if (flickyflags & TMFF_STATIONARY)
-				actor->flags |= MF_GRENADEBOUNCE;
-			if (flickyflags & TMFF_HOP)
-				actor->flags |= MF_NOCLIPTHING;
-			actor->extravalue1 = abs(locvar2);
-			actor->extravalue2 = flickycolor;
-			actor->friction = actor->x;
-			actor->movefactor = actor->y;
-			actor->watertop = actor->z;
-			locvar1 = flickytype;
-		}
+		actor->flags &= ~(MF_SLIDEME|MF_GRENADEBOUNCE|MF_NOCLIPTHING);
+		if (actor->args[1] & TMFF_AIMLESS)
+			actor->flags |= MF_SLIDEME;
+		if (actor->args[1] & TMFF_STATIONARY)
+			actor->flags |= MF_GRENADEBOUNCE;
+		if (actor->args[1] & TMFF_HOP)
+			actor->flags |= MF_NOCLIPTHING;
+		actor->extravalue1 = actor->args[0] ? abs(actor->args[0])*actor->scale : homeRadius;
+		actor->extravalue2 = actor->args[2];
+		actor->friction = actor->x;
+		actor->movefactor = actor->y;
+		actor->watertop = actor->z;
 
 		if (actor->flags & MF_GRENADEBOUNCE) // in-place
 			actor->tracer->fuse = 0;
@@ -10437,7 +10579,7 @@ void A_FlickyCenter(mobj_t *actor)
 
 		// Impose default home radius if flicky orbits around player
 		if (!actor->extravalue1)
-			actor->extravalue1 = locvar2 ? abs(locvar2) : 384 * FRACUNIT;
+			actor->extravalue1 = homeRadius;
 
 		P_LookForPlayers(actor, true, false, actor->extravalue1);
 
@@ -11363,7 +11505,7 @@ void A_Boss5FindWaypoint(mobj_t *actor)
 	INT32 locvar1 = var1;
 	boolean avoidcenter;
 	INT32 i;
-	INT32 bossid = (actor->spawnpoint ? actor->spawnpoint->args[0] : 0);
+	INT32 bossid = actor->args[0];
 
 	if (LUA_CallAction(A_BOSS5FINDWAYPOINT, actor))
 		return;
@@ -12761,8 +12903,7 @@ void A_SpawnPterabytes(mobj_t *actor)
 	if (LUA_CallAction(A_SPAWNPTERABYTES, actor))
 		return;
 
-	if (actor->spawnpoint)
-		amount = min(1, actor->spawnpoint->args[0]);
+	amount = min(1, actor->args[0]);
 
 	interval = FixedAngle(FRACUNIT*360/amount);
 
@@ -13153,118 +13294,32 @@ void A_ItemPop(mobj_t *actor)
 
 void A_JawzChase(mobj_t *actor)
 {
-	const fixed_t currentspeed = R_PointToDist2(0, 0, actor->momx, actor->momy);
 	player_t *player;
-	fixed_t thrustamount = 0;
-	fixed_t frictionsafety = (actor->friction == 0) ? 1 : actor->friction;
-	fixed_t topspeed = actor->movefactor;
 
 	if (LUA_CallAction(A_JAWZCHASE, actor))
 		return;
 
 	if (actor->tracer)
 	{
-		/*if ((gametyperules & GTR_CIRCUIT)) // Stop looking after first target in race
-			actor->extravalue1 = 1;*/
 
 		if (actor->tracer->health)
 		{
-			const angle_t targetangle = R_PointToAngle2(actor->x, actor->y, actor->tracer->x, actor->tracer->y);
 			mobj_t *ret;
-			angle_t angledelta = actor->angle - targetangle;
-			boolean turnclockwise = true;
-
-			if (gametyperules & GTR_CIRCUIT)
-			{
-				const fixed_t distbarrier = FixedMul(512*mapobjectscale, FRACUNIT + ((gamespeed-1) * (FRACUNIT/4)));
-				const fixed_t distaway = P_AproxDistance(actor->tracer->x - actor->x, actor->tracer->y - actor->y);
-				if (distaway < distbarrier)
-				{
-					if (actor->tracer->player)
-					{
-						fixed_t speeddifference = abs(topspeed - min(actor->tracer->player->speed, K_GetKartSpeed(actor->tracer->player, false, false)));
-						topspeed = topspeed - FixedMul(speeddifference, FRACUNIT-FixedDiv(distaway, distbarrier));
-					}
-				}
-			}
-
-			if (angledelta != 0)
-			{
-				angle_t MAX_JAWZ_TURN = ANGLE_90/15; // We can turn a maximum of 6 degrees per frame at regular max speed
-				// MAX_JAWZ_TURN gets stronger the slower the top speed of jawz
-				if (topspeed < actor->movefactor)
-				{
-					if (topspeed == 0)
-					{
-						MAX_JAWZ_TURN = ANGLE_180;
-					}
-					else
-					{
-						fixed_t anglemultiplier = FixedDiv(actor->movefactor, topspeed);
-						MAX_JAWZ_TURN += FixedAngle(FixedMul(AngleFixed(MAX_JAWZ_TURN), anglemultiplier));
-					}
-				}
-
-				if (angledelta > ANGLE_180)
-				{
-					angledelta = InvAngle(angledelta);
-					turnclockwise = false;
-				}
-
-				if (angledelta > MAX_JAWZ_TURN)
-				{
-					angledelta = MAX_JAWZ_TURN;
-				}
-
-				if (turnclockwise)
-				{
-					actor->angle -= angledelta;
-				}
-				else
-				{
-					actor->angle += angledelta;
-				}
-			}
 
 			ret = P_SpawnMobj(actor->tracer->x, actor->tracer->y, actor->tracer->z, MT_PLAYERRETICULE);
+			P_SetTarget(&ret->target, actor->tracer);
 			ret->old_x = actor->tracer->old_x;
 			ret->old_y = actor->tracer->old_y;
 			ret->old_z = actor->tracer->old_z;
-			P_SetTarget(&ret->target, actor->tracer);
 			ret->frame |= ((leveltime % 10) / 2) + 5;
 			ret->color = actor->cvmem;
+
+			P_Thrust(actor, R_PointToAngle2(actor->x, actor->y, actor->tracer->x, actor->tracer->y), (7*actor->movefactor)/64);
+			return;
 		}
 		else
 			P_SetTarget(&actor->tracer, NULL);
 	}
-
-	if (!P_IsObjectOnGround(actor))
-	{
-		// No friction in the air
-		frictionsafety = FRACUNIT;
-	}
-
-	if (currentspeed >= topspeed)
-	{
-		// Thrust as if you were at top speed, slow down naturally
-		thrustamount = FixedDiv(topspeed, frictionsafety) - topspeed;
-	}
-	else
-	{
-		const fixed_t beatfriction = FixedDiv(currentspeed, frictionsafety) - currentspeed;
-		// Thrust to immediately get to top speed
-		thrustamount = beatfriction + FixedDiv(topspeed - currentspeed, frictionsafety);
-	}
-
-	if (!actor->tracer)
-	{
-		actor->angle = K_MomentumAngle(actor);
-	}
-
-	P_Thrust(actor, actor->angle, thrustamount);
-
-	if ((actor->tracer != NULL) && (actor->tracer->health > 0))
-		return;
 
 	if (actor->extravalue1) // Disable looking by setting this
 		return;
@@ -13313,24 +13368,6 @@ void A_JawzExplode(mobj_t *actor)
 	}
 
 	return;
-}
-
-static void SpawnSPBTrailRings(mobj_t *actor)
-{
-	I_Assert(actor != NULL);
-
-	if (leveltime % 6 == 0)
-	{
-		if (leveltime % (actor->extravalue1 == 2 ? 6 : 3) == 0)	// Extravalue1 == 2 is seeking mode. Because the SPB is about twice as fast as normal in that mode, also spawn the rings twice as often to make up for it!
-		{
-			mobj_t *ring = P_SpawnMobj(actor->x - actor->momx, actor->y - actor->momy,
-				actor->z - actor->momz + (24*mapobjectscale), MT_RING);
-			ring->threshold = 10;
-			ring->fuse = 35*TICRATE;
-			ring->colorized = true;
-			ring->color = SKINCOLOR_RED;
-		}
-	}
 }
 
 void A_SPBChase(mobj_t *actor)
@@ -13895,11 +13932,11 @@ void A_MayonakaArrow(mobj_t *actor)
 	if (LUA_CallAction(A_MAYONAKAARROW, (actor)))
 		return;
 
-	iswarning = (actor->spawnpoint->args[0] == TMMA_WARN);	// is our object a warning sign?
+	iswarning = (actor->args[0] == TMMA_WARN);	// is our object a warning sign?
 
 	// "animtimer" is replaced by "extravalue1" here.
 	actor->extravalue1 = ((actor->extravalue1) ? (actor->extravalue1+1) : (P_RandomRange(0, (iswarning) ? (TICRATE/2) : TICRATE*3)));
-	flip = ((actor->spawnpoint->args[0] == TMMA_FLIP) ? (3) : (0));	// flip adds 3 frames, which is the flipped version of the sign.
+	flip = ((actor->args[0] == TMMA_FLIP) ? (3) : (0));	// flip adds 3 frames, which is the flipped version of the sign.
 	// special warning behavior:
 	if (iswarning)
 		flip = 6;

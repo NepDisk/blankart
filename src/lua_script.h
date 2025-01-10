@@ -23,6 +23,10 @@
 #include "blua/lualib.h"
 #include "blua/lauxlib.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define lua_optboolean(L, i) (!lua_isnoneornil(L, i) && lua_toboolean(L, i))
 #define lua_opttrueboolean(L, i) (lua_isnoneornil(L, i) || lua_toboolean(L, i))
 
@@ -53,8 +57,8 @@ void LUA_DumpFile(const char *filename);
 #endif
 fixed_t LUA_EvalMath(const char *word);
 void LUA_Step(void);
-void LUA_Archive(UINT8 **p);
-void LUA_UnArchive(UINT8 **p);
+void LUA_Archive(savebuffer_t *save, boolean network);
+void LUA_UnArchive(savebuffer_t *save, boolean network);
 
 int LUA_PushGlobals(lua_State *L, const char *word);
 int LUA_WriteGlobals(lua_State *L, const char *word);
@@ -63,7 +67,7 @@ void Got_Luacmd(UINT8 **cp, INT32 playernum); // lua_consolelib.c
 void LUA_CVarChanged(void *cvar); // lua_consolelib.c
 int Lua_optoption(lua_State *L, int narg,
 	const char *def, const char *const lst[]);
-void LUA_HookNetArchive(lua_CFunction archFunc);
+void LUA_HookNetArchive(lua_CFunction archFunc, savebuffer_t *save);
 
 void LUA_PushTaggableObjectArray
 (		lua_State *L,
@@ -139,5 +143,9 @@ void COM_Lua_f(void);
 
 #define INLEVEL if (! ISINLEVEL)\
 return luaL_error(L, "This can only be used in a level!");
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif/*LUA_SCRIPT_H*/

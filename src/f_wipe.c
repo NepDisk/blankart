@@ -98,7 +98,6 @@ INT32 lastwipetic = 0;
 static UINT8 *wipe_scr_start; //screen 3
 static UINT8 *wipe_scr_end; //screen 4
 static UINT8 *wipe_scr; //screen 0 (main drawing)
-static UINT8 pallen;
 static fixed_t paldiv;
 
 /** Create fademask_t from lump
@@ -344,51 +343,6 @@ void F_WipeEndScreen(void)
 #endif
 }
 
-/**	Wiggle post processor for encore wipes
-  */
-static void F_DoEncoreWiggle(UINT8 time)
-{
-	UINT8 *tmpscr = wipe_scr_start;
-	UINT8 *srcscr = wipe_scr;
-	angle_t disStart = (time * 128) & FINEMASK;
-	INT32 y, sine, newpix, scanline;
-
-	for (y = 0; y < vid.height; y++)
-	{
-		sine = (FINESINE(disStart) * (time*12))>>FRACBITS;
-		scanline = y / vid.dupy;
-		if (scanline & 1)
-			sine = -sine;
-		newpix = abs(sine);
-
-		if (sine < 0)
-		{
-			M_Memcpy(&tmpscr[(y*vid.width)+newpix], &srcscr[(y*vid.width)], vid.width-newpix);
-
-			// Cleanup edge
-			while (newpix)
-			{
-				tmpscr[(y*vid.width)+newpix] = srcscr[(y*vid.width)];
-				newpix--;
-			}
-		}
-		else
-		{
-			M_Memcpy(&tmpscr[(y*vid.width)], &srcscr[(y*vid.width) + sine], vid.width-newpix);
-
-			// Cleanup edge
-			while (newpix)
-			{
-				tmpscr[(y*vid.width) + vid.width - newpix] = srcscr[(y*vid.width) + (vid.width-1)];
-				newpix--;
-			}
-		}
-
-		disStart += (time*8); //the offset into the displacement map, increment each game loop
-		disStart &= FINEMASK; //clip it to FINEMASK
-	}
-}
-
 /** Draw the stage title.
   */
 void F_WipeStageTitle(void)
@@ -448,7 +402,7 @@ void F_RunWipe(UINT8 wipetype, boolean drawMenu)
 		I_OsPolling();
 		I_UpdateNoBlit();
 
-		if (rendermode != render_none && drawMenu)
+		if (drawMenu && rendermode != render_none)
 		{
 #ifdef HAVE_THREADS
 			I_lock_mutex(&m_menu_mutex);

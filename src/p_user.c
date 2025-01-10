@@ -1286,7 +1286,9 @@ void P_DoPlayerExit(player_t *player)
 				P_EndingMusic(player);
 
 			if (P_CheckRacers() && !exitcountdown)
-				exitcountdown = raceexittime+1;
+			{
+				G_BeginLevelExit();
+			}
 		}
 		else if ((gametyperules & GTR_BUMPERS)) // Battle Mode exiting
 		{
@@ -1297,7 +1299,7 @@ void P_DoPlayerExit(player_t *player)
 		else // Accidental death safeguard???
 		{
 			if (!exitcountdown)
-				exitcountdown = raceexittime+2;
+				G_BeginLevelExit();
 		}
 
 		if (grandprixinfo.gp == true)
@@ -1422,8 +1424,9 @@ boolean P_InQuicksand(mobj_t *mo) // Returns true if you are in quicksand
 static boolean P_PlayerCanBust(player_t *player, ffloor_t *rover)
 {
 	// TODO: Make these act like the Lua SA2 boxes.
-	(void)player;
+	// (void)player;
 	(void)rover;
+	(void)player;
 
 	if (!(rover->fofflags & FOF_EXISTS))
 		return false;
@@ -1445,11 +1448,6 @@ static void P_CheckBustableBlocks(player_t *player)
 
 	oldx = player->mo->x;
 	oldy = player->mo->y;
-
-	P_UnsetThingPosition(player->mo);
-	player->mo->x += player->mo->momx;
-	player->mo->y += player->mo->momy;
-	P_SetThingPosition(player->mo);
 
 	for (node = player->mo->touching_sectorlist; node; node = node->m_sectorlist_next)
 	{
@@ -1522,7 +1520,7 @@ static void P_CheckBustableBlocks(player_t *player)
 			//if (metalrecording)
 			//	G_RecordBustup(rover);
 
-			EV_CrumbleChain(NULL, rover); // node->m_sector
+			EV_CrumbleChain(node->m_sector, rover); // node->m_sector
 
 			// Run a linedef executor??
 			if (rover->bustflags & FB_EXECUTOR)
@@ -1531,7 +1529,6 @@ static void P_CheckBustableBlocks(player_t *player)
 			goto bustupdone;
 		}
 	}
-
 bustupdone:
 	P_UnsetThingPosition(player->mo);
 	player->mo->x = oldx;
@@ -1986,11 +1983,10 @@ static void P_UpdatePlayerAngle(player_t *player)
 {
 	INT16 angle_diff, max_left_turn, max_right_turn;
 	boolean add_delta = true;
-	fixed_t currentSpeed = 0;
 	ticcmd_t *cmd = &player->cmd;
 	angle_t anglechange = player->angleturn;
 	int i;
-	UINT8 p = UINT8_MAX;
+	//UINT8 p = UINT8_MAX;
 
 	// Kart: store the current turn range for later use
 	if (((player->mo && player->speed > 0) // Moving
@@ -2447,9 +2443,6 @@ static void P_DoZoomTube(player_t *player)
 		player->mo->angle = R_PointToAngle2(player->mo->x, player->mo->y, player->mo->tracer->x, player->mo->tracer->y);
 		P_SetPlayerAngle(player, player->mo->angle);
 	}
-
-	P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
-	player->drawangle -= ANGLE_22h;
 }
 
 #if 0
@@ -2796,7 +2789,7 @@ static ticcmd_t *P_CameraCmd(camera_t *cam)
 		turnright = turnright || (axis > 0);
 		turnleft = turnleft || (axis < 0);
 	}
-	forward = 0;
+	forward = side = 0;
 
 	cmd->turning = 0;
 
@@ -3733,6 +3726,7 @@ boolean P_SpectatorJoinGame(player_t *player)
 	player->spectatewait = 0;
 	player->ctfteam = changeto;
 	player->playerstate = PST_REBORN;
+	player->enteredGame = true;
 
 	// Reset away view (some code referenced from Got_Teamchange)
 	{
@@ -3920,7 +3914,7 @@ void P_DoTimeOver(player_t *player)
 	P_EndingMusic(player);
 
 	if (!exitcountdown)
-		exitcountdown = 5*TICRATE;
+		G_BeginLevelExit();
 }
 
 // SRB2Kart: These are useful functions, but we aren't using them yet.

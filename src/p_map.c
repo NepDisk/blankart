@@ -438,7 +438,7 @@ static void P_DoFanAndGasJet(mobj_t *spring, mobj_t *object)
 			if (spring->state != &states[S_STEAM1]) // Only when it bursts
 				break;
 
-			if (spring->spawnpoint && spring->spawnpoint->args[1])
+			if (spring->args[1])
 			{
 				if (object->eflags & MFE_SPRUNG)
 					break;
@@ -3648,7 +3648,7 @@ void P_BounceMove(mobj_t *mo, TryMoveResult_t *result)
 		tmxmove = FixedMul(mmomx, (FRACUNIT - (FRACUNIT>>6) - (FRACUNIT>>5)));
 		tmymove = FixedMul(mmomy, (FRACUNIT - (FRACUNIT>>6) - (FRACUNIT>>5)));
 	}
-	else if (mo->type == MT_THROWNGRENADE)
+	else if (mo->type == MT_THROWNGRENADE || mo->type == MT_CYBRAKDEMON_NAPALM_BOMB_LARGE)
 	{
 		// Quickly decay speed as it bounces
 		tmxmove = FixedDiv(mmomx, 2*FRACUNIT);

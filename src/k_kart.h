@@ -10,6 +10,10 @@
 #include "d_player.h" // Need for player_t
 #include "command.h" // Need for player_t
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define KART_FULLTURN 800
 
 /*
@@ -107,6 +111,7 @@ fixed_t K_PlayerTripwireSpeedThreshold(player_t *player);
 tripwirepass_t K_TripwirePassConditions(player_t *player);
 boolean K_TripwirePass(player_t *player);
 boolean K_WaterRun(player_t *player);
+void K_SetTireGrease(player_t *player, tic_t tics);
 void K_SquishPlayer(player_t *player, mobj_t *inflictor, mobj_t *source);
 void K_ApplyTripWire(player_t *player, tripwirestate_t state);
 fixed_t K_GetKartSpeedFromStat(UINT8 kartspeed);
@@ -122,7 +127,7 @@ fixed_t K_GetNewSpeed(player_t *player);
 fixed_t K_3dKartMovement(player_t *player);
 SINT8 K_Sliptiding(player_t *player);
 void K_MoveKartPlayer(player_t *player, boolean onground);
-void K_CheckSpectateStatus(void);
+void K_CheckSpectateStatus(boolean considermapreset);
 UINT8 K_GetInvincibilityItemFrame(void);
 UINT8 K_GetOrbinautItemFrame(UINT8 count);
 boolean K_IsSPBInGame(void);
@@ -138,6 +143,10 @@ void K_PlayPowerGloatSound(mobj_t *source);
 
 void K_SetItemOut(player_t *player);
 void K_UnsetItemOut(player_t *player);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 // =========================================================================
 #endif  // __K_KART__

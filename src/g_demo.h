@@ -18,6 +18,10 @@
 #include "doomstat.h"
 #include "d_event.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern UINT8 *demo_p;
 
 // ======================================
@@ -66,7 +70,7 @@ typedef enum {
 	MD_INVALID
 } menudemotype_e;
 
-typedef struct menudemo_s {
+struct menudemo_t {
 	char filepath[256];
 	menudemotype_e type;
 
@@ -83,7 +87,7 @@ typedef struct menudemo_s {
 		UINT8 skin, color;
 		UINT32 timeorscore;
 	} standings[MAXPLAYERS];
-} menudemo_t;
+};
 
 
 extern mobj_t *metalplayback;
@@ -150,14 +154,14 @@ void G_LoadMetal(UINT8 **buffer);
 
 // Your naming conventions are stupid and useless.
 // There is no conflict here.
-typedef struct demoghost {
+struct demoghost {
 	UINT8 checksum[16];
 	UINT8 *buffer, *p, color;
 	UINT8 fadein;
 	UINT16 version;
 	mobj_t oldmo, *mo;
 	struct demoghost *next;
-} demoghost;
+};
 extern demoghost *ghosts;
 
 // G_CheckDemoExtraFiles: checks if our loaded WAD list matches the demo's.
@@ -188,5 +192,9 @@ void G_DeferedPlayDemo(const char *demo);
 void G_SaveDemo(void);
 
 boolean G_DemoTitleResponder(event_t *ev);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // __G_DEMO__

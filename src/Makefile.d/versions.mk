@@ -22,7 +22,8 @@ ifndef GCC295
 #WFLAGS+=-Wno-packed
 endif
 ifndef RELAXWARNINGS
- WFLAGS+=-W -pedantic
+ WFLAGS+=-W
+#WFLAGS+=-Wpedantic
 #WFLAGS+=-Wno-sign-compare
 ifndef GCC295
  WFLAGS+=-Wno-div-by-zero
@@ -67,7 +68,7 @@ endif
 ifdef GCC45
  WFLAGS+=-Wlogical-op
 endif
- WFLAGS+=-Waggregate-return
+ #WFLAGS+=-Waggregate-return
 ifdef HAIKU
 ifdef GCC41
  #WFLAGS+=-Wno-attributes

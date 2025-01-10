@@ -13,11 +13,13 @@
 #ifndef __FONT_H__
 #define __FONT_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_FONTS 32
 
-typedef struct font font_t;
-
-struct font
+struct font_t
 {
 	patch_t **font;
 
@@ -45,5 +47,9 @@ int Font_Register     (const font_t *);
 Register a new font, but do not load it yet.
 */
 int Font_DumbRegister (const font_t *);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

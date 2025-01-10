@@ -477,7 +477,7 @@ static void HWR_GenerateTexture(GLMapTexture_t *grtex, INT32 texnum, boolean noe
 	grtex->mipmap.height = (UINT16)texture->height;
 	grtex->mipmap.format = textureformat;
 
-	if (encoremap && R_TextureCanRemap(texnum))
+	if (!noencoremap && encoremap)
 		colormap += COLORMAP_REMAPOFFSET;
 
 	grtex->mipmap.colormap = Z_Calloc(sizeof(*grtex->mipmap.colormap), PU_HWRPATCHCOLMIPMAP, NULL);

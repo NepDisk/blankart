@@ -26,7 +26,7 @@ function(git_current_branch variable)
 
 	# If a detached head, a ref could still be resolved.
 	if("${output}" STREQUAL "")
-		_git_command(describe --all --exact-match --exclude */HEAD)
+		_git_command(describe --all --exact-match)
 
 		# Get the ref, in the form heads/master or
 		# remotes/origin/master so isolate the final part.
@@ -51,7 +51,7 @@ function(git_working_tree_dirty variable)
 endfunction()
 
 function(git_subject variable)
-	_git_easy_command(log -1 --format=%s)
+	_git_easy_command(log -1 "--format=%h %s")
 endfunction()
 
 function(get_git_dir variable)

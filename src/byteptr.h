@@ -11,8 +11,14 @@
 /// \brief Macros to read/write from/to a UINT8 *,
 ///        used for packet creation and such
 
+#ifndef __BYTEPTR_H__
+#define __BYTEPTR_H__
 
 #include "endian.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef SRB2_BIG_ENDIAN
 //
@@ -121,7 +127,7 @@ FUNCINLINE static ATTRINLINE UINT32 readulong(void *ptr)
 #define READANGLE(p)        readulong(&((angle_t*)(p = (void*)&((angle_t*)p)[1]))[-1])
 #endif //SRB2_BIG_ENDIAN
 
-#define WRITESTRINGN(p, s, n) {                            \
+#define WRITESTRINGN(p, s, n) do {                          \
 	size_t tmp_i;                                           \
                                                             \
 	for (tmp_i = 0; tmp_i < n && s[tmp_i] != '\0'; tmp_i++) \
@@ -196,3 +202,9 @@ FUNCINLINE static ATTRINLINE UINT32 readulong(void *ptr)
 	memcpy(s, p, n);          \
 	p += n;                   \
 } while (0)
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#endif // __BYTEPTR_H__

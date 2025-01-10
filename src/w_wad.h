@@ -18,6 +18,10 @@
 #include "hardware/hw_data.h"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef __GNUG__
 #pragma interface
 #endif
@@ -27,12 +31,12 @@
 #if defined(_MSC_VER)
 #pragma pack(1)
 #endif
-typedef struct
+struct filelump_t
 {
 	UINT32 filepos; // file offset of the resource
 	UINT32 size; // size of the resource
 	char name[8]; // name of the resource
-} ATTRPACK filelump_t;
+} ATTRPACK;
 #if defined(_MSC_VER)
 #pragma pack()
 #endif
@@ -43,12 +47,12 @@ typedef struct
 // ==============================================================
 
 // header of a wad file
-typedef struct
+struct wadinfo_t
 {
 	char identification[4]; // should be "IWAD" or "PWAD"
 	UINT32 numlumps; // how many resources
 	UINT32 infotableofs; // the 'directory' of resources
-} wadinfo_t;
+};
 
 // Available compression methods for lumps.
 typedef enum
@@ -62,7 +66,7 @@ typedef enum
 } compmethod;
 
 //  a memory entry of the wad directory
-typedef struct
+struct lumpinfo_t
 {
 	unsigned long position; // filelump_t filepos
 	unsigned long disksize; // filelump_t size
@@ -72,22 +76,22 @@ typedef struct
 	char *fullname;         //                   e.g. "Folder/Subfolder/LongEntryName.extension"
 	size_t size;            // real (uncompressed) size
 	compmethod compression; // lump compression method
-} lumpinfo_t;
+};
 
 // =========================================================================
 //                         'VIRTUAL' RESOURCES
 // =========================================================================
 
-typedef struct {
+struct virtlump_t {
 	char name[9];
 	UINT8* data;
 	size_t size;
-} virtlump_t;
+};
 
-typedef struct {
+struct virtres_t {
 	size_t numlumps;
 	virtlump_t* vlumps;
-} virtres_t;
+};
 
 virtres_t* vres_GetMap(lumpnum_t);
 void vres_Free(virtres_t*);
@@ -114,7 +118,7 @@ typedef enum restype
 	RET_UNKNOWN,
 } restype_t;
 
-typedef struct wadfile_s
+struct wadfile_t
 {
 	char *filename;
 	restype_t type;
@@ -127,7 +131,7 @@ typedef struct wadfile_s
 	UINT8 md5sum[16];
 
 	boolean important; // also network - !W_VerifyNMUSlumps
-} wadfile_t;
+};
 
 #define WADFILENUM(lumpnum) (UINT16)((lumpnum)>>16) // wad flumpnum>>16) // wad file number in upper word
 #define LUMPNUM(lumpnum) (UINT16)((lumpnum)&0xFFFF) // lump number for this pwad
@@ -170,6 +174,7 @@ lumpnum_t W_CheckNumForLongName(const char *name);
 lumpnum_t W_GetNumForName(const char *name); // like W_CheckNumForName but I_Error on LUMPERROR
 lumpnum_t W_GetNumForLongName(const char *name);
 lumpnum_t W_CheckNumForNameInBlock(const char *name, const char *blockstart, const char *blockend);
+lumpnum_t W_CheckNumForNameInFolder(const char *lump, const char *folder);
 UINT8 W_LumpExists(const char *name); // Lua uses this.
 
 size_t W_LumpLengthPwad(UINT16 wad, UINT16 lump);
@@ -213,5 +218,9 @@ void W_UnlockCachedPatch(void *patch);
 void W_VerifyFileMD5(UINT16 wadfilenum, const char *matchmd5);
 
 int W_VerifyNMUSlumps(const char *filename, boolean exit_on_error);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // __W_WAD__

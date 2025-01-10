@@ -11,6 +11,7 @@
 
 #include "doomdef.h"
 #include "d_player.h"
+#include "doomstat.h"
 #include "k_kart.h"
 #include "p_local.h"
 #include "p_setup.h"
@@ -24,15 +25,11 @@ get_pitch (fixed_t revolution)
 }
 
 static inline fixed_t
-get_shift_curve (const sonicloopvars_t *s)
+normal_revolution (const sonicloopvars_t *s)
 {
-	const angle_t th = get_pitch(FixedDiv(
-				s->revolution - s->min_revolution,
-				s->max_revolution - s->min_revolution));
-
-	// XY shift is transformed on wave scale; less movement
-	// at start and end of rotation, more halfway.
-	return FSIN((th / 2) - ANGLE_90);
+	return FixedDiv(
+			s->revolution - s->min_revolution,
+			s->max_revolution - s->min_revolution);
 }
 
 void P_HaltPlayerOrbit(player_t *player)
@@ -88,6 +85,10 @@ void P_ExitPlayerOrbit(player_t *player)
 				pitch + ANGLE_180, s->yaw);
 	}
 
+	// tiregrease gives less friction, extends momentum
+	K_SetTireGrease(player, TICRATE*2);
+	player->outruntime = TICRATE*2;
+	
 	P_HaltPlayerOrbit(player);
 }
 
@@ -96,8 +97,9 @@ boolean P_PlayerOrbit(player_t *player)
 	sonicloopvars_t *s = &player->loop;
 
 	angle_t pitch;
+	angle_t pitch_normal;
 
-	fixed_t xy, z;
+	fixed_t r, xy, z;
 	fixed_t xs, ys;
 
 	fixed_t step, th, left;
@@ -123,14 +125,28 @@ boolean P_PlayerOrbit(player_t *player)
 	}
 
 	pitch = get_pitch(s->revolution);
+	pitch_normal = get_pitch(normal_revolution(s) / 2);
 
-	xy = FixedMul(abs(s->radius), FSIN(pitch));
-	z = FixedMul(abs(s->radius), -(FCOS(pitch)));
+	r = abs(s->radius) -
+		FixedMul(player->mo->radius, abs(FSIN(pitch)));
 
-	th = get_shift_curve(s);
+	xy = FixedMul(r, FSIN(pitch));
+
+	z = FixedMul(abs(s->radius), -(FCOS(pitch))) -
+		FixedMul(player->mo->height, FSIN(pitch / 2));
+
+	// XY shift is transformed on wave scale; less movement
+	// at start and end of rotation, more halfway.
+	th = FSIN(pitch_normal - ANGLE_90);
 
 	xs = FixedMul(s->shift.x, th);
 	ys = FixedMul(s->shift.y, th);
+
+	// Interpolate 0-1 over entire rotation.
+	th = FSIN(pitch_normal / 2);
+
+	xs += FixedMul(s->origin_shift.x, th);
+	ys += FixedMul(s->origin_shift.y, th);
 
 	xs += FixedMul(xy, FCOS(s->yaw));
 	ys += FixedMul(xy, FSIN(s->yaw));
@@ -151,18 +167,27 @@ boolean P_PlayerOrbit(player_t *player)
 
 	left = (s->max_revolution - s->revolution);
 
-	if (abs(left) < abs(step))
+	if (left == 0)
 	{
 		P_ExitPlayerOrbit(player);
 
 		return false;
 	}
 
-	// If player slows down by too much, throw them out of
-	// the loop
+	if (abs(left) < abs(step))
+	{
+		step = left;
+	}
+
+	// If player slows down by too much, throw them
+	// out of the loop and reset them.
+	// (markedfordeath will kill the player on their
+	// first ground contact!)
 	if (player->speed < player->mo->scale)
 	{
 		P_HaltPlayerOrbit(player);
+		K_PlayPainSound(player->mo, NULL);
+		K_SpinPlayer(player, NULL, NULL, KSPIN_SPINOUT);
 
 		return false;
 	}

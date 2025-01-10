@@ -22,6 +22,10 @@
 // SRB2Kart
 #include "r_skins.h" // NUMFACES
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //
 // STATUS BAR
 //
@@ -88,5 +92,9 @@ extern UINT16 objectsdrawn;
 // variable to stop mayonaka static from flickering
 extern consvar_t cv_lessflicker;
 extern consvar_t cv_stagetitle;
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

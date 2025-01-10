@@ -74,6 +74,8 @@
 #include "k_grandprix.h"
 #include "k_boss.h"
 #include "doomstat.h"
+#include "m_random.h" // P_ClearRandom
+#include "acs/interface.h"
 
 #ifdef CMAKECONFIG
 #include "config.h"
@@ -145,6 +147,7 @@ char srb2path[256] = ".";
 boolean usehome = true;
 const char *pandf = "%s" PATHSEP "%s";
 static char addonsdir[MAX_WADPATH];
+char downloaddir[sizeof addonsdir + sizeof DOWNLOADDIR_PART] = "DOWNLOAD";
 
 //
 // EVENT HANDLING
@@ -1202,7 +1205,7 @@ void D_SRB2Main(void)
 
 	INT32 p;
 
-	INT32 pstartmap = 1;
+	INT32 pstartmap = 0;
 	boolean autostart = false;
 
 	/* break the version string into version numbers, for netplay */
@@ -1346,7 +1349,7 @@ void D_SRB2Main(void)
 
 	/* and downloads in a subdirectory */
 	snprintf(downloaddir, sizeof downloaddir, "%s%s%s",
-			addonsdir, PATHSEP, "downloads");
+			addonsdir, PATHSEP, DOWNLOADDIR_PART);
 
 	// rand() needs seeded regardless of password
 	srand((unsigned int)time(NULL));
@@ -1662,6 +1665,10 @@ void D_SRB2Main(void)
 	ST_Init();
 	CON_SetLoadingProgress(LOADED_STINIT);
 
+	CONS_Printf("ACS_Init(): Init Action Code Script VM.\n");
+	ACS_Init();
+	CON_SetLoadingProgress(LOADED_ACSINIT);
+
 	//------------------------------------------------ COMMAND LINE PARAMS
 
 	// this must be done after loading gamedata,
@@ -1912,14 +1919,6 @@ void D_SRB2Main(void)
 		F_StartIntro(); // Tails 03-03-2002
 
 	CON_ToggleOff();
-
-	if (dedicated && server)
-	{
-		levelstarttic = gametic;
-		G_SetGamestate(GS_LEVEL);
-		if (!P_LoadLevel(false, false))
-			I_Quit(); // fail so reset game stuff
-	}
 
 #ifdef HAVE_DISCORDRPC
 	if (! dedicated)

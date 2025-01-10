@@ -19,6 +19,10 @@
 #include "r_defs.h"
 #include "k_terrain.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // map md5, sent to players via PT_SERVERINFO
 extern unsigned char mapmd5[16];
 
@@ -45,7 +49,7 @@ enum
 //
 // MAP used flats lookup table
 //
-typedef struct
+struct levelflat_t
 {
 	char name[9]; // resource name from wad
 
@@ -85,7 +89,7 @@ typedef struct
 	void *mipmap;
 	void *mippic;
 #endif
-} levelflat_t;
+};
 
 extern size_t numlevelflats;
 extern levelflat_t *levelflats;
@@ -102,6 +106,7 @@ void P_ScanThings(INT16 mapnum, INT16 wadnum, INT16 lumpnum);
 #endif
 void P_RespawnThings(void);
 boolean P_LoadLevel(boolean fromnetsave, boolean reloadinggamestate);
+void P_PostLoadLevel(void);
 #ifdef HWRENDER
 void HWR_LoadLevel(void);
 #endif
@@ -148,5 +153,9 @@ void P_AddGradesForMare(INT16 i, UINT8 mare, char *gtext);
 UINT8 P_GetGrade(UINT32 pscore, INT16 map, UINT8 mare);
 UINT8 P_HasGrades(INT16 map, UINT8 mare);
 UINT32 P_GetScoreForGrade(INT16 map, UINT8 mare, UINT8 grade);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

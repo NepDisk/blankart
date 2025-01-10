@@ -20,6 +20,10 @@
 #include "g_demo.h"
 #include "m_cheat.h" // objectplacing
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char gamedatafilename[64];
 extern char timeattackfolder[64];
 extern char customversionstring[32];
@@ -142,7 +146,7 @@ struct searchdim
 	UINT8 siz;
 };
 
-typedef struct
+struct mapsearchfreq_t
 {
 	INT16  mapnum;
 	UINT8  matchc;
@@ -150,8 +154,7 @@ typedef struct
 	UINT8  keywhc;
 	struct searchdim *keywhd;/* ...in KEYWORD */
 	UINT8  total;/* total hits */
-}
-mapsearchfreq_t;
+};
 
 INT32 G_FindMap(const char *query, char **foundmapnamep,
 		mapsearchfreq_t **freqp, INT32 *freqc);
@@ -204,7 +207,8 @@ boolean G_GametypeHasTeams(void);
 boolean G_GametypeHasSpectators(void);
 INT16 G_SometimesGetDifferentGametype(void);
 UINT8 G_GetGametypeColor(INT16 gt);
-void G_ExitLevel(void);
+void G_BeginLevelExit(void);
+void G_FinishExitLevel(void);
 void G_NextLevel(void);
 void G_Continue(void);
 void G_UseContinue(void);
@@ -266,5 +270,9 @@ UINT32 G_TOLFlag(INT32 pgametype);
 
 INT16 G_RandMap(UINT32 tolflags, INT16 pprevmap, UINT8 ignorebuffer, UINT8 maphell, boolean callagainsoon, INT16 *extbuffer);
 void G_AddMapToBuffer(INT16 map);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif

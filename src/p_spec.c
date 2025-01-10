@@ -38,7 +38,7 @@
 #include "v_video.h" // V_ALLOWLOWERCASE
 #include "m_misc.h"
 #include "m_cond.h" //unlock triggers
-#include "lua_hook.h" // LUA_HookLinedefExecute
+#include "lua_hook.h" // LUA_HookSpecialExecute
 #include "f_finale.h" // control text prompt
 #include "r_skins.h" // skins
 
@@ -46,6 +46,7 @@
 #include "k_kart.h"
 #include "console.h" // CON_LogMessage
 #include "k_terrain.h"
+#include "acs/interface.h"
 
 #ifdef HW3SOUND
 #include "hardware/hw3sound.h"
@@ -1896,12 +1897,14 @@ static void K_HandleLapIncrement(player_t *player, boolean fromsector)
 		{
 			size_t i = 0;
 			UINT8 nump = 0;
-			UINT8 lowestLap;
+			UINT8 lowestLap = UINT8_MAX;
 
 			for (i = 0; i < MAXPLAYERS; i++)
 			{
 				if (!playeringame[i] || players[i].spectator)
 					continue;
+				if (players[i].laps < lowestLap)
+					lowestLap = players[i].laps;
 				nump++;
 			}
 
@@ -2016,7 +2019,12 @@ static void K_HandleLapIncrement(player_t *player, boolean fromsector)
 				player->grieftime = 0;
 			
 
-				lowestLap = P_FindLowestLap();
+				{
+					//UINT8 prevLowest = lowestLap;
+
+					lowestLap = P_FindLowestLap();
+				}
+
 
 				for (i = 0; i < numlines; i++)
 				{
@@ -2178,7 +2186,6 @@ void P_CrossSpecialLine(line_t *line, INT32 side, mobj_t *thing)
 	activator->line = line;
 	activator->side = side;
 	activator->sector = (side != 0) ? line->backsector : line->frontsector;
-	activator->fromLineSpecial = true;
 
 	result = P_ProcessSpecial(activator, line->special, line->args, line->stringargs);
 	Z_Free(activator);
@@ -2268,7 +2275,6 @@ void P_PushSpecialLine(line_t *line, mobj_t *thing)
 	activator->line = line;
 	activator->side = P_PointOnLineSide(thing->x, thing->y, line);
 	activator->sector = (activator->side != 0) ? line->backsector : line->frontsector;
-	activator->fromLineSpecial = true;
 
 	result = P_ProcessSpecial(activator, line->special, line->args, line->stringargs);
 	Z_Free(activator);
@@ -2277,6 +2283,70 @@ void P_PushSpecialLine(line_t *line, mobj_t *thing)
 	{
 		P_LineSpecialWasActivated(line);
 	}
+}
+
+//
+// P_ActivateThingSpecial - TRIGGER
+// Called when a thing is killed, or upon
+//  any other type-specific conditions
+//
+void P_ActivateThingSpecial(mobj_t *mo, mobj_t *source)
+{
+	mapthing_t *mt = NULL;
+	player_t *player = NULL;
+	activator_t *activator = NULL;
+
+	if (mo == NULL || P_MobjWasRemoved(mo) == true)
+	{
+		// Invalid mobj.
+		return;
+	}
+
+	mt = mo->spawnpoint;
+	if (mt == NULL)
+	{
+		// No mapthing to activate the special of.
+		return;
+	}
+
+	// Is this necessary? Probably not, but I hate
+	// spectators so I will manually ensure they
+	// can't impact the gamestate anyway.
+	player = mo->player;
+	if (player != NULL)
+	{
+		if (player->spectator == true)
+		{
+			// Ignore spectators.
+			return;
+		}
+
+		if (player->pflags & PF_NOCONTEST)
+		{
+			// Ignore NO CONTEST.
+			return;
+		}
+	}
+
+	if (P_CanActivateSpecial(mt->special) == false)
+	{
+		// No special to even activate.
+		return;
+	}
+
+	activator = Z_Calloc(sizeof(activator_t), PU_LEVEL, NULL);
+	I_Assert(activator != NULL);
+
+	if (source != NULL)
+	{
+		P_SetTarget(&activator->mo, source);
+		activator->sector = source->subsector->sector;
+	}
+
+	P_ProcessSpecial(activator, mo->special, mo->script_args, mo->script_stringargs);
+
+	P_SetTarget(&activator->mo, NULL);
+	Z_Free(activator);
 }
 
 /** Gets an object.
@@ -2300,7 +2370,7 @@ static mobj_t *P_GetObjectTypeInSectorNum(mobjtype_t type, size_t s)
 	return NULL;
 }
 
-static mobj_t* P_FindObjectTypeFromTag(mobjtype_t type, mtag_t tag)
+mobj_t* P_FindObjectTypeFromTag(mobjtype_t type, mtag_t tag)
 {
 	if (udmf)
 	{
@@ -2366,7 +2436,6 @@ static void P_ProcessLineSpecial(line_t *line, mobj_t *mo, sector_t *callsec)
 	P_SetTarget(&activator->mo, mo);
 	activator->line = line;
 	activator->sector = callsec;
-	activator->fromLineSpecial = true;
 
 	P_ProcessSpecial(activator, line->special, line->args, line->stringargs);
 	Z_Free(activator);
@@ -2928,7 +2997,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 					mo->player->awayviewtics = args[1];
 				}
 
-				aim = udmf ? altview->spawnpoint->pitch : args[2];
+				aim = (backwardsCompat) ? args[2] : altview->spawnpoint->pitch;
 				aim = (aim + 360) % 360;
 				aim *= (ANGLE_90>>8);
 				aim /= 90;
@@ -3278,7 +3347,10 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 
 		case 443: // Calls a named Lua function
 			if (stringargs[0])
-				LUA_HookLinedefExecute(line, mo, callsec);
+
+			{
+				LUA_HookSpecialExecute(activator, args, stringargs);
+			}
 			else
 				CONS_Alert(CONS_WARNING, "Linedef %s is missing the hook name of the Lua function to call! (This should be given in stringarg0)\n", sizeu1(line-lines));
 			break;
@@ -3848,8 +3920,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			{
 				INT32 failureangle = FixedAngle((min(max(abs(args[1]), 0), 360))*FRACUNIT);
 				INT32 failuredelay = abs(args[2]);
-				INT32 failureexectag = args[3];
-				boolean persist = !!(args[4]);
+				boolean persist = !!(args[3]);
 				mobj_t *anchormo;
 
 				anchormo = P_FindObjectTypeFromTag(MT_ANGLEMAN, args[0]);
@@ -3860,7 +3931,6 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 				P_SetTarget(&mo->tracer, anchormo);
 				mo->lastlook = persist; // don't disable behavior after first failure
 				mo->extravalue1 = failureangle; // angle to exceed for failure state
-				mo->extravalue2 = failureexectag; // exec tag for failure state (angle is not within range)
 				mo->cusval = mo->cvmem = failuredelay; // cusval = tics to allow failure before line trigger; cvmem = decrement timer
 			}
 			break;
@@ -3870,7 +3940,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			{
 				mo->eflags &= ~MFE_TRACERANGLE;
 				P_SetTarget(&mo->tracer, NULL);
-				mo->lastlook = mo->cvmem = mo->cusval = mo->extravalue1 = mo->extravalue2 = 0;
+				mo->lastlook = mo->cvmem = mo->cusval = mo->extravalue1 = 0;
 			}
 			break;
 
@@ -4056,7 +4126,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 
 		case 466: // Set level failure state
 			{
-				if (args[1])
+				if (args[0])
 				{
 					stagefailed = false;
 					CONS_Debug(DBG_GAMELOGIC, "Stage can be completed successfully!\n");
@@ -4111,7 +4181,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			if (!udmf)
 				break;
 
-			if (args[1] < 0 || args[1] >= NUMLINEARGS)
+			if (args[1] < 0 || args[1] >= NUM_SCRIPT_ARGS)
 			{
 				CONS_Debug(DBG_GAMELOGIC, "Linedef type 468: Invalid linedef arg %d\n", args[1]);
 				break;
@@ -4153,7 +4223,48 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 			}
 		}
 		break;
-		
+
+		case 475: // ACS_Execute
+			{
+				if (!stringargs[0])
+				{
+					CONS_Debug(DBG_GAMELOGIC, "Special type 475: No script name given\n");
+					return false;
+				}
+
+				ACS_Execute(stringargs[0], &args[1], NUM_SCRIPT_ARGS - 1, (const char* const*)&stringargs[1], NUM_SCRIPT_STRINGARGS - 1, activator);
+			}
+			break;
+		case 476: // ACS_ExecuteAlways
+			{
+				if (!stringargs[0])
+				{
+					CONS_Debug(DBG_GAMELOGIC, "Special type 475: No script name given\n");
+					return false;
+				}
+
+				ACS_ExecuteAlways(stringargs[0], &args[1], NUM_SCRIPT_ARGS - 1, (const char* const*)&stringargs[1], NUM_SCRIPT_STRINGARGS - 1, activator);
+			}
+			break;
+		case 477: // ACS_Suspend
+			if (!stringargs[0])
+			{
+				CONS_Debug(DBG_GAMELOGIC, "Special type 477: No script name given\n");
+				return false;
+			}
+
+			ACS_Suspend(stringargs[0]);
+			break;
+		case 478: // ACS_Terminate
+			if (!stringargs[0])
+			{
+				CONS_Debug(DBG_GAMELOGIC, "Special type 478: No script name given\n");
+				return false;
+			}
+
+			ACS_Terminate(stringargs[0]);
+			break;
+
 		case 480: // Polyobj_DoorSlide
 		case 481: // Polyobj_DoorSwing
 			PolyDoor(line);
@@ -4224,6 +4335,7 @@ boolean P_ProcessSpecial(activator_t *activator, INT16 special, INT32 *args, cha
 					|| (!(args[0] & TMCFF_FLIP) && (side == 1))) // crossed from behind to infront
 				{
 					K_HandleLapIncrement(mo->player,false);
+					ACS_RunLapScript(mo, line);
 				}
 				else
 				{
@@ -4870,10 +4982,20 @@ static void P_ProcessZoomTube(player_t *player, mtag_t sectag, boolean end)
 	}
 
 	// Grab speed and sequence values
-	speed = abs(lines[lineindex].args[0])<<(FRACBITS-3);
+	if (!udmf)
+	{
+		speed = abs(lines[lineindex].args[0])/8;
+		sequence = abs(lines[lineindex].args[1])>>FRACBITS;
+		
+	}
+	else
+	{
+		speed = abs(lines[lineindex].args[0])<<(FRACBITS-3);
+		sequence = abs(lines[lineindex].args[1]);
+	}
 	if (end)
 		speed *= -1;
-	sequence = abs(lines[lineindex].args[1]);
+	
 
 	if (speed == 0)
 	{
@@ -4899,12 +5021,6 @@ static void P_ProcessZoomTube(player_t *player, mtag_t sectag, boolean end)
 	P_SetTarget(&player->mo->tracer, waypoint);
 	player->carry = CR_ZOOMTUBE;
 	player->speed = speed;
-
-	if (player->mo->state-states != S_KART_SPINOUT)
-	{
-		P_SetPlayerMobjState(player->mo, S_KART_SPINOUT);
-		S_StartSound(player->mo, sfx_spin);
-	}
 }
 
 static boolean P_SectorHasSpecial(sector_t *sec)
@@ -5186,6 +5302,7 @@ static void P_EvaluateOldSectorSpecial(player_t *player, sector_t *sector, secto
 			if ((gametyperules & GTR_CIRCUIT) && (player->exiting == 0) && !(player->pflags & PF_HITFINISHLINE))
 			{
 					K_HandleLapIncrement(player, true);
+					//ACS_RunLapScript(player->mo, line); // Theres no line so what is this supposed to run on.
 					player->pflags |= PF_HITFINISHLINE;
 			}
 			break;
@@ -5460,10 +5577,15 @@ void P_CheckMobjTrigger(mobj_t *mobj, boolean pushable)
 
 static void P_SectorActionWasActivated(sector_t *sec)
 {
-	if ((sec->activation & SECSPAC_REPEATSPECIAL) == 0)
+	if ((sec->activation & SECSPAC_TRIGGERMASK) == SECSPAC_ONCESPECIAL)
 	{
 		sec->action = 0;
 	}
+}
+
+static boolean P_SectorActionIsContinuous(sector_t *sec)
+{
+	return ((sec->activation & SECSPAC_TRIGGERMASK) == SECSPAC_CONTINUOUSSPECIAL);
 }
 
 static boolean P_AllowSpecialEnter(sector_t *sec, mobj_t *thing)
@@ -5523,7 +5645,7 @@ static boolean P_AllowSpecialCeiling(sector_t *sec, mobj_t *thing)
 	return false;
 }
 
-static void P_CheckMobj3DFloorAction(mobj_t *mo, sector_t *sec)
+static void P_CheckMobj3DFloorAction(mobj_t *mo, sector_t *sec, boolean continuous)
 {
 	sector_t *originalsector = mo->subsector->sector;
 	ffloor_t *rover;
@@ -5534,11 +5656,31 @@ static void P_CheckMobj3DFloorAction(mobj_t *mo, sector_t *sec)
 
 	for (rover = sec->ffloors; rover; rover = rover->next)
 	{
+		fixed_t top = INT32_MIN;
+		fixed_t bottom = INT32_MAX;
+		fixed_t mid = 0;
+
 		roversec = rover->master->frontsector;
+
+		if (P_SectorActionIsContinuous(roversec) != continuous)
+		{
+			// Does not match continuous state.
+			continue;
+		}
 
 		if (P_CanActivateSpecial(roversec->action) == false)
 		{
 			// No special to even activate.
+			continue;
+		}
+
+		top = P_GetSpecialTopZ(mo, roversec, roversec);
+		bottom = P_GetSpecialBottomZ(mo, roversec, roversec);
+		mid = bottom + ((top - bottom) / 2);
+
+		if (mo->z > top || mo->z + mo->height < bottom)
+		{
+			// Out of bounds.
 			continue;
 		}
 
@@ -5549,12 +5691,12 @@ static void P_CheckMobj3DFloorAction(mobj_t *mo, sector_t *sec)
 
 			if (P_AllowSpecialFloor(roversec, mo) == true)
 			{
-				floor = (P_GetMobjFeet(mo) == P_GetSpecialTopZ(mo, roversec, roversec));
+				floor = (P_GetMobjFeet(mo) >= mid);
 			}
 
 			if (P_AllowSpecialCeiling(roversec, mo) == true)
 			{
-				ceiling = (P_GetMobjHead(mo) == P_GetSpecialBottomZ(mo, roversec, roversec));
+				ceiling = (P_GetMobjHead(mo) <= mid);
 			}
 
 			if (floor == false && ceiling == false)
@@ -5581,7 +5723,7 @@ static void P_CheckMobj3DFloorAction(mobj_t *mo, sector_t *sec)
 	}
 }
 
-static void P_CheckMobjPolyobjAction(mobj_t *mo)
+static void P_CheckMobjPolyobjAction(mobj_t *mo, boolean continuous)
 {
 	sector_t *originalsector = mo->subsector->sector;
 	polyobj_t *po;
@@ -5596,15 +5738,23 @@ static void P_CheckMobjPolyobjAction(mobj_t *mo)
 	{
 		polysec = po->lines[0]->backsector;
 
-		touching = P_MobjTouchingPolyobj(po, mo);
-		inside = P_MobjInsidePolyobj(po, mo);
-
-		if (!(inside || touching))
+		if (P_SectorActionIsContinuous(polysec) != continuous)
+		{
+			// Does not match continuous state.
 			continue;
+		}
 
 		if (P_CanActivateSpecial(polysec->action) == false)
 		{
 			// No special to even activate.
+			continue;
+		}
+
+		touching = P_MobjTouchingPolyobj(po, mo);
+		inside = P_MobjInsidePolyobj(po, mo);
+
+		if (!(inside || touching))
+		{
 			continue;
 		}
 
@@ -5647,10 +5797,16 @@ static void P_CheckMobjPolyobjAction(mobj_t *mo)
 	}
 }
 
-static void P_CheckMobjSectorAction(mobj_t *mo, sector_t *sec)
+static void P_CheckMobjSectorAction(mobj_t *mo, sector_t *sec, boolean continuous)
 {
 	activator_t *activator = NULL;
 	boolean result = false;
+
+	if (P_SectorActionIsContinuous(sec) != continuous)
+	{
+		// Does not match continuous state.
+		return;
+	}
 
 	if (P_CanActivateSpecial(sec->action) == false)
 	{
@@ -5694,22 +5850,39 @@ static void P_CheckMobjSectorAction(mobj_t *mo, sector_t *sec)
 	}
 }
 
-void P_CheckMobjTouchingSectorActions(mobj_t *mobj)
+void P_CheckMobjTouchingSectorActions(mobj_t *mobj, boolean continuous)
 {
 	sector_t *originalsector;
 
-	if (!mobj->subsector)
+	if (mobj->subsector == NULL)
+	{
 		return;
+	}
 
 	originalsector = mobj->subsector->sector;
 
-	P_CheckMobj3DFloorAction(mobj, originalsector);
+	if (mobj->player != NULL)
+	{
+		if (mobj->player->spectator == true)
+		{
+			// Ignore spectators.
+			return;
+		}
+
+		if (mobj->player->pflags & PF_NOCONTEST)
+		{
+			// Ignore NO CONTEST.
+			return;
+		}
+	}
+
+	P_CheckMobj3DFloorAction(mobj, originalsector, continuous);
 	if TELEPORTED(mobj)	return;
 
-	P_CheckMobjPolyobjAction(mobj);
+	P_CheckMobjPolyobjAction(mobj, continuous);
 	if TELEPORTED(mobj)	return;
 
-	P_CheckMobjSectorAction(mobj, originalsector);
+	P_CheckMobjSectorAction(mobj, originalsector, continuous);
 }
 
 #undef TELEPORTED
@@ -6048,7 +6221,7 @@ static ffloor_t *P_AddFakeFloor(sector_t *sec, sector_t *sec2, line_t *master, I
 static void
 P_RaiseTaggedThingsToFakeFloor (
 		UINT16    type,
-		const taglist_t *tags,
+		mtag_t    tag,
 		sector_t *control
 ){
 	sector_t *target;
@@ -6073,20 +6246,9 @@ P_RaiseTaggedThingsToFakeFloor (
 				continue;
 			}
 
-			if (!udmf)
-			{
-				// We have to convert these here, as mobjs, let alone
-				// sector thing lists, don't exist at the time of the rest
-				// of the binary map conversion.
-				const mtag_t convertTag = mthing->angle;
-
-				Tag_Add(&mthing->tags, convertTag);
-				Taggroup_Add(tags_mapthings, convertTag, (size_t)(mthing - mapthings));
-			}
-
 			if (
 					(type == 0 || mthing->type == type) &&
-					(tags->count == 0 || Tag_Share(&mthing->tags, tags))
+					(tag == 0 || (udmf ? mthing->tid : mthing->angle) == tag)
 			){
 				if (( mo->flags2 & MF2_OBJECTFLIP ))
 				{
@@ -6229,6 +6391,7 @@ static void P_AddRaiseThinker(sector_t *sec, INT16 tag, fixed_t speed, fixed_t c
 
 static void P_AddAirbob(sector_t *sec, INT16 tag, fixed_t dist, boolean raise, boolean spindash, boolean dynamic)
 {
+	(void)spindash;
 	raise_t *airbob;
 
 	airbob = Z_Calloc(sizeof (*airbob), PU_LEVSPEC, NULL);
@@ -6524,7 +6687,7 @@ static boolean P_IsLineDisabled (const line_t * line)
 {
 	if (line->special != 7) // This is a hack. I can at least hope nobody wants to prevent flat alignment in netgames...
 	{
-		const INT16 NETONLY = udmf ? ML_NETONLY : ML_NETONLY_OLD;
+		const UINT32 NETONLY = udmf ? ML_NETONLY : ML_NETONLY_OLD;
 
 		if (netgame)
 		{
@@ -7660,7 +7823,7 @@ void P_SpawnSpecialsThatRequireObjects(boolean fromnetsave)
 				{
 					P_RaiseTaggedThingsToFakeFloor(
 							lines[i].args[0],
-							&lines[i].tags,
+							lines[i].args[1],
 							lines[i].frontsector
 					);
 				}

@@ -545,7 +545,7 @@ static void R_AddLine(seg_t *line)
 #undef SLOPEPARAMS
 
 
-		if (udmf || !udmf && viewsector != backsector && viewsector != frontsector)
+		if (udmf || (!udmf && viewsector != backsector && viewsector != frontsector))
 		{
 			// if both ceilings are skies, consider it always "open"
 			// same for floors
@@ -584,7 +584,7 @@ static void R_AddLine(seg_t *line)
 	}
 	else
 	{
-		if (udmf || !udmf && viewsector != backsector && viewsector != frontsector)
+		if (udmf || (!udmf && viewsector != backsector && viewsector != frontsector))
 		{
 			// if both ceilings are skies, consider it always "open"
 			// same for floors

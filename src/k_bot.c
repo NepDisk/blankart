@@ -32,13 +32,13 @@
 #include "m_easing.h"
 
 /*--------------------------------------------------
-	boolean K_AddBot(UINT8 skin, UINT8 difficulty, UINT8 *p)
+	boolean K_AddBot(UINT8 skin, UINT8 difficulty, botStyle_e style, UINT8 *p)
 
 		See header file for description.
 --------------------------------------------------*/
-boolean K_AddBot(UINT8 skin, UINT8 difficulty, UINT8 *p)
+boolean K_AddBot(UINT8 skin, UINT8 difficulty, botStyle_e style, UINT8 *p)
 {
-	UINT8 buf[3];
+	UINT8 buf[4];
 	UINT8 *buf_p = buf;
 	UINT8 newplayernum = *p;
 
@@ -91,6 +91,7 @@ boolean K_AddBot(UINT8 skin, UINT8 difficulty, UINT8 *p)
 	}
 
 	WRITEUINT8(buf_p, difficulty);
+	WRITEUINT8(buf_p, style);
 
 	SendNetXCmd(XD_ADDBOT, buf, buf_p - buf);
 
@@ -155,6 +156,9 @@ void K_UpdateMatchRaceBots(void)
 
 					// While we're here, we should update bot difficulty to the proper value.
 					players[i].botvars.difficulty = difficulty;
+
+					// Enforce normal style for Match Race
+					players[i].botvars.style = BOT_STYLE_NORMAL;
 				}
 				else
 				{
@@ -226,7 +230,7 @@ void K_UpdateMatchRaceBots(void)
 				}
 			}
 
-			if (!K_AddBot(skin, difficulty, &newplayernum))
+			if (!K_AddBot(skin, difficulty, BOT_STYLE_NORMAL, &newplayernum))
 			{
 				// Not enough player slots to add the bot, break the loop.
 				break;
@@ -241,7 +245,6 @@ void K_UpdateMatchRaceBots(void)
 		UINT8 buf[2];
 
 		i = MAXPLAYERS;
-
 		while (numbots > wantedbots && i > 0)
 		{
 			i--;
@@ -1003,161 +1006,17 @@ static INT32 K_HandleBotTrack(player_t *player, ticcmd_t *cmd, botprediction_t *
 }
 
 /*--------------------------------------------------
-	static INT32 K_HandleBotReverse(player_t *player, ticcmd_t *cmd, botprediction_t *predict)
+	static void K_BuildBotTiccmdNormal(player_t *player, ticcmd_t *cmd)
 
-		Determines inputs for reversing.
-
-	Input Arguments:-
-		player - Player to generate the ticcmd for.
-		cmd - The player's ticcmd to modify.
-		predict - Pointer to the bot's prediction.
-
-	Return:-
-		New value for turn amount.
+		Build ticcmd for bots with a style of BOT_STYLE_NORMAL
 --------------------------------------------------*/
-static INT32 K_HandleBotReverse(player_t *player, ticcmd_t *cmd, botprediction_t *predict, angle_t destangle)
-{
-	// Handle steering towards waypoints!
-	INT32 turnamt = 0;
-	SINT8 turnsign = 0;
-	angle_t moveangle, angle;
-	INT16 anglediff, momdiff;
-
-	if (predict != NULL)
-	{
-		// TODO: Should we reverse through bot controllers?
-		return K_HandleBotTrack(player, cmd, predict, destangle);
-	}
-
-	if (player->nextwaypoint == NULL
-		|| player->nextwaypoint->mobj == NULL
-		|| P_MobjWasRemoved(player->nextwaypoint->mobj))
-	{
-		// No data available...
-		return 0;
-	}
-
-	if ((player->nextwaypoint->prevwaypoints != NULL)
-		&& (player->nextwaypoint->numprevwaypoints > 0U))
-	{
-		size_t i;
-		for (i = 0U; i < player->nextwaypoint->numprevwaypoints; i++)
-		{
-			if (!K_GetWaypointIsEnabled(player->nextwaypoint->prevwaypoints[i]))
-			{
-				continue;
-			}
-
-			destangle = R_PointToAngle2(
-				player->nextwaypoint->prevwaypoints[i]->mobj->x, player->nextwaypoint->prevwaypoints[i]->mobj->y,
-				player->nextwaypoint->mobj->x, player->nextwaypoint->mobj->y
-			);
-
-			break;
-		}
-	}
-
-	// Calculate turn direction first.
-	moveangle = player->mo->angle;
-	angle = (moveangle - destangle);
-
-	if (angle < ANGLE_180)
-	{
-		turnsign = -1; // Turn right
-		anglediff = AngleFixed(angle)>>FRACBITS;
-	}
-	else 
-	{
-		turnsign = 1; // Turn left
-		anglediff = 360-(AngleFixed(angle)>>FRACBITS);
-	}
-
-	anglediff = abs(anglediff);
-	turnamt = KART_FULLTURN * turnsign;
-
-	// Now calculate momentum
-	momdiff = 180;
-	if (player->speed > player->mo->scale)
-	{
-		momdiff = 0;
-		moveangle = K_MomentumAngle(player->mo);
-		angle = (moveangle - destangle);
-
-		if (angle < ANGLE_180)
-		{
-			momdiff = AngleFixed(angle)>>FRACBITS;
-		}
-		else 
-		{
-			momdiff = 360-(AngleFixed(angle)>>FRACBITS);
-		}
-
-		momdiff = abs(momdiff);
-	}
-
-	if (anglediff > 90 || momdiff < 90)
-	{
-		// We're not facing the track,
-		// or we're going too fast.
-		// Let's E-Brake.
-		cmd->forwardmove = 0;
-		cmd->buttons |= BT_ACCELERATE|BT_BRAKE;
-	}
-	else
-	{
-		fixed_t slopeMul = FRACUNIT;
-
-		if (player->mo->standingslope != NULL)
-		{
-			const pslope_t *slope = player->mo->standingslope;
-
-			if (!(slope->flags & SL_NOPHYSICS) && abs(slope->zdelta) >= FRACUNIT/21)
-			{
-				angle_t sangle = player->mo->angle - slope->xydirection;
-
-				if (P_MobjFlip(player->mo) * slope->zdelta < 0)
-					sangle ^= ANGLE_180;
-
-				slopeMul = FRACUNIT - FINECOSINE(sangle >> ANGLETOFINESHIFT);
-			}
-		}
-
-		if (anglediff < 10)
-		{
-			turnamt = 0;
-		}
-	}
-
-	return turnamt;
-}
-
-/*--------------------------------------------------
-	void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
-
-		See header file for description.
---------------------------------------------------*/
-void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
+static void K_BuildBotTiccmdNormal(player_t *player, ticcmd_t *cmd)
 {
 	precise_t t = 0;
 	botprediction_t *predict = NULL;
 	angle_t destangle = 0;
 	INT32 turnamt = 0;
 	const line_t *botController = player->botvars.controller != UINT16_MAX ? &lines[player->botvars.controller] : NULL;
-
-	// Remove any existing controls
-	memset(cmd, 0, sizeof(ticcmd_t));
-
-	if (gamestate != GS_LEVEL || !player->mo || player->spectator)
-	{
-		// Not in the level.
-		return;
-	}
-
-	// Complete override of all ticcmd functionality
-	if (LUA_HookTiccmd(player, cmd, HOOK(BotTiccmd)) == true)
-	{
-		return;
-	}
 
 	if (!(gametyperules & GTR_BOTS) // No bot behaviors
 		|| K_GetNumWaypoints() == 0 // No waypoints
@@ -1297,6 +1156,44 @@ void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
 		}
 
 		Z_Free(predict);
+	}
+}
+
+/*--------------------------------------------------
+	void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
+
+		See header file for description.
+--------------------------------------------------*/
+void K_BuildBotTiccmd(player_t *player, ticcmd_t *cmd)
+{
+	// Remove any existing controls
+	memset(cmd, 0, sizeof(ticcmd_t));
+
+	if (player->mo == NULL
+		|| player->spectator == true)
+	{
+		// Not in the level.
+		return;
+	}
+
+	// Complete override of all ticcmd functionality
+	if (LUA_HookTiccmd(player, cmd, HOOK(BotTiccmd)) == true)
+	{
+		return;
+	}
+
+	switch (player->botvars.style)
+	{
+		case BOT_STYLE_STAY:
+		{
+			// Hey, this one's pretty easy :P
+			break;
+		}
+		default:
+		{
+			K_BuildBotTiccmdNormal(player, cmd);
+			break;
+		}
 	}
 }
 

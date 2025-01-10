@@ -17,15 +17,19 @@
 #include "r_defs.h"
 #include "m_fixed.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //
 // P_MAPUTL
 //
-typedef struct
+struct divline_t
 {
 	fixed_t x, y, dx, dy;
-} divline_t;
+};
 
-typedef struct
+struct intercept_t
 {
 	fixed_t frac; // along trace line
 	boolean isaline;
@@ -34,7 +38,7 @@ typedef struct
 		mobj_t *thing;
 		line_t *line;
 	} d;
-} intercept_t;
+};
 
 typedef boolean (*traverser_t)(intercept_t *in);
 
@@ -46,7 +50,8 @@ void P_ClosestPointOnLine(fixed_t x, fixed_t y, const line_t *line, vertex_t *re
 void P_ClosestPointOnLine3D(const vector3_t *p, const vector3_t *line, vector3_t *result);
 INT32 P_PointOnLineSide(fixed_t x, fixed_t y, const line_t *line);
 void P_MakeDivline(const line_t *li, divline_t *dl);
-typedef struct
+
+struct opening_t
 {
 	fixed_t ceiling, floor, range;
 	fixed_t lowfloor, highceiling;
@@ -56,7 +61,7 @@ typedef struct
 	fixed_t floorstep, floordrop;
 	INT32 ceilingpic, floorpic;
 	UINT8 fofType; // LO_FOF_ types for forcing FOF collide
-} opening_t;
+};
 
 #define LO_FOF_ANY		(0)
 #define LO_FOF_FLOORS	(1)
@@ -93,4 +98,9 @@ extern divline_t g_trace;
 // bbox defined by the radius
 //boolean P_RadiusLinesCheck(fixed_t radius, fixed_t x, fixed_t y,
 //	boolean (*func)(line_t *));
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #endif // __P_MAPUTL__

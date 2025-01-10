@@ -2199,11 +2199,10 @@ void EV_CrumbleChain(sector_t *sec, ffloor_t *rover)
 		}
 	}
 
-#undef controlsec
-
-	// soundorg z height never gets set normally, so MEH.
-	sec->soundorg.z = sec->floorheight;
+	sec->soundorg.z = (controlsec->floorheight + controlsec->ceilingheight)/2;
 	S_StartSound(&sec->soundorg, mobjinfo[type].activesound);
+
+#undef controlsec
 
 	// Find the outermost vertexes in the subsector
 	for (i = 0; i < sec->linecount; i++)
@@ -2243,7 +2242,6 @@ void EV_CrumbleChain(sector_t *sec, ffloor_t *rover)
 			if (R_PointInSubsector(a, b)->sector == sec)
 			{
 				mobj_t *spawned = NULL;
-
 				if (*rover->t_slope)
 					topz = P_GetSlopeZAt(*rover->t_slope, a, b) - (spacing>>1);
 				if (*rover->b_slope)

@@ -13,23 +13,31 @@
 #ifndef M_QUEUE_H
 #define M_QUEUE_H
 
-typedef struct mqueueitem_s
-{
-	struct mqueueitem_s *next;
-} mqueueitem_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef struct mqueue_s
+struct mqueueitem_t
+{
+	mqueueitem_t *next;
+};
+
+struct mqueue_t
 {
 	mqueueitem_t head;
 	mqueueitem_t *tail;
 	mqueueitem_t *rover;
-} mqueue_t;
+};
 
 void M_QueueInit(mqueue_t *queue);
 void M_QueueInsert(mqueueitem_t *item, mqueue_t *queue);
 mqueueitem_t *M_QueueIterator(mqueue_t *queue);
 void M_QueueResetIterator(mqueue_t *queue);
 void M_QueueFree(mqueue_t *queue);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif
 
