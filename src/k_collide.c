@@ -59,7 +59,7 @@ boolean K_OrbinautJawzCollide(mobj_t *t1, mobj_t *t2)
 		if (t2->player->hyudorotimer)
 			return true; // no interaction
 
-		if (t2->player->flamedash && t2->player->itemtype == KITEM_FLAMESHIELD)
+		if (t2->player->flamestore && t2->player->itemtype == KITEM_FLAMESHIELD)
 		{
 			// Melt item
 			S_StartSound(t2, sfx_s3k43);
@@ -153,7 +153,7 @@ boolean K_BananaBallhogCollide(mobj_t *t1, mobj_t *t2)
 		if (t1->type == MT_BANANA && t1->health > 1)
 			S_StartSound(t2, sfx_bsnipe);
 
-		if (t2->player->flamedash && t2->player->itemtype == KITEM_FLAMESHIELD)
+		if (t2->player->flamestore && t2->player->itemtype == KITEM_FLAMESHIELD)
 		{
 			// Melt item
 			S_StartSound(t2, sfx_s3k43);
@@ -243,7 +243,7 @@ boolean K_EggItemCollide(mobj_t *t1, mobj_t *t2)
 			t2->player->roulettetype = 2;
 		}
 
-		if (t2->player->flamedash && t2->player->itemtype == KITEM_FLAMESHIELD)
+		if (t2->player->flamestore && t2->player->itemtype == KITEM_FLAMESHIELD)
 		{
 			// Melt item
 			S_StartSound(t2, sfx_s3k43);
@@ -459,7 +459,7 @@ boolean K_LandMineCollide(mobj_t *t1, mobj_t *t2)
 		if (t1->health > 1)
 			S_StartSound(t2, sfx_bsnipe);
 
-		if (t2->player->flamedash && t2->player->itemtype == KITEM_FLAMESHIELD)
+		if (t2->player->flamestore && t2->player->itemtype == KITEM_FLAMESHIELD)
 		{
 			// Melt item
 			S_StartSound(t2, sfx_s3k43);
@@ -828,8 +828,8 @@ boolean K_SMKIceBlockCollide(mobj_t *t1, mobj_t *t2)
 
 boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 {
-	const boolean flameT1 = (t1->player->flamedash > 0 && t1->player->itemtype == KITEM_FLAMESHIELD);
-	const boolean flameT2 = (t2->player->flamedash > 0 && t2->player->itemtype == KITEM_FLAMESHIELD);
+	const boolean flameT1 = (t1->player->flamestore > 0 && t1->player->itemtype == KITEM_FLAMESHIELD);
+	const boolean flameT2 = (t2->player->flamestore > 0 && t2->player->itemtype == KITEM_FLAMESHIELD);
 
 	boolean t1Condition = false;
 	boolean t2Condition = false;
@@ -912,8 +912,8 @@ boolean K_PvPTouchDamage(mobj_t *t1, mobj_t *t2)
 
 	if (!ringsdisabled) // Ring sting, this is a bit more unique
 	{
-		t1Condition = (K_GetShieldFromItem(t2->player->itemtype) == KSHIELD_NONE);
-		t2Condition = (K_GetShieldFromItem(t1->player->itemtype) == KSHIELD_NONE);
+		t1Condition = (K_GetShieldFromPlayer(t2->player) == KSHIELD_NONE);
+		t2Condition = (K_GetShieldFromPlayer(t1->player) == KSHIELD_NONE);
 
 		if (t1Condition == true)
 		{

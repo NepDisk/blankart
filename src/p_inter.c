@@ -131,7 +131,8 @@ boolean P_CanPickupItem(player_t *player, UINT8 weapon)
 				|| player->squishedtimer > 0
 				|| player->invincibilitytimer > 0
 				|| player->growshrinktimer > 0
-				|| player->hyudorotimer > 0)
+				|| player->hyudorotimer > 0
+				|| player->flametimer > 0)
 				return false;
 
 			// Already have fake
@@ -145,7 +146,8 @@ boolean P_CanPickupItem(player_t *player, UINT8 weapon)
 			if (player->stealingtimer || player->stolentimer
 				|| player->rocketsneakertimer
 				|| player->eggmanexplode
-				|| (player->growshrinktimer > 0))
+				|| (player->growshrinktimer > 0)
+				|| player->flametimer)
 				return false;
 
 			// Item slot already taken up
@@ -154,7 +156,7 @@ boolean P_CanPickupItem(player_t *player, UINT8 weapon)
 				|| (player->pflags & PF_ITEMOUT))
 				return false;
 
-			if (weapon == 3 && K_GetShieldFromItem(player->itemtype) != KSHIELD_NONE)
+			if (weapon == 3 && K_GetShieldFromPlayer(player) != KSHIELD_NONE)
 				return false; // No stacking shields!
 		}
 	}
@@ -422,7 +424,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher, boolean heightcheck)
 			// kill
 			if (player->invincibilitytimer > 0
 				|| player->growshrinktimer > 0
-				|| player->flamedash > 0)
+				|| player->flamestore > 0)
 			{
 				P_KillMobj(special, toucher, toucher, DMG_NORMAL);
 				return;
@@ -1455,7 +1457,7 @@ void P_KillMobj(mobj_t *target, mobj_t *inflictor, mobj_t *source, UINT8 damaget
 				else
 				{
 					player->itemtype = target->threshold;
-					if (K_GetShieldFromItem(player->itemtype) != KSHIELD_NONE) // never give more than 1 shield
+					if (K_GetShieldFromPlayer(player) != KSHIELD_NONE) // never give more than 1 shield
 						player->itemamount = 1;
 					else
 						player->itemamount = max(1, target->movecount);
@@ -2263,7 +2265,7 @@ void P_PlayerRingBurst(player_t *player, INT32 num_rings)
 		return;
 
 	// Have a shield? You get hit, but don't lose your rings!
-	if (K_GetShieldFromItem(player->itemtype) != KSHIELD_NONE)
+	if (K_GetShieldFromPlayer(player) != KSHIELD_NONE)
 		return;
 
 	// 20 is the maximum number of rings that can be taken from you at once - half the span of your counter

@@ -318,10 +318,10 @@ static int player_get(lua_State *L)
 		lua_pushinteger(L, plr->bubbleblowup);
 	else if (fastcmp(field,"flamedash"))
 		lua_pushinteger(L, plr->flamedash);
-	else if (fastcmp(field,"flamemeter"))
-		lua_pushinteger(L, plr->flamemeter);
-	else if (fastcmp(field,"flamelength"))
-		lua_pushinteger(L, plr->flamelength);
+	else if (fastcmp(field,"flametimer"))
+		lua_pushinteger(L, plr->flametimer);
+	else if (fastcmp(field,"flamestore"))
+		lua_pushinteger(L, plr->flamestore);
 	else if (fastcmp(field,"hyudorotimer"))
 		lua_pushinteger(L, plr->hyudorotimer);
 	else if (fastcmp(field,"stealingtimer"))
@@ -682,10 +682,10 @@ static int player_set(lua_State *L)
 		plr->bubbleblowup = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"flamedash"))
 		plr->flamedash = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"flamemeter"))
-		plr->flamemeter = luaL_checkinteger(L, 3);
-	else if (fastcmp(field,"flamelength"))
-		plr->flamelength = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"flametimer"))
+		plr->flametimer = luaL_checkinteger(L, 3);
+	else if (fastcmp(field,"flamestore"))
+		plr->flamestore = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"hyudorotimer"))
 		plr->hyudorotimer = luaL_checkinteger(L, 3);
 	else if (fastcmp(field,"stealingtimer"))

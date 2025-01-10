@@ -300,8 +300,8 @@ static void P_NetArchivePlayers(void)
 		WRITEUINT8(save_p, players[i].bubblecool);
 		WRITEUINT8(save_p, players[i].bubbleblowup);
 		WRITEUINT16(save_p, players[i].flamedash);
-		WRITEUINT16(save_p, players[i].flamemeter);
-		WRITEUINT8(save_p, players[i].flamelength);
+		WRITEINT32(save_p, players[i].flametimer);
+		WRITEUINT8(save_p, players[i].flamestore);
 
 		WRITEUINT16(save_p, players[i].hyudorotimer);
 		WRITESINT8(save_p, players[i].stealingtimer);
@@ -587,8 +587,8 @@ static void P_NetUnArchivePlayers(void)
 		players[i].bubblecool = READUINT8(save_p);
 		players[i].bubbleblowup = READUINT8(save_p);
 		players[i].flamedash = READUINT16(save_p);
-		players[i].flamemeter = READUINT16(save_p);
-		players[i].flamelength = READUINT8(save_p);
+		players[i].flametimer = READINT32(save_p);
+		players[i].flamestore = READUINT8(save_p);
 
 		players[i].hyudorotimer = READUINT16(save_p);
 		players[i].stealingtimer = READSINT8(save_p);

@@ -7491,7 +7491,7 @@ static boolean P_MobjRegularThink(mobj_t *mobj)
 			}
 			P_SetScale(mobj, (mobj->destscale = (5*mobj->target->scale)>>2));
 			curstate = ((mobj->tics == 1) ? (mobj->state->nextstate) : ((statenum_t)(mobj->state-states)));
-			if (mobj->target->player->flamedash)
+			if (mobj->target->player->flamestore)
 			{
 				if (curstate != S_FLAMESHIELDDASH)
 					P_SetMobjState(mobj, S_FLAMESHIELDDASH);
